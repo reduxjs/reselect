@@ -19,6 +19,11 @@ export function defaultValueEquals(a, b) {
     return a === b;
 }
 
+// the memoize function only caches one set of arguments.  This
+// actually good enough, rather surprisingly. This is because during
+// calculation of a selector result the arguments won't
+// change if called multiple times. If a new state comes in, we *want*
+// recalculation if and only if the arguments are different.
 function memoize(func, valueEquals) {
     let lastArgs = null;
     let lastResult = null;
