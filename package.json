@@ -1,0 +1,24 @@
+{
+  "name": "reselect",
+  "version": "0.0.1",
+  "description": "Selectors for Redux Flux.",
+  "main": "lib/index.js",
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "compile": "babel -d lib/ src/",
+    "prepublish": "npm run compile",
+    "test": "mocha --compilers js:babel/register --ui tdd"
+  },
+  "keywords": [
+    "react",
+    "redux"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-core": "^5.6.15",
+    "mocha": "^2.2.5"
+  }
+}
