@@ -1,5 +1,5 @@
 import chai from 'chai';
-import {createSelector} from '../src/selector';
+import {createSelector} from '../src/index';
 
 let assert = chai.assert;
 
