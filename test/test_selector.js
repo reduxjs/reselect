@@ -37,4 +37,19 @@ suite('selector', function() {
         assert.equal(selector({a: 2}), 2);
         assert.equal(called, 2);
     });
+    test("memoized composite arguments", function() {
+        let called = 0;
+        const selector = createSelector([state => state.sub], sub => {
+            called++;
+            return sub;
+        });
+        const state = {
+            sub: {
+                a: 1
+            }
+        };
+        assert.deepEqual(selector(state), { a: 1 });
+        assert.deepEqual(selector(state), { a: 1 });
+        assert.equal(called, 1);
+    });
 });
