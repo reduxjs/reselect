@@ -1,4 +1,4 @@
-function createSelectorCreator(valueEquals) {
+export function createSelectorCreator(valueEquals) {
     return (...args) => {
         if (args.length === 1) {
             throw Error("Need to pass in multiple arguments");
@@ -11,6 +11,14 @@ function createSelectorCreator(valueEquals) {
             return memoizedResultFunc(...params);
         }
     };
+}
+
+export function createSelector(...args) {
+    return createSelectorCreator(defaultValueEquals)(...args);
+}
+
+export function defaultValueEquals(a, b) {
+    return a === b;
 }
 
 function memoize(func, valueEquals) {
