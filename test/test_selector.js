@@ -1,5 +1,5 @@
 import chai from 'chai';
-import {createSelector} from '../src/index';
+import {createSelector, createSelectorCreator} from '../src/index';
 
 let assert = chai.assert;
 
@@ -51,5 +51,20 @@ suite('selector', function() {
         assert.deepEqual(selector(state), { a: 1 });
         assert.deepEqual(selector(state), { a: 1 });
         assert.equal(called, 1);
+    });
+    test("override valueEquals", function() {
+        // a rather absurd equals operation we can verify in tests
+        const createSelector = createSelectorCreator(
+            (a, b) => typeof a === typeof b);
+        let called = 0;
+        const selector = createSelector([state => state.a], a => {
+            called++;
+            return a;
+        });
+        assert.equal(selector({a: 1}), 1);
+        assert.equal(selector({a: 2}), 1); // yes, really true
+        assert.equal(called, 1);
+        assert.equal(selector({a: 'A'}), 'A');
+        assert.equal(called, 2);
     });
 });
