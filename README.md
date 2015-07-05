@@ -10,41 +10,32 @@ Simple "selector" library for Redux inspired by getters in [nuclear.js](https://
 
 ## Example
 
-###Reducer
-
 ```Javascript
-const initialState = {
-  items: [
-    {
-      name: 'Item 1',
-      value: 100
-    },
-    {
-      name: 'Item 2',
-      value: 200
-    },
-    {
-      name: 'Item 3',
-      value: 300
-    }
-  ],
-  taxPercent: 20
-};
 
-export default function todos(state = initialState, action) {
-  switch (action.type) {
-  
-  ...
-  
-  default:
-    return state;
+/* 
+Data in the Redux store has the following form:
+
+store: {
+  shop: {
+    items: [
+      {
+        name: 'Item 1',
+        value: 100
+      },
+      {
+        name: 'Item 2',
+        value: 200
+      },
+      {
+        name: 'Item 3',
+        value: 300
+      }
+    ],
+    taxPercent: 20
   }
 }
-```
+*/
 
-###Smart Component
-
-```Javascript
 import React from 'react';
 import { createSelector } from 'reselect';
 import { connect } from 'redux/react';
