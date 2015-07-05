@@ -51,7 +51,7 @@ const taxSelector = createSelector(
 );
 
 const totalSelector = createSelector(
-  [taxSelector, subtotalSelector],
+  [subtotalSelector, taxSelector],
   (subtotal, tax) => { return {total: subtotal + tax}}
 );
 
