@@ -2,7 +2,7 @@
 Simple Selector library for Redux inspired by [nuclear.js](https://github.com/optimizely/nuclear-js.git) and [re-frame](https://github.com/Day8/re-frame).
 
 ## Installation
-    npm install proxyquireify
+    npm install reselect
 
 ## Example
 
