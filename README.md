@@ -6,7 +6,7 @@ Simple Selector library for Redux inspired by [nuclear.js](https://github.com/op
 
 ## Example
 
-Store
+###Reducer
 
 ```Javascript
 const initialState = {
@@ -38,7 +38,7 @@ export default function todos(state = initialState, action) {
 }
 ```
 
-Smart/Container Component
+###Smart Component
 
 ```Javascript
 import React from 'react';
