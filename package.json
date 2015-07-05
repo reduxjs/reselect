@@ -9,7 +9,7 @@
   "scripts": {
     "compile": "babel -d lib/ src/",
     "prepublish": "npm run compile",
-    "test": "mocha --compilers js:babel/register --ui tdd"
+    "test": "mocha --compilers js:babel-core/register --ui tdd"
   },
   "keywords": [
     "react",
