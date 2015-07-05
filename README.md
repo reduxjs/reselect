@@ -1,5 +1,9 @@
 # reselect
-Simple Selector library for Redux inspired by [nuclear.js](https://github.com/optimizely/nuclear-js.git) and [re-frame](https://github.com/Day8/re-frame).
+Simple "selector" library for Redux inspired by getters in [nuclear.js](https://github.com/optimizely/nuclear-js.git) and [subscriptions](https://github.com/Day8/re-frame#just-a-read-only-cursor) in [re-frame](https://github.com/Day8/re-frame).
+
+* Selectors can compute derived data, allowing Redux to store the minimal possible state.
+* Selectors are efficient. A selector is not recomputed unless one of its arguments change.
+* Selectors are composable. They can be used as input to other selectors. 
 
 ## Installation
     npm install reselect
