@@ -13,7 +13,7 @@ Simple "selector" library for Redux inspired by getters in [nuclear.js](https://
 ```Javascript
 
 /* 
-Data in the Redux store has the following form:
+The data in the Redux store has the following shape:
 
 store: {
   shop: {
@@ -88,12 +88,17 @@ const totalSelector = createSelector(
 
 ```
 ### createSelectorCreator(valueEqualsFn)
-Allows the user to specify the function used to check if the arguments to a selector have changed
+Return a selectorCreator that creates selectors with a non-default valueEqualsFn. The valueEqualsFn is used to check if the arguments to a selector have changed. The default valueEqualsFn function is:
 ```js
-// state.values = Immutable.List([1,2,3,4,5,6,7,8,9,10]);
-
+function defaultValueEquals(a, b) {
+  return a === b;
+}
+```
+```js
+// create a "selector creator" that uses Immutable.is instead of ===
 const immutableCreateSelector = createSelectorCreator(Immutable.is);
 
+// use the new "selector creator" to create a selector (state.values is an Immutable.List)
 const mySelector = immutableCreateSelector(
   [state => state.values.filter(val => val < 5)],
   values => values.reduce((acc, val) => acc + val, 0)
