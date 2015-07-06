@@ -88,6 +88,14 @@ const totalSelector = createSelector(
 
 ```
 ### createSelectorCreator(valueEqualsFn)
+Allows the user to specify the function used to check if the arguments to a selector have changed
 ```js
+// state.values = Immutable.List([1,2,3,4,5,6,7,8,9,10]);
 
+const immutableCreateSelector = createSelectorCreator(Immutable.is);
+
+const mySelector = immutableCreateSelector(
+  [state => state.values.filter(val => val < 5)],
+  values => values.reduce((acc, val) => acc + val, 0)
+);
 ```
