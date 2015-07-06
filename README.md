@@ -65,8 +65,29 @@ class Total extends React.Component {
 export default Total;
 ```
 
-##API Documentation
+## API Documentation
 
-###createSelector
+### createSelector([inputSelectors], resultFn)
 
-###createSelectorCreator
+Takes an array of selectors whose values are computed and passed as arguments to resultFn.
+```js
+
+const mySelector = createSelector(
+  [
+    state => state.values.value1,
+    state => state.values.value2
+  ],
+  (value1, value2) => value1 + value2
+);
+
+// it is not necessary to wrap a single input selector in an array
+const totalSelector = createSelector(
+  state => state.shop.items,
+  items => items.reduce((acc, item) => acc + item.value, 0)
+);
+
+```
+### createSelectorCreator(valueEqualsFn)
+```js
+
+```
