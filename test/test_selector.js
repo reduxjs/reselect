@@ -13,6 +13,10 @@ suite('selector', function() {
             [state => state.a, state => state.b], (a, b) => a + b);
         assert.equal(selector({a: 1, b: 2}), 3);
     });
+    test("default result function", function() {
+        const selector = createSelector([state => state.a]);
+        assert.equal(selector({a: 1}), 1);
+    });
     test("first argument does not need to be an array", function() {
         const selector = createSelector(
             state => state.a, a => a);
