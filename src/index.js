@@ -1,5 +1,7 @@
+const identitySelector = state => state;
+
 export function createSelectorCreator(valueEquals) {
-    return (selectors, resultFunc) => {
+    return (selectors, resultFunc = identitySelector) => {
         if (!Array.isArray(selectors)) {
             selectors = [selectors];
         }

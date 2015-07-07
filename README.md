@@ -40,8 +40,10 @@ import React from 'react';
 import { createSelector } from 'reselect';
 import { connect } from 'redux/react';
 
+const shopItemSelector = createSelector(state => state.shop.items);
+
 const subtotalSelector = createSelector(
-  [state => state.shop.items],
+  shopItemSelector,
   items => items.reduce((acc, item) => acc + item.value, 0)
 );
 
