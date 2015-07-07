@@ -10,7 +10,7 @@ Simple "selector" library for Redux inspired by getters in [nuclear.js](https://
 
 ## Example
 
-### SelectorDefinitions
+### Selector Definitions
 
 ```Javascript
 
