@@ -10,6 +10,8 @@ Simple "selector" library for Redux inspired by getters in [nuclear.js](https://
 
 ## Example
 
+### Selector Definitions
+
 ```Javascript
 
 /* 
@@ -36,17 +38,30 @@ store: {
 }
 */
 
-import React from 'react';
 import { createSelector } from 'reselect';
-import { connect } from 'redux/react';
 
+/*
+ * Definition of simple selectors. 
+ * Simple selectors should be used to abstract away the structure of the store 
+ * and in cases where no calculations are needed and memoization wouldn't provide any benefits.
+ */
+const shopItemsSelector = state => state.shop.items;
+const taxPercent = state => state.shop.taxPercent;
+
+/* 
+ * Defintion of combined selectors. 
+ * In the subsequent examples selectors are combined to derive new information. 
+ * To prevent expensive recalculation of these selectors memoization is applied. 
+ * Hence, these selectors are only recomputed whenever their input selectors change. 
+ * In all other cases the precomputed values are returned.
+ */
 const subtotalSelector = createSelector(
-  [state => state.shop.items],
+  [shopItemSelector],
   items => items.reduce((acc, item) => acc + item.value, 0)
 );
 
 const taxSelector = createSelector(
-  [subtotalSelector, state => state.shop.taxPercent],
+  [subtotalSelector, taxPercent],
   (subtotal, taxPercent) => subtotal * (taxPercent / 100)
 );
 
@@ -54,7 +69,25 @@ const totalSelector = createSelector(
   [subtotalSelector, taxSelector],
   (subtotal, tax) => { return {total: subtotal + tax}}
 );
+```
 
+### Selector Usage
+
+```Javascript
+
+import React from 'react';
+import { connect } from 'redux/react';
+
+/*
+ * Import the selector defined in the example above.
+ * This allows your to separate your components from the structure of youre stores.
+ */
+import { totalSelector } from 'selectors/ShopSelectors';
+
+/*
+ * Bind the totalSelector on the Total component.
+ * The keys (total) of the selector result are bound to the corresponding component properties.
+ */
 @connect(totalSelector)
 class Total extends React.Component {
   render() {
@@ -64,6 +97,7 @@ class Total extends React.Component {
 
 export default Total;
 ```
+
 
 ## API Documentation
 
