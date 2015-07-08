@@ -42,8 +42,9 @@ import { createSelector } from 'reselect';
 
 /*
  * Definition of simple selectors. 
- * Simple selectors should be used to abstract away the structure of the store 
- * in cases where no calculations are needed and memoization wouldn't provide any benefits.
+ * Simple selectors should be used to abstract away the structure
+ * of the store in cases where no calculations are needed 
+ * and memoization wouldn't provide any benefits.
  */
 const shopItemsSelector = state => state.shop.items;
 const taxPercent = state => state.shop.taxPercent;
@@ -133,7 +134,8 @@ function defaultValueEquals(a, b) {
 // create a "selector creator" that uses Immutable.is instead of ===
 const immutableCreateSelector = createSelectorCreator(Immutable.is);
 
-// use the new "selector creator" to create a selector (state.values is an Immutable.List)
+// use the new "selector creator" to create a 
+// selector (state.values is an Immutable.List)
 const mySelector = immutableCreateSelector(
   [state => state.values.filter(val => val < 5)],
   values => values.reduce((acc, val) => acc + val, 0)
