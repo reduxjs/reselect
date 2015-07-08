@@ -43,13 +43,13 @@ import { createSelector } from 'reselect';
 /*
  * Definition of simple selectors. 
  * Simple selectors should be used to abstract away the structure of the store 
- * and in cases where no calculations are needed and memoization wouldn't provide any benefits.
+ * in cases where no calculations are needed and memoization wouldn't provide any benefits.
  */
 const shopItemsSelector = state => state.shop.items;
 const taxPercent = state => state.shop.taxPercent;
 
 /* 
- * Defintion of combined selectors. 
+ * Definition of combined selectors. 
  * In the subsequent examples selectors are combined to derive new information. 
  * To prevent expensive recalculation of these selectors memoization is applied. 
  * Hence, these selectors are only recomputed whenever their input selectors change. 
@@ -80,13 +80,14 @@ import { connect } from 'redux/react';
 
 /*
  * Import the selector defined in the example above.
- * This allows your to separate your components from the structure of youre stores.
+ * This allows your to separate your components from the structure of your stores.
  */
 import { totalSelector } from 'selectors/ShopSelectors';
 
 /*
  * Bind the totalSelector on the Total component.
- * The keys (total) of the selector result are bound to the corresponding component properties.
+ * The keys of the selector result are bound to the corresponding component props.
+ * In our example there is the 'total' key which is bound to this.props.total
  */
 @connect(totalSelector)
 class Total extends React.Component {
