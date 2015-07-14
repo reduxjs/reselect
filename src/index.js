@@ -6,7 +6,7 @@ export function createSelectorCreator(valueEquals) {
         const memoizedResultFunc = memoize(resultFunc, valueEquals);
         return state => {
             const params = selectors.map(selector => selector(state));
-            return memoizedResultFunc(...params);
+            return memoizedResultFunc(params);
         }
     };
 }
@@ -27,7 +27,7 @@ export function defaultValueEquals(a, b) {
 function memoize(func, valueEquals) {
     let lastArgs = null;
     let lastResult = null;
-    return (...args) => {
+    return (args) => {
         if (lastArgs !== null && argsEquals(args, lastArgs, valueEquals)) {
             return lastResult;
         }
