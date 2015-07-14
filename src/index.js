@@ -38,8 +38,5 @@ function memoize(func, valueEquals) {
 }
 
 function argsEquals(a, b, valueEquals) {
-    if (a.length != b.length) {
-        return false;
-    }
     return a.every((value, index) => valueEquals(value, b[index]));
 }
