@@ -11,7 +11,7 @@ Simple "selector" library for Redux inspired by getters in [nuclear.js](https://
 ## Example
 
 ### Selector Definitions
-
+selectors/ShopSelectors.js
 ```Javascript
 
 /* 
@@ -57,7 +57,7 @@ const taxPercent = state => state.shop.taxPercent;
  * In all other cases the precomputed values are returned.
  */
 const subtotalSelector = createSelector(
-  [shopItemSelector],
+  [shopItemsSelector],
   items => items.reduce((acc, item) => acc + item.value, 0)
 );
 
@@ -66,7 +66,7 @@ const taxSelector = createSelector(
   (subtotal, taxPercent) => subtotal * (taxPercent / 100)
 );
 
-const totalSelector = createSelector(
+export const totalSelector = createSelector(
   [subtotalSelector, taxSelector],
   (subtotal, tax) => { return {total: subtotal + tax}}
 );
