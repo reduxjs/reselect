@@ -47,7 +47,7 @@ import { createSelector } from 'reselect';
  * and memoization wouldn't provide any benefits.
  */
 const shopItemsSelector = state => state.shop.items;
-const taxPercent = state => state.shop.taxPercent;
+const taxPercentSelector = state => state.shop.taxPercent;
 
 /* 
  * Definition of combined selectors. 
@@ -62,7 +62,7 @@ const subtotalSelector = createSelector(
 );
 
 const taxSelector = createSelector(
-  [subtotalSelector, taxPercent],
+  [subtotalSelector, taxPercentSelector],
   (subtotal, taxPercent) => subtotal * (taxPercent / 100)
 );
 
