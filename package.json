@@ -15,8 +15,8 @@
   "scripts": {
     "compile": "babel -d lib/ src/",
     "prepublish": "npm run compile",
-    "test": "scripts/test",
-    "test:cov": "scripts/test-cov"
+    "test": "NODE_ENV=test mocha --compilers js:babel/register --recursive",
+    "test:cov": "babel-node ./node_modules/.bin/isparta cover ./node_modules/.bin/_mocha -- --recursive"
   },
   "keywords": [
     "react",
