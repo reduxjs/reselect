@@ -72,6 +72,22 @@ export const totalSelector = createSelector(
 );
 ```
 
+You can use a factory function when you need additional arguments for your selectors:
+
+```Javascript
+const expensiveItemSelectorFactory = minValue => {
+  return createSelector(
+    [shopItemsSelector],
+    items => items.filter(item => item.value < minValue)
+  );
+}
+
+const subtotalSelector = createSelector(
+  [expensiveItemSelectorFactory(200)],
+  items => items.reduce((acc, item) => acc + item.value, 0)
+);
+```
+
 ### Selector Usage
 
 ```Javascript
