@@ -93,7 +93,7 @@ const subtotalSelector = createSelector(
 ```Javascript
 
 import React from 'react';
-import { connect } from 'redux/react';
+import { connect } from 'react-redux';
 
 /*
  * Import the selector defined in the example above.
