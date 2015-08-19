@@ -3,7 +3,7 @@ export function createSelectorCreator(valueEquals) {
         if (!Array.isArray(selectors)) {
             selectors = [selectors];
         }
-        const memoizedResultFunc = memoize(resultFunc, valueEquals);
+        const memoizedResultFunc = internalMemoize(resultFunc, valueEquals);
         return state => {
             const params = selectors.map(selector => selector(state));
             return memoizedResultFunc(params);
@@ -19,12 +19,17 @@ export function defaultValueEquals(a, b) {
     return a === b;
 }
 
+export function memoize(func, valueEquals = defaultValueEquals) {
+   let memoizedFunc = internalMemoize(func, valueEquals);
+   return (...args) => memoizedFunc(args);
+}
+
 // the memoize function only caches one set of arguments.  This
 // actually good enough, rather surprisingly. This is because during
 // calculation of a selector result the arguments won't
 // change if called multiple times. If a new state comes in, we *want*
 // recalculation if and only if the arguments are different.
-function memoize(func, valueEquals) {
+function internalMemoize(func, valueEquals) {
     let lastArgs = null;
     let lastResult = null;
     return (args) => {
