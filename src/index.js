@@ -1,5 +1,9 @@
+function defaultResultFunc(...values) {
+    return values;
+}
+
 export function createSelectorCreator(valueEquals) {
-    return (selectors, resultFunc) => {
+    return (selectors, resultFunc = defaultResultFunc) => {
         if (!Array.isArray(selectors)) {
             selectors = [selectors];
         }
@@ -17,6 +21,21 @@ export function createSelector(...args) {
 
 export function defaultValueEquals(a, b) {
     return a === b;
+}
+
+export function createMappingSelector( selectors ) {
+	 let objectKeys = Object.keys(selectors);
+    return createSelector(
+       objectKeys.map( (key) => {
+           return selectors[key];
+		 }),
+       (...values) => {
+           return values.reduce((composition, value, index) => {
+               composition[objectKeys[index]] = value;
+               return composition;
+           }, {});
+       }
+    );
 }
 
 // the memoize function only caches one set of arguments.  This

@@ -1,5 +1,5 @@
 import chai from 'chai';
-import {createSelector, createSelectorCreator} from '../src/index';
+import {createSelector, createSelectorCreator, createMappingSelector} from '../src/index';
 
 let assert = chai.assert;
 
@@ -66,5 +66,28 @@ suite('selector', function() {
         assert.equal(called, 1);
         assert.equal(selector({a: 'A'}), 'A');
         assert.equal(called, 2);
+    });
+    test("default selector function", function() {
+        const selector = createSelector([state => state.a, state => state.b]);
+
+        let firstResult = selector({a: 1,b: 2});
+        assert.deepEqual(firstResult, [1,2]);
+        assert.strictEqual(selector({a: 1,b: 2}), firstResult);
+        assert.notStrictEqual(selector({a: 2,b: 2}),firstResult);
+        assert.notEqual(selector({a: 2,b: 2}), firstResult);
+        assert.deepEqual(selector({a: 2,b: 2}), [2,2]);
+    });
+    test("mapping selector", function() {
+        const selector = createMappingSelector({
+              x: state => state.a,
+              y: state => state.b
+        });
+
+        let firstResult = selector({a: 1,b: 2});
+        assert.deepEqual( firstResult, {x: 1, y: 2});
+        assert.strictEqual(selector({a: 1,b: 2}), firstResult);
+        assert.notStrictEqual(selector({a: 2,b: 2}),firstResult);
+        assert.notEqual(selector({a: 2,b: 2}), firstResult);
+        assert.deepEqual(selector({a: 2,b: 2}), {x: 2,y: 2});
     });
 });
