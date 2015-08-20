@@ -1,9 +1,9 @@
-export function createSelectorCreator(valueEquals) {
-    return (selectors, resultFunc) => {
-        if (!Array.isArray(selectors)) {
-            selectors = [selectors];
+export function createSelectorCreator(memoize = internalMemoize) {
+    return (...selectors) => {
+        const memoizedResultFunc = memoize(selectors.pop());
+        if (Array.isArray(selectors[0])) {
+            selectors = selectors[0];
         }
-        const memoizedResultFunc = internalMemoize(resultFunc, valueEquals);
         return state => {
             const params = selectors.map(selector => selector(state));
             return memoizedResultFunc(params);
@@ -12,36 +12,28 @@ export function createSelectorCreator(valueEquals) {
 }
 
 export function createSelector(...args) {
-    return createSelectorCreator(defaultValueEquals)(...args);
+    return createSelectorCreator(internalMemoize)(...args);
 }
 
-export function defaultValueEquals(a, b) {
+function defaultShouldUpdate(a, b) {
     return a === b;
 }
 
-export function memoize(func, valueEquals = defaultValueEquals) {
-   let memoizedFunc = internalMemoize(func, valueEquals);
-   return (...args) => memoizedFunc(args);
+export function createMemoize(shouldUpdate = defaultShouldUpdate) {
+    return func => internalMemoize(func, shouldUpdate);
 }
 
-// the memoize function only caches one set of arguments.  This
-// actually good enough, rather surprisingly. This is because during
-// calculation of a selector result the arguments won't
-// change if called multiple times. If a new state comes in, we *want*
-// recalculation if and only if the arguments are different.
-function internalMemoize(func, valueEquals) {
+// TODO: Reintroduce comment, slightly rewritten
+function internalMemoize(func, shouldUpdate = defaultShouldUpdate) {
     let lastArgs = null;
     let lastResult = null;
     return (args) => {
-        if (lastArgs !== null && argsEquals(args, lastArgs, valueEquals)) {
+        if (lastArgs !== null &&
+            args.every((value, index) => shouldUpdate(value, lastArgs[index]))) {
             return lastResult;
         }
         lastArgs = args;
         lastResult = func(...args);
         return lastResult;
     }
-}
-
-function argsEquals(a, b, valueEquals) {
-    return a.every((value, index) => valueEquals(value, b[index]));
 }
