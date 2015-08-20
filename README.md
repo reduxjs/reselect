@@ -106,6 +106,7 @@ export default Total;
 ### createSelector([inputSelectors], resultFn)
 
 Takes an array of selectors whose values are computed and passed as arguments to resultFn.
+If parameter resultFn is omitted, a default result function is used which will return the passed arguments as an array like: ```(...values) => values;```
 ```js
 
 const mySelector = createSelector(
@@ -123,6 +124,24 @@ const totalSelector = createSelector(
 );
 
 ```
+### composeSelectors({inputSelectors})
+
+Takes a mapping of selectors and returns a selector that itself returns the selected values equaly shaped like inputSelectors.
+
+```js
+const mySelectorA = state => state.a;
+const mySelectorB = state => state.b;
+
+const composedSelector = composeSelectors({
+   x: mySelectorA,
+   y: mySelectorB
+});
+
+let state = {a:1,b:2};
+
+composedSelector( state ); // Will produce: {x:1,y:2}
+```
+
 ### createSelectorCreator(valueEqualsFn)
 Return a selectorCreator that creates selectors with a non-default valueEqualsFn. The valueEqualsFn is used to check if the arguments to a selector have changed. The default valueEqualsFn function is:
 ```js
