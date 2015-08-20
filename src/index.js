@@ -23,7 +23,7 @@ export function defaultValueEquals(a, b) {
     return a === b;
 }
 
-export function createMappingSelector( selectors ) {
+export function composeSelectors( selectors ) {
 	 let objectKeys = Object.keys(selectors);
     return createSelector(
        objectKeys.map( (key) => {

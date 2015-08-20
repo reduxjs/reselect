@@ -1,5 +1,5 @@
 import chai from 'chai';
-import {createSelector, createSelectorCreator, createMappingSelector} from '../src/index';
+import {createSelector, createSelectorCreator, composeSelectors} from '../src/index';
 
 let assert = chai.assert;
 
@@ -77,8 +77,8 @@ suite('selector', function() {
         assert.notEqual(selector({a: 2,b: 2}), firstResult);
         assert.deepEqual(selector({a: 2,b: 2}), [2,2]);
     });
-    test("mapping selector", function() {
-        const selector = createMappingSelector({
+    test("composing selectors", function() {
+        const selector = composeSelectors({
               x: state => state.a,
               y: state => state.b
         });
