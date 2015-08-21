@@ -6,7 +6,7 @@ export function createSelectorCreator(memoize = defaultMemoize) {
         }
         return (state, props) => {
             const params = selectors.map(selector => selector(state, props));
-            return memoizedResultFunc(params, props);
+            return memoizedResultFunc(...params, props);
         }
     };
 }
@@ -23,7 +23,8 @@ function defaultValuesEqual(a, b) {
 export function defaultMemoize(func, valuesEqual = defaultValuesEqual) {
     let lastArgs = null;
     let lastResult = null;
-    return (args, props) => {
+    return (...args) => {
+        const props = args.pop();
         if (lastArgs !== null &&
             args.every((value, index) => valuesEqual(value, lastArgs[index]))) {
             return lastResult;
@@ -35,9 +36,9 @@ export function defaultMemoize(func, valuesEqual = defaultValuesEqual) {
 }
 
 // Wrap external memoize function for use with reselect
-export function wrapMemoize(memoize) {
+export function wrapMemoize(memoize, ...options) {
   return func => {
-    const memoized = memoize(func);
-    return (args, props) => memoized(...args, props);
+    const memoized = memoize(func, ...options);
+    return (...args) => memoized(...args);
   }
 }
