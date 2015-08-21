@@ -166,7 +166,9 @@ assert.equal(called, 2);
 
 ### defaultMemoizeFunc(func, valueEquals = defaultValueEquals)
 
-`defaultMemoizeFunc` has a cache size of 1. This means it always recalculates when an argument changes, as it only stores the result for immediately preceding value of the argument. If not otherwise specified, the default MemoizeFunc determines if an argument has changed using reference equality:
+`defaultMemoizeFunc` has a cache size of 1. This means it always recalculates when an argument changes, as it only stores the result for immediately preceding value of the argument.
+
+`defaultMemoizeFunc` determines if an argument has changed by calling the valueEquals function. The default `valueEquals` function checks for changes using reference equality:
 
 ```js
 function defaultValueEquals(currentVal, previousVal) {
