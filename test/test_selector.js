@@ -1,5 +1,5 @@
 import chai from 'chai';
-import { createSelector, createSelectorCreator, defaultMemoize, wrapMemoize } from '../src/index';
+import { createSelector, createSelectorCreator, defaultMemoize } from '../src/index';
 import memoize from 'lodash.memoize';
 
 let assert = chai.assert;
@@ -91,9 +91,8 @@ suite('selector', function() {
         assert.equal(called, 2);
     });
     test("custom memoize", function() {
-        const customMemoize = wrapMemoize((func) => memoize(func, JSON.stringify));
         let called = 0;
-        const customSelectorCreator = createSelectorCreator(customMemoize);
+        const customSelectorCreator = createSelectorCreator(memoize, JSON.stringify);
         const selector = customSelectorCreator(
             state => state.a,
             state => state.b,
@@ -111,8 +110,7 @@ suite('selector', function() {
     });
     test("exported memoize", function() {
         let called = 0;
-        const wrappedDefault = wrapMemoize(defaultMemoize);
-        const memoized = wrappedDefault(state => {
+        const memoized = defaultMemoize(state => {
             called++;
             return state.a;
         });
@@ -128,11 +126,10 @@ suite('selector', function() {
         // a rather absurd equals operation we can verify in tests
         const valueEquals = (a, b) => typeof a === typeof b;
         let called = 0;
-        const wrappedDefault = wrapMemoize(defaultMemoize, valueEquals);
-        const memoized = wrappedDefault(a => {
+        const memoized = defaultMemoize(a => {
             called++;
             return a;
-        });
+        }, valueEquals);
         assert.equal(memoized(1, {}), 1);
         assert.equal(memoized(2, {}), 1); // yes, really true
         assert.equal(called, 1);

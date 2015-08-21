@@ -1,6 +1,6 @@
-export function createSelectorCreator(memoize = defaultMemoize) {
+export function createSelectorCreator(memoize = defaultMemoize, ...memoizeOptions) {
     return (...selectors) => {
-        const memoizedResultFunc = memoize(selectors.pop());
+        const memoizedResultFunc = memoize(selectors.pop(), ...memoizeOptions);
         if (Array.isArray(selectors[0])) {
             selectors = selectors[0];
         }
@@ -33,12 +33,4 @@ export function defaultMemoize(func, valuesEqual = defaultValuesEqual) {
         lastResult = func(...args, props);
         return lastResult;
     }
-}
-
-// Wrap external memoize function for use with reselect
-export function wrapMemoize(memoize, ...options) {
-  return func => {
-    const memoized = memoize(func, ...options);
-    return (...args) => memoized(...args);
-  }
 }
