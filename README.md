@@ -12,7 +12,7 @@ Simple "selector" library for Redux inspired by getters in [NuclearJS](https://g
 
 ### Selector Definitions
 selectors/ShopSelectors.js
-```Javascript
+```js
 
 /* 
 The data in the Redux store has the following shape:
@@ -57,40 +57,42 @@ const taxPercentSelector = state => state.shop.taxPercent;
  * In all other cases the precomputed values are returned.
  */
 const subtotalSelector = createSelector(
-  [shopItemsSelector],
+  shopItemsSelector,
   items => items.reduce((acc, item) => acc + item.value, 0)
 );
 
 const taxSelector = createSelector(
-  [subtotalSelector, taxPercentSelector],
+  subtotalSelector,
+  taxPercentSelector,
   (subtotal, taxPercent) => subtotal * (taxPercent / 100)
 );
 
 export const totalSelector = createSelector(
-  [subtotalSelector, taxSelector],
+  subtotalSelector,
+  taxSelector,
   (subtotal, tax) => { return {total: subtotal + tax}}
 );
 ```
 
 You can use a factory function when you need additional arguments for your selectors:
 
-```Javascript
+```js
 const expensiveItemSelectorFactory = minValue => {
   return createSelector(
-    [shopItemsSelector],
+    shopItemsSelector,
     items => items.filter(item => item.value < minValue)
   );
 }
 
 const subtotalSelector = createSelector(
-  [expensiveItemSelectorFactory(200)],
+  expensiveItemSelectorFactory(200),
   items => items.reduce((acc, item) => acc + item.value, 0)
 );
 ```
 
-### Selector Usage
+### Using Selectors with React-redux
 
-```Javascript
+```js
 
 import React from 'react';
 import { connect } from 'react-redux';
@@ -121,34 +123,89 @@ export default Total;
 
 ### createSelector([inputSelectors], resultFn)
 
-Takes an array of selectors whose values are computed and passed as arguments to resultFn.
+Takes a variable number of selectors whose values are computed and passed as arguments to resultFn. A selector has the signature (state, props) => state.
 ```js
 
 const mySelector = createSelector(
-  [
+  state => state.values.value1,
+  state => state.values.value2,
+  (value1, value2) => value1 + value2
+);
+
+// You can also pass an array of selectors
+const totalSelector = createSelector(
+  [ 
     state => state.values.value1,
     state => state.values.value2
   ],
   (value1, value2) => value1 + value2
 );
 
-// it is not necessary to wrap a single input selector in an array
-const totalSelector = createSelector(
-  state => state.shop.items,
-  items => items.reduce((acc, item) => acc + item.value, 0)
+// A selector is also passed props
+const selectorWithProps = createSelector(
+  state => state.values.value1,
+  state => state.values.value2,
+  (value1, value2, props) => value1 + value2 + props.value3
 );
 
+// A selector created with createSelector ignores the props for memoization
+let called = 0;
+const selector = createSelector(
+  state => state.a,
+  (a, b) => {
+    called++;
+    return a + b
+  }
+);
+assert.equal(selector({a: 1}, 100), 101);
+assert.equal(selector({a: 1}, 200), 101);
+assert.equal(called, 1);
+assert.equal(selector({a: 2}, 200), 202);
+assert.equal(called, 2);
 ```
-### createSelectorCreator(valueEqualsFn)
-Return a selectorCreator that creates selectors with a non-default valueEqualsFn. The valueEqualsFn is used to check if the arguments to a selector have changed. The default valueEqualsFn function is:
+
+### defaultMemoizeFunc(func, valueEquals = defaultValueEquals)
+
+`defaultMemoizeFunc` has a cache size of 1. This means it always recalculates when an argument changes, as it only stores the result for immediately preceding value of the argument. If not otherwise specified, the default MemoizeFunc determines if an argument has changed using reference equality:
+
 ```js
-function defaultValueEquals(a, b) {
-  return a === b;
+function defaultValueEquals(currentVal, previousVal) {
+  return currentVal === previousVal;
 }
 ```
+
 ```js
+  let called = 0;
+  const memoized = defaultMemoize(state => {
+    called++;
+    return state.a;
+  });
+  const o1 = {a: 1};
+  const o2 = {a: 2};
+  assert.equal(memoized(o1, {}), 1);
+  assert.equal(memoized(o1, {}), 1);
+  assert.equal(called, 1);
+  assert.equal(memoized(o2, {}), 2);
+  assert.equal(called, 2);
+```
+
+
+### createSelectorCreator(memoizeFunc = defaultMemoizeFunc, ...memoizeOptions)
+
+Return a selectorCreator that creates selectors with a non-default memoizeFunc. 
+
+You can use createSelectorCreator to customize the `valueEquals` function for `defaultMemoizeFunc` like this:
+
+```js
+import { createSelectorCreator, defaultMemoizeFunc } from 'reselect';
+import Immutable from 'immutable';
+
 // create a "selector creator" that uses Immutable.is instead of ===
-const immutableCreateSelector = createSelectorCreator(Immutable.is);
+// Note that this is not usually necessary when using Immutable.js with reselect
+const immutableCreateSelector = createSelectorCreator(
+  defaultMemoizeFunc,
+  Immutable.is
+);
 
 // use the new "selector creator" to create a 
 // selector (state.values is an Immutable.List)
@@ -156,4 +213,28 @@ const mySelector = immutableCreateSelector(
   [state => state.values.filter(val => val < 5)],
   values => values.reduce((acc, val) => acc + val, 0)
 );
+```
+
+Using the memoize function from lodash for an unbounded cache:
+
+```js
+import { createSelectorCreator } from 'reselect';
+import memoize from 'lodash.memoize';
+
+
+let called = 0;
+const customSelectorCreator = createSelectorCreator(memoize, JSON.stringify);
+const selector = customSelectorCreator(
+  state => state.a,
+  state => state.b,
+  (a, b) => {
+    called++;
+    return a + b;
+  }
+);
+assert.equal(selector({a: 1, b: 2}), 3);
+assert.equal(selector({a: 1, b: 2}), 3);
+assert.equal(called, 1);
+assert.equal(selector({a: 2, b: 3}), 5);
+assert.equal(called, 2);
 ```
