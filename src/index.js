@@ -34,6 +34,10 @@ export function defaultMemoize(func, valuesEqual = defaultValuesEqual) {
     }
 }
 
+// Wrap external memoize function for use with reselect
 export function wrapMemoize(memoize) {
-  return (...args) => memoize(args);
+  return func => {
+    const memoized = memoize(func);
+    return (args, props) => memoized(...args, props);
+  }
 }

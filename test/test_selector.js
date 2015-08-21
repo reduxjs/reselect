@@ -1,5 +1,6 @@
 import chai from 'chai';
 import { createSelector, createSelectorCreator, defaultMemoize, wrapMemoize } from '../src/index';
+import memoize from 'lodash.memoize';
 
 let assert = chai.assert;
 
@@ -23,7 +24,7 @@ suite('selector', function() {
     });
     test("can accept props", function() {
         const selector = createSelector(
-            state => state.a, 
+            state => state.a,
             state => state.b,
             (a, b, props) => a + b + props
         );
@@ -32,7 +33,7 @@ suite('selector', function() {
     test("ignores props for default memoization", function() {
         let called = 0;
         const selector = createSelector(
-            state => state.a, 
+            state => state.a,
             (a, b) => {
                 called++;
                 return a + b
@@ -89,32 +90,53 @@ suite('selector', function() {
         assert.equal(selector({a: 'A'}), 'A');
         assert.equal(called, 2);
     });
+    test("custom memoize", function() {
+        const customMemoize = wrapMemoize((func) => memoize(func, JSON.stringify));
+        let called = 0;
+        const customSelectorCreator = createSelectorCreator(customMemoize);
+        const selector = customSelectorCreator(
+            state => state.a,
+            state => state.b,
+            (a, b) => {
+                called++;
+                return a + b;
+            }
+        );
+        assert.equal(selector({a: 1, b: 2}), 3);
+        assert.equal(selector({a: 1, b: 2}), 3);
+        assert.equal(called, 1);
+        assert.equal(selector({a: 2, b: 3}), 5);
+        assert.equal(called, 2);
+        //TODO: Check that defaultMemoize hasn't been called
+    });
     test("exported memoize", function() {
         let called = 0;
-        const memoized = wrapMemoize(defaultMemoize(state => {
+        const memoized = defaultMemoize(state => {
             called++;
             return state.a;
-        }));
+        });
+        const wrapped = (...args) => memoized(args);
         const o1 = {a: 1};
         const o2 = {a: 2};
-        assert.equal(memoized(o1), 1);
-        assert.equal(memoized(o1), 1);
+        assert.equal(wrapped(o1), 1);
+        assert.equal(wrapped(o1), 1);
         assert.equal(called, 1);
-        assert.equal(memoized(o2), 2);
+        assert.equal(wrapped(o2), 2);
         assert.equal(called, 2);
     });
     test("exported memoize with valueEquals override", function() {
         // a rather absurd equals operation we can verify in tests
         const valueEquals = (a, b) => typeof a === typeof b;
         let called = 0;
-        const memoized = wrapMemoize(defaultMemoize(a => {
+        const memoized = defaultMemoize(a => {
             called++;
             return a;
-        }, valueEquals));
-        assert.equal(memoized(1), 1);
-        assert.equal(memoized(2), 1); // yes, really true
+        }, valueEquals);
+        const wrapped = (...args) => memoized(args);
+        assert.equal(wrapped(1), 1);
+        assert.equal(wrapped(2), 1); // yes, really true
         assert.equal(called, 1);
-        assert.equal(memoized('A'), 'A');
+        assert.equal(wrapped('A'), 'A');
         assert.equal(called, 2);
     });
 });
