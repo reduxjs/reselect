@@ -1,0 +1,12 @@
+{
+  "extends": "eslint-config-airbnb",
+  "env": {
+    "browser": true,
+    "mocha": true,
+    "node": true
+  },
+  "rules": {
+    "block-scoped-var": 0,
+    "indent": [2, 4]
+  }
+}

@@ -1,20 +1,3 @@
-export function createSelectorCreator(memoize = defaultMemoize, ...memoizeOptions) {
-    return (...selectors) => {
-        const memoizedResultFunc = memoize(selectors.pop(), ...memoizeOptions);
-        if (Array.isArray(selectors[0])) {
-            selectors = selectors[0];
-        }
-        return (state, props) => {
-            const params = selectors.map(selector => selector(state, props));
-            return memoizedResultFunc(...params, props);
-        }
-    };
-}
-
-export function createSelector(...args) {
-    return createSelectorCreator(defaultMemoize)(...args);
-}
-
 function defaultValuesEqual(a, b) {
     return a === b;
 }
@@ -32,5 +15,22 @@ export function defaultMemoize(func, valuesEqual = defaultValuesEqual) {
         lastArgs = args;
         lastResult = func(...args, props);
         return lastResult;
-    }
+    };
 }
+
+export function createSelectorCreator(memoize = defaultMemoize, ...memoizeOptions) {
+    return (...dependencies) => {
+        const memoizedResultFunc = memoize(dependencies.pop(), ...memoizeOptions);
+        const selectors = Array.isArray(dependencies[0]) ?
+            dependencies[0] : dependencies;
+        return (state, props) => {
+            const params = selectors.map(selector => selector(state, props));
+            return memoizedResultFunc(...params, props);
+        };
+    };
+}
+
+export function createSelector(...args) {
+    return createSelectorCreator(defaultMemoize)(...args);
+}
+

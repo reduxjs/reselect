@@ -14,6 +14,7 @@
   },
   "scripts": {
     "compile": "babel -d lib/ src/",
+    "lint": "eslint src test",
     "prepublish": "npm run compile",
     "test": "NODE_ENV=test mocha --compilers js:babel/register --recursive",
     "test:cov": "babel-node ./node_modules/.bin/isparta cover ./node_modules/.bin/_mocha -- --recursive"
@@ -35,6 +36,21 @@
     },
     {
       "name": "Philip Spitzlinger"
+    },
+    {
+      "name": "Alex Guerra"
+    },
+    {
+      "name": "ryanatkn"
+    }, 
+    {
+      "name": "Adam Royle"
+    }, 
+    {
+      "name": "Christian Schuhmann"
+    }, 
+    {
+      "name": "Jason Huang"
     }
   ],
   "repository": {
@@ -45,6 +61,9 @@
   "devDependencies": {
     "babel": "^5.5.8",
     "babel-core": "^5.6.15",
+    "babel-eslint": "^3.1.15",
+    "eslint": "^0.23",
+    "eslint-config-airbnb": "0.0.6",
     "chai": "^3.0.0",
     "isparta": "^3.0.3",
     "lodash.memoize": "^3.0.4",

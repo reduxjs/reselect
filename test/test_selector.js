@@ -1,15 +1,15 @@
 import chai from 'chai';
 import { createSelector, createSelectorCreator, defaultMemoize } from '../src/index';
-import memoize from 'lodash.memoize';
+import { default as lodashMemoize } from 'lodash.memoize';
 
 let assert = chai.assert;
 
-suite('selector', function() {
-    test("basic selector", function() {
+suite('selector', () => {
+    test('basic selector', () => {
         const selector = createSelector(state => state.a, a => a);
         assert.equal(selector({a: 1}), 1);
     });
-    test("basic selector multiple keys", function() {
+    test('basic selector multiple keys', () => {
         const selector = createSelector(
             state => state.a,
             state => state.b,
@@ -17,12 +17,12 @@ suite('selector', function() {
         );
         assert.equal(selector({a: 1, b: 2}), 3);
     });
-    test("first argument can be an array", function() {
+    test('first argument can be an array', () => {
         const selector = createSelector(
             [state => state.a], a => a);
         assert.equal(selector({a: 1}), 1);
     });
-    test("can accept props", function() {
+    test('can accept props', () => {
         const selector = createSelector(
             state => state.a,
             state => state.b,
@@ -30,13 +30,13 @@ suite('selector', function() {
         );
         assert.equal(selector({a: 1, b: 2}, 100), 103);
     });
-    test("ignores props for default memoization", function() {
+    test('ignores props for default memoization', () => {
         let called = 0;
         const selector = createSelector(
             state => state.a,
             (a, b) => {
                 called++;
-                return a + b
+                return a + b;
             }
         );
         assert.equal(selector({a: 1}, 100), 101);
@@ -45,14 +45,14 @@ suite('selector', function() {
         assert.equal(selector({a: 2}, 200), 202);
         assert.equal(called, 2);
     });
-    test("chained selector", function() {
+    test('chained selector', () => {
         const selector1 = createSelector(
             state => state.sub, sub => sub);
         const selector2 = createSelector(
             selector1, sub => sub.value);
         assert.equal(selector2({sub: { value: 1}}), 1);
     });
-    test("memoized selector", function() {
+    test('memoized selector', () => {
         let called = 0;
         const selector = createSelector(state => state.a, a => {
             called++;
@@ -64,7 +64,7 @@ suite('selector', function() {
         assert.equal(selector({a: 2}), 2);
         assert.equal(called, 2);
     });
-    test("memoized composite arguments", function() {
+    test('memoized composite arguments', () => {
         let called = 0;
         const selector = createSelector(state => state.sub, sub => {
             called++;
@@ -75,12 +75,14 @@ suite('selector', function() {
         assert.deepEqual(selector(state), { a: 1 });
         assert.equal(called, 1);
     });
-    test("override valueEquals", function() {
+    test('override valueEquals', () => {
         // a rather absurd equals operation we can verify in tests
-        const memoize = (func) => defaultMemoize(func, (a, b) => typeof a === typeof b);
-        const createSelector = createSelectorCreator(memoize);
+        const createOverridenSelector = createSelectorCreator(
+          defaultMemoize,
+          (a, b) => typeof a === typeof b
+        );
         let called = 0;
-        const selector = createSelector(state => state.a, a => {
+        const selector = createOverridenSelector(state => state.a, a => {
             called++;
             return a;
         });
@@ -90,9 +92,9 @@ suite('selector', function() {
         assert.equal(selector({a: 'A'}), 'A');
         assert.equal(called, 2);
     });
-    test("custom memoize", function() {
+    test('custom memoize', () => {
         let called = 0;
-        const customSelectorCreator = createSelectorCreator(memoize, JSON.stringify);
+        const customSelectorCreator = createSelectorCreator(lodashMemoize, JSON.stringify);
         const selector = customSelectorCreator(
             state => state.a,
             state => state.b,
@@ -106,9 +108,9 @@ suite('selector', function() {
         assert.equal(called, 1);
         assert.equal(selector({a: 2, b: 3}), 5);
         assert.equal(called, 2);
-        //TODO: Check that defaultMemoize hasn't been called
+        // TODO: Check correct memoize function was called
     });
-    test("exported memoize", function() {
+    test('exported memoize', () => {
         let called = 0;
         const memoized = defaultMemoize(state => {
             called++;
@@ -122,7 +124,7 @@ suite('selector', function() {
         assert.equal(memoized(o2, {}), 2);
         assert.equal(called, 2);
     });
-    test("exported memoize with valueEquals override", function() {
+    test('exported memoize with valueEquals override', () => {
         // a rather absurd equals operation we can verify in tests
         const valueEquals = (a, b) => typeof a === typeof b;
         let called = 0;
