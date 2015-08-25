@@ -18,7 +18,7 @@ export function defaultMemoize(func, valuesEqual = defaultValuesEqual) {
     };
 }
 
-export function createSelectorCreator(memoize = defaultMemoize, ...memoizeOptions) {
+export function createSelectorCreator(memoize, ...memoizeOptions) {
     return (...dependencies) => {
         const memoizedResultFunc = memoize(dependencies.pop(), ...memoizeOptions);
         const selectors = Array.isArray(dependencies[0]) ?
