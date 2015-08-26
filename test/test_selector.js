@@ -34,9 +34,9 @@ suite('selector', () => {
         let called = 0;
         const selector = createSelector(
             state => state.a,
-            (a, b) => {
+            (a, props) => {
                 called++;
-                return a + b;
+                return a + props;
             }
         );
         assert.equal(selector({a: 1}, 100), 101);

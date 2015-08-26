@@ -19,12 +19,12 @@ export function defaultMemoize(func, valuesEqual = defaultValuesEqual) {
 }
 
 export function createSelectorCreator(memoize, ...memoizeOptions) {
-    return (...dependencies) => {
-        const memoizedResultFunc = memoize(dependencies.pop(), ...memoizeOptions);
-        const selectors = Array.isArray(dependencies[0]) ?
-            dependencies[0] : dependencies;
+    return (...selectors) => {
+        const memoizedResultFunc = memoize(selectors.pop(), ...memoizeOptions);
+        const dependencies = Array.isArray(selectors[0]) ?
+            selectors[0] : selectors;
         return (state, props) => {
-            const params = selectors.map(selector => selector(state, props));
+            const params = dependencies.map(dependency => dependency(state, props));
             return memoizedResultFunc(...params, props);
         };
     };
@@ -33,4 +33,3 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
 export function createSelector(...args) {
     return createSelectorCreator(defaultMemoize)(...args);
 }
-

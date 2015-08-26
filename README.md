@@ -90,7 +90,7 @@ const subtotalSelector = createSelector(
 );
 ```
 
-### Using Selectors with React-redux
+### Using Selectors with React Redux
 
 ```js
 
@@ -121,9 +121,10 @@ export default Total;
 
 ## API Documentation
 
+### createSelector(...inputSelectors, resultFn)
 ### createSelector([inputSelectors], resultFn)
 
-Takes a variable number of selectors whose values are computed and passed as arguments to resultFn. A selector has the signature (state, props) => state.
+Takes a variable number or array of selectors whose values are computed and passed as arguments to `resultFn`. A selector has the signature `(state, props) => state`.
 ```js
 
 const mySelector = createSelector(
@@ -141,7 +142,7 @@ const totalSelector = createSelector(
   (value1, value2) => value1 + value2
 );
 
-// A selector is also passed props
+// A selector is also passed props as the last parameter into the resultFunc
 const selectorWithProps = createSelector(
   state => state.values.value1,
   state => state.values.value2,
@@ -149,10 +150,11 @@ const selectorWithProps = createSelector(
 );
 
 // A selector created with createSelector ignores the props for memoization
+// See note at bottom of `defaultMemoizeFunc`
 let called = 0;
 const selector = createSelector(
   state => state.a,
-  (a, b) => {
+  (a, props) => {
     called++;
     return a + b
   }
@@ -191,10 +193,21 @@ function defaultValueEquals(currentVal, previousVal) {
   assert.equal(called, 2);
 ```
 
+`defaultMemoizeFunc` does not look at the props argument when determining if the arguments have changed. This is because by default `defaultMemoize` uses `defaultValueEquals`, and as`defaultValueEquals` is a reference equality check and the reference of the props will be different each render the memoization will not work. 
 
-### createSelectorCreator(memoizeFunc = defaultMemoizeFunc, ...memoizeOptions)
+(NOTE: I am not happy about this, I think this is going to surprise people. I am considering adding an option that specifies whether the props should be used for memoization as part of the configuration options for people who aren't using the reference equality of `defaultValueEquals`. To make things worse, when using a third party memoize like `lodash.memoize` with `createSelectorCreator`, the memoize function **will** take the props into account for memoization. I think it is likely that if you are using a third party memoize your hashing function will be doing some kind of deepEquals so the selector will only update when there is actually a new value somewhere in the props. However, this could still be a problem if the props are changing in a manner such that they resolve to a new never-before-seen hash on every render. Ideas are welcome here.)
+
+### createSelectorCreator(memoizeFunc, ...memoizeOptions)
 
 Return a selectorCreator that creates selectors with a non-default memoizeFunc. 
+
+`...memoizeOptions` is a variadic number of configuration options that will be passsed to `memoizeFunc` inside `createSelectorSelector`:
+
+```js
+
+let memoizedResultFunc = memoizeFunc(resultFunc, ...memoizeOptions);
+
+```
 
 You can use createSelectorCreator to customize the `valueEquals` function for `defaultMemoizeFunc` like this:
 
