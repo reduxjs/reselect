@@ -7,13 +7,12 @@ export function defaultMemoize(func, valuesEqual = defaultValuesEqual) {
     let lastArgs = null;
     let lastResult = null;
     return (...args) => {
-        const props = args.pop();
         if (lastArgs !== null &&
             args.every((value, index) => valuesEqual(value, lastArgs[index]))) {
             return lastResult;
         }
         lastArgs = args;
-        lastResult = func(...args, props);
+        lastResult = func(...args);
         return lastResult;
     };
 }
@@ -25,7 +24,7 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
             selectors[0] : selectors;
         return (state, props) => {
             const params = dependencies.map(dependency => dependency(state, props));
-            return memoizedResultFunc(...params, props);
+            return memoizedResultFunc(...params);
         };
     };
 }

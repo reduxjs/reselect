@@ -26,24 +26,10 @@ suite('selector', () => {
         const selector = createSelector(
             state => state.a,
             state => state.b,
-            (a, b, props) => a + b + props
+            (state, props) => props.val,
+            (a, b, c) => a + b + c
         );
-        assert.equal(selector({a: 1, b: 2}, 100), 103);
-    });
-    test('ignores props for default memoization', () => {
-        let called = 0;
-        const selector = createSelector(
-            state => state.a,
-            (a, props) => {
-                called++;
-                return a + props;
-            }
-        );
-        assert.equal(selector({a: 1}, 100), 101);
-        assert.equal(selector({a: 1}, 200), 101);
-        assert.equal(called, 1);
-        assert.equal(selector({a: 2}, 200), 202);
-        assert.equal(called, 2);
+        assert.equal(selector({a: 1, b: 2}, {val: 100}), 103);
     });
     test('chained selector', () => {
         const selector1 = createSelector(
@@ -51,6 +37,19 @@ suite('selector', () => {
         const selector2 = createSelector(
             selector1, sub => sub.value);
         assert.equal(selector2({sub: { value: 1}}), 1);
+    });
+    test('chained selector with props', () => {
+        const selector1 = createSelector(
+            state => state.sub,
+            (state, props) => props.x,
+            (sub, x) => ({sub, x})
+        );
+        const selector2 = createSelector(
+            selector1,
+            (state, props) => props.y,
+            (param, y) => param.sub.value + param.x + y
+        );
+        assert.equal(selector2({sub: { value: 1}}, {x: 100, y: 200}), 301);
     });
     test('memoized selector', () => {
         let called = 0;
@@ -118,10 +117,10 @@ suite('selector', () => {
         });
         const o1 = {a: 1};
         const o2 = {a: 2};
-        assert.equal(memoized(o1, {}), 1);
-        assert.equal(memoized(o1, {}), 1);
+        assert.equal(memoized(o1), 1);
+        assert.equal(memoized(o1), 1);
         assert.equal(called, 1);
-        assert.equal(memoized(o2, {}), 2);
+        assert.equal(memoized(o2), 2);
         assert.equal(called, 2);
     });
     test('exported memoize with valueEquals override', () => {
@@ -132,10 +131,10 @@ suite('selector', () => {
             called++;
             return a;
         }, valueEquals);
-        assert.equal(memoized(1, {}), 1);
-        assert.equal(memoized(2, {}), 1); // yes, really true
+        assert.equal(memoized(1), 1);
+        assert.equal(memoized(2), 1); // yes, really true
         assert.equal(called, 1);
-        assert.equal(memoized('A', {}), 'A');
+        assert.equal(memoized('A'), 'A');
         assert.equal(called, 2);
     });
 });

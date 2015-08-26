@@ -124,9 +124,9 @@ export default Total;
 ### createSelector(...inputSelectors, resultFn)
 ### createSelector([inputSelectors], resultFn)
 
-Takes a variable number or array of selectors whose values are computed and passed as arguments to `resultFn`. A selector has the signature `(state, props) => state`.
-```js
+Takes a variable number or array of selectors whose values are computed and passed as arguments to `resultFn`.
 
+```js
 const mySelector = createSelector(
   state => state.values.value1,
   state => state.values.value2,
@@ -142,28 +142,12 @@ const totalSelector = createSelector(
   (value1, value2) => value1 + value2
 );
 
-// A selector is also passed props as the last parameter into the resultFunc
+// A selector's dependencies also receive props
 const selectorWithProps = createSelector(
-  state => state.values.value1,
-  state => state.values.value2,
-  (value1, value2, props) => value1 + value2 + props.value3
+  state => state.values.value,
+  (state, props) => props.value,
+  (valueFromState, valueFromProps) => valueFromState + valueFromProps;
 );
-
-// A selector created with createSelector ignores the props for memoization
-// See note at bottom of `defaultMemoizeFunc`
-let called = 0;
-const selector = createSelector(
-  state => state.a,
-  (a, props) => {
-    called++;
-    return a + b
-  }
-);
-assert.equal(selector({a: 1}, 100), 101);
-assert.equal(selector({a: 1}, 200), 101);
-assert.equal(called, 1);
-assert.equal(selector({a: 2}, 200), 202);
-assert.equal(called, 2);
 ```
 
 ### defaultMemoizeFunc(func, valueEquals = defaultValueEquals)
@@ -178,25 +162,6 @@ function defaultValueEquals(currentVal, previousVal) {
 }
 ```
 
-```js
-  let called = 0;
-  const memoized = defaultMemoize(state => {
-    called++;
-    return state.a;
-  });
-  const o1 = {a: 1};
-  const o2 = {a: 2};
-  assert.equal(memoized(o1, {}), 1);
-  assert.equal(memoized(o1, {}), 1);
-  assert.equal(called, 1);
-  assert.equal(memoized(o2, {}), 2);
-  assert.equal(called, 2);
-```
-
-`defaultMemoizeFunc` does not look at the props argument when determining if the arguments have changed. This is because by default `defaultMemoize` uses `defaultValueEquals`, and as`defaultValueEquals` is a reference equality check and the reference of the props will be different each render the memoization will not work. 
-
-(NOTE: I am not happy about this, I think this is going to surprise people. I am considering adding an option that specifies whether the props should be used for memoization as part of the configuration options for people who aren't using the reference equality of `defaultValueEquals`. To make things worse, when using a third party memoize like `lodash.memoize` with `createSelectorCreator`, the memoize function **will** take the props into account for memoization. I think it is likely that if you are using a third party memoize your hashing function will be doing some kind of deepEquals so the selector will only update when there is actually a new value somewhere in the props. However, this could still be a problem if the props are changing in a manner such that they resolve to a new never-before-seen hash on every render. Ideas are welcome here.)
-
 ### createSelectorCreator(memoizeFunc, ...memoizeOptions)
 
 Return a selectorCreator that creates selectors with a non-default memoizeFunc. 
@@ -208,7 +173,6 @@ Return a selectorCreator that creates selectors with a non-default memoizeFunc.
 let memoizedResultFunc = memoizeFunc(resultFunc, ...memoizeOptions);
 
 ```
-
 You can use createSelectorCreator to customize the `valueEquals` function for `defaultMemoizeFunc` like this:
 
 ```js
