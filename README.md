@@ -6,8 +6,29 @@ Simple "selector" library for Redux inspired by getters in [NuclearJS](https://g
 * Selectors are efficient. A selector is not recomputed unless one of its arguments change.
 * Selectors are composable. They can be used as input to other selectors. 
 
-### Installation
+## Table of Contents
+
+- [Installation](#installation)
+- [Example](#example)
+  - [Motivation for Memoized Selectors](#motivation-for-memoized-selectors)
+  - [Creating a Memoized Selector](#creating-a-memoized-selector)
+  - [Composing Selectors](#composing-selectors)
+  - [Connecting a Selector to the Redux Store](#connecting-a-selector-to-the-redux-store)
+- [API](#api)
+  - [`createSelector`](#createselectorinputselectors-resultfn)
+  - [`defaultMemoizeFunc`](#defaultmemoizefuncfunc-valueequals--defaultvalueequals)
+  - [`createSelectorCreator`](#createselectorcreatormemoizefunc-memoizeoptions)
+- [FAQ](#faq)
+  - [Can I use Reselect without Redux?](#can-i-use-reselect-without-redux)
+  - [How do I test a selector?](#how-do-i-test-a-selector)
+  - [How do I create a selector that takes an argument? ](#how-do-i-create-a-selector-that-takes-an-argument)
+  - [Can I use Reselect with Immutable.js?](#can-i-use-reselect-with-immutablejs)
+- [License](#license)
+
+## Installation
     npm install reselect
+
+## Example
 
 ### Motivation for Memoized Selectors
 
@@ -109,8 +130,8 @@ function selectTodos(todos, filter) {
   }
 }
 
-const visibilityFilterSelector = (state) => state.visibilityFilter;
-const todosSelector = (state) => state.todos;
+const visibilityFilterSelector = state => state.visibilityFilter;
+const todosSelector = state => state.todos;
 
 export const visibleTodosSelector = createSelector(
   [visibilityFilterSelector, todosSelector],
@@ -130,7 +151,7 @@ In the example above, `visibilityFilterSelector` and `todosSelector` are input-s
 A memoized selector can itself be an input-selector to another memoized selector. Here is `visibleTodosSelector` being used as an input-selector to a selector that further filters the todos by keyword:
 
 ```js
-const keywordSelector = (state) => state.keyword;
+const keywordSelector = state => state.keyword;
 
 const keywordFilterSelector = createSelector(
   [visibleTodosSelector, keywordSelector],
@@ -143,6 +164,8 @@ const keywordFilterSelector = createSelector(
 ### Connecting a Selector to the Redux Store
 
 If you are using react-redux, you connect a memoized selector to the Redux store using `connect`:
+
+TODO: Write about passing props
 
 #### `containers/App.js`
 
@@ -196,10 +219,10 @@ App.propTypes = {
 export default connect(visibleTodosSelector)(App);
 ```
 
-### API Documentation
+## API
 
-#### createSelector(...inputSelectors, resultFn)
-#### createSelector([inputSelectors], resultFn)
+### createSelector(...inputSelectors, resultFn)
+### createSelector([inputSelectors], resultFn)
 
 Takes a variable number or array of selectors whose values are computed and passed as arguments to `resultFn`.
 
@@ -221,7 +244,7 @@ const totalSelector = createSelector(
   (value1, value2) => value1 + value2
 );
 
-// A selector's dependencies also receive props
+// A selector's dependencies also receive props when using React Redux's connect decorator
 const selectorWithProps = createSelector(
   state => state.values.value,
   (state, props) => props.value,
@@ -229,7 +252,7 @@ const selectorWithProps = createSelector(
 );
 ```
 
-#### defaultMemoizeFunc(func, valueEquals = defaultValueEquals)
+### defaultMemoizeFunc(func, valueEquals = defaultValueEquals)
 
 `defaultMemoizeFunc` has a cache size of 1. This means it always recalculates when an argument changes, as it only stores the result for immediately preceding value of the argument.
 
@@ -241,7 +264,7 @@ function defaultValueEquals(currentVal, previousVal) {
 }
 ```
 
-#### createSelectorCreator(memoizeFunc, ...memoizeOptions)
+### createSelectorCreator(memoizeFunc, ...memoizeOptions)
 
 Return a selectorCreator that creates selectors with a non-default memoizeFunc. 
 
@@ -254,6 +277,7 @@ let memoizedResultFunc = memoizeFunc(resultFunc, ...memoizeOptions);
 ```
 You can use createSelectorCreator to customize the `valueEquals` function for `defaultMemoizeFunc` like this:
 
+// TODO: Don't use immutable in this example
 ```js
 import { createSelectorCreator, defaultMemoizeFunc } from 'reselect';
 import Immutable from 'immutable';
@@ -296,11 +320,16 @@ assert.equal(called, 1);
 assert.equal(selector({a: 2, b: 3}), 5);
 assert.equal(called, 2);
 ```
-###FAQ
 
-Q: How do I create a selector that takes an argument? 
+## FAQ
 
-A: You can use a factory function when you need additional arguments for your selectors:
+### Can I use Reselect without Redux?
+
+TODO
+
+### How do I create a selector that takes an argument? 
+
+You can use a factory function when you need additional arguments for your selectors:
 
 ```js
 const expensiveItemSelectorFactory = minValue => {
@@ -318,10 +347,14 @@ const subtotalSelector = createSelector(
 
 TODO: Note about not creating selector every time.
 
-Q: Can I use Reselect with Immutable.js?
+### How do I use Reselect with Immutable.js?
 
-A: TODO
+TODO
 
-Q: How do I test a selector?
+### How do I test a selector?
 
-A: TODO
+TODO
+
+## License
+
+MIT
