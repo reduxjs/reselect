@@ -1,130 +1,209 @@
-# reselect
+# Reselect 
+
 Simple "selector" library for Redux inspired by getters in [NuclearJS](https://github.com/optimizely/nuclear-js.git), [subscriptions](https://github.com/Day8/re-frame#just-a-read-only-cursor) in [re-frame](https://github.com/Day8/re-frame) and this [proposal](https://github.com/gaearon/redux/pull/169) from [speedskater](https://github.com/speedskater).
 
 * Selectors can compute derived data, allowing Redux to store the minimal possible state.
 * Selectors are efficient. A selector is not recomputed unless one of its arguments change.
 * Selectors are composable. They can be used as input to other selectors. 
 
-## Installation
+### Installation
     npm install reselect
 
-## Example
+### Motivation for Memoized Selectors
 
-### Selector Definitions
-selectors/ShopSelectors.js
-```js
+Here is an excerpt from the Redux [Todos List example](https://github.com/docs/basics/UsageWithReact.md):
 
-/* 
-The data in the Redux store has the following shape:
-
-store: {
-  shop: {
-    items: [
-      {
-        name: 'Item 1',
-        value: 100
-      },
-      {
-        name: 'Item 2',
-        value: 200
-      },
-      {
-        name: 'Item 3',
-        value: 300
-      }
-    ],
-    taxPercent: 20
-  }
-}
-*/
-
-import { createSelector } from 'reselect';
-
-/*
- * Definition of simple selectors. 
- * Simple selectors should be used to abstract away the structure
- * of the store in cases where no calculations are needed 
- * and memoization wouldn't provide any benefits.
- */
-const shopItemsSelector = state => state.shop.items;
-const taxPercentSelector = state => state.shop.taxPercent;
-
-/* 
- * Definition of combined selectors. 
- * In the subsequent examples selectors are combined to derive new information. 
- * To prevent expensive recalculation of these selectors memoization is applied. 
- * Hence, these selectors are only recomputed whenever their input selectors change. 
- * In all other cases the precomputed values are returned.
- */
-const subtotalSelector = createSelector(
-  shopItemsSelector,
-  items => items.reduce((acc, item) => acc + item.value, 0)
-);
-
-const taxSelector = createSelector(
-  subtotalSelector,
-  taxPercentSelector,
-  (subtotal, taxPercent) => subtotal * (taxPercent / 100)
-);
-
-export const totalSelector = createSelector(
-  subtotalSelector,
-  taxSelector,
-  (subtotal, tax) => { return {total: subtotal + tax}}
-);
-```
-
-You can use a factory function when you need additional arguments for your selectors:
+#### `containers/App.js`
 
 ```js
-const expensiveItemSelectorFactory = minValue => {
-  return createSelector(
-    shopItemsSelector,
-    items => items.filter(item => item.value < minValue)
-  );
-}
-
-const subtotalSelector = createSelector(
-  expensiveItemSelectorFactory(200),
-  items => items.reduce((acc, item) => acc + item.value, 0)
-);
-```
-
-### Using Selectors with React Redux
-
-```js
-
-import React from 'react';
+import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
+import { addTodo, completeTodo, setVisibilityFilter, VisibilityFilters } from '../actions';
+import AddTodo from '../components/AddTodo';
+import TodoList from '../components/TodoList';
+import Footer from '../components/Footer';
 
-/*
- * Import the selector defined in the example above.
- * This allows your to separate your components from the structure of your stores.
- */
-import { totalSelector } from 'selectors/ShopSelectors';
-
-/*
- * Bind the totalSelector on the Total component.
- * The keys of the selector result are bound to the corresponding component props.
- * In our example there is the 'total' key which is bound to this.props.total
- */
-@connect(totalSelector)
-class Total extends React.Component {
+class App extends Component {
   render() {
-    return <div>{ this.props.total }</div>
+    // Injected by connect() call:
+    const { dispatch, visibleTodos, visibilityFilter } = this.props;
+    return (
+      <div>
+        <AddTodo
+          onAddClick={text =>
+            dispatch(addTodo(text))
+          } />
+        <TodoList
+          todos={this.props.visibleTodos}
+          onTodoClick={index =>
+            dispatch(completeTodo(index))
+          } />
+        <Footer
+          filter={visibilityFilter}
+          onFilterChange={nextFilter =>
+            dispatch(setVisibilityFilter(nextFilter))
+          } />
+      </div>
+    );
   }
 }
 
-export default Total;
+App.propTypes = {
+  visibleTodos: PropTypes.arrayOf(PropTypes.shape({
+    text: PropTypes.string.isRequired,
+    completed: PropTypes.bool.isRequired
+  })),
+  visibilityFilter: PropTypes.oneOf([
+    'SHOW_ALL',
+    'SHOW_COMPLETED',
+    'SHOW_ACTIVE'
+  ]).isRequired
+};
+
+function selectTodos(todos, filter) {
+  switch (filter) {
+  case VisibilityFilters.SHOW_ALL:
+    return todos;
+  case VisibilityFilters.SHOW_COMPLETED:
+    return todos.filter(todo => todo.completed);
+  case VisibilityFilters.SHOW_ACTIVE:
+    return todos.filter(todo => !todo.completed);
+  }
+}
+
+function select(state) {
+  return {
+    visibleTodos: selectTodos(state.todos, state.visibilityFilter),
+    visibilityFilter: state.visibilityFilter
+  };
+}
+
+// Wrap the component to inject dispatch and state into it
+export default connect(select)(App);
 ```
 
+In the above example, `select` calls `selectTodos` to calculate `visibleTodos`. This works great, but there is a drawback: `visibleTodos` is calculated every time the component is updated. If the state tree is large, or the calculation expensive, repeating the calculation on every update may cause performance problems. Reselect can help to avoid these unnecessary recalculations.
 
-## API Documentation
+### Creating a Memoized Selector
 
-### createSelector(...inputSelectors, resultFn)
-### createSelector([inputSelectors], resultFn)
+We would like to replace `select` with a memoized selector that recalculates `visibleTodos` when the value of `state.todos` or `state.visibilityFilter` changes, but not when changes occur in other (unrelated) parts of the state tree.
+
+Reselect provides a function `createSelector` for creating memoized selectors. `createSelector` takes an array of input-selectors and a transform function as its arguments. If the Redux state tree is mutated in a way that causes the value of an input-selector to change, the selector will call its transform function with the values of the input-selectors as arguments and return the result. If the values of the input-selectors are the same as the previous call to the selector, it will return the previously computed value instead of calling the transform function.
+
+Let's define a memoized selector named `visibleTodosSelector` to replace `select`:
+
+#### `selectors/TodoSelectors.js`
+
+```js
+import { createSelector } from 'reselect';
+import { VisibilityFilters } from './actions';
+
+function selectTodos(todos, filter) {
+  switch (filter) {
+  case VisibilityFilters.SHOW_ALL:
+    return todos;
+  case VisibilityFilters.SHOW_COMPLETED:
+    return todos.filter(todo => todo.completed);
+  case VisibilityFilters.SHOW_ACTIVE:
+    return todos.filter(todo => !todo.completed);
+  }
+}
+
+const visibilityFilterSelector = (state) => state.visibilityFilter;
+const todosSelector = (state) => state.todos;
+
+export const visibleTodosSelector = createSelector(
+  [visibilityFilterSelector, todosSelector],
+  (visibilityFilter, todos) => {
+    return {
+      visibleTodos: selectTodos(todos, visibilityFilter),
+      visibilityFilter
+    };
+  }
+);
+```
+
+In the example above, `visibilityFilterSelector` and `todosSelector` are input-selectors. They are created as ordinary non-memoized selector functions because they do not transform the data they select. `visibleTodosSelector` on the other hand is a memoized selector. It takes `visibilityFilterSelector` and `todosSelector` as input-selectors, and a transform function that calculates the filtered todos list.
+
+### Composing Selectors
+
+A memoized selector can itself be an input-selector to another memoized selector. Here is `visibleTodosSelector` being used as an input-selector to a selector that further filters the todos by keyword:
+
+```js
+const keywordSelector = (state) => state.keyword;
+
+const keywordFilterSelector = createSelector(
+  [visibleTodosSelector, keywordSelector],
+  (visibleTodos, keyword) => visibleTodos.filter(
+    todo => todo.indexOf(keyword) > -1
+  )
+);
+```
+
+### Connecting a Selector to the Redux Store
+
+If you are using react-redux, you connect a memoized selector to the Redux store using `connect`:
+
+#### `containers/App.js`
+
+```js
+import React, { Component, PropTypes } from 'react';
+import { connect } from 'react-redux';
+import { addTodo, completeTodo, setVisibilityFilter } from '../actions';
+import AddTodo from '../components/AddTodo';
+import TodoList from '../components/TodoList';
+import Footer from '../components/Footer';
+import { visibleTodosSelector } from '../selectors/todoSelectors.js';
+
+class App extends Component {
+  render() {
+    // Injected by connect() call:
+    const { dispatch, visibleTodos, visibilityFilter } = this.props;
+    return (
+      <div>
+        <AddTodo
+          onAddClick={text =>
+            dispatch(addTodo(text))
+          } />
+        <TodoList
+          todos={this.props.visibleTodos}
+          onTodoClick={index =>
+            dispatch(completeTodo(index))
+          } />
+        <Footer
+          filter={visibilityFilter}
+          onFilterChange={nextFilter =>
+            dispatch(setVisibilityFilter(nextFilter))
+          } />
+      </div>
+    );
+  }
+}
+
+App.propTypes = {
+  visibleTodos: PropTypes.arrayOf(PropTypes.shape({
+    text: PropTypes.string.isRequired,
+    completed: PropTypes.bool.isRequired
+  })),
+  visibilityFilter: PropTypes.oneOf([
+    'SHOW_ALL',
+    'SHOW_COMPLETED',
+    'SHOW_ACTIVE'
+  ]).isRequired
+};
+
+// Pass the selector to the connect component
+export default connect(visibleTodosSelector)(App);
+```
+
+### API Documentation
+
+#### createSelector(...inputSelectors, resultFn)
+#### createSelector([inputSelectors], resultFn)
 
 Takes a variable number or array of selectors whose values are computed and passed as arguments to `resultFn`.
+
+> `createSelector` uses the default memoize function `defaultMemoizeFunc`. *Explain what that means*
 
 ```js
 const mySelector = createSelector(
@@ -150,7 +229,7 @@ const selectorWithProps = createSelector(
 );
 ```
 
-### defaultMemoizeFunc(func, valueEquals = defaultValueEquals)
+#### defaultMemoizeFunc(func, valueEquals = defaultValueEquals)
 
 `defaultMemoizeFunc` has a cache size of 1. This means it always recalculates when an argument changes, as it only stores the result for immediately preceding value of the argument.
 
@@ -162,7 +241,7 @@ function defaultValueEquals(currentVal, previousVal) {
 }
 ```
 
-### createSelectorCreator(memoizeFunc, ...memoizeOptions)
+#### createSelectorCreator(memoizeFunc, ...memoizeOptions)
 
 Return a selectorCreator that creates selectors with a non-default memoizeFunc. 
 
@@ -217,3 +296,32 @@ assert.equal(called, 1);
 assert.equal(selector({a: 2, b: 3}), 5);
 assert.equal(called, 2);
 ```
+###FAQ
+
+Q: How do I create a selector that takes an argument? 
+
+A: You can use a factory function when you need additional arguments for your selectors:
+
+```js
+const expensiveItemSelectorFactory = minValue => {
+  return createSelector(
+    shopItemsSelector,
+    items => items.filter(item => item.value < minValue)
+  );
+}
+
+const subtotalSelector = createSelector(
+  expensiveItemSelectorFactory(200),
+  items => items.reduce((acc, item) => acc + item.value, 0)
+);
+```
+
+TODO: Note about not creating selector every time.
+
+Q: Can I use Reselect with Immutable.js?
+
+A: TODO
+
+Q: How do I test a selector?
+
+A: TODO
