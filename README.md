@@ -1,10 +1,10 @@
-# Reselect 
+# Reselect
 
 Simple "selector" library for Redux inspired by getters in [NuclearJS](https://github.com/optimizely/nuclear-js.git), [subscriptions](https://github.com/Day8/re-frame#just-a-read-only-cursor) in [re-frame](https://github.com/Day8/re-frame) and this [proposal](https://github.com/gaearon/redux/pull/169) from [speedskater](https://github.com/speedskater).
 
 * Selectors can compute derived data, allowing Redux to store the minimal possible state.
 * Selectors are efficient. A selector is not recomputed unless one of its arguments change.
-* Selectors are composable. They can be used as input to other selectors. 
+* Selectors are composable. They can be used as input to other selectors.
 
 ## Table of Contents
 
@@ -14,15 +14,18 @@ Simple "selector" library for Redux inspired by getters in [NuclearJS](https://g
   - [Creating a Memoized Selector](#creating-a-memoized-selector)
   - [Composing Selectors](#composing-selectors)
   - [Connecting a Selector to the Redux Store](#connecting-a-selector-to-the-redux-store)
+  - [Accessing React Props in Selectors](#accessing-react-props-in-selectors)
 - [API](#api)
   - [`createSelector`](#createselectorinputselectors-resultfn)
   - [`defaultMemoizeFunc`](#defaultmemoizefuncfunc-valueequals--defaultvalueequals)
   - [`createSelectorCreator`](#createselectorcreatormemoizefunc-memoizeoptions)
 - [FAQ](#faq)
+  - [Why isn't my selector recomputing when the store state changes?](#why-isnt-my-selector-recomputing-when-the-store-state-changes)
+  - [Why is my selector recomputing when the store state stays the same?](#why-is-my-selector-recomputing-when-the-store-state-stays-the-same)
   - [Can I use Reselect without Redux?](#can-i-use-reselect-without-redux)
   - [How do I test a selector?](#how-do-i-test-a-selector)
   - [How do I create a selector that takes an argument? ](#how-do-i-create-a-selector-that-takes-an-argument)
-  - [Can I use Reselect with Immutable.js?](#can-i-use-reselect-with-immutablejs)
+  - [How do I use Reselect with Immutable.js?](#how-do-i-use-reselect-with-immutablejs)
 - [License](#license)
 
 ## Installation
@@ -163,11 +166,9 @@ const keywordFilterSelector = createSelector(
 
 ### Connecting a Selector to the Redux Store
 
-If you are using react-redux, you connect a memoized selector to the Redux store using `connect`:
+If you are using React Redux, you connect a memoized selector to the Redux store using `connect`:
 
-TODO: Write about passing props
-
-#### `containers/App.js`
+#### `containers/TodoApp.js`
 
 ```js
 import React, { Component, PropTypes } from 'react';
@@ -184,6 +185,139 @@ class App extends Component {
     const { dispatch, visibleTodos, visibilityFilter } = this.props;
     return (
       <div>
+        <AddTodo
+          onAddClick={text =>
+            dispatch(addTodo(text))
+          } />
+        <TodoList
+          todos={this.props.visibleTodos}
+          onTodoClick={index =>
+            dispatch(completeTodo(index))
+          } />
+        <Footer
+          filter={visibilityFilter}
+          onFilterChange={nextFilter =>
+            dispatch(setVisibilityFilter(nextFilter))
+          } />
+      </div>
+    );
+  }
+}
+
+App.propTypes = {
+  visibleTodos: PropTypes.arrayOf(PropTypes.shape({
+    text: PropTypes.string.isRequired,
+    completed: PropTypes.bool.isRequired
+  })),
+  visibilityFilter: PropTypes.oneOf([
+    'SHOW_ALL',
+    'SHOW_COMPLETED',
+    'SHOW_ACTIVE'
+  ]).isRequired
+};
+
+// Pass the selector to the connect component
+export default connect(visibleTodosSelector)(App);
+```
+
+### Accessing React Props in Selectors
+
+It can be convenient to access props from a selector. In the following we extend the Todo List example to support multiple users. We would like to display the current user on the `TodoApp.js` screen. We will use React Router and pass the user in the URL params for `TodoApp.js`.
+
+#### containers/Root.js
+```js
+import React, { Component, PropTypes } from 'react';
+import { createStore } from 'redux';
+import { Provider } from 'react-redux';
+import { Router, Route } from 'react-router';
+import TodoApp from './TodoApp';
+import Users from './Users';
+import rootReducer from '../reducers';
+
+const store = createStore(rootReducer);
+
+export default class Root extends Component {
+  render() {
+    return (
+      <div>
+        <Provider store={store}>
+          {() =>
+            <Router history={this.props.history}>
+              <Route path="/users" component={Users} />
+              <Route path="/app/:user" component={TodoApp} />
+            </Router>
+          }
+        </Provider>
+      </div>
+    );
+  }
+}
+
+Root.propTypes = {
+  history: PropTypes.object.isRequired,
+};
+
+```
+
+A user field is added to `visibleTodosSelector` which is collected from the params prop.
+
+#### `selectors/TodoSelectors.js`
+
+```js
+import { createSelector } from 'reselect';
+import { VisibilityFilters } from './actions';
+
+function selectTodos(todos, filter) {
+  switch (filter) {
+  case VisibilityFilters.SHOW_ALL:
+    return todos;
+  case VisibilityFilters.SHOW_COMPLETED:
+    return todos.filter(todo => todo.completed);
+  case VisibilityFilters.SHOW_ACTIVE:
+    return todos.filter(todo => !todo.completed);
+  }
+}
+
+const visibilityFilterSelector = state => state.visibilityFilter;
+const todosSelector = state => state.todos;
+
+// ownProps is passed as second parameter to selector dependencies
+const userFromProps = (_, ownProps) => ownProps.params.user,
+
+export const visibleTodosSelector = createSelector(
+  visibilityFilterSelector,
+  todosSelector,
+  userFromProps,
+  (visibilityFilter, todos, user) => {
+    return {
+      visibleTodos: selectTodos(todos, visibilityFilter),
+      visibilityFilter,
+      user
+    };
+  }
+);
+```
+
+A change is made to TodoApp.js to get the user from the props and display it on the screen.
+
+#### `containers/TodoApp.js`
+
+```js
+import React, { Component, PropTypes } from 'react';
+import { connect } from 'react-redux';
+import { addTodo, completeTodo, setVisibilityFilter } from '../actions';
+import AddTodo from '../components/AddTodo';
+import TodoList from '../components/TodoList';
+import Footer from '../components/Footer';
+import { visibleTodosSelector } from '../selectors/todoSelectors.js';
+
+class App extends Component {
+  render() {
+    // Injected by connect() call:
+    const { dispatch, visibleTodos, visibilityFilter, user } = this.props;
+    return (
+      <div>
+        <div>Current User: {user}</div>
         <AddTodo
           onAddClick={text =>
             dispatch(addTodo(text))
@@ -237,7 +371,7 @@ const mySelector = createSelector(
 
 // You can also pass an array of selectors
 const totalSelector = createSelector(
-  [ 
+  [
     state => state.values.value1,
     state => state.values.value2
   ],
@@ -264,9 +398,11 @@ function defaultValueEquals(currentVal, previousVal) {
 }
 ```
 
+TODO: Explain why reference equality and a cache size of 1 are decent defaults for Redux, and that `createSelector` uses these defaults.
+
 ### createSelectorCreator(memoizeFunc, ...memoizeOptions)
 
-Return a selectorCreator that creates selectors with a non-default memoizeFunc. 
+Return a selectorCreator that creates selectors with a non-default memoizeFunc.
 
 `...memoizeOptions` is a variadic number of configuration options that will be passsed to `memoizeFunc` inside `createSelectorSelector`:
 
@@ -275,24 +411,22 @@ Return a selectorCreator that creates selectors with a non-default memoizeFunc.
 let memoizedResultFunc = memoizeFunc(resultFunc, ...memoizeOptions);
 
 ```
+
 You can use createSelectorCreator to customize the `valueEquals` function for `defaultMemoizeFunc` like this:
 
-// TODO: Don't use immutable in this example
 ```js
 import { createSelectorCreator, defaultMemoizeFunc } from 'reselect';
-import Immutable from 'immutable';
+import { isEqual } from 'lodash';
 
-// create a "selector creator" that uses Immutable.is instead of ===
-// Note that this is not usually necessary when using Immutable.js with reselect
-const immutableCreateSelector = createSelectorCreator(
+// create a "selector creator" that uses lodash.isEqual instead of ===
+const createDeepEqualSelector = createSelectorCreator(
   defaultMemoizeFunc,
-  Immutable.is
+  isEqual
 );
 
-// use the new "selector creator" to create a 
-// selector (state.values is an Immutable.List)
-const mySelector = immutableCreateSelector(
-  [state => state.values.filter(val => val < 5)],
+// use the new "selector creator" to create a selector
+const mySelector = createDeepEqualSelector(
+  state => state.values.filter(val => val < 5),
   values => values.reduce((acc, val) => acc + val, 0)
 );
 ```
@@ -323,11 +457,26 @@ assert.equal(called, 2);
 
 ## FAQ
 
+### Why isn't my selector recomputing when the store state changes?
+
+TODO: Assuming `createSelector`, probably because you are deeply mutating an object
+
+### Why is my selector recomputing when the store state stays the same?
+
+TODO: Assuming `createSelector`, probably because you are creating a new object with the same values as previous
+
 ### Can I use Reselect without Redux?
 
-TODO
+Yes. Reselect has no dependencies on any other package, so although it was designed to be used with Redux it can be used independently. It is currently being used successfully in traditional Flux apps.
 
-### How do I create a selector that takes an argument? 
+```js
+TODO: Example
+```
+
+> If you create selectors using `createSelector` make sure the objects in your store are immutable.
+> See [here](#TODO) and [here](#TODO)
+
+### How do I create a selector that takes an argument?
 
 You can use a factory function when you need additional arguments for your selectors:
 
@@ -349,11 +498,47 @@ TODO: Note about not creating selector every time.
 
 ### How do I use Reselect with Immutable.js?
 
-TODO
+Selectors created with `createSelector` should work just fine with Immutable.js data structures.
+
+If your selector is recomputing and you don't think the state has changed, make sure you are aware of which Immutable.js update operations return a new object every time vs which update operations only return a new object when the update changes the collection.
+
+TODO: Switch this example for an example using selectors
+```js
+import Immutable from 'immutable';
+
+let myMap = Immutable.Map({
+  a: 1,
+  b: 2,
+  c: 3
+});
+
+let newMap = myMap.set('a', 1); // set, merge and others only return a new obj when update changes collection
+assert.equal(myMap, newMap);
+newMap = myMap.merge({'a', 1});
+assert.equal(myMap, newMap);
+newMap = myMap.map(a => a * 1); // map, reduce, filter and others always return a new obj
+assert.notEqual(myMap, newMap);
+```
 
 ### How do I test a selector?
 
-TODO
+For a given input, a selector should always produce the same output. For this reason they are easy to unit test.
+
+```js
+const selector = createSelector(
+  state => state.a,
+  state => state.b,
+  (a, b) => ({
+    c: a * 2,
+    d: b * 3
+  })
+);
+
+test("selector unit test", function() {
+  assert.deepEqual(selector({a: 1, b: 2}), {c: 2, d: 6});
+  assert.deepEqual(selector({a: 2, b: 3}), {c: 4, d: 9});
+});
+```
 
 ## License
 
