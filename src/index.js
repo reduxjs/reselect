@@ -22,8 +22,8 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
         const memoizedResultFunc = memoize(selectors.pop(), ...memoizeOptions);
         const dependencies = Array.isArray(selectors[0]) ?
             selectors[0] : selectors;
-        return (...args) => {
-            const params = dependencies.map(dependency => dependency(...args));
+        return (state, props) => {
+            const params = dependencies.map(dependency => dependency(state, props));
             return memoizedResultFunc(...params);
         };
     };
