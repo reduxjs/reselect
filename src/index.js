@@ -2,7 +2,7 @@ function defaultValuesEqual(a, b) {
     return a === b;
 }
 
-// TODO: Reintroduce comment, slightly rewritten
+// TODO: Reintroduce comment about cache size, slightly rewritten
 export function defaultMemoize(func, valuesEqual = defaultValuesEqual) {
     let lastArgs = null;
     let lastResult = null;
@@ -18,16 +18,28 @@ export function defaultMemoize(func, valuesEqual = defaultValuesEqual) {
 }
 
 export function createSelectorCreator(memoize, ...memoizeOptions) {
-    return (...selectors) => {
-        const memoizedResultFunc = memoize(selectors.pop(), ...memoizeOptions);
-        const dependencies = Array.isArray(selectors[0]) ?
-            selectors[0] : selectors;
-        return (state, props, ...args) => {
+    return (...funcs) => {
+        let memoizedResultFunc;
+        const resultFunc = funcs.pop();
+        const dependencies = Array.isArray(funcs[0]) ? funcs[0] : funcs;
+
+        function selector(state, props, ...args) {
             const params = dependencies.map(
                 dependency => dependency(state, props, ...args)
             );
             return memoizedResultFunc(...params);
-        };
+        }
+
+        memoizedResultFunc = memoize(
+            (...args) => {
+                selector.recomputes++;
+                return resultFunc(...args);
+            },
+            ...memoizeOptions
+        );
+
+        selector.recomputes = 0;
+        return selector;
     };
 }
 
