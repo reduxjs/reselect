@@ -20,8 +20,8 @@ Simple "selector" library for Redux inspired by getters in [NuclearJS](https://g
   - [`defaultMemoizeFunc`](#defaultmemoizefuncfunc-valueequals--defaultvalueequals)
   - [`createSelectorCreator`](#createselectorcreatormemoizefunc-memoizeoptions)
 - [FAQ](#faq)
-  - [Why isn't my selector recomputing when the store state changes?](#why-isnt-my-selector-recomputing-when-the-store-state-changes)
-  - [Why is my selector recomputing when the store state stays the same?](#why-is-my-selector-recomputing-when-the-store-state-stays-the-same)
+  - [Why isn't my selector recomputing when the input state changes?](#why-isnt-my-selector-recomputing-when-the-input-state-changes)
+  - [Why is my selector recomputing when the input state stays the same?](#why-is-my-selector-recomputing-when-the-input-state-stays-the-same)
   - [Can I use Reselect without Redux?](#can-i-use-reselect-without-redux)
   - [How do I test a selector?](#how-do-i-test-a-selector)
   - [How do I create a selector that takes an argument? ](#how-do-i-create-a-selector-that-takes-an-argument)
@@ -464,7 +464,7 @@ assert.equal(called, 2);
 
 ## FAQ
 
-### Q: Why isn't my selector recomputing when the store state changes?
+### Q: Why isn't my selector recomputing when the input state changes?
 
 A: Check that your memoization strategy is compatible with your state updates. For example, if you created your selector with `createSelector` your update should produce a new object instead of mutating an existing one (see [here](#createselectorinputselectors-resultfn)).
 
@@ -522,24 +522,82 @@ export default function todos(state = initialState, action) {
 }
 ```
 
-### Q: Why is my selector recomputing when the store state stays the same?
+### Q: Why is my selector recomputing when the input state stays the same?
 
-A: TODO: Assuming `createSelector`, probably because you are creating a new object with the same values as previous
+A: Check that your memoization strategy is compatible with your state updates. A selector created with `createSelector` that recomputes unexpectedly may be receiving a new object whether the values it contains have updated or not.
+
+```js
+import { REMOVE_OLD } from '../constants/ActionTypes';
+
+const initialState = [{
+  text: 'Use Redux',
+  completed: false,
+  id: 0,
+  timestamp: Date.now()
+}];
+
+export default function todos(state = initialState, action) {
+  switch (action.type) {
+  case REMOVE_OLD:
+    return state.filter(todo => {
+      return todo.timestamp + 30 * 24 * 60 * 60 * 1000 > Date.now();
+    });
+  default:
+    return state;
+  }
+}
+```
+
+The following selector is going to recompute every time REMOVE_OLD is invoked because Array.filter always returns a new object. However, it is quite likely that the majority of the calls to REMOVE_OLD aren't actually going to change the list of todos, so the recomputation is unnecessary.
+
+```js
+import { createselector } from 'reselect';
+
+const todosSelector = state => state.todos;
+
+export const visibletodosselector = createselector(
+  todosselector,
+  (todos) => {
+    ...
+  }
+);
+```
+
+You can eliminate unnecessary recomputations by only returning a new object from the reducer when a deep equality check has found that the list of todos has actually changed. Alternatively, the default `valueEquals` function in the selector can be replaced by a deep equality check.
+
+```js
+import { createSelectorCreator, defaultMemoizeFunc } from 'reselect';
+import { isEqual } from 'lodash';
+
+const todosSelector = state => state.todos;
+
+// create a "selector creator" that uses lodash.isEqual instead of ===
+const createDeepEqualSelector = createSelectorCreator(
+  defaultMemoizeFunc,
+  isEqual
+);
+
+// use the new "selector creator" to create a selector
+const mySelector = createDeepEqualSelector(
+  todosSelector,
+  (todos) => {
+    ...
+  }
+);
+```
+
+Always check that the cost of an alernative `valueEquals` function is not greater than the cost of recomputing every time. Furthermore, if recomputing every time is the better option, also consider whether using Reselect is giving you any benefit over passing a plain `mapStateToProps` function to `connect`.
 
 ### Q: Can I use Reselect without Redux?
 
 A: Yes. Reselect has no dependencies on any other package, so although it was designed to be used with Redux it can be used independently. It is currently being used successfully in traditional Flux apps.
-
-```js
-TODO: Example
-```
 
 > If you create selectors using `createSelector` make sure the objects in your store are immutable.
 > See [here](#createselectorinputselectors-resultfn)
 
 ### How do I create a selector that takes an argument?
 
-You can use a factory function when you need additional arguments for your selectors:
+Creating a factory function may be helpful:
 
 ```js
 const expensiveItemSelectorFactory = minValue => {
@@ -555,35 +613,9 @@ const subtotalSelector = createSelector(
 );
 ```
 
-TODO: Note about not creating selector every time.
-
-### How do I use Reselect with Immutable.js?
-
-Selectors created with `createSelector` should work just fine with Immutable.js data structures.
-
-If your selector is recomputing and you don't think the state has changed, make sure you are aware of which Immutable.js update operations return a new object every time vs which update operations only return a new object when the update changes the collection.
-
-TODO: Switch this example for an example using selectors
-```js
-import Immutable from 'immutable';
-
-let myMap = Immutable.Map({
-  a: 1,
-  b: 2,
-  c: 3
-});
-
-let newMap = myMap.set('a', 1); // set, merge and others only return a new obj when update changes collection
-assert.equal(myMap, newMap);
-newMap = myMap.merge({'a', 1});
-assert.equal(myMap, newMap);
-newMap = myMap.map(a => a * 1); // map, reduce, filter and others always return a new obj
-assert.notEqual(myMap, newMap);
-```
-
 ### How do I test a selector?
 
-For a given input, a selector should always produce the same output. For this reason they are easy to unit test.
+For a given input, a selector should always produce the same output. For this reason they are simple to unit test.
 
 ```js
 const selector = createSelector(
@@ -601,7 +633,7 @@ test("selector unit test", function() {
 });
 ```
 
-It may also be useful to check that the memoization strategy for your selector works properly with your reducer (see [here](q-why-is-my-selector-recomputing-when-the-store-state-stays-the-same)).
+It may also be useful to check that the memoization strategy for your selector works correctly with your state updates (see [here](#q-why-is-my-selector-recomputing-when-the-store-state-stays-the-same)).
 
 ```js
 suite('selector', () => {
@@ -618,8 +650,8 @@ suite('selector', () => {
     state => state.a,
       state => state.b,
       (a, b) => ({
-      c: a * 2,
-      d: b * 3
+        c: a * 2,
+        d: b * 3
     })
   );
 
@@ -638,6 +670,31 @@ suite('selector', () => {
   });
 });
 ```
+
+### How do I use Reselect with Immutable.js?
+
+Selectors created with `createSelector` should work just fine with Immutable.js data structures.
+
+If your selector is recomputing and you don't think the state has changed, make sure you are aware of which Immutable.js update operations always return a new object and which update operations only return a new object when the update changes the collection.
+
+```js
+import Immutable from 'immutable';
+
+let myMap = Immutable.Map({
+  a: 1,
+  b: 2,
+  c: 3
+});
+
+let newMap = myMap.set('a', 1); // set, merge and others only return a new obj when update changes collection
+assert.equal(myMap, newMap);
+newMap = myMap.merge({'a', 1});
+assert.equal(myMap, newMap);
+newMap = myMap.map(a => a * 1); // map, reduce, filter and others always return a new obj
+assert.notEqual(myMap, newMap);
+```
+
+If your selector's input is updated by an operation that always returns a new object, you may be performing unnecessary recomputations. See [here](#q-why-is-my-selector-recomputing-when-the-input-state-stays-the-same) for a discussion on the pros and cons of using a deep equality check like `Immmutable.is` as the `valueEquals` function for a selector.
 
 ## License
 
