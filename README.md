@@ -282,12 +282,12 @@ const visibilityFilterSelector = state => state.visibilityFilter;
 const todosSelector = state => state.todos;
 
 // ownProps is passed as second parameter to selector dependencies
-const userFromProps = (_, ownProps) => ownProps.params.user,
+const userFromPropsSelector = (_, ownProps) => ownProps.params.user,
 
 export const visibleTodosSelector = createSelector(
   visibilityFilterSelector,
   todosSelector,
-  userFromProps,
+  userFromPropsSelector, // pass as a normal selector dependency
   (visibilityFilter, todos, user) => {
     return {
       visibleTodos: selectTodos(todos, visibilityFilter),
@@ -360,7 +360,11 @@ export default connect(visibleTodosSelector)(App);
 
 Takes a variable number or array of selectors whose values are computed and passed as arguments to `resultFn`.
 
-> `createSelector` uses the default memoize function `defaultMemoizeFunc`. *Explain what that means*
+`createSelector` has been designed to work with immutable data.
+
+`createSelector` determines if the value returned by an input selector has changed between calls using reference equality (`===`). Inputs to selectors created with `createSelector` should be immutable.
+
+Selectors created with `createSelector` have a cache size of 1. This means they always recalculate when the value of an input selector changes, as a selector only stores the preceding value of each input selector.
 
 ```js
 const mySelector = createSelector(
@@ -388,9 +392,9 @@ const selectorWithProps = createSelector(
 
 ### defaultMemoizeFunc(func, valueEquals = defaultValueEquals)
 
-`defaultMemoizeFunc` has a cache size of 1. This means it always recalculates when an argument changes, as it only stores the result for immediately preceding value of the argument.
+`defaultMemoizeFunc` (and by extension `createSelector`) has been designed to work with immutable data.
 
-`defaultMemoizeFunc` determines if an argument has changed by calling the valueEquals function. The default `valueEquals` function checks for changes using reference equality:
+`defaultMemoizeFunc` determines if an argument has changed by calling the valueEquals function. The `valueEquals` function is configurable. By default it checks for changes using reference equality:
 
 ```js
 function defaultValueEquals(currentVal, previousVal) {
@@ -398,21 +402,24 @@ function defaultValueEquals(currentVal, previousVal) {
 }
 ```
 
-TODO: Explain why reference equality and a cache size of 1 are decent defaults for Redux, and that `createSelector` uses these defaults.
+`defaultMemoizeFunc` has a cache size of 1. This means it always recalculates when an argument changes, as it only stores the result for preceding value of the argument.
+
 
 ### createSelectorCreator(memoizeFunc, ...memoizeOptions)
 
-Return a selectorCreator that creates selectors with a non-default memoizeFunc.
+`createSelectorCreator` can be used to make a custom `createSelector`.
+
+`memoizeFunc` overrides `defaultMemoizeFunc` with the memoization function of your choice.
 
 `...memoizeOptions` is a variadic number of configuration options that will be passsed to `memoizeFunc` inside `createSelectorSelector`:
 
 ```js
 
-let memoizedResultFunc = memoizeFunc(resultFunc, ...memoizeOptions);
+memoizedResultFunc = memoizeFunc(funcToMemoize, ...memoizeOptions);
 
 ```
 
-You can use createSelectorCreator to customize the `valueEquals` function for `defaultMemoizeFunc` like this:
+#### Customize `valueEquals` for `defaultMemoizeFunc`
 
 ```js
 import { createSelectorCreator, defaultMemoizeFunc } from 'reselect';
@@ -431,7 +438,7 @@ const mySelector = createDeepEqualSelector(
 );
 ```
 
-Using the memoize function from lodash for an unbounded cache:
+#### Use memoize function from lodash for an unbounded cache
 
 ```js
 import { createSelectorCreator } from 'reselect';
@@ -457,24 +464,78 @@ assert.equal(called, 2);
 
 ## FAQ
 
-### Why isn't my selector recomputing when the store state changes?
+### Q: Why isn't my selector recomputing when the store state changes?
 
-TODO: Assuming `createSelector`, probably because you are deeply mutating an object
+A: Check that your memoization strategy is compatible with your state updates. For example, if you created your selector with `createSelector` your update should produce a new object instead of mutating an existing one (see [here](#createselectorinputselectors-resultfn)).
 
-### Why is my selector recomputing when the store state stays the same?
+#### Will not work with selector created with `createSelector`
 
-TODO: Assuming `createSelector`, probably because you are creating a new object with the same values as previous
+```js
+import { ADD_TODO } from '../constants/ActionTypes';
 
-### Can I use Reselect without Redux?
+const initialState = [{
+  text: 'Use Redux',
+  completed: false,
+  id: 0
+}];
 
-Yes. Reselect has no dependencies on any other package, so although it was designed to be used with Redux it can be used independently. It is currently being used successfully in traditional Flux apps.
+export default function todos(state = initialState, action) {
+  switch (action.type) {
+  case ADD_TODO:
+    // BAD: mutating an existing object
+    return state.unshift(
+      id: state.reduce((maxId, todo) => Math.max(todo.id, maxId), -1) + 1,
+      completed: false,
+      text: action.text
+    };
+
+  default:
+    return state;
+  }
+}
+```
+
+#### Will work with selector created with `createSelector`
+
+```js
+import { ADD_TODO } from '../constants/ActionTypes';
+
+const initialState = [{
+  text: 'Use Redux',
+  completed: false,
+  id: 0
+}];
+
+export default function todos(state = initialState, action) {
+  switch (action.type) {
+  case ADD_TODO:
+    // GOOD: returning a new array each time
+    return [{
+      id: state.reduce((maxId, todo) => Math.max(todo.id, maxId), -1) + 1,
+      completed: false,
+      text: action.text
+    }, ...state];
+
+  default:
+    return state;
+  }
+}
+```
+
+### Q: Why is my selector recomputing when the store state stays the same?
+
+A: TODO: Assuming `createSelector`, probably because you are creating a new object with the same values as previous
+
+### Q: Can I use Reselect without Redux?
+
+A: Yes. Reselect has no dependencies on any other package, so although it was designed to be used with Redux it can be used independently. It is currently being used successfully in traditional Flux apps.
 
 ```js
 TODO: Example
 ```
 
 > If you create selectors using `createSelector` make sure the objects in your store are immutable.
-> See [here](#TODO) and [here](#TODO)
+> See [here](#createselectorinputselectors-resultfn)
 
 ### How do I create a selector that takes an argument?
 
@@ -537,6 +598,44 @@ const selector = createSelector(
 test("selector unit test", function() {
   assert.deepEqual(selector({a: 1, b: 2}), {c: 2, d: 6});
   assert.deepEqual(selector({a: 2, b: 3}), {c: 4, d: 9});
+});
+```
+
+It may also be useful to check that the memoization strategy for your selector works properly with your reducer (see [here](q-why-is-my-selector-recomputing-when-the-store-state-stays-the-same)).
+
+```js
+suite('selector', () => {
+  let state = {a: 1, b: 2};
+
+  const reducer = (state, action) => (
+    {
+      a: action(state.a),
+      b: action(state.b)
+    }
+  );
+
+  const selector = createSelector(
+    state => state.a,
+      state => state.b,
+      (a, b) => ({
+      c: a * 2,
+      d: b * 3
+    })
+  );
+
+  const plusOne = x => x + 1;
+  const id = x => x;
+
+  test("selector unit test", function() {
+    state = reducer(state, plusOne);
+    assert.deepEqual(selector(state), {c: 4, d: 9});
+    state = reducer(state, id);
+    assert.deepEqual(selector(state), {c: 4, d: 9});
+    assert.equal(selector.recomputes, 1);
+    state = reducer(state, plusOne);
+    assert.deepEqual(selector(state), {c: 6, d: 12});
+    assert.equal(selector.recomputes, 2);
+  });
 });
 ```
 
