@@ -49,9 +49,9 @@ export const totalSelector = createSelector(
   - [Can I use Reselect without Redux?](#q-can-i-use-reselect-without-redux)
   - [The default memoization function is rubbish, can I use a different one?](#q-the-default-memoization-function-is-rubbish-can-i-use-a-different-one)
   - [The default memoization cache size of 1 is rubbish, can I increase it?](#q-the-default-memoization-cache-size-of-1-is-rubbish-can-i-increase-it)
-  - [How do I test a selector?](#how-do-i-test-a-selector)
-  - [How do I create a selector that takes an argument? ](#how-do-i-create-a-selector-that-takes-an-argument)
-  - [How do I use Reselect with Immutable.js?](#how-do-i-use-reselect-with-immutablejs)
+  - [How do I test a selector?](#q-how-do-i-test-a-selector)
+  - [How do I create a selector that takes an argument? ](#q-how-do-i-create-a-selector-that-takes-an-argument)
+  - [How do I use Reselect with Immutable.js?](#q-how-do-i-use-reselect-with-immutablejs)
 - [License](#license)
 
 ## Installation
@@ -677,9 +677,9 @@ A: Sure. See [this example](#customize-valueequals-for-defaultmemoizefunc).
 
 A: You can. Check out [this example](#use-memoize-function-from-lodash-for-an-unbounded-cache).
 
-### How do I test a selector?
+### Q: How do I test a selector?
 
-For a given input, a selector should always produce the same output. For this reason they are simple to unit test.
+A: For a given input, a selector should always produce the same output. For this reason they are simple to unit test.
 
 ```js
 const selector = createSelector(
