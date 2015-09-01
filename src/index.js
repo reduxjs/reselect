@@ -30,13 +30,13 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
             },
             ...memoizeOptions
         );
-        
+
         const selector = (state, props, ...args) => {
             const params = dependencies.map(
                 dependency => dependency(state, props, ...args)
             );
             return memoizedResultFunc(...params);
-        }
+        };
 
         selector.recomputations = () => recomputations;
         return selector;
