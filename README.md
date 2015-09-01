@@ -44,11 +44,11 @@ export const totalSelector = createSelector(
   - [`defaultMemoizeFunc`](#defaultmemoizefuncfunc-valueequals--defaultvalueequals)
   - [`createSelectorCreator`](#createselectorcreatormemoizefunc-memoizeoptions)
 - [FAQ](#faq)
-  - [Why isn't my selector recomputing when the input state changes?](#why-isnt-my-selector-recomputing-when-the-input-state-changes)
-  - [Why is my selector recomputing when the input state stays the same?](#why-is-my-selector-recomputing-when-the-input-state-stays-the-same)
-  - [Can I use Reselect without Redux?](#can-i-use-reselect-without-redux)
-  - [The default memoization function is rubbish, can I use a different one?](#the-default-memoization-function-is-rubbish-can-i-use-a-different-one)
-  - [The default memoization cache size of 1 is rubbish, can I increase it?](#the-default-memoization-cache-size-of-1-is-rubbish-can-i-increase-it)
+  - [Why isn't my selector recomputing when the input state changes?](#q-why-isnt-my-selector-recomputing-when-the-input-state-changes)
+  - [Why is my selector recomputing when the input state stays the same?](#q-why-is-my-selector-recomputing-when-the-input-state-stays-the-same)
+  - [Can I use Reselect without Redux?](#q-can-i-use-reselect-without-redux)
+  - [The default memoization function is rubbish, can I use a different one?](#q-the-default-memoization-function-is-rubbish-can-i-use-a-different-one)
+  - [The default memoization cache size of 1 is rubbish, can I increase it?](#q-the-default-memoization-cache-size-of-1-is-rubbish-can-i-increase-it)
   - [How do I test a selector?](#how-do-i-test-a-selector)
   - [How do I create a selector that takes an argument? ](#how-do-i-create-a-selector-that-takes-an-argument)
   - [How do I use Reselect with Immutable.js?](#how-do-i-use-reselect-with-immutablejs)
@@ -651,9 +651,9 @@ A: Yes. Reselect has no dependencies on any other package, so although it was de
 > If you create selectors using `createSelector` make sure the objects in your store are immutable.
 > See [here](#createselectorinputselectors-resultfn)
 
-### How do I create a selector that takes an argument?
+### Q: How do I create a selector that takes an argument?
 
-Creating a factory function may be helpful:
+A: Creating a factory function may be helpful:
 
 ```js
 const expensiveItemSelectorFactory = minValue => {
@@ -671,11 +671,11 @@ const subtotalSelector = createSelector(
 
 ### Q: The default memoization function is rubbish, can I use a different one? 
 
-Sure. See [this example](#).
+A: Sure. See [this example](#customize-valueequals-for-defaultmemoizefunc).
 
 ### Q: The default memoization cache size of 1 is rubbish, can I increase it? 
 
-You can. Check out [this example](#).
+A: You can. Check out [this example](#use-memoize-function-from-lodash-for-an-unbounded-cache).
 
 ### How do I test a selector?
 
@@ -735,11 +735,11 @@ suite('selector', () => {
 });
 ```
 
-### How do I use Reselect with Immutable.js?
+### Q: How do I use Reselect with Immutable.js?
 
-Selectors created with `createSelector` should work just fine with Immutable.js data structures.
+A: Selectors created with `createSelector` should work just fine with Immutable.js data structures.
 
-If your selector is recomputing and you don't think the state has changed, make sure you are aware of which Immutable.js update methods *always* return a new object and which update methods only return a new object when the update actually *changes* the collection.
+If your selector is recomputing and you don't think the state has changed, make sure you are aware of which Immutable.js update methods **always** return a new object and which update methods only return a new object **when the collection actually changes**.
 
 ```js
 import Immutable from 'immutable';
@@ -758,7 +758,7 @@ newMap = myMap.map(a => a * 1); // map, reduce, filter and others always return 
 assert.notEqual(myMap, newMap);
 ```
 
-If a selector's input is updated by an operation that always returns a new object, it may be performing unnecessary recomputations. See [here](#q-why-is-my-selector-recomputing-when-the-input-state-stays-the-same) for a discussion on the pros and cons of using a deep equality check like `Immmutable.is` as the `valueEquals` function for a selector.
+If a selector's input is updated by an operation that always returns a new object, it may be performing unnecessary recomputations. See [here](#q-why-is-my-selector-recomputing-when-the-input-state-stays-the-same) for a discussion on the pros and cons of using a deep equality check like `Immmutable.is` to eliminate unnecessary recomputations.
 
 ## License
 
