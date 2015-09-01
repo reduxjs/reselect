@@ -671,11 +671,11 @@ const subtotalSelector = createSelector(
 
 ### Q: The default memoization function is rubbish, can I use a different one? 
 
-A: Sure. See [this example](#customize-valueequals-for-defaultmemoizefunc).
+A: We think it works great for a lot of use cases, but sure. See [this example](#customize-valueequals-for-defaultmemoizefunc).
 
 ### Q: The default memoization cache size of 1 is rubbish, can I increase it? 
 
-A: You can. Check out [this example](#use-memoize-function-from-lodash-for-an-unbounded-cache).
+A: We think it works great for a lot of use cases, but sure. Check out [this example](#use-memoize-function-from-lodash-for-an-unbounded-cache).
 
 ### Q: How do I test a selector?
 
