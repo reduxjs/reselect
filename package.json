@@ -1,6 +1,6 @@
 {
   "name": "reselect",
-  "version": "0.0.2",
+  "version": "1.0.0-alpha",
   "description": "Selectors for Redux Flux.",
   "main": "lib/index.js",
   "files": [
