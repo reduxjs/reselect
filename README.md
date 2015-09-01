@@ -248,7 +248,7 @@ export default connect(visibleTodosSelector)(App);
 
 ### Accessing React Props in Selectors
 
-It can be convenient to access props from a selector. In the following we extend the Todo List example to support multiple users. We would like to display the current user on the `TodoApp.js` screen. We will use React Router and pass the user in the URL params for `TodoApp.js`.
+It can be convenient to access props from a selector. In the following we extend the Todo List example to support multiple users. We would like to display the current user on the `TodoApp.js` screen. We will use React Router to pass the user parameter from the URL.
 
 #### containers/Root.js
 ```js
