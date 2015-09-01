@@ -47,6 +47,8 @@ export const totalSelector = createSelector(
   - [Why isn't my selector recomputing when the input state changes?](#why-isnt-my-selector-recomputing-when-the-input-state-changes)
   - [Why is my selector recomputing when the input state stays the same?](#why-is-my-selector-recomputing-when-the-input-state-stays-the-same)
   - [Can I use Reselect without Redux?](#can-i-use-reselect-without-redux)
+  - [The default memoization function is rubbish, can I use a different one?](#the-default-memoization-function-is-rubbish-can-i-use-a-different-one)
+  - [The default memoization cache size of 1 is rubbish, can I increase it?](#the-default-memoization-cache-size-of-1-is-rubbish-can-i-increase-it)
   - [How do I test a selector?](#how-do-i-test-a-selector)
   - [How do I create a selector that takes an argument? ](#how-do-i-create-a-selector-that-takes-an-argument)
   - [How do I use Reselect with Immutable.js?](#how-do-i-use-reselect-with-immutablejs)
@@ -416,6 +418,8 @@ const selectorWithProps = createSelector(
 
 ### defaultMemoizeFunc(func, valueEquals = defaultValueEquals)
 
+`defaultMemoizeFunc` memoizes the function passed in the func parameter.
+
 `defaultMemoizeFunc` (and by extension `createSelector`) has been designed to work with immutable data.
 
 `defaultMemoizeFunc` determines if an argument has changed by calling the valueEquals function. The `valueEquals` function is configurable. By default it checks for changes using reference equality:
@@ -433,7 +437,7 @@ function defaultValueEquals(currentVal, previousVal) {
 
 `createSelectorCreator` can be used to make a custom `createSelector`.
 
-`memoizeFunc` overrides `defaultMemoizeFunc` with the memoization function of your choice.
+`memoizeFunc` is a a memoization function to replace `defaultMemoizeFunc`.
 
 `...memoizeOptions` is a variadic number of configuration options that will be passsed to `memoizeFunc` inside `createSelectorSelector`:
 
@@ -442,6 +446,8 @@ function defaultValueEquals(currentVal, previousVal) {
 memoizedResultFunc = memoizeFunc(funcToMemoize, ...memoizeOptions);
 
 ```
+
+Here are some example of using `createSelectorCreator`:
 
 #### Customize `valueEquals` for `defaultMemoizeFunc`
 
@@ -662,6 +668,14 @@ const subtotalSelector = createSelector(
   items => items.reduce((acc, item) => acc + item.value, 0)
 );
 ```
+
+### Q: The default memoization function is rubbish, can I use a different one? 
+
+Sure. See [this example](#).
+
+### Q: The default memoization cache size of 1 is rubbish, can I increase it? 
+
+You can. Check out [this example](#).
 
 ### How do I test a selector?
 
