@@ -513,10 +513,9 @@ export default function todos(state = initialState, action) {
   switch (action.type) {
   case SET_COMPLETE:
     // BAD: mutating an existing object
-    state.forEach(todo => {
-      todo.completed = true;
+    state.forEach((val, index, arr) => {
+      arr[index].completed = true;
     });
-    
     return state;
 
   default:
