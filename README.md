@@ -496,7 +496,7 @@ assert.equal(called, 2);
 
 ### Q: Why isn't my selector recomputing when the input state changes?
 
-A: Check that your memoization function is compatible with your state update function (ie the reducer in Redux). For example, a selector created with `createSelector` will not work with a state update function that mutates an existing object instead of creating a new one each time (see [here](#createselectorinputselectors-resultfn)). As `createSelector` uses `===` to check if an input has changed, the selector will never recompute because the identity of the object never changes. Note that if you are using Redux, mutating the state object is **highly** discouraged and almost certainly a mistake.
+A: Check that your memoization function is compatible with your state update function (ie the reducer in Redux). For example, a selector created with `createSelector` will not work with a state update function that mutates an existing object instead of creating a new one each time. As `createSelector` uses `===` to check if an input has changed, the selector will never recompute because the identity of the object never changes. Note that if you are using Redux, mutating the state object is **highly** discouraged and almost certainly a mistake.
 
 The following example **will not** work with a selector created with `createSelector`:
 
