@@ -501,7 +501,7 @@ A: Check that your memoization function is compatible with your state update fun
 The following example **will not** work with a selector created with `createSelector`:
 
 ```js
-import { ADD_TODO } from '../constants/ActionTypes';
+import { SET_COMPLETE } from '../constants/ActionTypes';
 
 const initialState = [{
   text: 'Use Redux',
@@ -511,13 +511,13 @@ const initialState = [{
 
 export default function todos(state = initialState, action) {
   switch (action.type) {
-  case ADD_TODO:
+  case SET_COMPLETE:
     // BAD: mutating an existing object
-    return state.unshift(
-      id: state.reduce((maxId, todo) => Math.max(todo.id, maxId), -1) + 1,
-      completed: false,
-      text: action.text
-    };
+    state.forEach(todo => {
+      todo.completed = true;
+    });
+    
+    return state;
 
   default:
     return state;
@@ -528,7 +528,7 @@ export default function todos(state = initialState, action) {
 The following example **will** work with a selector created with `createSelector`:
 
 ```js
-import { ADD_TODO } from '../constants/ActionTypes';
+import { SET_COMPLETE } from '../constants/ActionTypes';
 
 const initialState = [{
   text: 'Use Redux',
@@ -697,7 +697,7 @@ test("selector unit test", function() {
 });
 ```
 
-It may also be useful to check that the memoization function for a selector works correctly with the state update function (ie the reducer in Redux). Each selector has a method `recomputations` that will return the number of times it has been recomputed. This method can be used to check if a state update required the selector to recompute.
+It may also be useful to check that the memoization function for a selector works correctly with the state update function (ie the reducer in Redux). Each selector has a method `recomputations` that will return the number of times it has been recomputed:
 
 ```js
 suite('selector', () => {
@@ -712,10 +712,10 @@ suite('selector', () => {
 
   const selector = createSelector(
     state => state.a,
-      state => state.b,
-      (a, b) => ({
-        c: a * 2,
-        d: b * 3
+    state => state.b,
+    (a, b) => ({
+      c: a * 2,
+      d: b * 3
     })
   );
 
