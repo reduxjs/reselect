@@ -6,6 +6,30 @@ Simple "selector" library for Redux inspired by getters in [NuclearJS](https://g
 * Selectors are efficient. A selector is not recomputed unless one of its arguments change.
 * Selectors are composable. They can be used as input to other selectors.
 
+```js
+import { createSelector } from 'reselect';
+
+const shopItemsSelector = state => state.shop.items;
+const taxPercentSelector = state => state.shop.taxPercent;
+
+const subtotalSelector = createSelector(
+  shopItemsSelector,
+  items => items.reduce((acc, item) => acc + item.value, 0)
+);
+
+const taxSelector = createSelector(
+  subtotalSelector,
+  taxPercentSelector,
+  (subtotal, taxPercent) => subtotal * (taxPercent / 100)
+);
+
+export const totalSelector = createSelector(
+  subtotalSelector,
+  taxSelector,
+  (subtotal, tax) => { return {total: subtotal + tax}}
+);
+```
+
 ## Table of Contents
 
 - [Installation](#installation)
@@ -466,9 +490,9 @@ assert.equal(called, 2);
 
 ### Q: Why isn't my selector recomputing when the input state changes?
 
-A: Check that your memoization strategy is compatible with your state updates. For example, if you created your selector with `createSelector` your update should produce a new object instead of mutating an existing one (see [here](#createselectorinputselectors-resultfn)).
+A: Check that your memoization function is compatible with your state update function (ie the reducer in Redux). For example, a selector created with `createSelector` will not work with a state update function that mutates an existing object instead of creating a new one each time (see [here](#createselectorinputselectors-resultfn)). As `createSelector` uses `===` to check if an input has changed, the selector will never recompute because the identity of the object never changes. Note that if you are using Redux, mutating the state object is **highly** discouraged and almost certainly a mistake.
 
-#### Will not work with selector created with `createSelector`
+The following example **will not** work with a selector created with `createSelector`:
 
 ```js
 import { ADD_TODO } from '../constants/ActionTypes';
@@ -495,7 +519,7 @@ export default function todos(state = initialState, action) {
 }
 ```
 
-#### Will work with selector created with `createSelector`
+The following example **will** work with a selector created with `createSelector`:
 
 ```js
 import { ADD_TODO } from '../constants/ActionTypes';
@@ -524,7 +548,7 @@ export default function todos(state = initialState, action) {
 
 ### Q: Why is my selector recomputing when the input state stays the same?
 
-A: Check that your memoization strategy is compatible with your state updates. A selector created with `createSelector` that recomputes unexpectedly may be receiving a new object whether the values it contains have updated or not.
+A: Check that your memoization funtion is compatible with your state update function (ie the reducer in Redux). For example, a selector created with `createSelector` that recomputes unexpectedly may be receiving a new object whether the values it contains have updated or not. As `createSelector` uses `===` to check if an input has changed, the selector will always recompute.
 
 ```js
 import { REMOVE_OLD } from '../constants/ActionTypes';
@@ -548,7 +572,7 @@ export default function todos(state = initialState, action) {
 }
 ```
 
-The following selector is going to recompute every time REMOVE_OLD is invoked because Array.filter always returns a new object. However, it is quite likely that the majority of the calls to REMOVE_OLD aren't actually going to change the list of todos, so the recomputation is unnecessary.
+The following selector is going to recompute every time REMOVE_OLD is invoked because Array.filter always returns a new object. However, in the majority of cases the the REMOVE_OLD action isn't going to change the list of todos so the recomputation is unnecessary.
 
 ```js
 import { createselector } from 'reselect';
@@ -563,7 +587,33 @@ export const visibletodosselector = createselector(
 );
 ```
 
-You can eliminate unnecessary recomputations by only returning a new object from the reducer when a deep equality check has found that the list of todos has actually changed. Alternatively, the default `valueEquals` function in the selector can be replaced by a deep equality check.
+You can eliminate unnecessary recomputations by returning a new object from the state update function only when a deep equality check has found that the list of todos has actually changed:
+
+```js
+import { REMOVE_OLD } from '../constants/ActionTypes';
+import { isEqual } from 'lodash';
+
+const initialState = [{
+  text: 'Use Redux',
+  completed: false,
+  id: 0,
+  timestamp: Date.now()
+}];
+
+export default function todos(state = initialState, action) {
+  switch (action.type) {
+  case REMOVE_OLD:
+    const updatedState =  state.filter(todo => {
+      return todo.timestamp + 30 * 24 * 60 * 60 * 1000 > Date.now();
+    });
+    return isEqual(updatedState, state) ? state : updatedState;
+  default:
+    return state;
+  }
+}
+```
+
+Alternatively, the default `valueEquals` function in the selector can be replaced by a deep equality check:
 
 ```js
 import { createSelectorCreator, defaultMemoizeFunc } from 'reselect';
@@ -586,7 +636,7 @@ const mySelector = createDeepEqualSelector(
 );
 ```
 
-Always check that the cost of an alernative `valueEquals` function is not greater than the cost of recomputing every time. Furthermore, if recomputing every time is the better option, also consider whether using Reselect is giving you any benefit over passing a plain `mapStateToProps` function to `connect`.
+Always check that the cost of an alernative `valueEquals` function or a deep equals check in the state update function is not greater than the cost of recomputing every time. Furthermore, if recomputing every time is the better option, also consider whether Reselect is giving you any benefit over passing a plain `mapStateToProps` function to `connect`.
 
 ### Q: Can I use Reselect without Redux?
 
@@ -633,7 +683,7 @@ test("selector unit test", function() {
 });
 ```
 
-It may also be useful to check that the memoization strategy for your selector works correctly with your state updates (see [here](#q-why-is-my-selector-recomputing-when-the-store-state-stays-the-same)).
+It may also be useful to check that the memoization function for a selector works correctly with the state update function (ie the reducer in Redux). Each selector has a method `recomputations` that will return the number of times it has been recomputed. This method can be used to check if a state update required the selector to recompute.
 
 ```js
 suite('selector', () => {
@@ -663,10 +713,10 @@ suite('selector', () => {
     assert.deepEqual(selector(state), {c: 4, d: 9});
     state = reducer(state, id);
     assert.deepEqual(selector(state), {c: 4, d: 9});
-    assert.equal(selector.recomputes, 1);
+    assert.equal(selector.recomputations(), 1);
     state = reducer(state, plusOne);
     assert.deepEqual(selector(state), {c: 6, d: 12});
-    assert.equal(selector.recomputes, 2);
+    assert.equal(selector.recomputations(), 2);
   });
 });
 ```
@@ -675,7 +725,7 @@ suite('selector', () => {
 
 Selectors created with `createSelector` should work just fine with Immutable.js data structures.
 
-If your selector is recomputing and you don't think the state has changed, make sure you are aware of which Immutable.js update operations always return a new object and which update operations only return a new object when the update changes the collection.
+If your selector is recomputing and you don't think the state has changed, make sure you are aware of which Immutable.js update methods *always* return a new object and which update methods only return a new object when the update actually *changes* the collection.
 
 ```js
 import Immutable from 'immutable';
@@ -694,7 +744,7 @@ newMap = myMap.map(a => a * 1); // map, reduce, filter and others always return 
 assert.notEqual(myMap, newMap);
 ```
 
-If your selector's input is updated by an operation that always returns a new object, you may be performing unnecessary recomputations. See [here](#q-why-is-my-selector-recomputing-when-the-input-state-stays-the-same) for a discussion on the pros and cons of using a deep equality check like `Immmutable.is` as the `valueEquals` function for a selector.
+If a selector's input is updated by an operation that always returns a new object, it may be performing unnecessary recomputations. See [here](#q-why-is-my-selector-recomputing-when-the-input-state-stays-the-same) for a discussion on the pros and cons of using a deep equality check like `Immmutable.is` as the `valueEquals` function for a selector.
 
 ## License
 

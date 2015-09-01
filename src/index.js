@@ -19,26 +19,26 @@ export function defaultMemoize(func, valuesEqual = defaultValuesEqual) {
 
 export function createSelectorCreator(memoize, ...memoizeOptions) {
     return (...funcs) => {
-        let memoizedResultFunc;
+        let recomputations = 0;
         const resultFunc = funcs.pop();
         const dependencies = Array.isArray(funcs[0]) ? funcs[0] : funcs;
 
-        function selector(state, props, ...args) {
+        const memoizedResultFunc = memoize(
+            (...args) => {
+                recomputations++;
+                return resultFunc(...args);
+            },
+            ...memoizeOptions
+        );
+        
+        const selector = (state, props, ...args) => {
             const params = dependencies.map(
                 dependency => dependency(state, props, ...args)
             );
             return memoizedResultFunc(...params);
         }
 
-        memoizedResultFunc = memoize(
-            (...args) => {
-                selector.recomputes++;
-                return resultFunc(...args);
-            },
-            ...memoizeOptions
-        );
-
-        selector.recomputes = 0;
+        selector.recomputations = () => recomputations;
         return selector;
     };
 }

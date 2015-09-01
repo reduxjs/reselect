@@ -14,9 +14,9 @@ suite('selector', () => {
         );
         assert.equal(selector({a: 1}), 1);
         assert.equal(selector({a: 1}), 1);
-        assert.equal(selector.recomputes, 1);
+        assert.equal(selector.recomputations(), 1);
         assert.equal(selector({a: 2}), 2);
-        assert.equal(selector.recomputes, 2);
+        assert.equal(selector.recomputations(), 2);
     });
     test('basic selector multiple keys', () => {
         const selector = createSelector(
@@ -27,11 +27,11 @@ suite('selector', () => {
         const state1 = {a: 1, b: 2};
         assert.equal(selector(state1), 3);
         assert.equal(selector(state1), 3);
-        assert.equal(selector.recomputes, 1);
+        assert.equal(selector.recomputations(), 1);
         const state2 = {a: 3, b: 2};
         assert.equal(selector(state2), 5);
         assert.equal(selector(state2), 5);
-        assert.equal(selector.recomputes, 2);
+        assert.equal(selector.recomputations(), 2);
     });
     test('memoized composite arguments', () => {
         const selector = createSelector(
@@ -41,10 +41,10 @@ suite('selector', () => {
         const state1 = { sub: { a: 1 } };
         assert.deepEqual(selector(state1), { a: 1 });
         assert.deepEqual(selector(state1), { a: 1 });
-        assert.equal(selector.recomputes, 1);
+        assert.equal(selector.recomputations(), 1);
         const state2 = { sub: { a: 2 } };
         assert.deepEqual(selector(state2), { a: 2 });
-        assert.equal(selector.recomputes, 2);
+        assert.equal(selector.recomputations(), 2);
     });
     test('first argument can be an array', () => {
         const selector = createSelector(
@@ -55,9 +55,9 @@ suite('selector', () => {
         );
         assert.equal(selector({a: 1, b: 2}), 3);
         assert.equal(selector({a: 1, b: 2}), 3);
-        assert.equal(selector.recomputes, 1);
+        assert.equal(selector.recomputations(), 1);
         assert.equal(selector({a: 3, b: 2}), 5);
-        assert.equal(selector.recomputes, 2);
+        assert.equal(selector.recomputations(), 2);
     });
     test('can accept props', () => {
         let called = 0;
@@ -84,10 +84,10 @@ suite('selector', () => {
         const state1 = {sub: { value: 1}};
         assert.equal(selector2(state1), 1);
         assert.equal(selector2(state1), 1);
-        assert.equal(selector2.recomputes, 1);
+        assert.equal(selector2.recomputations(), 1);
         const state2 = {sub: { value: 2}};
         assert.equal(selector2(state2), 2);
-        assert.equal(selector2.recomputes, 2);
+        assert.equal(selector2.recomputations(), 2);
     });
     test('chained selector with props', () => {
         const selector1 = createSelector(
@@ -103,10 +103,10 @@ suite('selector', () => {
         const state1 = {sub: { value: 1}};
         assert.equal(selector2(state1, {x: 100, y: 200}), 301);
         assert.equal(selector2(state1, {x: 100, y: 200}), 301);
-        assert.equal(selector2.recomputes, 1);
+        assert.equal(selector2.recomputations(), 1);
         const state2 = {sub: { value: 2}};
         assert.equal(selector2(state2, {x: 100, y: 201}), 303);
-        assert.equal(selector2.recomputes, 2);
+        assert.equal(selector2.recomputations(), 2);
     });
     test('override valueEquals', () => {
         // a rather absurd equals operation we can verify in tests
@@ -120,9 +120,9 @@ suite('selector', () => {
         );
         assert.equal(selector({a: 1}), 1);
         assert.equal(selector({a: 2}), 1); // yes, really true
-        assert.equal(selector.recomputes, 1);
+        assert.equal(selector.recomputations(), 1);
         assert.equal(selector({a: 'A'}), 'A');
-        assert.equal(selector.recomputes, 2);
+        assert.equal(selector.recomputations(), 2);
     });
     test('custom memoize', () => {
         const customSelectorCreator = createSelectorCreator(lodashMemoize, JSON.stringify);
@@ -133,9 +133,9 @@ suite('selector', () => {
         );
         assert.equal(selector({a: 1, b: 2}), 3);
         assert.equal(selector({a: 1, b: 2}), 3);
-        assert.equal(selector.recomputes, 1);
+        assert.equal(selector.recomputations(), 1);
         assert.equal(selector({a: 2, b: 3}), 5);
-        assert.equal(selector.recomputes, 2);
+        assert.equal(selector.recomputations(), 2);
         // TODO: Check correct memoize function was called
     });
     test('exported memoize', () => {
