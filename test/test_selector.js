@@ -108,6 +108,25 @@ suite('selector', () => {
         assert.equal(selector2(state2, {x: 100, y: 201}), 303);
         assert.equal(selector2.recomputations(), 2);
     });
+    test('chained selector with variadic args', () => {
+        const selector1 = createSelector(
+            state => state.sub,
+            (state, props, another) => props.x + another,
+            (sub, x) => ({sub, x})
+        );
+        const selector2 = createSelector(
+            selector1,
+            (state, props) => props.y,
+            (param, y) => param.sub.value + param.x + y
+        );
+        const state1 = {sub: { value: 1}};
+        assert.equal(selector2(state1, {x: 100, y: 200}, 100), 401);
+        assert.equal(selector2(state1, {x: 100, y: 200}, 100), 401);
+        assert.equal(selector2.recomputations(), 1);
+        const state2 = {sub: { value: 2}};
+        assert.equal(selector2(state2, {x: 100, y: 201}, 200), 503);
+        assert.equal(selector2.recomputations(), 2);
+    });
     test('override valueEquals', () => {
         // a rather absurd equals operation we can verify in tests
         const createOverridenSelector = createSelectorCreator(
