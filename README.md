@@ -498,26 +498,27 @@ assert.equal(called, 2);
 
 A: Check that your memoization function is compatible with your state update function (ie the reducer if you are using Redux). For example, a selector created with `createSelector` will not work with a state update function that mutates an existing object instead of creating a new one each time. As `createSelector` uses `===` to check if an input has changed, the selector will never recompute because the identity of the object never changes. Note that if you are using Redux, mutating the state object is **highly** discouraged and almost certainly a mistake.
 
-The following example **will not** work with a selector created with `createSelector`:
+The following example defines a simple selector that determines if the first todo item in an array of todos has been completed:
 
 ```js
-// todo: replace this example with a more realistic mistake
-import { SET_COMPLETE } from '../constants/ActionTypes';
+const isFirstTodoCompleteSelector = createSelector(
+  state => state.todos[0],
+  todo => todo && todo.completed
+);
+```
 
-const initialState = [{
-  text: 'Use Redux',
-  completed: false,
-  id: 0
-}];
+The following example **will not** work with `isFirstTodoCompleteSelector`:
 
+```js
 export default function todos(state = initialState, action) {
   switch (action.type) {
-  case SET_COMPLETE:
+  case COMPLETE_ALL:
+    const areAllMarked = state.every(todo => todo.completed);
     // BAD: mutating an existing object
-    state.forEach((val, index, arr) => {
-      arr[index].completed = true;
+    return state.map(todo => {
+      todo.completed = !areAllMarked;
+      return todo;
     });
-    return state;
 
   default:
     return state;
@@ -525,26 +526,17 @@ export default function todos(state = initialState, action) {
 }
 ```
 
-The following example **will** work with a selector created with `createSelector`:
+The following example **will** work with `isFirstTodoCompleteSelector`:
 
 ```js
-import { SET_COMPLETE } from '../constants/ActionTypes';
-
-const initialState = [{
-  text: 'Use Redux',
-  completed: false,
-  id: 0
-}];
-
 export default function todos(state = initialState, action) {
   switch (action.type) {
-  case ADD_TODO:
-    // GOOD: returning a new array each time
-    return [{
-      id: state.reduce((maxId, todo) => Math.max(todo.id, maxId), -1) + 1,
-      completed: false,
-      text: action.text
-    }, ...state];
+  case COMPLETE_ALL:
+    const areAllMarked = state.every(todo => todo.completed);
+    // GOOD: returning a new object each time with Object.assign
+    return state.map(todo => Object.assign({}, todo, {
+      completed: !areAllMarked
+    }));
 
   default:
     return state;
@@ -578,7 +570,7 @@ export default function todos(state = initialState, action) {
 }
 ```
 
-The following selector is going to recompute every time REMOVE_OLD is invoked because Array.filter always returns a new object. However, in the majority of cases the the REMOVE_OLD action isn't going to change the list of todos so the recomputation is unnecessary.
+The following selector is going to recompute every time REMOVE_OLD is invoked because Array.filter always returns a new object. However, in the majority of cases the the REMOVE_OLD action will not change the list of todos so the recomputation is unnecessary.
 
 ```js
 import { createselector } from 'reselect';
@@ -642,7 +634,7 @@ const mySelector = createDeepEqualSelector(
 );
 ```
 
-Always check that the cost of an alernative `valueEquals` function or a deep equals check in the state update function is not greater than the cost of recomputing every time. Furthermore, if recomputing every time is the better option, also consider whether Reselect is giving you any benefit over passing a plain `mapStateToProps` function to `connect`.
+Always check that the cost of an alernative `valueEquals` function or a deep equals check in the state update function is not greater than the cost of recomputing every time. Furthermore, if recomputing every time is the better option, consider whether Reselect is giving you any benefit over passing a plain `mapStateToProps` function to `connect`.
 
 ### Q: Can I use Reselect without Redux?
 
@@ -697,7 +689,7 @@ test("selector unit test", function() {
 });
 ```
 
-It may also be useful to check that the memoization function for a selector works correctly with the state update function (ie the reducer if you are using Redux). Each selector has a method `recomputations` that will return the number of times it has been recomputed:
+It may also be useful to check that the memoization function for a selector works correctly with the state update function (ie the reducer if you are using Redux). Each selector has a `recomputations` method that will return the number of times it has been recomputed:
 
 ```js
 suite('selector', () => {
