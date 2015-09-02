@@ -544,6 +544,8 @@ export default function todos(state = initialState, action) {
 }
 ```
 
+In order to make the first example work you would need to use `createSelectorCreator` to change the memoization function. See [here](#use-memoize-function-from-lodash-for-an-unbounded-cache) and [here](#customize-valueequals-for-defaultmemoizefunc) for examples. 
+
 ### Q: Why is my selector recomputing when the input state stays the same?
 
 A: Check that your memoization funtion is compatible with your state update function (ie the reducer if you are using Redux). For example, a selector created with `createSelector` that recomputes unexpectedly may be receiving a new object whether the values it contains have updated or not. As `createSelector` uses `===` to check if an input has changed, the selector will always recompute.
@@ -634,7 +636,7 @@ const mySelector = createDeepEqualSelector(
 );
 ```
 
-Always check that the cost of an alernative `valueEquals` function or a deep equals check in the state update function is not greater than the cost of recomputing every time. Furthermore, if recomputing every time is the better option, consider whether Reselect is giving you any benefit over passing a plain `mapStateToProps` function to `connect`.
+Always check that the cost of an alernative `valueEquals` function or a deep equals check in the state update function is not greater than the cost of recomputing every time. Furthermore, if recomputing every time is the better option, you should think about whether Reselect is giving you any benefit over passing a plain `mapStateToProps` function to `connect`.
 
 ### Q: Can I use Reselect without Redux?
 
