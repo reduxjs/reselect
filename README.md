@@ -453,7 +453,7 @@ Here are some example of using `createSelectorCreator`:
 
 ```js
 import { createSelectorCreator, defaultMemoizeFunc } from 'reselect';
-import { isEqual } from 'lodash';
+import isEqual from 'lodash.isEqual';
 
 // create a "selector creator" that uses lodash.isEqual instead of ===
 const createDeepEqualSelector = createSelectorCreator(
@@ -597,7 +597,7 @@ You can eliminate unnecessary recomputations by returning a new object from the 
 
 ```js
 import { REMOVE_OLD } from '../constants/ActionTypes';
-import { isEqual } from 'lodash';
+import isEqual from 'lodash.isEqual';
 
 const initialState = [{
   text: 'Use Redux',
@@ -623,7 +623,7 @@ Alternatively, the default `valueEquals` function in the selector can be replace
 
 ```js
 import { createSelectorCreator, defaultMemoizeFunc } from 'reselect';
-import { isEqual } from 'lodash';
+import isEqual from 'lodash.isEqual';
 
 const todosSelector = state => state.todos;
 
