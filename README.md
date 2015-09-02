@@ -248,136 +248,7 @@ export default connect(visibleTodosSelector)(App);
 
 ### Accessing React Props in Selectors
 
-It can be convenient to access props from a selector. In the following we extend the Todo List example to support multiple users. We would like to display the current user on the `TodoApp.js` screen. We will use React Router to pass the user parameter from the URL.
-
-#### containers/Root.js
-```js
-import React, { Component, PropTypes } from 'react';
-import { createStore } from 'redux';
-import { Provider } from 'react-redux';
-import { Router, Route } from 'react-router';
-import TodoApp from './TodoApp';
-import Users from './Users';
-import rootReducer from '../reducers';
-
-const store = createStore(rootReducer);
-
-export default class Root extends Component {
-  render() {
-    return (
-      <div>
-        <Provider store={store}>
-          {() =>
-            <Router history={this.props.history}>
-              <Route path="/users" component={Users} />
-              <Route path="/app/:user" component={TodoApp} />
-            </Router>
-          }
-        </Provider>
-      </div>
-    );
-  }
-}
-
-Root.propTypes = {
-  history: PropTypes.object.isRequired,
-};
-
-```
-
-A user field is added to `visibleTodosSelector` which is collected from the params prop.
-
-#### `selectors/TodoSelectors.js`
-
-```js
-import { createSelector } from 'reselect';
-import { VisibilityFilters } from './actions';
-
-function selectTodos(todos, filter) {
-  switch (filter) {
-  case VisibilityFilters.SHOW_ALL:
-    return todos;
-  case VisibilityFilters.SHOW_COMPLETED:
-    return todos.filter(todo => todo.completed);
-  case VisibilityFilters.SHOW_ACTIVE:
-    return todos.filter(todo => !todo.completed);
-  }
-}
-
-const visibilityFilterSelector = state => state.visibilityFilter;
-const todosSelector = state => state.todos;
-
-// ownProps is passed as second parameter to selector dependencies
-const userFromPropsSelector = (_, ownProps) => ownProps.params.user,
-
-export const visibleTodosSelector = createSelector(
-  visibilityFilterSelector,
-  todosSelector,
-  userFromPropsSelector, // pass as a normal selector dependency
-  (visibilityFilter, todos, user) => {
-    return {
-      visibleTodos: selectTodos(todos, visibilityFilter),
-      visibilityFilter,
-      user
-    };
-  }
-);
-```
-
-A change is made to TodoApp.js to get the user from the props and display it on the screen.
-
-#### `containers/TodoApp.js`
-
-```js
-import React, { Component, PropTypes } from 'react';
-import { connect } from 'react-redux';
-import { addTodo, completeTodo, setVisibilityFilter } from '../actions';
-import AddTodo from '../components/AddTodo';
-import TodoList from '../components/TodoList';
-import Footer from '../components/Footer';
-import { visibleTodosSelector } from '../selectors/todoSelectors.js';
-
-class App extends Component {
-  render() {
-    // Injected by connect() call:
-    const { dispatch, visibleTodos, visibilityFilter, user } = this.props;
-    return (
-      <div>
-        <div>Current User: {user}</div>
-        <AddTodo
-          onAddClick={text =>
-            dispatch(addTodo(text))
-          } />
-        <TodoList
-          todos={this.props.visibleTodos}
-          onTodoClick={index =>
-            dispatch(completeTodo(index))
-          } />
-        <Footer
-          filter={visibilityFilter}
-          onFilterChange={nextFilter =>
-            dispatch(setVisibilityFilter(nextFilter))
-          } />
-      </div>
-    );
-  }
-}
-
-App.propTypes = {
-  visibleTodos: PropTypes.arrayOf(PropTypes.shape({
-    text: PropTypes.string.isRequired,
-    completed: PropTypes.bool.isRequired
-  })),
-  visibilityFilter: PropTypes.oneOf([
-    'SHOW_ALL',
-    'SHOW_COMPLETED',
-    'SHOW_ACTIVE'
-  ]).isRequired
-};
-
-// Pass the selector to the connect component
-export default connect(visibleTodosSelector)(App);
-```
+TODO
 
 ## API
 
@@ -496,7 +367,7 @@ assert.equal(called, 2);
 
 ### Q: Why isn't my selector recomputing when the input state changes?
 
-A: Check that your memoization function is compatible with your state update function (ie the reducer if you are using Redux). For example, a selector created with `createSelector` will not work with a state update function that mutates an existing object instead of creating a new one each time. As `createSelector` uses `===` to check if an input has changed, the selector will never recompute because the identity of the object never changes. Note that if you are using Redux, mutating the state object is **highly** discouraged and almost certainly a mistake.
+A: Check that your memoization function is compatible with your state update function (ie the reducer if you are using Redux). For example, a selector created with `createSelector` will not work with a state update function that mutates an existing object instead of creating a new one each time. As `createSelector` uses `===` to check if an input has changed, the selector will never recompute because the identity of the object never changes. Note that if you are using Redux, mutating the state object is **highly** discouraged and [almost certainly a mistake](http://rackt.github.io/redux/docs/Troubleshooting.html).
 
 The following example defines a simple selector that determines if the first todo item in an array of todos has been completed:
 
@@ -543,8 +414,6 @@ export default function todos(state = initialState, action) {
   }
 }
 ```
-
-In order to make the first example work you would need to use `createSelectorCreator` to change the memoization function. See [here](#use-memoize-function-from-lodash-for-an-unbounded-cache) and [here](#customize-valueequals-for-defaultmemoizefunc) for examples. 
 
 ### Q: Why is my selector recomputing when the input state stays the same?
 
