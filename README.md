@@ -47,8 +47,8 @@ export const totalSelector = createSelector(
   - [Why isn't my selector recomputing when the input state changes?](#q-why-isnt-my-selector-recomputing-when-the-input-state-changes)
   - [Why is my selector recomputing when the input state stays the same?](#q-why-is-my-selector-recomputing-when-the-input-state-stays-the-same)
   - [Can I use Reselect without Redux?](#q-can-i-use-reselect-without-redux)
-  - [The default memoization function is rubbish, can I use a different one?](#q-the-default-memoization-function-is-rubbish-can-i-use-a-different-one)
-  - [The default memoization cache size of 1 is rubbish, can I increase it?](#q-the-default-memoization-cache-size-of-1-is-rubbish-can-i-increase-it)
+  - [The default memoization function is no good, can I use a different one?](#q-the-default-memoization-function-is-no-good-can-i-use-a-different-one)
+  - [The default memoization cache size of 1 is no good, can I increase it?](#q-the-default-memoization-cache-size-of-1-is-no-good-can-i-increase-it)
   - [How do I test a selector?](#q-how-do-i-test-a-selector)
   - [How do I create a selector that takes an argument? ](#q-how-do-i-create-a-selector-that-takes-an-argument)
   - [How do I use Reselect with Immutable.js?](#q-how-do-i-use-reselect-with-immutablejs)
@@ -61,7 +61,7 @@ export const totalSelector = createSelector(
 
 ### Motivation for Memoized Selectors
 
-Here is an excerpt from the Redux [Todos List example](https://github.com/docs/basics/UsageWithReact.md):
+Here is an excerpt from the [Redux Todos List example](https://github.com/docs/basics/UsageWithReact.md):
 
 #### `containers/App.js`
 
@@ -204,7 +204,7 @@ import { addTodo, completeTodo, setVisibilityFilter } from '../actions';
 import AddTodo from '../components/AddTodo';
 import TodoList from '../components/TodoList';
 import Footer from '../components/Footer';
-import { visibleTodosSelector } from '../selectors/todoSelectors.js';
+import { visibleTodosSelector } from '../selectors/todoSelectors';
 
 class App extends Component {
   render() {
@@ -274,6 +274,8 @@ React.render(
 ```
 
 Props are passed as the second argument to selectors hooked up to `connect`. `maxTodosSelector` ignores the state argument and returns `props.maxTodos` for use in the result function.
+
+#### `selectors/todoSelectors.js`
 
 ```js
 import { createSelector } from 'reselect';
@@ -605,11 +607,11 @@ const subtotalSelector = createSelector(
 );
 ```
 
-### Q: The default memoization function is rubbish, can I use a different one? 
+### Q: The default memoization function is no good, can I use a different one? 
 
 A: We think it works great for a lot of use cases, but sure. See [this example](#customize-equalitycheck-for-defaultmemoize).
 
-### Q: The default memoization cache size of 1 is rubbish, can I increase it? 
+### Q: The default memoization cache size of 1 is no good, can I increase it? 
 
 A: We think it works great for a lot of use cases, but sure. Check out [this example](#use-memoize-function-from-lodash-for-an-unbounded-cache).
 
