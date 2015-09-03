@@ -249,6 +249,10 @@ export default connect(visibleTodosSelector)(App);
 
 ### Accessing React Props in Selectors
 
+#### `index.js`
+
+A selector hooked up to `connect` can also access the props of the component wrapped by `connect`. In the following example, `App` takes a prop that limits the maximum number of Todos that are displayed at any one time.
+
 ```js
 import React from 'react';
 import { createStore } from 'redux';
@@ -268,6 +272,8 @@ React.render(
   rootElement
 );
 ```
+
+Props are passed as the second argument to selectors hooked up to `connect`. `maxTodosSelector` ignores the state argument and returns `props.maxTodos` for use in the result function.
 
 ```js
 import { createSelector } from 'reselect';
