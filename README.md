@@ -163,7 +163,8 @@ const visibilityFilterSelector = state => state.visibilityFilter;
 const todosSelector = state => state.todos;
 
 export const visibleTodosSelector = createSelector(
-  [visibilityFilterSelector, todosSelector],
+  visibilityFilterSelector,
+  todosSelector,
   (visibilityFilter, todos) => {
     return {
       visibleTodos: selectTodos(todos, visibilityFilter),
@@ -248,7 +249,58 @@ export default connect(visibleTodosSelector)(App);
 
 ### Accessing React Props in Selectors
 
-TODO
+```js
+import React from 'react';
+import { createStore } from 'redux';
+import { Provider } from 'react-redux';
+import App from './containers/App';
+import todoApp from './reducers';
+
+let store = createStore(todoApp);
+
+let rootElement = document.getElementById('root');
+React.render(
+  // The child must be wrapped in a function
+  // to work around an issue in React 0.13.
+  <Provider store={store}>
+    {() => <App maxTodos={5}/>}
+  </Provider>,
+  rootElement
+);
+```
+
+```js
+import { createSelector } from 'reselect';
+import { VisibilityFilters } from './actions';
+
+function selectTodos(todos, filter) {
+  switch (filter) {
+  case VisibilityFilters.SHOW_ALL:
+    return todos;
+  case VisibilityFilters.SHOW_COMPLETED:
+    return todos.filter(todo => todo.completed);
+  case VisibilityFilters.SHOW_ACTIVE:
+    return todos.filter(todo => !todo.completed);
+  }
+}
+
+const visibilityFilterSelector = state => state.visibilityFilter;
+const todosSelector = state => state.todos;
+const maxTodosSelector = (_, props) => props.maxTodos;
+
+export const visibleTodosSelector = createSelector(
+  visibilityFilterSelector, 
+  todosSelector,
+  maxTodosSelector,
+  (visibilityFilter, todos, maxTodos) => {
+    const visibleTodos = selectTodos(todos, visibilityFilter).slice(0, maxTodos);
+    return {
+      visibleTodos,
+      visibilityFilter
+    };
+  }
+);
+```
 
 ## API
 
