@@ -349,9 +349,11 @@ const selectorWithProps = createSelector(
 
 `defaultMemoize` memoizes the function passed in the func parameter.
 
-`defaultMemoize` (and by extension `createSelector`) has been designed to work with immutable data.
+`defaultMemoize` is the memoize function used by `createSelector` and has been designed to work with immutable data.
 
-`defaultMemoize` determines if an argument has changed by calling the equalityCheck function. The `equalityCheck` function is configurable. By default it checks for changes using reference equality:
+`defaultMemoize` has a cache size of 1. This means it always recalculates when an argument changes, as it only stores the result for preceding value of the argument.
+
+`defaultMemoize` determines if an argument has changed by calling the `equalityCheck` function. The `equalityCheck` function is configurable. By default it checks for changes using reference equality:
 
 ```js
 function defaultEqualityCheck(currentVal, previousVal) {
@@ -359,24 +361,35 @@ function defaultEqualityCheck(currentVal, previousVal) {
 }
 ```
 
-`defaultMemoize` has a cache size of 1. This means it always recalculates when an argument changes, as it only stores the result for preceding value of the argument.
+### createSelectorCreator(memoize, ...memoizeOptions)
 
+`createSelectorCreator` can be used to make a custom `createSelector` by customizing the memoize function.
 
-### createSelectorCreator(memoizeFunc, ...memoizeOptions)
+`memoize` is the memoization function to replace `defaultMemoize`. 
 
-`createSelectorCreator` can be used to make a custom `createSelector`.
-
-`memoizeFunc` is a a memoization function to replace `defaultMemoize`.
-
-`...memoizeOptions` is a variadic number of configuration options that will be passsed to `memoizeFunc` inside `createSelectorSelector`:
+`...memoizeOptions` is a variadic number of configuration options to be passsed to `memoizeFunc`. Here is an example of how this works:
 
 ```js
+const customSelectorCreator = createSelectorCreator(
+  customMemoize, // function to be used to memoize resultFunc
+  option1, // option1 will be passed as second argument to customMemoize
+  option2 // option2 will be passed as third argument to customMemoize
+);
 
-memoizedResultFunc = memoizeFunc(funcToMemoize, ...memoizeOptions);
-
+const customSelector = customSelectorCreator(
+  input1,
+  input2,
+  resultFunc // resultFunc will be passed as first argument to customMemoize
+);
 ```
 
-Here are some example of using `createSelectorCreator`:
+Internally `customSelectorCreator` calls the memoize function as follows:
+
+```js
+customMemoize(resultFunc, option1, option2);
+```
+
+Here are some examples of `createSelectorCreator`:
 
 #### Customize `equalityCheck` for `defaultMemoize`
 
