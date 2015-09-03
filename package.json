@@ -1,10 +1,12 @@
 {
   "name": "reselect",
-  "version": "1.0.0-alpha",
-  "description": "Selectors for Redux Flux.",
+  "version": "1.0.0-alpha-1",
+  "description": "Selectors for Redux.",
   "main": "lib/index.js",
+  "jsnext:main": "src/index.js",
   "files": [
     "lib",
+    "src",
     "README.md",
     "LICENSE",
     "package.json"
