@@ -41,7 +41,7 @@ export const totalSelector = createSelector(
   - [Accessing React Props in Selectors](#accessing-react-props-in-selectors)
 - [API](#api)
   - [`createSelector`](#createselectorinputselectors-resultfn)
-  - [`defaultMemoizeFunc`](#defaultmemoizefuncfunc-valueequals--defaultvalueequals)
+  - [`defaultMemoize`](#defaultmemoize-equalitycheck--defaultequalitycheck)
   - [`createSelectorCreator`](#createselectorcreatormemoizefunc-memoizeoptions)
 - [FAQ](#faq)
   - [Why isn't my selector recomputing when the input state changes?](#q-why-isnt-my-selector-recomputing-when-the-input-state-changes)
@@ -345,28 +345,28 @@ const selectorWithProps = createSelector(
 );
 ```
 
-### defaultMemoizeFunc(func, valueEquals = defaultValueEquals)
+### defaultMemoize(func, equalityCheck = defaultEqualityCheck)
 
-`defaultMemoizeFunc` memoizes the function passed in the func parameter.
+`defaultMemoize` memoizes the function passed in the func parameter.
 
-`defaultMemoizeFunc` (and by extension `createSelector`) has been designed to work with immutable data.
+`defaultMemoize` (and by extension `createSelector`) has been designed to work with immutable data.
 
-`defaultMemoizeFunc` determines if an argument has changed by calling the valueEquals function. The `valueEquals` function is configurable. By default it checks for changes using reference equality:
+`defaultMemoize` determines if an argument has changed by calling the equalityCheck function. The `equalityCheck` function is configurable. By default it checks for changes using reference equality:
 
 ```js
-function defaultValueEquals(currentVal, previousVal) {
+function defaultEqualityCheck(currentVal, previousVal) {
   return currentVal === previousVal;
 }
 ```
 
-`defaultMemoizeFunc` has a cache size of 1. This means it always recalculates when an argument changes, as it only stores the result for preceding value of the argument.
+`defaultMemoize` has a cache size of 1. This means it always recalculates when an argument changes, as it only stores the result for preceding value of the argument.
 
 
 ### createSelectorCreator(memoizeFunc, ...memoizeOptions)
 
 `createSelectorCreator` can be used to make a custom `createSelector`.
 
-`memoizeFunc` is a a memoization function to replace `defaultMemoizeFunc`.
+`memoizeFunc` is a a memoization function to replace `defaultMemoize`.
 
 `...memoizeOptions` is a variadic number of configuration options that will be passsed to `memoizeFunc` inside `createSelectorSelector`:
 
@@ -378,15 +378,15 @@ memoizedResultFunc = memoizeFunc(funcToMemoize, ...memoizeOptions);
 
 Here are some example of using `createSelectorCreator`:
 
-#### Customize `valueEquals` for `defaultMemoizeFunc`
+#### Customize `equalityCheck` for `defaultMemoize`
 
 ```js
-import { createSelectorCreator, defaultMemoizeFunc } from 'reselect';
+import { createSelectorCreator, defaultMemoize } from 'reselect';
 import isEqual from 'lodash.isEqual';
 
 // create a "selector creator" that uses lodash.isEqual instead of ===
 const createDeepEqualSelector = createSelectorCreator(
-  defaultMemoizeFunc,
+  defaultMemoize,
   isEqual
 );
 
@@ -425,7 +425,7 @@ assert.equal(called, 2);
 
 ### Q: Why isn't my selector recomputing when the input state changes?
 
-A: Check that your memoization function is compatible with your state update function (ie the reducer if you are using Redux). For example, a selector created with `createSelector` will not work with a state update function that mutates an existing object instead of creating a new one each time. As `createSelector` uses `===` to check if an input has changed, the selector will never recompute because the identity of the object never changes. Note that if you are using Redux, mutating the state object is **highly** discouraged and [almost certainly a mistake](http://rackt.github.io/redux/docs/Troubleshooting.html).
+A: Check that your memoization function is compatible with your state update function (ie the reducer if you are using Redux). For example, a selector created with `createSelector` will not work with a state update function that mutates an existing object instead of creating a new one each time. As `createSelector` uses `===` to check if an input has changed, the selector will never recompute because the identity of the object never changes. Note that if you are using Redux, mutating the state object is [almost certainly a mistake](http://rackt.github.io/redux/docs/Troubleshooting.html).
 
 The following example defines a simple selector that determines if the first todo item in an array of todos has been completed:
 
@@ -472,6 +472,8 @@ export default function todos(state = initialState, action) {
   }
 }
 ```
+
+If you are not using Redux and have a requirement to work with mutable data, you can use `createSelectorCreator` to customize the memoization function to use a different equality check. See [here](#use-memoize-function-from-lodash-for-an-unbounded-cache) and [here](#customize-equalitycheck-for-defaultmemoize) for examples. 
 
 ### Q: Why is my selector recomputing when the input state stays the same?
 
@@ -540,17 +542,17 @@ export default function todos(state = initialState, action) {
 }
 ```
 
-Alternatively, the default `valueEquals` function in the selector can be replaced by a deep equality check:
+Alternatively, the default `equalityCheck` function in the selector can be replaced by a deep equality check:
 
 ```js
-import { createSelectorCreator, defaultMemoizeFunc } from 'reselect';
+import { createSelectorCreator, defaultMemoize } from 'reselect';
 import isEqual from 'lodash.isEqual';
 
 const todosSelector = state => state.todos;
 
 // create a "selector creator" that uses lodash.isEqual instead of ===
 const createDeepEqualSelector = createSelectorCreator(
-  defaultMemoizeFunc,
+  defaultMemoize,
   isEqual
 );
 
@@ -563,7 +565,7 @@ const mySelector = createDeepEqualSelector(
 );
 ```
 
-Always check that the cost of an alernative `valueEquals` function or a deep equals check in the state update function is not greater than the cost of recomputing every time. Furthermore, if recomputing every time is the better option, you should think about whether Reselect is giving you any benefit over passing a plain `mapStateToProps` function to `connect`.
+Always check that the cost of an alernative `equalityCheck` function or a deep equality check in the state update function is not greater than the cost of recomputing every time. Furthermore, if recomputing every time is the better option, you should think about whether Reselect is giving you any benefit over passing a plain `mapStateToProps` function to `connect`.
 
 ### Q: Can I use Reselect without Redux?
 
@@ -592,7 +594,7 @@ const subtotalSelector = createSelector(
 
 ### Q: The default memoization function is rubbish, can I use a different one? 
 
-A: We think it works great for a lot of use cases, but sure. See [this example](#customize-valueequals-for-defaultmemoizefunc).
+A: We think it works great for a lot of use cases, but sure. See [this example](#customize-equalitycheck-for-defaultmemoize).
 
 ### Q: The default memoization cache size of 1 is rubbish, can I increase it? 
 

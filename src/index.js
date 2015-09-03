@@ -1,14 +1,14 @@
-function defaultValuesEqual(a, b) {
+function defaultEqualityCheck(a, b) {
     return a === b;
 }
 
 // TODO: Reintroduce comment about cache size, slightly rewritten
-export function defaultMemoize(func, valuesEqual = defaultValuesEqual) {
+export function defaultMemoize(func, equalityCheck = defaultEqualityCheck) {
     let lastArgs = null;
     let lastResult = null;
     return (...args) => {
         if (lastArgs !== null &&
-            args.every((value, index) => valuesEqual(value, lastArgs[index]))) {
+            args.every((value, index) => equalityCheck(value, lastArgs[index]))) {
             return lastResult;
         }
         lastArgs = args;
