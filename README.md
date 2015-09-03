@@ -5,7 +5,7 @@ Simple "selector" library for Redux inspired by getters in [NuclearJS](https://g
 * Selectors are efficient. A selector is not recomputed unless one of its arguments change.
 * Selectors are composable. They can be used as input to other selectors. 
 
-**Note: Reselect 1.0.0-alpha has been released on NPM. Please check the [release notes](https://github.com/faassen/reselect/releases/tag/v1.0.0-alpha) and [work in progress documentation](https://github.com/faassen/reselect/tree/1.0.0_WIP).**
+**Note: Reselect 1.0.0-alpha has been released on NPM. Please check the [release notes](https://github.com/faassen/reselect/releases/tag/v1.0.0-alpha) and [new documentation](https://github.com/faassen/reselect/tree/1.0.0_WIP).**
 
 ## Installation
     npm install reselect
