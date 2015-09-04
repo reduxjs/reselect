@@ -440,7 +440,7 @@ assert.equal(called, 2);
 
 ### Q: Why isn't my selector recomputing when the input state changes?
 
-A: Check that your memoization function is compatible with your state update function (ie the reducer if you are using Redux). For example, a selector created with `createSelector` will not work with a state update function that mutates an existing object instead of creating a new one each time. As `createSelector` uses `===` to check if an input has changed, the selector will never recompute because the identity of the object never changes. Note that if you are using Redux, mutating the state object is [almost certainly a mistake](http://rackt.github.io/redux/docs/Troubleshooting.html).
+A: Check that your memoization function is compatible with your state update function (ie the reducer if you are using Redux). For example, a selector created with `createSelector` will not work with a state update function that mutates an existing object instead of creating a new one each time. `createSelector` uses an identity check (`===`) to detect that an input has changed, so mutating an existing object will not trigger the selector to recompute because mutating an object does not change its identity. Note that if you are using Redux, mutating the state object is [almost certainly a mistake](http://rackt.github.io/redux/docs/Troubleshooting.html).
 
 The following example defines a simple selector that determines if the first todo item in an array of todos has been completed:
 
@@ -488,11 +488,11 @@ export default function todos(state = initialState, action) {
 }
 ```
 
-If you are not using Redux and have a requirement to work with mutable data, you can use `createSelectorCreator` to customize the memoization function to use a different equality check. See [here](#use-memoize-function-from-lodash-for-an-unbounded-cache) and [here](#customize-equalitycheck-for-defaultmemoize) for examples. 
+If you are not using Redux and have a requirement to work with mutable data, you can use `createSelectorCreator` to replace the default memoization function and/or use a different equality check function. See [here](#use-memoize-function-from-lodash-for-an-unbounded-cache) and [here](#customize-equalitycheck-for-defaultmemoize) for examples. 
 
 ### Q: Why is my selector recomputing when the input state stays the same?
 
-A: Check that your memoization funtion is compatible with your state update function (ie the reducer if you are using Redux). For example, a selector created with `createSelector` that recomputes unexpectedly may be receiving a new object whether the values it contains have updated or not. As `createSelector` uses `===` to check if an input has changed, the selector will always recompute.
+A: Check that your memoization funtion is compatible with your state update function (ie the reducer if you are using Redux). For example, a selector created with `createSelector` that recomputes unexpectedly may be receiving a new object whether the values it contains have updated or not. As `createSelector` uses an identity check (`===`) to detect that an input has changed, the selector will always recompute.
 
 ```js
 import { REMOVE_OLD } from '../constants/ActionTypes';
