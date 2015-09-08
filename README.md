@@ -249,7 +249,7 @@ export default connect(visibleTodosSelector)(App);
 
 ### Accessing React Props in Selectors
 
-The following example shows a modification to `index.js` that passes a `maxTodos` prop to the `App` component specifying the maximum number of Todos to be displayed at any one time:
+The following code shows a modification to `index.js` where a `maxTodos` prop is being passed to the `App` component that specifies the maximum number of Todos to be displayed at any one time:
 
 #### `index.js`
 
@@ -271,9 +271,10 @@ React.render(
   </Provider>,
   rootElement
 );
+
 ```
 
-When a selector is connected to a component with `connect`, an update causes the selector to be called with the Redux store state as its first argument and the components props object as its second. We will use this fact to access the `maxTodos` prop from within `visibleTodosSelector`. First, we create a new simple selector named `maxTodosSelector` which gets `maxTodos` from its props argument (and ignores its state argument). Then we add `maxTodosSelector` as an input selector to `visibleTodosSelector`:
+When a selector is connected to a component with `connect`, the component props are passed as the second argument to the selector. We will use this fact to access the `maxTodos` prop from within `visibleTodosSelector`. First, we create a new input-selector named `maxTodosSelector` which gets `maxTodos` from its props argument (and ignores its state argument). Then we add `maxTodosSelector` as an input selector to `visibleTodosSelector`:
 
 #### `selectors/todoSelectors.js`
 
@@ -294,7 +295,7 @@ function selectTodos(todos, filter) {
 
 const visibilityFilterSelector = state => state.visibilityFilter;
 const todosSelector = state => state.todos;
-// accessing props via the second argument to a selector
+// accessing props via the second argument
 const maxTodosSelector = (_, props) => props.maxTodos;
 
 export const visibleTodosSelector = createSelector(
