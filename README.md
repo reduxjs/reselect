@@ -61,7 +61,7 @@ export const totalSelector = createSelector(
 
 ### Motivation for Memoized Selectors
 
-Here is an excerpt from the [Redux Todos List example](https://github.com/docs/basics/UsageWithReact.md):
+Here is `App.js` from the [Redux Todos List example](https://github.com/docs/basics/UsageWithReact.md):
 
 #### `containers/App.js`
 
@@ -249,9 +249,7 @@ export default connect(visibleTodosSelector)(App);
 
 ### Accessing React Props in Selectors
 
-A selector hooked up to `connect` can access the props of the component wrapped by `connect`.
-
-In the following example `index.js` has been modified so that `App` takes a prop specifying the maximum number of Todos to be displayed at any one time:
+The following example shows a modification to `index.js` that passes a `maxTodos` prop to the `App` component specifying the maximum number of Todos to be displayed at any one time:
 
 #### `index.js`
 
@@ -275,7 +273,7 @@ React.render(
 );
 ```
 
-Given the above modifications to `index.js`, we would also like to modify `todoSelectors.js` so that `visibleTodosSelector` returns the maximum number of Todos specified by ths `maxTodos` prop. Props are passed as the second argument to selectors that are called from `connect`. In the example code below, `maxTodosSelector` ignores the state argument and returns `props.maxTodos` so it can be used in the result function:
+When a selector is connected to a component with `connect`, an update causes the selector to be called with the Redux store state as its first argument and the components props object as its second. We will use this fact to access the `maxTodos` prop from within `visibleTodosSelector`. First, we create a new simple selector named `maxTodosSelector` which gets `maxTodos` from its props argument (and ignores its state argument). Then we add `maxTodosSelector` as an input selector to `visibleTodosSelector`:
 
 #### `selectors/todoSelectors.js`
 
@@ -296,10 +294,11 @@ function selectTodos(todos, filter) {
 
 const visibilityFilterSelector = state => state.visibilityFilter;
 const todosSelector = state => state.todos;
+// accessing props via the second argument to a selector
 const maxTodosSelector = (_, props) => props.maxTodos;
 
 export const visibleTodosSelector = createSelector(
-  visibilityFilterSelector, 
+  visibilityFilterSelector,
   todosSelector,
   maxTodosSelector,
   (visibilityFilter, todos, maxTodos) => {
@@ -338,20 +337,32 @@ const totalSelector = createSelector(
   ],
   (value1, value2) => value1 + value2
 );
-
-// A selector's dependencies also receive props when using React Redux's connect decorator
-const selectorWithProps = createSelector(
-  state => state.values.value,
-  (state, props) => props.value,
-  (valueFromState, valueFromProps) => valueFromState + valueFromProps;
-);
 ```
 
+It can be useful to access the props of a component from within a selector. When a selector is connected to a component with `connect`, the component props are passed as the second argument to the selector:
+
+```js
+const abSelector = (state, props) => state.a * props.b;
+
+// props only (ignoring state argument)
+const cSelector =  (_, props) => props.c;
+
+// state only (props argument omitted as not required)
+const dSelector = state => state.d;
+
+const totalSelector = createSelector(
+  abSelector,
+  cSelector,
+  dSelector,
+  (ab, c, d) => ({
+    total: ab + c + d
+  })
+);
+
+```
 ### defaultMemoize(func, equalityCheck = defaultEqualityCheck)
 
-`defaultMemoize` memoizes the function passed in the func parameter.
-
-`defaultMemoize` is the memoize function used by `createSelector`. It is designed to work with immutable data.
+`defaultMemoize` memoizes the function passed in the func parameter. It is the memoize function used by `createSelector` and is designed to work with immutable data.
 
 `defaultMemoize` has a cache size of 1. This means it always recalculates when an argument changes, as it only stores the result for preceding value of the argument.
 
@@ -363,11 +374,13 @@ function defaultEqualityCheck(currentVal, previousVal) {
 }
 ```
 
+`defaultMemoize` can be used with `createSelectorCreator` to [customize the equality check function](#customize-equalitycheck-for-defaultmemoize).
+
 ### createSelectorCreator(memoize, ...memoizeOptions)
 
 `createSelectorCreator` can be used to make a custom `createSelector` by customizing the memoize function.
 
-`memoize` is the memoization function to replace `defaultMemoize`. 
+`memoize` is the memoization function to replace `defaultMemoize`.
 
 `...memoizeOptions` is a variadic number of configuration options to be passsed to `memoizeFunc`. Here is an example of how this works:
 
@@ -487,7 +500,7 @@ export default function todos(state = initialState, action) {
 }
 ```
 
-If you are not using Redux and have a requirement to work with mutable data, you can use `createSelectorCreator` to replace the default memoization function and/or use a different equality check function. See [here](#use-memoize-function-from-lodash-for-an-unbounded-cache) and [here](#customize-equalitycheck-for-defaultmemoize) for examples. 
+If you are not using Redux and have a requirement to work with mutable data, you can use `createSelectorCreator` to replace the default memoization function and/or use a different equality check function. See [here](#use-memoize-function-from-lodash-for-an-unbounded-cache) and [here](#customize-equalitycheck-for-defaultmemoize) for examples.
 
 ### Q: Why is my selector recomputing when the input state stays the same?
 
@@ -606,11 +619,11 @@ const subtotalSelector = createSelector(
 );
 ```
 
-### Q: The default memoization function is no good, can I use a different one? 
+### Q: The default memoization function is no good, can I use a different one?
 
 A: We think it works great for a lot of use cases, but sure. See [this example](#customize-equalitycheck-for-defaultmemoize).
 
-### Q: The default memoization cache size of 1 is no good, can I increase it? 
+### Q: The default memoization cache size of 1 is no good, can I increase it?
 
 A: We think it works great for a lot of use cases, but sure. Check out [this example](#use-memoize-function-from-lodash-for-an-unbounded-cache).
 
