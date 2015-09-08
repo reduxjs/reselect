@@ -249,9 +249,11 @@ export default connect(visibleTodosSelector)(App);
 
 ### Accessing React Props in Selectors
 
-#### `index.js`
+A selector hooked up to `connect` can access the props of the component wrapped by `connect`.
 
-A selector hooked up to `connect` can also access the props of the component wrapped by `connect`. In the following example, `App` takes a prop that limits the maximum number of Todos that are displayed at any one time.
+In the following example `index.js` has been modified so that `App` takes a prop specifying the maximum number of Todos to be displayed at any one time:
+
+#### `index.js`
 
 ```js
 import React from 'react';
@@ -273,7 +275,7 @@ React.render(
 );
 ```
 
-Props are passed as the second argument to selectors hooked up to `connect`. `maxTodosSelector` ignores the state argument and returns `props.maxTodos` for use in the result function.
+Given the above modifications to `index.js`, we would also like to modify `todoSelectors.js` so that `visibleTodosSelector` returns the maximum number of Todos specified by ths `maxTodos` prop. Props are passed as the second argument to selectors that are called from `connect`. In the example code below, `maxTodosSelector` ignores the state argument and returns `props.maxTodos` so it can be used in the result function:
 
 #### `selectors/todoSelectors.js`
 
@@ -317,8 +319,6 @@ export const visibleTodosSelector = createSelector(
 
 Takes a variable number or array of selectors whose values are computed and passed as arguments to `resultFn`.
 
-`createSelector` has been designed to work with immutable data.
-
 `createSelector` determines if the value returned by an input selector has changed between calls using reference equality (`===`). Inputs to selectors created with `createSelector` should be immutable.
 
 Selectors created with `createSelector` have a cache size of 1. This means they always recalculate when the value of an input selector changes, as a selector only stores the preceding value of each input selector.
@@ -351,7 +351,7 @@ const selectorWithProps = createSelector(
 
 `defaultMemoize` memoizes the function passed in the func parameter.
 
-`defaultMemoize` is the memoize function used by `createSelector` and has been designed to work with immutable data.
+`defaultMemoize` is the memoize function used by `createSelector`. It is designed to work with immutable data.
 
 `defaultMemoize` has a cache size of 1. This means it always recalculates when an argument changes, as it only stores the result for preceding value of the argument.
 
@@ -418,7 +418,6 @@ const mySelector = createDeepEqualSelector(
 import { createSelectorCreator } from 'reselect';
 import memoize from 'lodash.memoize';
 
-
 let called = 0;
 const customSelectorCreator = createSelectorCreator(memoize, JSON.stringify);
 const selector = customSelectorCreator(
@@ -451,7 +450,7 @@ const isFirstTodoCompleteSelector = createSelector(
 );
 ```
 
-The following example **will not** work with `isFirstTodoCompleteSelector`:
+The following state update function **will not** work with `isFirstTodoCompleteSelector`:
 
 ```js
 export default function todos(state = initialState, action) {
@@ -470,7 +469,7 @@ export default function todos(state = initialState, action) {
 }
 ```
 
-The following example **will** work with `isFirstTodoCompleteSelector`:
+The following state update function **will** work with `isFirstTodoCompleteSelector`:
 
 ```js
 export default function todos(state = initialState, action) {
