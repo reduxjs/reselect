@@ -173,7 +173,7 @@ const todosSelector = state => state.todos;
 /* 
  * Definition of combined selector. 
  * In visibleTodosSelector, input selectors are combined to derive new information. 
- * To prevent expensive recalculation of the input-selectors memoization is applied. 
+ * To prevent expensive recalculation of the input selectors memoization is applied. 
  * Hence, these selectors are only recomputed when the value of their input selectors change. 
  * If none of the input selectors return a new value, the previously computed value is returned.
  */
