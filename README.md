@@ -146,7 +146,7 @@ Let's define a memoized selector named `visibleTodosSelector` to replace `select
 
 ```js
 import { createSelector } from 'reselect';
-import { VisibilityFilters } from './actions';
+import { VisibilityFilters } from '../actions';
 
 function selectTodos(todos, filter) {
   switch (filter) {
