@@ -1,42 +1,48 @@
-export function createSelectorCreator(valueEquals) {
-    return (selectors, resultFunc) => {
-        if (!Array.isArray(selectors)) {
-            selectors = [selectors];
-        }
-        const memoizedResultFunc = memoize(resultFunc, valueEquals);
-        return state => {
-            const params = selectors.map(selector => selector(state));
-            return memoizedResultFunc(params);
-        }
-    };
-}
-
-export function createSelector(...args) {
-    return createSelectorCreator(defaultValueEquals)(...args);
-}
-
-export function defaultValueEquals(a, b) {
+function defaultEqualityCheck(a, b) {
     return a === b;
 }
 
-// the memoize function only caches one set of arguments.  This
-// actually good enough, rather surprisingly. This is because during
-// calculation of a selector result the arguments won't
-// change if called multiple times. If a new state comes in, we *want*
-// recalculation if and only if the arguments are different.
-function memoize(func, valueEquals) {
+// TODO: Reintroduce comment about cache size, slightly rewritten
+export function defaultMemoize(func, equalityCheck = defaultEqualityCheck) {
     let lastArgs = null;
     let lastResult = null;
-    return (args) => {
-        if (lastArgs !== null && argsEquals(args, lastArgs, valueEquals)) {
+    return (...args) => {
+        if (lastArgs !== null &&
+            args.every((value, index) => equalityCheck(value, lastArgs[index]))) {
             return lastResult;
         }
         lastArgs = args;
         lastResult = func(...args);
         return lastResult;
-    }
+    };
 }
 
-function argsEquals(a, b, valueEquals) {
-    return a.every((value, index) => valueEquals(value, b[index]));
+export function createSelectorCreator(memoize, ...memoizeOptions) {
+    return (...funcs) => {
+        let recomputations = 0;
+        const resultFunc = funcs.pop();
+        const dependencies = Array.isArray(funcs[0]) ? funcs[0] : funcs;
+
+        const memoizedResultFunc = memoize(
+            (...args) => {
+                recomputations++;
+                return resultFunc(...args);
+            },
+            ...memoizeOptions
+        );
+
+        const selector = (state, props, ...args) => {
+            const params = dependencies.map(
+                dependency => dependency(state, props, ...args)
+            );
+            return memoizedResultFunc(...params);
+        };
+
+        selector.recomputations = () => recomputations;
+        return selector;
+    };
+}
+
+export function createSelector(...args) {
+    return createSelectorCreator(defaultMemoize)(...args);
 }

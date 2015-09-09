@@ -1,19 +1,22 @@
 {
   "name": "reselect",
-  "version": "0.0.2",
-  "description": "Selectors for Redux Flux.",
+  "version": "1.0.0",
+  "description": "Selectors for Redux.",
   "main": "lib/index.js",
+  "jsnext:main": "src/index.js",
   "files": [
     "lib",
+    "src",
     "README.md",
     "LICENSE",
     "package.json"
   ],
   "bugs": {
-    "url" : "https://github.com/faassen/reselect/issues"
+    "url": "https://github.com/faassen/reselect/issues"
   },
   "scripts": {
     "compile": "babel -d lib/ src/",
+    "lint": "eslint src test",
     "prepublish": "npm run compile",
     "test": "NODE_ENV=test mocha --compilers js:babel/register --recursive",
     "test:cov": "babel-node ./node_modules/.bin/isparta cover ./node_modules/.bin/_mocha -- --recursive"
@@ -23,15 +26,38 @@
     "redux"
   ],
   "author": "Martijn Faassen",
-  "contributors": [{
-    "name": "Martijn Faassen"
-  }, {
-    "name": "Lee Bannard"
-  }, {
-    "name": "Robert Binna"
-  }, {
-    "name": "Philip Spitzlinger"
-  }],
+  "contributors": [
+    {
+      "name": "Martijn Faassen"
+    },
+    {
+      "name": "Lee Bannard"
+    },
+    {
+      "name": "Robert Binna"
+    },
+    {
+      "name": "Philip Spitzlinger"
+    },
+    {
+      "name": "Alex Guerra"
+    },
+    {
+      "name": "ryanatkn"
+    }, 
+    {
+      "name": "Adam Royle"
+    }, 
+    {
+      "name": "Christian Schuhmann"
+    }, 
+    {
+      "name": "Jason Huang"
+    },
+    {
+      "name": "Daniel Barreto"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/faassen/reselect.git"
@@ -40,8 +66,12 @@
   "devDependencies": {
     "babel": "^5.5.8",
     "babel-core": "^5.6.15",
+    "babel-eslint": "^3.1.15",
+    "eslint": "^0.23",
+    "eslint-config-airbnb": "0.0.6",
     "chai": "^3.0.0",
     "isparta": "^3.0.3",
+    "lodash.memoize": "^3.0.4",
     "mocha": "^2.2.5"
   }
 }
