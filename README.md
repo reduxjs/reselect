@@ -249,7 +249,9 @@ export default connect(visibleTodosSelector)(App);
 
 ### Accessing React Props in Selectors
 
-The following code shows a modification to `index.js` where a `maxTodos` prop is being passed to the `App` component that specifies the maximum number of Todos to be displayed at any one time:
+So far our selectors have only been receiving the Redux store as input. It is also possible to pass the props of a component wrapped by `connect` into a selector.
+
+Consider the following example:
 
 #### `index.js`
 
@@ -274,7 +276,7 @@ React.render(
 
 ```
 
-When a selector is connected to a component with `connect`, the component props are passed as the second argument to the selector. We will use this fact to access the `maxTodos` prop from within `visibleTodosSelector`. First, we create a new input-selector named `maxTodosSelector` which gets `maxTodos` from its props argument (and ignores its state argument). Then we add `maxTodosSelector` as an input selector to `visibleTodosSelector`:
+The prop `maxTodos` has been added to the `App` component. We would like to access this prop in `visibleTodosSelector` so we change `selectors/todoSelectors.js` to the following:
 
 #### `selectors/todoSelectors.js`
 
@@ -295,7 +297,6 @@ function selectTodos(todos, filter) {
 
 const visibilityFilterSelector = state => state.visibilityFilter;
 const todosSelector = state => state.todos;
-// accessing props via the second argument
 const maxTodosSelector = (_, props) => props.maxTodos;
 
 export const visibleTodosSelector = createSelector(
@@ -311,6 +312,8 @@ export const visibleTodosSelector = createSelector(
   }
 );
 ```
+
+When a selector is connected to a component with `connect`, the component props are passed as the second argument to the selector. In the example above, we added a new input-selector named `maxTodosSelector` which gets `maxTodos` from its props argument (and ignores its state argument). `maxTodosSelector` was then added as an input selector to `visibleTodosSelector`, making `maxTodos` available to the selectors result function.
 
 ## API
 
