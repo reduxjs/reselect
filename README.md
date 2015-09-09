@@ -61,7 +61,7 @@ export const totalSelector = createSelector(
 
 ### Motivation for Memoized Selectors
 
-> The examples in this section are based on the [Redux Todos List example](https://github.com/docs/basics/UsageWithReact.md).
+> The examples in this section are based on the [Redux Todos List example](http://rackt.github.io/redux/docs/basics/UsageWithReact.html).
 
 Consider the following code:
 
