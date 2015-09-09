@@ -99,7 +99,7 @@ import { connect } from 'react-redux';
 
 /*
  * Import the selector defined in the example above.
- * This allows your to separate your components from the structure of your stores.
+ * This allows you to separate your components from the structure of your stores.
  */
 import { totalSelector } from 'selectors/ShopSelectors';
 
