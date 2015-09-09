@@ -54,8 +54,6 @@ export const totalSelector = createSelector(
   - [How do I use Reselect with Immutable.js?](#q-how-do-i-use-reselect-with-immutablejs)
 - [License](#license)
 
-**Note: Reselect v1.0.0-alpha2 has been released on NPM. Please check the [release notes](https://github.com/faassen/reselect/releases/tag/v1.0.0-alpha) and [new documentation](https://github.com/faassen/reselect/tree/1.0.0_WIP).**
-
 ## Installation
     npm install reselect
 
