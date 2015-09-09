@@ -61,7 +61,9 @@ export const totalSelector = createSelector(
 
 ### Motivation for Memoized Selectors
 
-Here is `App.js` from the [Redux Todos List example](https://github.com/docs/basics/UsageWithReact.md):
+> The examples in this section are based on the [Redux Todos List example](https://github.com/docs/basics/UsageWithReact.md).
+
+Consider the following code:
 
 #### `containers/App.js`
 
@@ -165,7 +167,6 @@ function selectTodos(todos, filter) {
  * of the store in cases where no calculations are needed 
  * and memoization wouldn't provide any benefits.
  */
-
 const visibilityFilterSelector = state => state.visibilityFilter;
 const todosSelector = state => state.todos;
 
@@ -176,7 +177,6 @@ const todosSelector = state => state.todos;
  * Hence, these selectors are only recomputed when the value of their input selectors change. 
  * If none of the input selectors return a new value, the previously computed value is returned.
  */
- 
 export const visibleTodosSelector = createSelector(
   visibilityFilterSelector,
   todosSelector,
@@ -224,7 +224,6 @@ import Footer from '../components/Footer';
  * Import the selector defined in ../selectors/todoSelectors.js.
  * This allows you to separate your components from the structure of your stores.
  */
-
 import { visibleTodosSelector } from '../selectors/todoSelectors';
 
 class App extends Component {
@@ -265,7 +264,7 @@ App.propTypes = {
 };
 
 /*
- * Bind the visibleTodosSelector to the App component.
+ * Connet visibleTodosSelector to the App component.
  * The keys of the selector result are available on the props object for App.
  * In our example there is the 'visibleTodos' key which is bound to this.props.visibleTodos
  */
