@@ -3,9 +3,103 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0.0-alpha]() - 2015/08/31
+## [1.0.0](https://github.com/faassen/reselect/releases/tag/v1.0.0) - 2015/09/09
 
-### Breaking Changes
+## Breaking Changes
 
-### New
+If upgrading from 0.0.2, see the release notes for v1.0.0-alpha
 
+## [1.0.0-alpha2](https://github.com/faassen/reselect/releases/tag/v1.0.0-alpha2) - 2015/09/01
+
+## New features
+
+/src directory included in npm package
+js:next field added to package.json
+
+## [1.0.0-alpha](https://github.com/faassen/reselect/releases/tag/v1.0.0-alpha) - 2015/09/01
+
+## Breaking Changes
+
+`createSelectorCreator` takes a user specified memoize function instead of a custom `valueEqualsFunc`.
+
+### Before
+
+```js
+import { isEqual } from 'lodash';
+import { createSelectorCreator } from 'reselect';
+
+const deepEqualsSelectorCreator = createSelectorCreator(isEqual);
+```
+
+### After
+
+```js
+import { isEqual } from 'lodash';
+import { createSelectorCreator, defaultMemoize } from 'reselect';
+
+const deepEqualsSelectorCreator = createSelectorCreator(
+  defaultMemoize,
+  isEqual
+);
+```
+
+## New features
+
+### Variadic Dependencies
+
+Selector creators can receive a variadic number of dependencies as well as an array of dependencies.
+
+#### Before
+
+```js
+const selector = createSelector(
+  [state => state.a, state => state.b],
+  (a, b) => a * b
+);
+```
+
+#### After
+
+```js
+const selector = createSelector(
+  state => state.a,
+  state => state.b,
+  (a, b) => a * b
+);
+```
+
+### Access `ownProps` in Selector
+
+Selector dependencies can receive a variadic number of parameters allowing a selector to receive `ownProps` passed from `mapToProps` in `connect`.
+
+```js
+const selector = createSelector(
+  (state) => state.a,
+  (state, props) => state.b * props.c,
+  (_, props) => props.d,
+  (a, bc, d) => a + bc + d
+);
+```
+
+### Configurable Memoize Function
+
+```js
+import { createSelectorCreator } from 'reselect';
+import memoize from 'lodash.memoize';
+
+let called = 0;
+const customSelectorCreator = createSelectorCreator(memoize, JSON.stringify);
+const selector = customSelectorCreator(
+  state => state.a,
+  state => state.b,
+  (a, b) => {
+    called++;
+    return a + b;
+  }
+);
+assert.equal(selector({a: 1, b: 2}), 3);
+assert.equal(selector({a: 1, b: 2}), 3);
+assert.equal(called, 1);
+assert.equal(selector({a: 2, b: 3}), 5);
+assert.equal(called, 2);
+```
