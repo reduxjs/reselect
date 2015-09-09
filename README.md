@@ -164,8 +164,8 @@ function selectTodos(todos, filter) {
 }
 
 /*
- * Definition of input selectors. 
- * Input selectors should be used to abstract away the structure
+ * Definition of input-selectors. 
+ * Input-selectors should be used to abstract away the structure
  * of the store in cases where no calculations are needed 
  * and memoization wouldn't provide any benefits.
  */
@@ -173,11 +173,11 @@ const visibilityFilterSelector = state => state.visibilityFilter;
 const todosSelector = state => state.todos;
 
 /* 
- * Definition of combined selector. 
- * In visibleTodosSelector, input selectors are combined to derive new information. 
- * To prevent expensive recalculation of the input selectors memoization is applied. 
- * Hence, these selectors are only recomputed when the value of their input selectors change. 
- * If none of the input selectors return a new value, the previously computed value is returned.
+ * Definition of combined-selector. 
+ * In visibleTodosSelector, input-selectors are combined to derive new information. 
+ * To prevent expensive recalculation of the input-selectors memoization is applied. 
+ * Hence, these selectors are only recomputed when the value of their input-selectors change. 
+ * If none of the input-selectors return a new value, the previously computed value is returned.
  */
 export const visibleTodosSelector = createSelector(
   visibilityFilterSelector,
@@ -275,7 +275,7 @@ export default connect(visibleTodosSelector)(App);
 
 ### Accessing React Props in Selectors
 
-So far our selectors have only been receiving the Redux store as input. It is also possible to pass the props of a component wrapped by `connect` into a selector.
+So far our selectors have only been taking state from the Redux store as input, but it is also possible to pass the props of a component wrapped by `connect` into a selector.
 
 Consider the following example:
 
@@ -297,10 +297,9 @@ React.render(
   </Provider>,
   rootElement
 );
-
 ```
 
-The prop `maxTodos` has been added to the `App` component. We would like to access this prop in `visibleTodosSelector` so we change `selectors/todoSelectors.js` to the following:
+We have introduced a prop named `maxTodos` which is being passed into the `App` component. We would like to access `maxTodos` in `visibleTodosSelector` so we can make sure to not return more Todos it specifies. To achieve this we can make the following changes to `selectors/todoSelectors.js`:
 
 #### `selectors/todoSelectors.js`
 
@@ -337,7 +336,7 @@ export const visibleTodosSelector = createSelector(
 );
 ```
 
-When a selector is connected to a component with `connect`, the component props are passed as the second argument to the selector. In the example above, we added a new input-selector named `maxTodosSelector` which gets `maxTodos` from its props argument (and ignores its state argument). `maxTodosSelector` was then added as an input selector to `visibleTodosSelector`, making `maxTodos` available to the selectors result function.
+When a selector is connected to a component with `connect`, the component props are passed as the second argument to the selector. In the example above, we added a new input-selector named `maxTodosSelector` which gets `maxTodos` from its props argument (and ignores its state argument). `maxTodosSelector` was then added as an input-selector to `visibleTodosSelector`, making `maxTodos` available to the result function.
 
 ## API
 
@@ -346,9 +345,9 @@ When a selector is connected to a component with `connect`, the component props 
 
 Takes a variable number or array of selectors whose values are computed and passed as arguments to `resultFn`.
 
-`createSelector` determines if the value returned by an input selector has changed between calls using reference equality (`===`). Inputs to selectors created with `createSelector` should be immutable.
+`createSelector` determines if the value returned by an input-selector has changed between calls using reference equality (`===`). Inputs to selectors created with `createSelector` should be immutable.
 
-Selectors created with `createSelector` have a cache size of 1. This means they always recalculate when the value of an input selector changes, as a selector only stores the preceding value of each input selector.
+Selectors created with `createSelector` have a cache size of 1. This means they always recalculate when the value of an input-selector changes, as a selector only stores the preceding value of each input-selector.
 
 ```js
 const mySelector = createSelector(
