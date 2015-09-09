@@ -159,9 +159,24 @@ function selectTodos(todos, filter) {
   }
 }
 
+/*
+ * Definition of input selectors. 
+ * Input selectors should be used to abstract away the structure
+ * of the store in cases where no calculations are needed 
+ * and memoization wouldn't provide any benefits.
+ */
+
 const visibilityFilterSelector = state => state.visibilityFilter;
 const todosSelector = state => state.todos;
 
+/* 
+ * Definition of combined selector. 
+ * In visibleTodosSelector, input selectors are combined to derive new information. 
+ * To prevent expensive recalculation of the input-selectors memoization is applied. 
+ * Hence, these selectors are only recomputed when the value of their input selectors change. 
+ * If none of the input selectors return a new value, the previously computed value is returned.
+ */
+ 
 export const visibleTodosSelector = createSelector(
   visibilityFilterSelector,
   todosSelector,
@@ -204,6 +219,12 @@ import { addTodo, completeTodo, setVisibilityFilter } from '../actions';
 import AddTodo from '../components/AddTodo';
 import TodoList from '../components/TodoList';
 import Footer from '../components/Footer';
+
+/*
+ * Import the selector defined in ../selectors/todoSelectors.js.
+ * This allows you to separate your components from the structure of your stores.
+ */
+
 import { visibleTodosSelector } from '../selectors/todoSelectors';
 
 class App extends Component {
@@ -243,7 +264,11 @@ App.propTypes = {
   ]).isRequired
 };
 
-// Pass the selector to the connect component
+/*
+ * Bind the visibleTodosSelector to the App component.
+ * The keys of the selector result are available on the props object for App.
+ * In our example there is the 'visibleTodos' key which is bound to this.props.visibleTodos
+ */
 export default connect(visibleTodosSelector)(App);
 ```
 
@@ -266,8 +291,6 @@ let store = createStore(todoApp);
 
 let rootElement = document.getElementById('root');
 React.render(
-  // The child must be wrapped in a function
-  // to work around an issue in React 0.13.
   <Provider store={store}>
     {() => <App maxTodos={5}/>}
   </Provider>,
