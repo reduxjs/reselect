@@ -13,7 +13,7 @@ If upgrading from 0.0.2, see the release notes for v1.0.0-alpha
 
 ## New features
 
-/src directory included in npm package
+src directory included in npm package
 js:next field added to package.json
 
 ## [1.0.0-alpha](https://github.com/faassen/reselect/releases/tag/v1.0.0-alpha) - 2015/09/01
