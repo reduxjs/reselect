@@ -2,7 +2,6 @@ function defaultEqualityCheck(a, b) {
     return a === b;
 }
 
-// TODO: Reintroduce comment about cache size, slightly rewritten
 export function defaultMemoize(func, equalityCheck = defaultEqualityCheck) {
     let lastArgs = null;
     let lastResult = null;

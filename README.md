@@ -273,7 +273,7 @@ export default connect(visibleTodosSelector)(App);
 
 ### Accessing React Props in Selectors
 
-So far our selectors have only been taking state from the Redux store as input, but it is also possible to pass the props of a component wrapped by `connect` into a selector.
+So far we have only seen selectors receive state from the Redux store as input, but it is also possible for a selector to receive the props of the component wrapped by `connect`. 
 
 Consider the following example:
 
@@ -297,7 +297,7 @@ React.render(
 );
 ```
 
-We have introduced a prop named `maxTodos` which is being passed into the `App` component. We would like to access `maxTodos` in `visibleTodosSelector` so we can make sure to not return more Todos it specifies. To achieve this we can make the following changes to `selectors/todoSelectors.js`:
+We have introduced a prop named `maxTodos` to the `App` component. We would like to access `maxTodos` in `visibleTodosSelector` so we can make sure to not return more Todos than it specifies. To achieve this we can make the following changes to `selectors/todoSelectors.js`:
 
 #### `selectors/todoSelectors.js`
 
@@ -318,7 +318,7 @@ function selectTodos(todos, filter) {
 
 const visibilityFilterSelector = state => state.visibilityFilter;
 const todosSelector = state => state.todos;
-const maxTodosSelector = (_, props) => props.maxTodos;
+const maxTodosSelector = (state, props) => props.maxTodos;
 
 export const visibleTodosSelector = createSelector(
   visibilityFilterSelector,
@@ -334,12 +334,12 @@ export const visibleTodosSelector = createSelector(
 );
 ```
 
-When a selector is connected to a component with `connect`, the component props are passed as the second argument to the selector. In the example above, we added a new input-selector named `maxTodosSelector` which gets `maxTodos` from its props argument (and ignores its state argument). `maxTodosSelector` was then added as an input-selector to `visibleTodosSelector`, making `maxTodos` available to the result function.
+When a selector is connected to a component with `connect`, the component props are passed as the second argument to the selector. In the example above, we added a new input-selector named `maxTodosSelector` which returns the `maxTodos` property from its props argument. `maxTodosSelector` was then added as an input-selector to `visibleTodosSelector`, making `maxTodos` available to the result function.
 
 ## API
 
-### createSelector(...inputSelectors, resultFn)
-### createSelector([inputSelectors], resultFn)
+### createSelector(...inputSelectors, resultFunc)
+### createSelector([inputSelectors], resultFunc)
 
 Takes a variable number or array of selectors whose values are computed and passed as arguments to `resultFn`.
 
@@ -389,9 +389,9 @@ const totalSelector = createSelector(
 
 `defaultMemoize` memoizes the function passed in the func parameter. It is the memoize function used by `createSelector` and is designed to work with immutable data.
 
-`defaultMemoize` has a cache size of 1. This means it always recalculates when an argument changes, as it only stores the result for preceding value of the argument.
+`defaultMemoize` has a cache size of 1. This means it always recalculates when the value of an argument changes.
 
-`defaultMemoize` determines if an argument has changed by calling the `equalityCheck` function. The `equalityCheck` function is configurable. By default it checks for changes using reference equality:
+`defaultMemoize` determines if an argument has changed by calling the `equalityCheck` function. The default `equalityCheck` checks for changes using reference equality:
 
 ```js
 function defaultEqualityCheck(currentVal, previousVal) {
@@ -399,21 +399,22 @@ function defaultEqualityCheck(currentVal, previousVal) {
 }
 ```
 
-`defaultMemoize` can be used with `createSelectorCreator` to [customize the equality check function](#customize-equalitycheck-for-defaultmemoize).
+`defaultMemoize` can be used with `createSelectorCreator` to [customize the `equalityCheck` function](#customize-equalitycheck-for-defaultmemoize).
 
 ### createSelectorCreator(memoize, ...memoizeOptions)
 
-`createSelectorCreator` can be used to make a custom `createSelector` by customizing the memoize function.
+`createSelectorCreator` can be used to make a customized version of `createSelector`.
 
-`memoize` is the memoization function to replace `defaultMemoize`.
+The `memoize` argument is a memoization function to replace `defaultMemoize`.
 
-`...memoizeOptions` is a variadic number of configuration options to be passsed to `memoizeFunc`. Here is an example of how this works:
+The `...memoizeOptions` rest parameters are zero or more configuration options to be passsed to `memoizeFunc`. The selectors `resultFunc` is passed as the first argument to `memoize` and the `memoizeOptions` are then passed from the second argument onwards:
 
 ```js
 const customSelectorCreator = createSelectorCreator(
   customMemoize, // function to be used to memoize resultFunc
   option1, // option1 will be passed as second argument to customMemoize
-  option2 // option2 will be passed as third argument to customMemoize
+  option2, // option2 will be passed as third argument to customMemoize
+  option3 // option3 will be passed as fourth argument to customMemoize
 );
 
 const customSelector = customSelectorCreator(
@@ -423,13 +424,13 @@ const customSelector = customSelectorCreator(
 );
 ```
 
-Internally `customSelectorCreator` calls the memoize function as follows:
+Internally `customSelector` calls the memoize function as follows:
 
 ```js
-customMemoize(resultFunc, option1, option2);
+customMemoize(resultFunc, option1, option2, option3);
 ```
 
-Here are some examples of `createSelectorCreator`:
+Here are some examples of how to use `createSelectorCreator`:
 
 #### Customize `equalityCheck` for `defaultMemoize`
 
@@ -466,11 +467,6 @@ const selector = customSelectorCreator(
     return a + b;
   }
 );
-assert.equal(selector({a: 1, b: 2}), 3);
-assert.equal(selector({a: 1, b: 2}), 3);
-assert.equal(called, 1);
-assert.equal(selector({a: 2, b: 3}), 5);
-assert.equal(called, 2);
 ```
 
 ## FAQ
