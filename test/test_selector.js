@@ -189,16 +189,6 @@ suite('selector', () => {
         assert.equal(memoized('A'), 'A');
         assert.equal(called, 2);
     });
-    test("default selector function", function() {
-        const selector = createSelector([state => state.a, state => state.b]);
-
-        let firstResult = selector({a: 1,b: 2});
-        assert.deepEqual(firstResult, [1,2]);
-        assert.strictEqual(selector({a: 1,b: 2}), firstResult);
-        assert.notStrictEqual(selector({a: 2,b: 2}),firstResult);
-        assert.notEqual(selector({a: 2,b: 2}), firstResult);
-        assert.deepEqual(selector({a: 2,b: 2}), [2,2]);
-    });
     test("composing selectors", function() {
         const selector = composeSelectors({
               x: state => state.a,
