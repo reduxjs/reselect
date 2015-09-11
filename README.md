@@ -1,132 +1,395 @@
-# reselect
-Simple "selector" library for Redux inspired by getters in [nuclear.js](https://github.com/optimizely/nuclear-js.git), [subscriptions](https://github.com/Day8/re-frame#just-a-read-only-cursor) in [re-frame](https://github.com/Day8/re-frame) and this [proposal](https://github.com/gaearon/redux/pull/169) from [speedskater](https://github.com/speedskater).
+# Reselect
+
+Simple "selector" library for Redux inspired by getters in [NuclearJS](https://github.com/optimizely/nuclear-js.git), [subscriptions](https://github.com/Day8/re-frame#just-a-read-only-cursor) in [re-frame](https://github.com/Day8/re-frame) and this [proposal](https://github.com/gaearon/redux/pull/169) from [speedskater](https://github.com/speedskater).
 
 * Selectors can compute derived data, allowing Redux to store the minimal possible state.
 * Selectors are efficient. A selector is not recomputed unless one of its arguments change.
-* Selectors are composable. They can be used as input to other selectors. 
+* Selectors are composable. They can be used as input to other selectors.
+
+```js
+import { createSelector } from 'reselect';
+
+const shopItemsSelector = state => state.shop.items;
+const taxPercentSelector = state => state.shop.taxPercent;
+
+const subtotalSelector = createSelector(
+  shopItemsSelector,
+  items => items.reduce((acc, item) => acc + item.value, 0)
+);
+
+const taxSelector = createSelector(
+  subtotalSelector,
+  taxPercentSelector,
+  (subtotal, taxPercent) => subtotal * (taxPercent / 100)
+);
+
+export const totalSelector = createSelector(
+  subtotalSelector,
+  taxSelector,
+  (subtotal, tax) => { return {total: subtotal + tax}}
+);
+```
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Example](#example)
+  - [Motivation for Memoized Selectors](#motivation-for-memoized-selectors)
+  - [Creating a Memoized Selector](#creating-a-memoized-selector)
+  - [Composing Selectors](#composing-selectors)
+  - [Connecting a Selector to the Redux Store](#connecting-a-selector-to-the-redux-store)
+  - [Accessing React Props in Selectors](#accessing-react-props-in-selectors)
+- [API](#api)
+  - [`createSelector`](#createselectorinputselectors-resultfn)
+  - [`defaultMemoize`](#defaultmemoize-equalitycheck--defaultequalitycheck)
+  - [`createSelectorCreator`](#createselectorcreatormemoizefunc-memoizeoptions)
+- [FAQ](#faq)
+  - [Why isn't my selector recomputing when the input state changes?](#q-why-isnt-my-selector-recomputing-when-the-input-state-changes)
+  - [Why is my selector recomputing when the input state stays the same?](#q-why-is-my-selector-recomputing-when-the-input-state-stays-the-same)
+  - [Can I use Reselect without Redux?](#q-can-i-use-reselect-without-redux)
+  - [The default memoization function is no good, can I use a different one?](#q-the-default-memoization-function-is-no-good-can-i-use-a-different-one)
+  - [The default memoization cache size of 1 is no good, can I increase it?](#q-the-default-memoization-cache-size-of-1-is-no-good-can-i-increase-it)
+  - [How do I test a selector?](#q-how-do-i-test-a-selector)
+  - [How do I create a selector that takes an argument? ](#q-how-do-i-create-a-selector-that-takes-an-argument)
+  - [How do I use Reselect with Immutable.js?](#q-how-do-i-use-reselect-with-immutablejs)
+- [License](#license)
 
 ## Installation
     npm install reselect
 
 ## Example
 
-### Selector Definitions
+### Motivation for Memoized Selectors
 
-```Javascript
+> The examples in this section are based on the [Redux Todos List example](http://rackt.github.io/redux/docs/basics/UsageWithReact.html).
 
-/* 
-The data in the Redux store has the following shape:
+Consider the following code:
 
-store: {
-  shop: {
-    items: [
-      {
-        name: 'Item 1',
-        value: 100
-      },
-      {
-        name: 'Item 2',
-        value: 200
-      },
-      {
-        name: 'Item 3',
-        value: 300
-      }
-    ],
-    taxPercent: 20
+#### `containers/App.js`
+
+```js
+import React, { Component, PropTypes } from 'react';
+import { connect } from 'react-redux';
+import { addTodo, completeTodo, setVisibilityFilter, VisibilityFilters } from '../actions';
+import AddTodo from '../components/AddTodo';
+import TodoList from '../components/TodoList';
+import Footer from '../components/Footer';
+
+class App extends Component {
+  render() {
+    // Injected by connect() call:
+    const { dispatch, visibleTodos, visibilityFilter } = this.props;
+    return (
+      <div>
+        <AddTodo
+          onAddClick={text =>
+            dispatch(addTodo(text))
+          } />
+        <TodoList
+          todos={this.props.visibleTodos}
+          onTodoClick={index =>
+            dispatch(completeTodo(index))
+          } />
+        <Footer
+          filter={visibilityFilter}
+          onFilterChange={nextFilter =>
+            dispatch(setVisibilityFilter(nextFilter))
+          } />
+      </div>
+    );
   }
 }
-*/
 
+App.propTypes = {
+  visibleTodos: PropTypes.arrayOf(PropTypes.shape({
+    text: PropTypes.string.isRequired,
+    completed: PropTypes.bool.isRequired
+  })),
+  visibilityFilter: PropTypes.oneOf([
+    'SHOW_ALL',
+    'SHOW_COMPLETED',
+    'SHOW_ACTIVE'
+  ]).isRequired
+};
+
+function selectTodos(todos, filter) {
+  switch (filter) {
+  case VisibilityFilters.SHOW_ALL:
+    return todos;
+  case VisibilityFilters.SHOW_COMPLETED:
+    return todos.filter(todo => todo.completed);
+  case VisibilityFilters.SHOW_ACTIVE:
+    return todos.filter(todo => !todo.completed);
+  }
+}
+
+function select(state) {
+  return {
+    visibleTodos: selectTodos(state.todos, state.visibilityFilter),
+    visibilityFilter: state.visibilityFilter
+  };
+}
+
+// Wrap the component to inject dispatch and state into it
+export default connect(select)(App);
+```
+
+In the above example, `select` calls `selectTodos` to calculate `visibleTodos`. This works great, but there is a drawback: `visibleTodos` is calculated every time the component is updated. If the state tree is large, or the calculation expensive, repeating the calculation on every update may cause performance problems. Reselect can help to avoid these unnecessary recalculations.
+
+### Creating a Memoized Selector
+
+We would like to replace `select` with a memoized selector that recalculates `visibleTodos` when the value of `state.todos` or `state.visibilityFilter` changes, but not when changes occur in other (unrelated) parts of the state tree.
+
+Reselect provides a function `createSelector` for creating memoized selectors. `createSelector` takes an array of input-selectors and a transform function as its arguments. If the Redux state tree is mutated in a way that causes the value of an input-selector to change, the selector will call its transform function with the values of the input-selectors as arguments and return the result. If the values of the input-selectors are the same as the previous call to the selector, it will return the previously computed value instead of calling the transform function.
+
+Let's define a memoized selector named `visibleTodosSelector` to replace `select`:
+
+#### `selectors/TodoSelectors.js`
+
+```js
 import { createSelector } from 'reselect';
+import { VisibilityFilters } from '../actions';
+
+function selectTodos(todos, filter) {
+  switch (filter) {
+  case VisibilityFilters.SHOW_ALL:
+    return todos;
+  case VisibilityFilters.SHOW_COMPLETED:
+    return todos.filter(todo => todo.completed);
+  case VisibilityFilters.SHOW_ACTIVE:
+    return todos.filter(todo => !todo.completed);
+  }
+}
 
 /*
- * Definition of simple selectors. 
- * Simple selectors should be used to abstract away the structure
+ * Definition of input-selectors. 
+ * Input-selectors should be used to abstract away the structure
  * of the store in cases where no calculations are needed 
  * and memoization wouldn't provide any benefits.
  */
-const shopItemsSelector = state => state.shop.items;
-const taxPercent = state => state.shop.taxPercent;
+const visibilityFilterSelector = state => state.visibilityFilter;
+const todosSelector = state => state.todos;
 
 /* 
- * Definition of combined selectors. 
- * In the subsequent examples selectors are combined to derive new information. 
- * To prevent expensive recalculation of these selectors memoization is applied. 
- * Hence, these selectors are only recomputed whenever their input selectors change. 
- * In all other cases the precomputed values are returned.
+ * Definition of combined-selector. 
+ * In visibleTodosSelector, input-selectors are combined to derive new information. 
+ * To prevent expensive recalculation of the input-selectors memoization is applied. 
+ * Hence, these selectors are only recomputed when the value of their input-selectors change. 
+ * If none of the input-selectors return a new value, the previously computed value is returned.
  */
-const subtotalSelector = createSelector(
-  [shopItemSelector],
-  items => items.reduce((acc, item) => acc + item.value, 0)
-);
-
-const taxSelector = createSelector(
-  [subtotalSelector, taxPercent],
-  (subtotal, taxPercent) => subtotal * (taxPercent / 100)
-);
-
-const totalSelector = createSelector(
-  [subtotalSelector, taxSelector],
-  (subtotal, tax) => { return {total: subtotal + tax}}
+export const visibleTodosSelector = createSelector(
+  visibilityFilterSelector,
+  todosSelector,
+  (visibilityFilter, todos) => {
+    return {
+      visibleTodos: selectTodos(todos, visibilityFilter),
+      visibilityFilter
+    };
+  }
 );
 ```
 
-### Selector Usage
+In the example above, `visibilityFilterSelector` and `todosSelector` are input-selectors. They are created as ordinary non-memoized selector functions because they do not transform the data they select. `visibleTodosSelector` on the other hand is a memoized selector. It takes `visibilityFilterSelector` and `todosSelector` as input-selectors, and a transform function that calculates the filtered todos list.
 
-```Javascript
+### Composing Selectors
 
-import React from 'react';
-import { connect } from 'redux/react';
+A memoized selector can itself be an input-selector to another memoized selector. Here is `visibleTodosSelector` being used as an input-selector to a selector that further filters the todos by keyword:
+
+```js
+const keywordSelector = state => state.keyword;
+
+const keywordFilterSelector = createSelector(
+  [visibleTodosSelector, keywordSelector],
+  (visibleTodos, keyword) => visibleTodos.filter(
+    todo => todo.indexOf(keyword) > -1
+  )
+);
+```
+
+### Connecting a Selector to the Redux Store
+
+If you are using React Redux, you connect a memoized selector to the Redux store using `connect`:
+
+#### `containers/TodoApp.js`
+
+```js
+import React, { Component, PropTypes } from 'react';
+import { connect } from 'react-redux';
+import { addTodo, completeTodo, setVisibilityFilter } from '../actions';
+import AddTodo from '../components/AddTodo';
+import TodoList from '../components/TodoList';
+import Footer from '../components/Footer';
 
 /*
- * Import the selector defined in the example above.
- * This allows your to separate your components from the structure of your stores.
+ * Import the selector defined in ../selectors/todoSelectors.js.
+ * This allows you to separate your components from the structure of your stores.
  */
-import { totalSelector } from 'selectors/ShopSelectors';
+import { visibleTodosSelector } from '../selectors/todoSelectors';
 
-/*
- * Bind the totalSelector on the Total component.
- * The keys of the selector result are bound to the corresponding component props.
- * In our example there is the 'total' key which is bound to this.props.total
- */
-@connect(totalSelector)
-class Total extends React.Component {
+class App extends Component {
   render() {
-    return <div>{ this.props.total }</div>
+    // Injected by connect() call:
+    const { dispatch, visibleTodos, visibilityFilter } = this.props;
+    return (
+      <div>
+        <AddTodo
+          onAddClick={text =>
+            dispatch(addTodo(text))
+          } />
+        <TodoList
+          todos={this.props.visibleTodos}
+          onTodoClick={index =>
+            dispatch(completeTodo(index))
+          } />
+        <Footer
+          filter={visibilityFilter}
+          onFilterChange={nextFilter =>
+            dispatch(setVisibilityFilter(nextFilter))
+          } />
+      </div>
+    );
   }
 }
 
-export default Total;
+App.propTypes = {
+  visibleTodos: PropTypes.arrayOf(PropTypes.shape({
+    text: PropTypes.string.isRequired,
+    completed: PropTypes.bool.isRequired
+  })),
+  visibilityFilter: PropTypes.oneOf([
+    'SHOW_ALL',
+    'SHOW_COMPLETED',
+    'SHOW_ACTIVE'
+  ]).isRequired
+};
+
+/*
+ * Connet visibleTodosSelector to the App component.
+ * The keys of the selector result are available on the props object for App.
+ * In our example there is the 'visibleTodos' key which is bound to this.props.visibleTodos
+ */
+export default connect(visibleTodosSelector)(App);
 ```
 
+### Accessing React Props in Selectors
 
-## API Documentation
+So far we have only seen selectors receive state from the Redux store as input, but it is also possible for a selector to receive the props of the component wrapped by `connect`. 
 
-### createSelector([inputSelectors], resultFn)
+Consider the following example:
+
+#### `index.js`
+
+```js
+import React from 'react';
+import { createStore } from 'redux';
+import { Provider } from 'react-redux';
+import App from './containers/App';
+import todoApp from './reducers';
+
+let store = createStore(todoApp);
+
+let rootElement = document.getElementById('root');
+React.render(
+  <Provider store={store}>
+    {() => <App maxTodos={5}/>}
+  </Provider>,
+  rootElement
+);
+```
+
+We have introduced a prop named `maxTodos` to the `App` component. We would like to access `maxTodos` in `visibleTodosSelector` so we can make sure to not return more Todos than it specifies. To achieve this we can make the following changes to `selectors/todoSelectors.js`:
+
+#### `selectors/todoSelectors.js`
 
 Takes an array of selectors whose values are computed and passed as arguments to resultFn.
-If parameter resultFn is omitted, a default result function is used which will return the passed arguments as an array like: ```(...values) => values;```
 ```js
+import { createSelector } from 'reselect';
+import { VisibilityFilters } from './actions';
 
+function selectTodos(todos, filter) {
+  switch (filter) {
+  case VisibilityFilters.SHOW_ALL:
+    return todos;
+  case VisibilityFilters.SHOW_COMPLETED:
+    return todos.filter(todo => todo.completed);
+  case VisibilityFilters.SHOW_ACTIVE:
+    return todos.filter(todo => !todo.completed);
+  }
+}
+
+const visibilityFilterSelector = state => state.visibilityFilter;
+const todosSelector = state => state.todos;
+const maxTodosSelector = (state, props) => props.maxTodos;
+
+export const visibleTodosSelector = createSelector(
+  visibilityFilterSelector,
+  todosSelector,
+  maxTodosSelector,
+  (visibilityFilter, todos, maxTodos) => {
+    const visibleTodos = selectTodos(todos, visibilityFilter).slice(0, maxTodos);
+    return {
+      visibleTodos,
+      visibilityFilter
+    };
+  }
+);
+```
+
+When a selector is connected to a component with `connect`, the component props are passed as the second argument to the selector. In the example above, we added a new input-selector named `maxTodosSelector` which returns the `maxTodos` property from its props argument. `maxTodosSelector` was then added as an input-selector to `visibleTodosSelector`, making `maxTodos` available to the result function.
+
+## API
+
+### createSelector(...inputSelectors, resultFunc)
+### createSelector([inputSelectors], resultFunc)
+
+Takes a variable number or array of selectors whose values are computed and passed as arguments to `resultFn`.
+
+`createSelector` determines if the value returned by an input-selector has changed between calls using reference equality (`===`). Inputs to selectors created with `createSelector` should be immutable.
+
+Selectors created with `createSelector` have a cache size of 1. This means they always recalculate when the value of an input-selector changes, as a selector only stores the preceding value of each input-selector.
+
+```js
 const mySelector = createSelector(
+  state => state.values.value1,
+  state => state.values.value2,
+  (value1, value2) => value1 + value2
+);
+
+// You can also pass an array of selectors
+const totalSelector = createSelector(
   [
     state => state.values.value1,
     state => state.values.value2
   ],
   (value1, value2) => value1 + value2
 );
+```
 
-// it is not necessary to wrap a single input selector in an array
+It can be useful to access the props of a component from within a selector. When a selector is connected to a component with `connect`, the component props are passed as the second argument to the selector:
+
+```js
+const abSelector = (state, props) => state.a * props.b;
+
+// props only (ignoring state argument)
+const cSelector =  (_, props) => props.c;
+
+// state only (props argument omitted as not required)
+const dSelector = state => state.d;
+
 const totalSelector = createSelector(
-  state => state.shop.items,
-  items => items.reduce((acc, item) => acc + item.value, 0)
+  abSelector,
+  cSelector,
+  dSelector,
+  (ab, c, d) => ({
+    total: ab + c + d
+  })
 );
 
 ```
+
 ### composeSelectors({inputSelectors})
 
-Takes a mapping of selectors and returns a selector that itself returns the selected values equaly shaped like inputSelectors.
+Takes a mapping of selectors and returns a selector that itself returns the selected values equaly shaped like `inputSelectors`.
 
 ```js
 const mySelectorA = state => state.a;
@@ -142,21 +405,352 @@ let state = {a:1,b:2};
 composedSelector( state ); // Will produce: {x:1,y:2}
 ```
 
-### createSelectorCreator(valueEqualsFn)
-Return a selectorCreator that creates selectors with a non-default valueEqualsFn. The valueEqualsFn is used to check if the arguments to a selector have changed. The default valueEqualsFn function is:
+### defaultMemoize(func, equalityCheck = defaultEqualityCheck)
+
+`defaultMemoize` memoizes the function passed in the func parameter. It is the memoize function used by `createSelector` and is designed to work with immutable data.
+
+`defaultMemoize` has a cache size of 1. This means it always recalculates when the value of an argument changes.
+
+`defaultMemoize` determines if an argument has changed by calling the `equalityCheck` function. The default `equalityCheck` checks for changes using reference equality:
+
 ```js
-function defaultValueEquals(a, b) {
-  return a === b;
+function defaultEqualityCheck(currentVal, previousVal) {
+  return currentVal === previousVal;
 }
 ```
-```js
-// create a "selector creator" that uses Immutable.is instead of ===
-const immutableCreateSelector = createSelectorCreator(Immutable.is);
 
-// use the new "selector creator" to create a 
-// selector (state.values is an Immutable.List)
-const mySelector = immutableCreateSelector(
-  [state => state.values.filter(val => val < 5)],
+`defaultMemoize` can be used with `createSelectorCreator` to [customize the `equalityCheck` function](#customize-equalitycheck-for-defaultmemoize).
+
+### createSelectorCreator(memoize, ...memoizeOptions)
+
+`createSelectorCreator` can be used to make a customized version of `createSelector`.
+
+The `memoize` argument is a memoization function to replace `defaultMemoize`.
+
+The `...memoizeOptions` rest parameters are zero or more configuration options to be passsed to `memoizeFunc`. The selectors `resultFunc` is passed as the first argument to `memoize` and the `memoizeOptions` are then passed from the second argument onwards:
+
+```js
+const customSelectorCreator = createSelectorCreator(
+  customMemoize, // function to be used to memoize resultFunc
+  option1, // option1 will be passed as second argument to customMemoize
+  option2, // option2 will be passed as third argument to customMemoize
+  option3 // option3 will be passed as fourth argument to customMemoize
+);
+
+const customSelector = customSelectorCreator(
+  input1,
+  input2,
+  resultFunc // resultFunc will be passed as first argument to customMemoize
+);
+```
+
+Internally `customSelector` calls the memoize function as follows:
+
+```js
+customMemoize(resultFunc, option1, option2, option3);
+```
+
+Here are some examples of how to use `createSelectorCreator`:
+
+#### Customize `equalityCheck` for `defaultMemoize`
+
+```js
+import { createSelectorCreator, defaultMemoize } from 'reselect';
+import isEqual from 'lodash.isEqual';
+
+// create a "selector creator" that uses lodash.isEqual instead of ===
+const createDeepEqualSelector = createSelectorCreator(
+  defaultMemoize,
+  isEqual
+);
+
+// use the new "selector creator" to create a selector
+const mySelector = createDeepEqualSelector(
+  state => state.values.filter(val => val < 5),
   values => values.reduce((acc, val) => acc + val, 0)
 );
 ```
+
+#### Use memoize function from lodash for an unbounded cache
+
+```js
+import { createSelectorCreator } from 'reselect';
+import memoize from 'lodash.memoize';
+
+let called = 0;
+const customSelectorCreator = createSelectorCreator(memoize, JSON.stringify);
+const selector = customSelectorCreator(
+  state => state.a,
+  state => state.b,
+  (a, b) => {
+    called++;
+    return a + b;
+  }
+);
+```
+
+## FAQ
+
+### Q: Why isn't my selector recomputing when the input state changes?
+
+A: Check that your memoization function is compatible with your state update function (ie the reducer if you are using Redux). For example, a selector created with `createSelector` will not work with a state update function that mutates an existing object instead of creating a new one each time. `createSelector` uses an identity check (`===`) to detect that an input has changed, so mutating an existing object will not trigger the selector to recompute because mutating an object does not change its identity. Note that if you are using Redux, mutating the state object is [almost certainly a mistake](http://rackt.github.io/redux/docs/Troubleshooting.html).
+
+The following example defines a simple selector that determines if the first todo item in an array of todos has been completed:
+
+```js
+const isFirstTodoCompleteSelector = createSelector(
+  state => state.todos[0],
+  todo => todo && todo.completed
+);
+```
+
+The following state update function **will not** work with `isFirstTodoCompleteSelector`:
+
+```js
+export default function todos(state = initialState, action) {
+  switch (action.type) {
+  case COMPLETE_ALL:
+    const areAllMarked = state.every(todo => todo.completed);
+    // BAD: mutating an existing object
+    return state.map(todo => {
+      todo.completed = !areAllMarked;
+      return todo;
+    });
+
+  default:
+    return state;
+  }
+}
+```
+
+The following state update function **will** work with `isFirstTodoCompleteSelector`:
+
+```js
+export default function todos(state = initialState, action) {
+  switch (action.type) {
+  case COMPLETE_ALL:
+    const areAllMarked = state.every(todo => todo.completed);
+    // GOOD: returning a new object each time with Object.assign
+    return state.map(todo => Object.assign({}, todo, {
+      completed: !areAllMarked
+    }));
+
+  default:
+    return state;
+  }
+}
+```
+
+If you are not using Redux and have a requirement to work with mutable data, you can use `createSelectorCreator` to replace the default memoization function and/or use a different equality check function. See [here](#use-memoize-function-from-lodash-for-an-unbounded-cache) and [here](#customize-equalitycheck-for-defaultmemoize) for examples.
+
+### Q: Why is my selector recomputing when the input state stays the same?
+
+A: Check that your memoization funtion is compatible with your state update function (ie the reducer if you are using Redux). For example, a selector created with `createSelector` that recomputes unexpectedly may be receiving a new object whether the values it contains have updated or not. As `createSelector` uses an identity check (`===`) to detect that an input has changed, the selector will always recompute.
+
+```js
+import { REMOVE_OLD } from '../constants/ActionTypes';
+
+const initialState = [{
+  text: 'Use Redux',
+  completed: false,
+  id: 0,
+  timestamp: Date.now()
+}];
+
+export default function todos(state = initialState, action) {
+  switch (action.type) {
+  case REMOVE_OLD:
+    return state.filter(todo => {
+      return todo.timestamp + 30 * 24 * 60 * 60 * 1000 > Date.now();
+    });
+  default:
+    return state;
+  }
+}
+```
+
+The following selector is going to recompute every time REMOVE_OLD is invoked because Array.filter always returns a new object. However, in the majority of cases the the REMOVE_OLD action will not change the list of todos so the recomputation is unnecessary.
+
+```js
+import { createselector } from 'reselect';
+
+const todosSelector = state => state.todos;
+
+export const visibletodosselector = createselector(
+  todosselector,
+  (todos) => {
+    ...
+  }
+);
+```
+
+You can eliminate unnecessary recomputations by returning a new object from the state update function only when a deep equality check has found that the list of todos has actually changed:
+
+```js
+import { REMOVE_OLD } from '../constants/ActionTypes';
+import isEqual from 'lodash.isEqual';
+
+const initialState = [{
+  text: 'Use Redux',
+  completed: false,
+  id: 0,
+  timestamp: Date.now()
+}];
+
+export default function todos(state = initialState, action) {
+  switch (action.type) {
+  case REMOVE_OLD:
+    const updatedState =  state.filter(todo => {
+      return todo.timestamp + 30 * 24 * 60 * 60 * 1000 > Date.now();
+    });
+    return isEqual(updatedState, state) ? state : updatedState;
+  default:
+    return state;
+  }
+}
+```
+
+Alternatively, the default `equalityCheck` function in the selector can be replaced by a deep equality check:
+
+```js
+import { createSelectorCreator, defaultMemoize } from 'reselect';
+import isEqual from 'lodash.isEqual';
+
+const todosSelector = state => state.todos;
+
+// create a "selector creator" that uses lodash.isEqual instead of ===
+const createDeepEqualSelector = createSelectorCreator(
+  defaultMemoize,
+  isEqual
+);
+
+// use the new "selector creator" to create a selector
+const mySelector = createDeepEqualSelector(
+  todosSelector,
+  (todos) => {
+    ...
+  }
+);
+```
+
+Always check that the cost of an alernative `equalityCheck` function or a deep equality check in the state update function is not greater than the cost of recomputing every time. Furthermore, if recomputing every time is the better option, you should think about whether Reselect is giving you any benefit over passing a plain `mapStateToProps` function to `connect`.
+
+### Q: Can I use Reselect without Redux?
+
+A: Yes. Reselect has no dependencies on any other package, so although it was designed to be used with Redux it can be used independently. It is currently being used successfully in traditional Flux apps.
+
+> If you create selectors using `createSelector` make sure the objects in your store are immutable.
+> See [here](#createselectorinputselectors-resultfn)
+
+### Q: How do I create a selector that takes an argument?
+
+A: Creating a factory function may be helpful:
+
+```js
+const expensiveItemSelectorFactory = minValue => {
+  return createSelector(
+    shopItemsSelector,
+    items => items.filter(item => item.value < minValue)
+  );
+}
+
+const subtotalSelector = createSelector(
+  expensiveItemSelectorFactory(200),
+  items => items.reduce((acc, item) => acc + item.value, 0)
+);
+```
+
+### Q: The default memoization function is no good, can I use a different one?
+
+A: We think it works great for a lot of use cases, but sure. See [this example](#customize-equalitycheck-for-defaultmemoize).
+
+### Q: The default memoization cache size of 1 is no good, can I increase it?
+
+A: We think it works great for a lot of use cases, but sure. Check out [this example](#use-memoize-function-from-lodash-for-an-unbounded-cache).
+
+### Q: How do I test a selector?
+
+A: For a given input, a selector should always produce the same output. For this reason they are simple to unit test.
+
+```js
+const selector = createSelector(
+  state => state.a,
+  state => state.b,
+  (a, b) => ({
+    c: a * 2,
+    d: b * 3
+  })
+);
+
+test("selector unit test", function() {
+  assert.deepEqual(selector({a: 1, b: 2}), {c: 2, d: 6});
+  assert.deepEqual(selector({a: 2, b: 3}), {c: 4, d: 9});
+});
+```
+
+It may also be useful to check that the memoization function for a selector works correctly with the state update function (ie the reducer if you are using Redux). Each selector has a `recomputations` method that will return the number of times it has been recomputed:
+
+```js
+suite('selector', () => {
+  let state = {a: 1, b: 2};
+
+  const reducer = (state, action) => (
+    {
+      a: action(state.a),
+      b: action(state.b)
+    }
+  );
+
+  const selector = createSelector(
+    state => state.a,
+    state => state.b,
+    (a, b) => ({
+      c: a * 2,
+      d: b * 3
+    })
+  );
+
+  const plusOne = x => x + 1;
+  const id = x => x;
+
+  test("selector unit test", function() {
+    state = reducer(state, plusOne);
+    assert.deepEqual(selector(state), {c: 4, d: 9});
+    state = reducer(state, id);
+    assert.deepEqual(selector(state), {c: 4, d: 9});
+    assert.equal(selector.recomputations(), 1);
+    state = reducer(state, plusOne);
+    assert.deepEqual(selector(state), {c: 6, d: 12});
+    assert.equal(selector.recomputations(), 2);
+  });
+});
+```
+
+### Q: How do I use Reselect with Immutable.js?
+
+A: Selectors created with `createSelector` should work just fine with Immutable.js data structures.
+
+If your selector is recomputing and you don't think the state has changed, make sure you are aware of which Immutable.js update methods **always** return a new object and which update methods only return a new object **when the collection actually changes**.
+
+```js
+import Immutable from 'immutable';
+
+let myMap = Immutable.Map({
+  a: 1,
+  b: 2,
+  c: 3
+});
+
+let newMap = myMap.set('a', 1); // set, merge and others only return a new obj when update changes collection
+assert.equal(myMap, newMap);
+newMap = myMap.merge({'a', 1});
+assert.equal(myMap, newMap);
+newMap = myMap.map(a => a * 1); // map, reduce, filter and others always return a new obj
+assert.notEqual(myMap, newMap);
+```
+
+If a selector's input is updated by an operation that always returns a new object, it may be performing unnecessary recomputations. See [here](#q-why-is-my-selector-recomputing-when-the-input-state-stays-the-same) for a discussion on the pros and cons of using a deep equality check like `Immmutable.is` to eliminate unnecessary recomputations.
+
+## License
+
+MIT

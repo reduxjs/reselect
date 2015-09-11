@@ -8,6 +8,7 @@
   at the React Europe Hackathon 2015. Also added tests.
 
 * Contributors: Lee Bannard, Martijn Faassen, Robert Binna, Alex
-  Guerra, ryanatkn
+  Guerra, ryanatkn, Adam Royle, Christian Schuhmann, Jason Huang,
+  Daniel Barreto, Mihail Diordiev, Daniela Borges
 
 * Inspired by getters in Nuclear.js and subscriptions in re-frame.
