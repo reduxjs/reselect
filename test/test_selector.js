@@ -1,7 +1,7 @@
 // TODO: Add test for React Redux connect function
 
 import chai from 'chai';
-import {createSelector, createSelectorCreator, defaultMemoize, composeSelectors} from '../src/index';
+import { createSelector, createSelectorCreator, defaultMemoize, composeSelectors } from '../src/index';
 import { default as lodashMemoize } from 'lodash.memoize';
 
 let assert = chai.assert;
