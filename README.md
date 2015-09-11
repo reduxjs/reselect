@@ -301,7 +301,6 @@ We have introduced a prop named `maxTodos` to the `App` component. We would like
 
 #### `selectors/todoSelectors.js`
 
-Takes an array of selectors whose values are computed and passed as arguments to resultFn.
 ```js
 import { createSelector } from 'reselect';
 import { VisibilityFilters } from './actions';
