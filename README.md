@@ -48,7 +48,6 @@ export const totalSelector = createSelector(
   - [Why is my selector recomputing when the input state stays the same?](#q-why-is-my-selector-recomputing-when-the-input-state-stays-the-same)
   - [Can I use Reselect without Redux?](#q-can-i-use-reselect-without-redux)
   - [The default memoization function is no good, can I use a different one?](#q-the-default-memoization-function-is-no-good-can-i-use-a-different-one)
-  - [The default memoization cache size of 1 is no good, can I increase it?](#q-the-default-memoization-cache-size-of-1-is-no-good-can-i-increase-it)
   - [How do I test a selector?](#q-how-do-i-test-a-selector)
   - [How do I create a selector that takes an argument? ](#q-how-do-i-create-a-selector-that-takes-an-argument)
   - [How do I use Reselect with Immutable.js?](#q-how-do-i-use-reselect-with-immutablejs)
@@ -273,7 +272,7 @@ export default connect(visibleTodosSelector)(App);
 
 ### Accessing React Props in Selectors
 
-So far we have only seen selectors receive state from the Redux store as input, but it is also possible for a selector to receive the props of the component wrapped by `connect`. 
+So far we have only seen selectors receive the Redux store state as input, but it is also possible for a selector to receive the props of a component wrapped by `connect`. 
 
 Consider the following example:
 
@@ -297,7 +296,7 @@ React.render(
 );
 ```
 
-We have introduced a prop named `maxTodos` to the `App` component. We would like to access `maxTodos` in `visibleTodosSelector` so we can make sure to not return more Todos than it specifies. To achieve this we can make the following changes to `selectors/todoSelectors.js`:
+We have introduced a prop named `maxTodos` to the `App` component. We would like to access `maxTodos` in `visibleTodosSelector` so we can make sure that we do not return more Todos than it specifies. To achieve this we can make the following changes to `selectors/todoSelectors.js`:
 
 #### `selectors/todoSelectors.js`
 
@@ -334,14 +333,14 @@ export const visibleTodosSelector = createSelector(
 );
 ```
 
-When a selector is connected to a component with `connect`, the component props are passed as the second argument to the selector. In the example above, we added a new input-selector named `maxTodosSelector` which returns the `maxTodos` property from its props argument. `maxTodosSelector` was then added as an input-selector to `visibleTodosSelector`, making `maxTodos` available to the result function.
+When a selector is connected to a component with `connect`, the component props are passed as the second argument to the selector. In `visibleTodosSelector` we have added a new input-selector named `maxTodosSelector`, which returns the `maxTodos` property from its props argument.
 
 ## API
 
 ### createSelector(...inputSelectors, resultFunc)
 ### createSelector([inputSelectors], resultFunc)
 
-Takes a variable number or array of selectors whose values are computed and passed as arguments to `resultFn`.
+Takes one or more selectors whose values are computed and passed as arguments to `resultFn`.
 
 `createSelector` determines if the value returned by an input-selector has changed between calls using reference equality (`===`). Inputs to selectors created with `createSelector` should be immutable.
 
@@ -387,11 +386,11 @@ const totalSelector = createSelector(
 ```
 ### defaultMemoize(func, equalityCheck = defaultEqualityCheck)
 
-`defaultMemoize` memoizes the function passed in the func parameter. It is the memoize function used by `createSelector` and is designed to work with immutable data.
+`defaultMemoize` memoizes the function passed in the func parameter. It is the memoize function used by `createSelector`.
 
 `defaultMemoize` has a cache size of 1. This means it always recalculates when the value of an argument changes.
 
-`defaultMemoize` determines if an argument has changed by calling the `equalityCheck` function. The default `equalityCheck` checks for changes using reference equality:
+`defaultMemoize` determines if an argument has changed by calling the `equalityCheck` function. As `defaultMemoize` is designed to be used wiht immutable data, the default `equalityCheck` function checks for changes using reference equality:
 
 ```js
 function defaultEqualityCheck(currentVal, previousVal) {
@@ -407,7 +406,7 @@ function defaultEqualityCheck(currentVal, previousVal) {
 
 The `memoize` argument is a memoization function to replace `defaultMemoize`.
 
-The `...memoizeOptions` rest parameters are zero or more configuration options to be passsed to `memoizeFunc`. The selectors `resultFunc` is passed as the first argument to `memoize` and the `memoizeOptions` are then passed from the second argument onwards:
+The `...memoizeOptions` rest parameters are zero or more configuration options to be passsed to `memoizeFunc`. The selectors `resultFunc` is passed as the first argument to `memoize` and the `memoizeOptions` are passed as the second argument onwards:
 
 ```js
 const customSelectorCreator = createSelectorCreator(
@@ -430,7 +429,7 @@ Internally `customSelector` calls the memoize function as follows:
 customMemoize(resultFunc, option1, option2, option3);
 ```
 
-Here are some examples of how to use `createSelectorCreator`:
+Here are some examples of how you might use `createSelectorCreator`:
 
 #### Customize `equalityCheck` for `defaultMemoize`
 
@@ -525,7 +524,7 @@ If you are not using Redux and have a requirement to work with mutable data, you
 
 ### Q: Why is my selector recomputing when the input state stays the same?
 
-A: Check that your memoization funtion is compatible with your state update function (ie the reducer if you are using Redux). For example, a selector created with `createSelector` that recomputes unexpectedly may be receiving a new object whether the values it contains have updated or not. As `createSelector` uses an identity check (`===`) to detect that an input has changed, the selector will always recompute.
+A: Check that your memoization function is compatible with your state update function (ie the reducer if you are using Redux). For example, a selector created with `createSelector` that recomputes unexpectedly may be receiving a new object on each update whether the values it contains have changed or not. `createSelector` uses an identity check (`===`) to detect that an input has changed, so returning a new object on each update means that the selector will recompute on each update.
 
 ```js
 import { REMOVE_OLD } from '../constants/ActionTypes';
@@ -549,7 +548,7 @@ export default function todos(state = initialState, action) {
 }
 ```
 
-The following selector is going to recompute every time REMOVE_OLD is invoked because Array.filter always returns a new object. However, in the majority of cases the the REMOVE_OLD action will not change the list of todos so the recomputation is unnecessary.
+The following selector is going to recompute every time REMOVE_OLD is invoked because Array.filter always returns a new object. However, in the majority of cases the REMOVE_OLD action will not change the list of todos so the recomputation is unnecessary.
 
 ```js
 import { createselector } from 'reselect';
@@ -613,7 +612,7 @@ const mySelector = createDeepEqualSelector(
 );
 ```
 
-Always check that the cost of an alernative `equalityCheck` function or a deep equality check in the state update function is not greater than the cost of recomputing every time. Furthermore, if recomputing every time is the better option, you should think about whether Reselect is giving you any benefit over passing a plain `mapStateToProps` function to `connect`.
+Always check that the cost of an alernative `equalityCheck` function or deep equality check in the state update function is not greater than the cost of recomputing every time. If recomputing every time does work out to be the cheaper option, it may be that for this case Reselect is not giving you any benefit over passing a plain `mapStateToProps` function to `connect`.
 
 ### Q: Can I use Reselect without Redux?
 
@@ -642,11 +641,7 @@ const subtotalSelector = createSelector(
 
 ### Q: The default memoization function is no good, can I use a different one?
 
-A: We think it works great for a lot of use cases, but sure. See [this example](#customize-equalitycheck-for-defaultmemoize).
-
-### Q: The default memoization cache size of 1 is no good, can I increase it?
-
-A: We think it works great for a lot of use cases, but sure. Check out [this example](#use-memoize-function-from-lodash-for-an-unbounded-cache).
+A: We think it works great for a lot of use cases, but sure. See [these examples](#customize-equalitycheck-for-defaultmemoize).
 
 ### Q: How do I test a selector?
 
