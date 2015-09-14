@@ -198,18 +198,15 @@ suite('selector', () => {
         let firstResult = selector({a: 1,b: 2});
         assert.deepEqual( firstResult, {x: 1, y: 2});
         assert.strictEqual(selector({a: 1,b: 2}), firstResult);
-        assert.notStrictEqual(selector({a: 2,b: 2}),firstResult);
-        assert.notEqual(selector({a: 2,b: 2}), firstResult);
-        assert.deepEqual(selector({a: 2,b: 2}), {x: 2,y: 2});
+
+        let secondResult = selector({a: 2,b: 2});
+        assert.deepEqual( secondResult, {x: 2,y: 2});
+        assert.strictEqual(selector({a: 2,b: 2}), secondResult);
     });
     test("composing selectors with custom selector creator", function() {
-        let customEqualityFunctionCalls = 0;
         const customSelectorCreator = createSelectorCreator(
             defaultMemoize,
-            (a,b) => {
-                ++customEqualityFunctionCalls;
-                return JSON.stringify(a) == JSON.stringify(b)
-            }
+            (a,b) => a == b
         );
         const selector = composeSelectors({
               x: state => state.a,
@@ -219,10 +216,6 @@ suite('selector', () => {
         let firstResult = selector({a: 1,b: 2});
         assert.deepEqual( firstResult, {x: 1, y: 2});
         assert.strictEqual(selector({a: 1,b: 2}), firstResult);
-        assert.notStrictEqual(selector({a: 2,b: 2}),firstResult);
-        assert.notEqual(selector({a: 2,b: 2}), firstResult);
         assert.deepEqual(selector({a: 2,b: 2}), {x: 2,y: 2});
-
-        assert.equal( customEqualityFunctionCalls, 7 );
     });
 });
