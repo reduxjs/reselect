@@ -263,7 +263,7 @@ App.propTypes = {
 };
 
 /*
- * Connet visibleTodosSelector to the App component.
+ * Connect visibleTodosSelector to the App component.
  * The keys of the selector result are available on the props object for App.
  * In our example there is the 'visibleTodos' key which is bound to this.props.visibleTodos
  */
