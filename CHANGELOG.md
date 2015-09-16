@@ -3,6 +3,44 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.0](https://github.com/faassen/reselect/releases/tag/v1.1.0) - 2015/09/16
+
+## New features
+
+### `createStructuredSelector`
+
+`createStructuredSelector` is a convenience function that helps with a common pattern when using Reselect.  The selector passed to a connect decorator often just takes other selectors and maps them to keys in an object:
+
+```js
+const mySelectorA = state => state.a;
+const mySelectorB = state => state.b;
+
+const structuredSelector = createSelector(
+   mySelectorA,
+   mySelectorB,
+   mySelectorC,
+   (a, b, c) => ({
+     a, 
+     b,
+     c
+   })
+);
+```
+
+`createStructuredSelector` takes an object whose properties are input-selectors and returns a structured selector. The structured selector returns an object with the same keys as the `inputSelectors` argument, but with the selectors replaced with their values.
+
+```js
+const mySelectorA = state => state.a;
+const mySelectorB = state => state.b;
+
+const structuredSelector = createStructuredSelector({
+  x: mySelectorA,
+  y: mySelectorB
+});
+
+const result = structuredSelector({a: 1, b: 2}); // will produce {x: 1, y: 2}
+```
+
 ## [1.0.0](https://github.com/faassen/reselect/releases/tag/v1.0.0) - 2015/09/09
 
 ## Breaking Changes
