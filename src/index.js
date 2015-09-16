@@ -46,12 +46,10 @@ export function createSelector(...args) {
     return createSelectorCreator(defaultMemoize)(...args);
 }
 
-export function createStructuredSelector( selectors, selectorCreator = createSelector ) {
+export function createStructuredSelector(selectors, selectorCreator = createSelector) {
     let objectKeys = Object.keys(selectors);
     return selectorCreator(
-        objectKeys.map( (key) => {
-            return selectors[key];
-        }),
+        objectKeys.map(key => selectors[key]),
         (...values) => {
             return values.reduce((composition, value, index) => {
                 composition[objectKeys[index]] = value;

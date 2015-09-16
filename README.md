@@ -43,6 +43,7 @@ export const totalSelector = createSelector(
   - [`createSelector`](#createselectorinputselectors-resultfn)
   - [`defaultMemoize`](#defaultmemoize-equalitycheck--defaultequalitycheck)
   - [`createSelectorCreator`](#createselectorcreatormemoizefunc-memoizeoptions)
+  - [`createStructuredSelector`](#createstructuredselectorinputselectors-selectorcreator--createselector)
 - [FAQ](#faq)
   - [Why isn't my selector recomputing when the input state changes?](#q-why-isnt-my-selector-recomputing-when-the-input-state-changes)
   - [Why is my selector recomputing when the input state stays the same?](#q-why-is-my-selector-recomputing-when-the-input-state-stays-the-same)
@@ -385,26 +386,6 @@ const totalSelector = createSelector(
 
 ```
 
-### composeSelectors({inputSelectors})
-
-Takes a mapping of selectors and returns a selector that itself returns the selected values shaped like inputSelectors.
-Takes an array of selectors whose values are computed and passed as arguments to resultFn.
-If parameter resultFn is omitted, a default result function is used which will return the passed arguments as an array like: ```(...values) => values;```
-
-```js
-const mySelectorA = state => state.a;
-const mySelectorB = state => state.b;
-
-const composedSelector = composeSelectors({
-   x: mySelectorA,
-   y: mySelectorB
-});
-
-let state = {a:1,b:2};
-
-composedSelector( state ); // Will produce: {x:1,y:2}
-```
-
 ### defaultMemoize(func, equalityCheck = defaultEqualityCheck)
 
 `defaultMemoize` memoizes the function passed in the func parameter. It is the memoize function used by `createSelector`.
@@ -487,6 +468,56 @@ const selector = customSelectorCreator(
     return a + b;
   }
 );
+```
+
+### createStructuredSelector({inputSelectors}, selectorCreator = createSelector)
+
+`createStructuredSelector` is a convenience function that helps with a common pattern when using Reselect.  The selector passed to a connect decorator often just takes other selectors and maps them to keys in an object:
+
+```js
+const mySelectorA = state => state.a;
+const mySelectorB = state => state.b;
+
+const structuredSelector = createSelector(
+   mySelectorA,
+   mySelectorB,
+   mySelectorC,
+   (a, b, c) => ({
+     a, 
+     b,
+     c
+   })
+);
+```
+
+`createStructuredSelector` takes an object whose properties are input-selectors and returns a structured selector. The structured selector returns an object with the same keys as the `inputSelectors` argument, but with the selectors replaced with their values.
+
+```js
+const mySelectorA = state => state.a;
+const mySelectorB = state => state.b;
+
+const structuredSelector = createStructuredSelector({
+  x: mySelectorA,
+  y: mySelectorB
+});
+
+const result = structuredSelector({a: 1, b: 2}); // will produce {x: 1, y: 2}
+```
+
+Structured selectors can be nested:
+
+```js
+const nestedSelector = createStructuredSelector({
+  subA: createStructuredSelector({
+    selectorA,
+    selectorB
+  }),
+  subB: createStructuredSelector({
+    selectorC,
+    selectorD
+  })
+});
+
 ```
 
 ## FAQ
