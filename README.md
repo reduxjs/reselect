@@ -384,6 +384,25 @@ const totalSelector = createSelector(
 );
 
 ```
+
+### composeSelectors({inputSelectors})
+
+Takes a mapping of selectors and returns a selector that itself returns the selected values equaly shaped like `inputSelectors`.
+
+```js
+const mySelectorA = state => state.a;
+const mySelectorB = state => state.b;
+
+const composedSelector = composeSelectors({
+   x: mySelectorA,
+   y: mySelectorB
+});
+
+let state = {a:1,b:2};
+
+composedSelector( state ); // Will produce: {x:1,y:2}
+```
+
 ### defaultMemoize(func, equalityCheck = defaultEqualityCheck)
 
 `defaultMemoize` memoizes the function passed in the func parameter. It is the memoize function used by `createSelector`.
