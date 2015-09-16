@@ -46,7 +46,7 @@ export function createSelector(...args) {
     return createSelectorCreator(defaultMemoize)(...args);
 }
 
-export function composeSelectors( selectors, selectorCreator = createSelector ) {
+export function createStructuredSelector( selectors, selectorCreator = createSelector ) {
 	 let objectKeys = Object.keys(selectors);
     return selectorCreator(
        objectKeys.map( (key) => {

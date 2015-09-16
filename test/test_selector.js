@@ -1,7 +1,7 @@
 // TODO: Add test for React Redux connect function
 
 import chai from 'chai';
-import { createSelector, createSelectorCreator, defaultMemoize, composeSelectors } from '../src/index';
+import { createSelector, createSelectorCreator, defaultMemoize, createStructuredSelector } from '../src/index';
 import { default as lodashMemoize } from 'lodash.memoize';
 
 let assert = chai.assert;
@@ -190,7 +190,7 @@ suite('selector', () => {
         assert.equal(called, 2);
     });
     test("composing selectors", function() {
-        const selector = composeSelectors({
+        const selector = createStructuredSelector({
               x: state => state.a,
               y: state => state.b
         });
@@ -208,7 +208,7 @@ suite('selector', () => {
             defaultMemoize,
             (a,b) => a == b
         );
-        const selector = composeSelectors({
+        const selector = createStructuredSelector({
               x: state => state.a,
               y: state => state.b
         }, customSelectorCreator );
