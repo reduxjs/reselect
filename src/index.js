@@ -47,16 +47,16 @@ export function createSelector(...args) {
 }
 
 export function createStructuredSelector( selectors, selectorCreator = createSelector ) {
-	 let objectKeys = Object.keys(selectors);
+    let objectKeys = Object.keys(selectors);
     return selectorCreator(
-       objectKeys.map( (key) => {
-           return selectors[key];
-		 }),
-       (...values) => {
-           return values.reduce((composition, value, index) => {
-               composition[objectKeys[index]] = value;
-               return composition;
-           }, {});
-       }
+        objectKeys.map( (key) => {
+            return selectors[key];
+        }),
+        (...values) => {
+            return values.reduce((composition, value, index) => {
+                composition[objectKeys[index]] = value;
+                return composition;
+            }, {});
+        }
     );
 }

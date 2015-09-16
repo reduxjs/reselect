@@ -189,33 +189,30 @@ suite('selector', () => {
         assert.equal(memoized('A'), 'A');
         assert.equal(called, 2);
     });
-    test("composing selectors", function() {
+    test('structured selector', () => {
         const selector = createStructuredSelector({
               x: state => state.a,
               y: state => state.b
         });
-
-        let firstResult = selector({a: 1,b: 2});
-        assert.deepEqual( firstResult, {x: 1, y: 2});
-        assert.strictEqual(selector({a: 1,b: 2}), firstResult);
-
-        let secondResult = selector({a: 2,b: 2});
-        assert.deepEqual( secondResult, {x: 2,y: 2});
-        assert.strictEqual(selector({a: 2,b: 2}), secondResult);
+        let firstResult = selector({a: 1, b: 2});
+        assert.deepEqual(firstResult, {x: 1, y: 2});
+        assert.strictEqual(selector({a: 1, b: 2}), firstResult);
+        let secondResult = selector({a: 2, b: 2});
+        assert.deepEqual(secondResult, {x: 2, y: 2});
+        assert.strictEqual(selector({a: 2, b: 2}), secondResult);
     });
-    test("composing selectors with custom selector creator", function() {
+    test('structured selector with custom selector creator', () => {
         const customSelectorCreator = createSelectorCreator(
             defaultMemoize,
-            (a,b) => a == b
+            (a, b) => a === b
         );
         const selector = createStructuredSelector({
               x: state => state.a,
               y: state => state.b
-        }, customSelectorCreator );
-
-        let firstResult = selector({a: 1,b: 2});
-        assert.deepEqual( firstResult, {x: 1, y: 2});
-        assert.strictEqual(selector({a: 1,b: 2}), firstResult);
-        assert.deepEqual(selector({a: 2,b: 2}), {x: 2,y: 2});
+        }, customSelectorCreator);
+        let firstResult = selector({a: 1, b: 2});
+        assert.deepEqual(firstResult, {x: 1, y: 2});
+        assert.strictEqual(selector({a: 1, b: 2}), firstResult);
+        assert.deepEqual(selector({a: 2, b: 2}), {x: 2, y: 2});
     });
 });
