@@ -472,12 +472,14 @@ const selector = customSelectorCreator(
 
 ### createStructuredSelector({inputSelectors}, selectorCreator = createSelector)
 
-`createStructuredSelector` is a convenience function that helps with a common pattern when using Reselect.  The selector passed to a connect decorator often just takes other selectors and maps them to keys in an object:
+`createStructuredSelector` is a convenience function for a common pattern that arises when using Reselect.  The selector passed to a `connect` decorator often just takes the values of its intput-selectors and maps them to keys in an object:
 
 ```js
 const mySelectorA = state => state.a;
 const mySelectorB = state => state.b;
 
+// The result function in the following selector
+// is simply building an object from the input selectors
 const structuredSelector = createSelector(
    mySelectorA,
    mySelectorB,
