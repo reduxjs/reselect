@@ -52,6 +52,7 @@ export const totalSelector = createSelector(
   - [How do I test a selector?](#q-how-do-i-test-a-selector)
   - [How do I create a selector that takes an argument? ](#q-how-do-i-create-a-selector-that-takes-an-argument)
   - [How do I use Reselect with Immutable.js?](#q-how-do-i-use-reselect-with-immutablejs)
+  - [Can I share a selector across multiple modules?](#q-can-i-share-a-selector-across-multiple-modules)
 - [License](#license)
 
 ## Installation
@@ -779,6 +780,74 @@ assert.notEqual(myMap, newMap);
 ```
 
 If a selector's input is updated by an operation that always returns a new object, it may be performing unnecessary recomputations. See [here](#q-why-is-my-selector-recomputing-when-the-input-state-stays-the-same) for a discussion on the pros and cons of using a deep equality check like `Immmutable.is` to eliminate unnecessary recomputations.
+
+### Q: Can I share a selector across multiple modules?
+
+A: Yes, but with the following caveat—a selector created by `createSelector` can be shared across components and benefit from memoization, but the arguments passed to the selectors for all the modules must `===` each other. The following example, which is a common case, memoizes because it receives store.state from the `connect` decorator for both components:
+
+```js
+const doublexSelector = createSelector(
+  state => state.x,
+  x => x * 2
+);
+
+class Component1 extends Component {
+...
+}
+
+Component1 = connect(doublexSelector)(Component1);
+
+class Component2 extends Component {
+...
+}
+
+Component2 = connect(doublexSelector)(Component2);
+```
+
+The following example may or may not memoize. Here memoization depends on the props passed into the components being `===` for each component:
+
+```js
+const xPlusySelector = createSelector(
+  state => state.x,
+  (_, props) => props.y,
+  (x, y) => x + y
+);
+
+class Component1 extends Component {
+...
+}
+
+Component1 = connect(xPlusySelector)(Component1);
+
+class Component2 extends Component {
+...
+}
+
+Component2 = connect(xPlusySelector)(Component2);
+```
+
+This example definitely won't memoize. The state being passed into each selector is a different object:
+
+```js
+const doublexSelector = createSelector(
+  state => state.x,
+  x => x * 2
+);
+
+class Component1 extends Component {
+...
+}
+
+Component1 = connect(state => {doublexSelector({x: state.x}))(Component1);
+
+class Component2 extends Component {
+...
+}
+
+Component2 = connect(state => doublexSelector({x: state.x}))(Component2);
+```
+
+Note that [`createSelectorCreator`](#createselectorcreatormemoize-memoizeoptions) could be used to memoize both of the failing examples above. The 2nd example, where the props may be different, could use a memoization function with a larger cache. The last example could use a deep equality check. 
 
 ## License
 
