@@ -783,7 +783,9 @@ If a selector's input is updated by an operation that always returns a new objec
 
 ### Q: Can I share a selector across multiple modules?
 
-A: Yes, but with the following caveat—a selector created by `createSelector` can be shared across components and benefit from memoization, but the arguments passed to the selectors for all the modules must `===` each other. The following example, which is a common case, memoizes because it receives store.state from the `connect` decorator for both components:
+A: Yes, but with the following caveat—a selector can be shared across components and benefit from memoization, but a selector that is shared must receive the same arguments at each call site. Arguments are considered the same if they  pass the selectors equality check.
+
+In the case of `createSelector` the equality check is `===`. The following example, which is a common case, memoizes because it receives store.state from the `connect` decorator for both components:
 
 ```js
 const doublexSelector = createSelector(
