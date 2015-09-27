@@ -527,7 +527,7 @@ const nestedSelector = createStructuredSelector({
 
 ### Q: Why isn't my selector recomputing when the input state changes?
 
-A: Check that your memoization function is compatible with your state update function (ie the reducer if you are using Redux). For example, a selector created with `createSelector` will not work with a state update function that mutates an existing object instead of creating a new one each time. `createSelector` uses an identity check (`===`) to detect that an input has changed, so mutating an existing object will not trigger the selector to recompute because mutating an object does not change its identity. Note that if you are using Redux, mutating the state object is [almost certainly a mistake](http://rackt.github.io/redux/docs/Troubleshooting.html).
+A: Check that your memoization function is compatible with your state update function (i.e. the reducer if you are using Redux). For example, a selector created with `createSelector` will not work with a state update function that mutates an existing object instead of creating a new one each time. `createSelector` uses an identity check (`===`) to detect that an input has changed, so mutating an existing object will not trigger the selector to recompute because mutating an object does not change its identity. Note that if you are using Redux, mutating the state object is [almost certainly a mistake](http://rackt.github.io/redux/docs/Troubleshooting.html).
 
 The following example defines a simple selector that determines if the first todo item in an array of todos has been completed:
 
@@ -579,7 +579,7 @@ If you are not using Redux and have a requirement to work with mutable data, you
 
 ### Q: Why is my selector recomputing when the input state stays the same?
 
-A: Check that your memoization function is compatible with your state update function (ie the reducer if you are using Redux). For example, a selector created with `createSelector` that recomputes unexpectedly may be receiving a new object on each update whether the values it contains have changed or not. `createSelector` uses an identity check (`===`) to detect that an input has changed, so returning a new object on each update means that the selector will recompute on each update.
+A: Check that your memoization function is compatible with your state update function (i.e. the reducer if you are using Redux). For example, a selector created with `createSelector` that recomputes unexpectedly may be receiving a new object on each update whether the values it contains have changed or not. `createSelector` uses an identity check (`===`) to detect that an input has changed, so returning a new object on each update means that the selector will recompute on each update.
 
 ```js
 import { REMOVE_OLD } from '../constants/ActionTypes';
@@ -718,7 +718,7 @@ test("selector unit test", function() {
 });
 ```
 
-It may also be useful to check that the memoization function for a selector works correctly with the state update function (ie the reducer if you are using Redux). Each selector has a `recomputations` method that will return the number of times it has been recomputed:
+It may also be useful to check that the memoization function for a selector works correctly with the state update function (i.e. the reducer if you are using Redux). Each selector has a `recomputations` method that will return the number of times it has been recomputed:
 
 ```js
 suite('selector', () => {
@@ -785,7 +785,7 @@ If a selector's input is updated by an operation that always returns a new objec
 
 A: Yes, but with the following caveat—a selector can be shared across components and benefit from memoization, but a selector that is shared must receive the same arguments at each call site. Arguments are considered the same if they  pass the selectors equality check.
 
-In the case of `createSelector` the equality check is `===`. The following example, which is a common case, memoizes because it receives store.state from the `connect` decorator for both components:
+In the case of `createSelector` the equality check is `===`. The following example, which is a common case, memoizes because it receives state.x from the `connect` decorator for both components:
 
 ```js
 const doublexSelector = createSelector(
@@ -828,28 +828,32 @@ class Component2 extends Component {
 Component2 = connect(xPlusySelector)(Component2);
 ```
 
-This example definitely won't memoize. The state being passed into each selector is a different object:
+This example definitely won't memoize. The `ids` array passed into each selector are different objects:
 
 ```js
-const doublexSelector = createSelector(
-  state => state.x,
-  x => x * 2
+const doubleIdsSelector = createSelector(
+  state => state.ids,
+  ids => ids.map(id => id * 2)
 );
 
 class Component1 extends Component {
 ...
 }
 
-Component1 = connect(state => {doublexSelector({x: state.x}))(Component1);
+Component1 = connect(
+  state => doubleIdsSelector({ids: [...state.ids1, ...state.ids2]})
+)(Component1);
 
 class Component2 extends Component {
 ...
 }
 
-Component2 = connect(state => doublexSelector({x: state.x}))(Component2);
+Component2 = connect(
+  state => doubleIdsSelector({ids: [...state.ids1, ...state.ids2]})
+)(Component2);
 ```
 
-Note that [`createSelectorCreator`](#createselectorcreatormemoize-memoizeoptions) could be used to memoize both of the failing examples above. The 2nd example, where the props may be different, could use a memoization function with a larger cache. The last example could use a deep equality check. 
+Note that [`createSelectorCreator`](#createselectorcreatormemoize-memoizeoptions) could be used to memoize both of the failing examples above. The second example, where the props may be different, could use a memoization function with a larger cache. The last example could use a deep equality check. 
 
 ## License
 
