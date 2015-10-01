@@ -33,6 +33,15 @@ suite('selector', () => {
         assert.equal(selector(state2), 5);
         assert.equal(selector.recomputations(), 2);
     });
+    test('basic selector invalid input selector', () => {
+        const selector = createSelector.bind(
+            void 0,
+            state => state.a,
+            'not a function',
+            (a, b) => a + b
+        );
+        assert.throw(selector, 'got: function, string');
+    });
     test('memoized composite arguments', () => {
         const selector = createSelector(
             state => state.sub,

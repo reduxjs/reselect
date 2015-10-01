@@ -37,6 +37,11 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
             return memoizedResultFunc(...params);
         };
 
+        if (!dependencies.every(dependency => typeof dependency === 'function')) {
+            const dependencyTypes = dependencies.map(dep => typeof dep).join(', ');
+            throw new Error('Selector creator inputs must be functions, got: ' + dependencyTypes);
+        }
+
         selector.recomputations = () => recomputations;
         return selector;
     };
