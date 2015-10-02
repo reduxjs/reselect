@@ -16,11 +16,27 @@ export function defaultMemoize(func, equalityCheck = defaultEqualityCheck) {
     };
 }
 
+function getDependencies(funcs) {
+    const dependencies = Array.isArray(funcs[0]) ? funcs[0] : funcs;
+
+    if (!dependencies.every(dep => typeof dep === 'function')) {
+        const dependencyTypes = dependencies.map(
+            dep => typeof dep
+        ).join(', ');
+        throw new Error(
+            `Selector creator inputs must be functions, ` +
+            `instead got: ${dependencyTypes}`
+        );
+    }
+
+    return dependencies;
+}
+
 export function createSelectorCreator(memoize, ...memoizeOptions) {
     return (...funcs) => {
         let recomputations = 0;
         const resultFunc = funcs.pop();
-        const dependencies = Array.isArray(funcs[0]) ? funcs[0] : funcs;
+        const dependencies = getDependencies(funcs);
 
         const memoizedResultFunc = memoize(
             (...args) => {
@@ -36,11 +52,6 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
             );
             return memoizedResultFunc(...params);
         };
-
-        if (!dependencies.every(dependency => typeof dependency === 'function')) {
-            const dependencyTypes = dependencies.map(dep => typeof dep).join(', ');
-            throw new Error('Selector creator inputs must be functions, got: ' + dependencyTypes);
-        }
 
         selector.recomputations = () => recomputations;
         return selector;
