@@ -34,13 +34,11 @@ suite('selector', () => {
         assert.equal(selector.recomputations(), 2);
     });
     test('basic selector invalid input selector', () => {
-        const selector = createSelector.bind(
-            void 0,
+        assert.throw(() => createSelector(
             state => state.a,
             'not a function',
             (a, b) => a + b
-        );
-        assert.throw(selector, 'got: function, string');
+        ), /input-selectors to be functions.*function, string/);
     });
     test('memoized composite arguments', () => {
         const selector = createSelector(
@@ -209,6 +207,16 @@ suite('selector', () => {
         let secondResult = selector({a: 2, b: 2});
         assert.deepEqual(secondResult, {x: 2, y: 2});
         assert.strictEqual(selector({a: 2, b: 2}), secondResult);
+    });
+    test('structured selector with invalid arguments', () => {
+        assert.throw(() => createStructuredSelector(
+            state => state.a,
+            state => state.b
+        ), /expects first argument to be an object.*function/);
+        assert.throw(() => createStructuredSelector({
+            a: state => state.b,
+            c: 'd'
+        }), /input-selectors to be functions.*function, string/);
     });
     test('structured selector with custom selector creator', () => {
         const customSelectorCreator = createSelectorCreator(

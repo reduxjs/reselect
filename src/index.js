@@ -24,8 +24,8 @@ function getDependencies(funcs) {
             dep => typeof dep
         ).join(', ');
         throw new Error(
-            `Selector creator inputs must be functions, ` +
-            `instead got: ${dependencyTypes}`
+            `Selector creators expect all input-selectors to be functions, ` +
+            `instead received the following types: [${dependencyTypes}]`
         );
     }
 
@@ -63,7 +63,13 @@ export function createSelector(...args) {
 }
 
 export function createStructuredSelector(selectors, selectorCreator = createSelector) {
-    let objectKeys = Object.keys(selectors);
+    if (typeof selectors !== 'object') {
+        throw new Error(
+            `createStructuredSelector expects first argument to be an object ` +
+            `where each property is a selector, instead received a ${typeof selectors}`
+        );
+    }
+    const objectKeys = Object.keys(selectors);
     return selectorCreator(
         objectKeys.map(key => selectors[key]),
         (...values) => {
