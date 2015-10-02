@@ -4,7 +4,7 @@ import chai from 'chai';
 import { createSelector, createSelectorCreator, defaultMemoize, createStructuredSelector } from '../src/index';
 import { default as lodashMemoize } from 'lodash.memoize';
 
-let assert = chai.assert;
+const assert = chai.assert;
 
 suite('selector', () => {
     test('basic selector', () => {
@@ -198,13 +198,13 @@ suite('selector', () => {
     });
     test('structured selector', () => {
         const selector = createStructuredSelector({
-              x: state => state.a,
-              y: state => state.b
+            x: state => state.a,
+            y: state => state.b
         });
-        let firstResult = selector({a: 1, b: 2});
+        const firstResult = selector({a: 1, b: 2});
         assert.deepEqual(firstResult, {x: 1, y: 2});
         assert.strictEqual(selector({a: 1, b: 2}), firstResult);
-        let secondResult = selector({a: 2, b: 2});
+        const secondResult = selector({a: 2, b: 2});
         assert.deepEqual(secondResult, {x: 2, y: 2});
         assert.strictEqual(selector({a: 2, b: 2}), secondResult);
     });
@@ -224,10 +224,10 @@ suite('selector', () => {
             (a, b) => a === b
         );
         const selector = createStructuredSelector({
-              x: state => state.a,
-              y: state => state.b
+            x: state => state.a,
+            y: state => state.b
         }, customSelectorCreator);
-        let firstResult = selector({a: 1, b: 2});
+        const firstResult = selector({a: 1, b: 2});
         assert.deepEqual(firstResult, {x: 1, y: 2});
         assert.strictEqual(selector({a: 1, b: 2}), firstResult);
         assert.deepEqual(selector({a: 2, b: 2}), {x: 2, y: 2});

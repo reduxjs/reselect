@@ -7,6 +7,8 @@
   },
   "rules": {
     "block-scoped-var": 0,
+    "comma-dangle": 0,
+    "id-length": 0,
     "indent": [2, 4]
   }
 }
