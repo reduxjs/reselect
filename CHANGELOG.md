@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.0](https://github.com/faassen/reselect/releases/tag/v2.0.0) - 2015/10/02
+
+## Breaking Changes
+
+### `createSelector`, `createStructuredSelector`, and custom selector creators check arguments
+
+Input selectors are now verified to be functions during selector creation. If verification fails an error is thrown, allowing for a useful stack trace
+
+There is a small chance that this could cause a breaking change in code that contains a faulty selector that is never called.
+
 ## [1.1.0](https://github.com/faassen/reselect/releases/tag/v1.1.0) - 2015/09/16
 
 ## New features
