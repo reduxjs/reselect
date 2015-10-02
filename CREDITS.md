@@ -10,6 +10,6 @@
 * Contributors: Lee Bannard, Martijn Faassen, Robert Binna, Alex
   Guerra, ryanatkn, Adam Royle, Christian Schuhmann, Jason Huang,
   Daniel Barreto, Mihail Diordiev, Daniela Borges, Philip Spitzlinger,
-  C. T. Lin
+  C. T. Lin, SpainTrain
 
 * Inspired by getters in Nuclear.js and subscriptions in re-frame.
