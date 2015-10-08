@@ -1,4 +1,5 @@
 # Reselect
+[![Build Status](https://travis-ci.org/faassen/reselect.svg?branch=master)](https://travis-ci.org/faassen/reselect)
 
 Simple "selector" library for Redux inspired by getters in [NuclearJS](https://github.com/optimizely/nuclear-js.git), [subscriptions](https://github.com/Day8/re-frame#just-a-read-only-cursor) in [re-frame](https://github.com/Day8/re-frame) and this [proposal](https://github.com/gaearon/redux/pull/169) from [speedskater](https://github.com/speedskater).
 
