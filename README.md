@@ -410,7 +410,7 @@ function defaultEqualityCheck(currentVal, previousVal) {
 
 The `memoize` argument is a memoization function to replace `defaultMemoize`.
 
-The `...memoizeOptions` rest parameters are zero or more configuration options to be passsed to `memoizeFunc`. The selectors `resultFunc` is passed as the first argument to `memoize` and the `memoizeOptions` are passed as the second argument onwards:
+The `...memoizeOptions` rest parameters are zero or more configuration options to be passed to `memoizeFunc`. The selectors `resultFunc` is passed as the first argument to `memoize` and the `memoizeOptions` are passed as the second argument onwards:
 
 ```js
 const customSelectorCreator = createSelectorCreator(
@@ -668,7 +668,7 @@ const mySelector = createDeepEqualSelector(
 );
 ```
 
-Always check that the cost of an alernative `equalityCheck` function or deep equality check in the state update function is not greater than the cost of recomputing every time. If recomputing every time does work out to be the cheaper option, it may be that for this case Reselect is not giving you any benefit over passing a plain `mapStateToProps` function to `connect`.
+Always check that the cost of an alternative `equalityCheck` function or deep equality check in the state update function is not greater than the cost of recomputing every time. If recomputing every time does work out to be the cheaper option, it may be that for this case Reselect is not giving you any benefit over passing a plain `mapStateToProps` function to `connect`.
 
 ### Q: Can I use Reselect without Redux?
 
