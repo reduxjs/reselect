@@ -1,14 +1,6 @@
 {
-  "extends": "eslint-config-airbnb",
+  "extends": "rackt",
   "env": {
-    "browser": true,
     "mocha": true,
-    "node": true
-  },
-  "rules": {
-    "block-scoped-var": 0,
-    "comma-dangle": 0,
-    "id-length": 0,
-    "indent": [2, 4]
   }
 }
