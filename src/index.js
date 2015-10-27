@@ -25,7 +25,7 @@ function getDependencies(funcs) {
     ).join(', ')
     throw new Error(
       `Selector creators expect all input-selectors to be functions, ` +
-        `instead received the following types: [${dependencyTypes}]`
+      `instead received the following types: [${dependencyTypes}]`
     )
   }
 
@@ -66,7 +66,7 @@ export function createStructuredSelector(selectors, selectorCreator = createSele
   if (typeof selectors !== 'object') {
     throw new Error(
       `createStructuredSelector expects first argument to be an object ` +
-        `where each property is a selector, instead received a ${typeof selectors}`
+      `where each property is a selector, instead received a ${typeof selectors}`
     )
   }
   const objectKeys = Object.keys(selectors)
