@@ -689,7 +689,7 @@ A: Creating a factory function may be helpful:
 const expensiveItemSelectorFactory = minValue => {
   return createSelector(
     shopItemsSelector,
-    items => items.filter(item => item.value < minValue)
+    items => items.filter(item => item.value > minValue)
   )
 }
 
