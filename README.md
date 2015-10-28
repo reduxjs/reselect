@@ -699,6 +699,16 @@ const subtotalSelector = createSelector(
 )
 ```
 
+or, for submitting the argument when the selector is used:
+
+```js
+const expensiveItemSelector = createSelector(
+    shopItemsSelector,
+    items => minValue => items.filter(item => item.value < minValue)
+  )
+```
+
+
 ### Q: The default memoization function is no good, can I use a different one?
 
 A: We think it works great for a lot of use cases, but sure. See [these examples](#customize-equalitycheck-for-defaultmemoize).
