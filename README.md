@@ -707,7 +707,7 @@ The general consensus [here](https://github.com/rackt/reselect/issues/38) and [o
 import { createSelector } from 'reselect'
 import memoize from 'lodash.memoize'
 
-const expensiveFactory = createSelector(
+const expensiveSelector = createSelector(
   state => state.items,
   items => memoize(
     minValue => items.filter(item => item.value > minValue)
