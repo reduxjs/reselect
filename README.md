@@ -683,7 +683,9 @@ A: Yes. Reselect has no dependencies on any other package, so although it was de
 
 ### Q: How do I create a selector that takes an argument?
 
-A: Creating a factory function may be helpful:
+A: Reselect doesn't have built-in support for creating selectors that accepts arguments, but here are some suggestions for implementing similar functionaility:
+
+If the argument is not dynamic you can use a factory function:
 
 ```js
 const expensiveItemSelectorFactory = minValue => {
@@ -697,6 +699,25 @@ const subtotalSelector = createSelector(
   expensiveItemSelectorFactory(200),
   items => items.reduce((acc, item) => acc + item.value, 0)
 )
+```
+
+The general consensus [here](https://github.com/rackt/reselect/issues/38) and [over at nuclear-js](https://github.com/optimizely/nuclear-js/issues/14) is that if a selector needs a dynamic argument, then that argument should probably be state in the store. If you decide that you do require a selector with a dynamic argument, then a selector that returns a memoized function may be suitable:
+
+```js
+import { createSelector, createSelectorCreator } from './src/index.js'
+import memoize from 'lodash.memoize'
+
+const expensiveFactory = createSelector(
+  state => state.items,
+  items => memoize(
+    minValue => items.filter(item => item.value > minValue)
+  )
+)
+
+const expensiveFilter = expensiveSelector(state)
+
+const slightlyExpensive = expensiveFilter(100)
+const veryExpensive = expensiveFilter(1000000)
 ```
 
 ### Q: The default memoization function is no good, can I use a different one?
