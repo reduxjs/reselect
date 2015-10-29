@@ -683,7 +683,7 @@ A: Yes. Reselect has no dependencies on any other package, so although it was de
 
 ### Q: How do I create a selector that takes an argument?
 
-A: Reselect doesn't have built-in support for creating selectors that accepts arguments, but here are some suggestions for implementing similar functionaility:
+A: Reselect doesn't have built-in support for creating selectors that accepts arguments, but here are some suggestions for implementing similar functionality...
 
 If the argument is not dynamic you can use a factory function:
 
@@ -704,7 +704,7 @@ const subtotalSelector = createSelector(
 The general consensus [here](https://github.com/rackt/reselect/issues/38) and [over at nuclear-js](https://github.com/optimizely/nuclear-js/issues/14) is that if a selector needs a dynamic argument, then that argument should probably be state in the store. If you decide that you do require a selector with a dynamic argument, then a selector that returns a memoized function may be suitable:
 
 ```js
-import { createSelector, createSelectorCreator } from './src/index.js'
+import { createSelector } from 'reselect'
 import memoize from 'lodash.memoize'
 
 const expensiveFactory = createSelector(
