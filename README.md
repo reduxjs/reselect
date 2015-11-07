@@ -1,5 +1,4 @@
 # Reselect
-[![Build Status](https://travis-ci.org/rackt/reselect.svg?branch=master)](https://travis-ci.org/rackt/reselect)
 [![Travis][build-badge]][build]
 [![npm package][npm-badge]][npm]
 [![Coveralls][coveralls-badge]][coveralls]
