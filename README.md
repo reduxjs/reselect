@@ -1,5 +1,8 @@
 # Reselect
 [![Build Status](https://travis-ci.org/rackt/reselect.svg?branch=master)](https://travis-ci.org/rackt/reselect)
+[![Travis][build-badge]][build]
+[![npm package][npm-badge]][npm]
+[![Coveralls][coveralls-badge]][coveralls]
 
 Simple "selector" library for Redux inspired by getters in [NuclearJS](https://github.com/optimizely/nuclear-js.git), [subscriptions](https://github.com/Day8/re-frame#just-a-read-only-cursor) in [re-frame](https://github.com/Day8/re-frame) and this [proposal](https://github.com/gaearon/redux/pull/169) from [speedskater](https://github.com/speedskater).
 
@@ -891,3 +894,12 @@ Note that [`createSelectorCreator`](#createselectorcreatormemoize-memoizeoptions
 ## License
 
 MIT
+
+[build-badge]: https://img.shields.io/travis/rackt/reselect/master.svg?style=flat-square
+[build]: https://travis-ci.org/rackt/reselect
+
+[npm-badge]: https://img.shields.io/npm/v/reselect.svg?style=flat-square
+[npm]: https://www.npmjs.org/package/reselect
+
+[coveralls-badge]: https://img.shields.io/coveralls/rackt/reselect/master.svg?style=flat-square
+[coveralls]: https://coveralls.io/github/rackt/reselect
