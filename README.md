@@ -72,10 +72,15 @@ Consider the following code:
 ```js
 import React, { Component, PropTypes } from 'react'
 import { connect } from 'react-redux'
-import { addTodo, completeTodo, setVisibilityFilter, VisibilityFilters } from '../actions'
 import AddTodo from '../components/AddTodo'
 import TodoList from '../components/TodoList'
 import Footer from '../components/Footer'
+import {
+  addTodo,
+  completeTodo,
+  setVisibilityFilter,
+  VisibilityFilters
+} from '../actions'
 
 class App extends Component {
   render() {
@@ -174,10 +179,11 @@ const todosSelector = state => state.todos
 
 /*
  * Definition of combined-selector.
- * In visibleTodosSelector, input-selectors are combined to derive new information.
- * To prevent expensive recalculation of the input-selectors memoization is applied.
- * Hence, these selectors are only recomputed when the value of their input-selectors change.
- * If none of the input-selectors return a new value, the previously computed value is returned.
+ * In visibleTodosSelector, input-selectors are combined to derive new
+ * information. To prevent expensive recalculation of the input-selectors
+ * memoization is applied. Hence, these selectors are only recomputed when the
+ * value of their input-selectors change. If none of the input-selectors return
+ * a new value, the previously computed value is returned.
  */
 export const visibleTodosSelector = createSelector(
   visibilityFilterSelector,
@@ -224,7 +230,7 @@ import Footer from '../components/Footer'
 
 /*
  * Import the selector defined in ../selectors/todoSelectors.js.
- * This allows you to separate your components from the structure of your stores.
+ * This allows you to separate components from the structure of the store.
  */
 import { visibleTodosSelector } from '../selectors/todoSelectors'
 
@@ -268,7 +274,8 @@ App.propTypes = {
 /*
  * Connect visibleTodosSelector to the App component.
  * The keys of the selector result are available on the props object for App.
- * In our example there is the 'visibleTodos' key which is bound to this.props.visibleTodos
+ * In our example there is the 'visibleTodos' key which is
+ * bound to this.props.visibleTodos
  */
 export default connect(visibleTodosSelector)(App)
 ```
