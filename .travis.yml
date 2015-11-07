@@ -8,3 +8,7 @@ script:
       - npm test
       - npm run test:cov
       - npm run compile
+
+after_success:
+  - cat ./coverage/lcov.info | ./node_modules/codecov.io/bin/codecov.io.js
+  - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
