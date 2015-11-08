@@ -3,7 +3,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.0.0](https://github.com/faassen/reselect/releases/tag/v2.0.0) - 2015/10/02
+## [v2.0.1](https://github.com/faassen/reselect/releases/tag/v2.0.0) - 2015/11/08
+
+Update NPM to have latest README and github links since move to rackt.
+
+## [v2.0.0](https://github.com/faassen/reselect/releases/tag/v2.0.0) - 2015/10/02
 
 ## Breaking Changes
 
@@ -13,7 +17,7 @@ Input selectors are now verified to be functions during selector creation. If ve
 
 There is a small chance that this could cause a breaking change in code that contains a faulty selector that is never called.
 
-## [1.1.0](https://github.com/faassen/reselect/releases/tag/v1.1.0) - 2015/09/16
+## [v1.1.0](https://github.com/faassen/reselect/releases/tag/v1.1.0) - 2015/09/16
 
 ## New features
 
@@ -51,20 +55,20 @@ const structuredSelector = createStructuredSelector({
 const result = structuredSelector({a: 1, b: 2}); // will produce {x: 1, y: 2}
 ```
 
-## [1.0.0](https://github.com/faassen/reselect/releases/tag/v1.0.0) - 2015/09/09
+## [v1.0.0](https://github.com/faassen/reselect/releases/tag/v1.0.0) - 2015/09/09
 
 ## Breaking Changes
 
 If upgrading from 0.0.2, see the release notes for v1.0.0-alpha
 
-## [1.0.0-alpha2](https://github.com/faassen/reselect/releases/tag/v1.0.0-alpha2) - 2015/09/01
+## [v1.0.0-alpha2](https://github.com/faassen/reselect/releases/tag/v1.0.0-alpha2) - 2015/09/01
 
 ## New features
 
 src directory included in npm package
 js:next field added to package.json
 
-## [1.0.0-alpha](https://github.com/faassen/reselect/releases/tag/v1.0.0-alpha) - 2015/09/01
+## [v1.0.0-alpha](https://github.com/faassen/reselect/releases/tag/v1.0.0-alpha) - 2015/09/01
 
 ## Breaking Changes
 
