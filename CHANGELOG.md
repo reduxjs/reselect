@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [v2.0.1](https://github.com/faassen/reselect/releases/tag/v2.0.0) - 2015/11/08
+## [v2.0.1](https://github.com/faassen/reselect/releases/tag/v2.0.1) - 2015/11/08
 
 Update NPM to have latest README and github links since move to rackt.
 
