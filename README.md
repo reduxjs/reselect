@@ -806,11 +806,13 @@ let myMap = Immutable.Map({
   c: 3
 })
 
-let newMap = myMap.set('a', 1) // set, merge and others only return a new obj when update changes collection
+ // set, merge and others only return a new obj when update changes collection
+let newMap = myMap.set('a', 1)
 assert.equal(myMap, newMap)
 newMap = myMap.merge({ 'a', 1 })
 assert.equal(myMap, newMap)
-newMap = myMap.map(a => a * 1) // map, reduce, filter and others always return a new obj
+// map, reduce, filter and others always return a new obj
+newMap = myMap.map(a => a * 1)
 assert.notEqual(myMap, newMap)
 ```
 
