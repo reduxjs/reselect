@@ -151,17 +151,25 @@ suite('selector', () => {
     assert.equal(selector.recomputations(), 2)
   })
   test('custom memoize', () => { 
-    const customSelectorCreator = createSelectorCreator(lodashMemoize, JSON.stringify)
+    const hashFn = (...args) => args.reduce((acc, val) => acc + '-' + JSON.stringify(val))
+    const customSelectorCreator = createSelectorCreator(
+      lodashMemoize, 
+      hashFn
+    )
     const selector = customSelectorCreator(
       state => state.a,
-        state => state.b,
-        (a, b) => a + b
+      state => state.b,
+      (a, b) => a + b
     )
     assert.equal(selector({ a: 1, b: 2 }), 3)
     assert.equal(selector({ a: 1, b: 2 }), 3)
     assert.equal(selector.recomputations(), 1)
-    assert.equal(selector({ a: 2, b: 3 }), 5)
+    assert.equal(selector({ a: 1, b: 3 }), 4)
     assert.equal(selector.recomputations(), 2)
+    assert.equal(selector({ a: 1, b: 3 }), 4)
+    assert.equal(selector.recomputations(), 2)
+    assert.equal(selector({ a: 2, b: 3 }), 5)
+    assert.equal(selector.recomputations(), 3)
     // TODO: Check correct memoize function was called
   })
   test('exported memoize', () => { 
