@@ -470,7 +470,10 @@ import { createSelectorCreator } from 'reselect'
 import memoize from 'lodash.memoize'
 
 let called = 0
-const customSelectorCreator = createSelectorCreator(memoize, JSON.stringify)
+const hashFn = (...args) => args.reduce(
+  (acc, val) => acc + '-' + JSON.stringify(val)
+)
+const customSelectorCreator = createSelectorCreator(memoize, hashFn)
 const selector = customSelectorCreator(
   state => state.a,
   state => state.b,
