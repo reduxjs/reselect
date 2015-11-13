@@ -153,7 +153,7 @@ Reselect provides a function `createSelector` for creating memoized selectors. `
 
 Let's define a memoized selector named `visibleTodosSelector` to replace `select`:
 
-#### `selectors/TodoSelectors.js`
+#### `selectors/todoSelectors.js`
 
 ```js
 import { createSelector } from 'reselect'
