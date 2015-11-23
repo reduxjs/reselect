@@ -349,9 +349,9 @@ When a selector is connected to a component with `connect`, the component props 
 
 ## API
 
-### createSelector(...inputSelectors, resultFunc)
+### createSelector(...inputSelectors | [inputSelectors], resultFunc)
 
-Takes one or more selectors (which can also pass an array of selectors `createSelector([inputSelectors], resultFunc)`) whose values are computed and passed as arguments to `resultFn`.
+Takes one or more selectors, or an array of selectors, computes their values and passes them as arguments to `resultFn`.
 
 `createSelector` determines if the value returned by an input-selector has changed between calls using reference equality (`===`). Inputs to selectors created with `createSelector` should be immutable.
 
