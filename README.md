@@ -351,7 +351,7 @@ When a selector is connected to a component with `connect`, the component props 
 
 ### createSelector(...inputSelectors | [inputSelectors], resultFunc)
 
-Takes one or more selectors, or an array of selectors, computes their values and passes them as arguments to `resultFn`.
+Takes one or more selectors, or an array of selectors, computes their values and passes them as arguments to `resultFunc`.
 
 `createSelector` determines if the value returned by an input-selector has changed between calls using reference equality (`===`). Inputs to selectors created with `createSelector` should be immutable.
 
@@ -690,7 +690,7 @@ Always check that the cost of an alternative `equalityCheck` function or deep eq
 A: Yes. Reselect has no dependencies on any other package, so although it was designed to be used with Redux it can be used independently. It is currently being used successfully in traditional Flux apps.
 
 > If you create selectors using `createSelector` make sure the objects in your store are immutable.
-> See [here](#createselectorinputselectors-resultfn)
+> See [here](#createselectorinputselectors-resultfunc)
 
 ### Q: How do I create a selector that takes an argument?
 
