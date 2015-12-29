@@ -43,7 +43,7 @@ export const totalSelector = createSelector(
   - [Connecting a Selector to the Redux Store](#connecting-a-selector-to-the-redux-store)
   - [Accessing React Props in Selectors](#accessing-react-props-in-selectors)
 - [API](#api)
-  - [`createSelector`](#createselectorinputselectors-resultfunc)
+  - [`createSelector`](#createselectorinputselectors--inputselectors-resultfunc)
   - [`defaultMemoize`](#defaultmemoizefunc-equalitycheck--defaultequalitycheck)
   - [`createSelectorCreator`](#createselectorcreatormemoize-memoizeoptions)
   - [`createStructuredSelector`](#createstructuredselectorinputselectors-selectorcreator--createselector)
@@ -690,7 +690,7 @@ Always check that the cost of an alternative `equalityCheck` function or deep eq
 A: Yes. Reselect has no dependencies on any other package, so although it was designed to be used with Redux it can be used independently. It is currently being used successfully in traditional Flux apps.
 
 > If you create selectors using `createSelector` make sure the objects in your store are immutable.
-> See [here](#createselectorinputselectors-resultfunc)
+> See [here](#createselectorinputselectors--inputselectors-resultfunc)
 
 ### Q: How do I create a selector that takes an argument?
 
