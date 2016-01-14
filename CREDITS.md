@@ -11,6 +11,6 @@
   Guerra, ryanatkn, Adam Royle, Christian Schuhmann, Jason Huang,
   Daniel Barreto, Mihail Diordiev, Daniela Borges, Philip Spitzlinger,
   C. T. Lin, SpainTrain, Mark Dalgleish, Brian Ng, 长天之云, Michael Lancaster,
-  Elliot Crosby-McCullough, Max Goodman
+  Elliot Crosby-McCullough, Max Goodman, Simen Bekkhus
 
 * Inspired by getters in Nuclear.js and subscriptions in re-frame.
