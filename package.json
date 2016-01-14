@@ -15,7 +15,7 @@
     "url": "https://github.com/rackt/reselect/issues"
   },
   "scripts": {
-    "compile": "babel -d lib/ src/",
+    "compile": "babel --loose es6.modules -d lib/ src/",
     "lint": "eslint src test",
     "prepublish": "npm run compile",
     "test": "NODE_ENV=test mocha --compilers js:babel/register --recursive",
