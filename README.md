@@ -56,6 +56,7 @@ export const totalSelector = createSelector(
   - [How do I create a selector that takes an argument? ](#q-how-do-i-create-a-selector-that-takes-an-argument)
   - [How do I use Reselect with Immutable.js?](#q-how-do-i-use-reselect-with-immutablejs)
   - [Can I share a selector across multiple modules?](#q-can-i-share-a-selector-across-multiple-modules)
+  - [Are there TypeScript Typings?](#q-are-there-typescript-typings)
 - [License](#license)
 
 ## Installation
@@ -893,6 +894,10 @@ Component2 = connect(
 ```
 
 Note that [`createSelectorCreator`](#createselectorcreatormemoize-memoizeoptions) could be used to memoize both of the failing examples above. The second example, where the props may be different, could use a memoization function with a larger cache. The last example could use a deep equality check.
+
+### Q: Are there TypeScript Typings?
+
+A: Yes! [See here](https://github.com/rackt/reselect/issues/55#issuecomment-173198641). Thanks to @frankwallis and @geon.
 
 ## License
 
