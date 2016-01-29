@@ -897,7 +897,7 @@ Note that [`createSelectorCreator`](#createselectorcreatormemoize-memoizeoptions
 
 ### Q: Are there TypeScript Typings?
 
-A: Yes! [See here](https://github.com/rackt/reselect/issues/55#issuecomment-173198641). Thanks to @frankwallis and @geon.
+A: Yes! They are available from DefinitelyTyped. [Thanks to @frankwallis and @geon.](https://github.com/rackt/reselect/issues/55#issuecomment-173198641)
 
 ## License
 
