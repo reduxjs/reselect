@@ -187,6 +187,11 @@ suite('selector', () => {
     assert.equal(memoized(o2), 2)
     assert.equal(called, 2)
   })
+  test('exported memoize with multiple arguments', () => {
+    const memoized = defaultMemoize((...args) => args.reduce((sum, value) => sum + value, 0))
+    assert.equal(memoized(1, 2), 3)
+    assert.equal(memoized(1), 1)
+  })
   test('exported memoize with valueEquals override', () => { 
     // a rather absurd equals operation we can verify in tests
     let called = 0
