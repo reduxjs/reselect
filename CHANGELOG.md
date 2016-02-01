@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [v2.0.3](https://github.com/rackt/reselect/releases/tag/v2.0.2) - 2016/02/01
+
+Fix bug (#78) in `defaultMemoize` which could cause the memoized value to be mistakenly returned for variadic functions.
+
 ## [v2.0.2](https://github.com/rackt/reselect/releases/tag/v2.0.2) - 2016/01/14
 
 Fix IE8 support by compiling in 'loose' mode
