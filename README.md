@@ -789,79 +789,12 @@ assert.notEqual(myMap, newMap)
 
 If a selector's input is updated by an operation that always returns a new object, it may be performing unnecessary recomputations. See [here](#q-why-is-my-selector-recomputing-when-the-input-state-stays-the-same) for a discussion on the pros and cons of using a deep equality check like `Immmutable.is` to eliminate unnecessary recomputations.
 
-### Q: Can I share a selector across multiple modules?
+### Q: Can I share a selector across multiple components?
 
-A: Yes, but with the following caveat—a selector can be shared across components and benefit from memoization, but a selector that is shared must receive the same arguments at each call site. Arguments are considered the same if they  pass the selectors equality check.
+A: Selectors created using `createSelector` only have a cache size of one. This can make them unsuitable for sharing across multiple components if the arguments to the selector are different for each component. There are a couple of ways to get around this:
 
-In the case of `createSelector` the equality check is `===`. The following example, which is a common case, memoizes because it receives state.x from the `connect` decorator for both components:
-
-```js
-const doublexSelector = createSelector(
-  state => state.x,
-  x => x * 2
-)
-
-class Component1 extends Component {
-...
-}
-
-Component1 = connect(doublexSelector)(Component1)
-
-class Component2 extends Component {
-...
-}
-
-Component2 = connect(doublexSelector)(Component2)
-```
-
-The following example may or may not memoize. Here memoization depends on the props passed into the components being `===` for each component:
-
-```js
-const xPlusySelector = createSelector(
-  state => state.x,
-  (_, props) => props.y,
-  (x, y) => x + y
-)
-
-class Component1 extends Component {
-...
-}
-
-Component1 = connect(xPlusySelector)(Component1)
-
-class Component2 extends Component {
-...
-}
-
-Component2 = connect(xPlusySelector)(Component2)
-```
-
-This example definitely won't memoize. The `ids` array passed into each selector are different objects:
-
-```js
-const doubleIdsSelector = createSelector(
-  state => state.ids,
-  ids => ids.map(id => id * 2)
-)
-
-class Component1 extends Component {
-...
-}
-
-Component1 = connect(
-  state => doubleIdsSelector({ ids: [ ...state.ids1, ...state.ids2 ] })
-)(Component1)
-
-class Component2 extends Component {
-...
-}
-
-Component2 = connect(
-  state => doubleIdsSelector({ ids: [ ...state.ids1, ...state.ids2 ] })
-)(Component2)
-```
-
-Note that [`createSelectorCreator`](#createselectorcreatormemoize-memoizeoptions) could be used to memoize both of the failing examples above. The second example, where the props may be different, could use a memoization function with a larger cache. The last example could use a deep equality check.
+* Create a factory function which returns a new selector for each component. There is built-in support for selector factory functions in React Redux v4.3 or higher. See [here](#sharing-selectors-across-multiple-components) for an example.
+* Create a custom selector which uses a cache size greater than one.
 
 ### Q: Are there TypeScript Typings?
 
