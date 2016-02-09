@@ -130,7 +130,8 @@ const getVisibilityFilter = (state) => state.visibilityFilter
 const getTodos = (state) => state.todos
 
 export const getVisibleTodos = createSelector(
-  [ getVisibilityFilter, getTodos ],
+  getVisibilityFilter,
+  getTodos,
   (visibilityFilter, todos) => {
     switch (filter) {
       case 'SHOW_ALL':
@@ -199,7 +200,9 @@ export default VisibleTodoList
 
 So far we have only seen selectors receive the Redux store state as input, but it is also possible for a selector to receive the props of a component wrapped by `connect`.
 
-Consider the following example:
+In the following  have extended the example to allow multiple `TodoList`s.
+
+(Note that changes to the components, reducers and action creators have been omitted for brevity.)
 
 #### `components/App.js`
 
@@ -212,49 +215,101 @@ import VisibleTodoList from '../containers/VisibleTodoList'
 const App = () => (
   <div>
     <AddTodo />
-    <VisibleTodoList maxTodos={5} />
+    <VisibleTodoList listId="1" />
+    <VisibleTodoList listId="2" />
+    <VisibleTodoList listId="3" />
+    <VisibleTodoList listId="4" />
+    <VisibleTodoList listId="5" />
+    <VisibleTodoList listId="6" />
+    <VisibleTodoList listId="7" />
     <Footer />
   </div>
 )
 ```
-
-We have introduced a prop named `maxTodos` to the `App` component. We would like to access `maxTodos` in `visibleTodosSelector` so we can make sure that we do not return more Todos than it specifies. To achieve this we can make the following changes to `selectors/todoSelectors.js`:
 
 #### `selectors/todoSelectors.js`
 
 ```js
 import { createSelector } from 'reselect'
 
-function getVisibleTodos(todos, filter) {
-  switch (filter) {
-  case 'SHOW_ALL':
-    return todos
-  case 'SHOW_COMPLETED':
-    return todos.filter(todo => todo.completed)
-  case 'SHOW_ACTIVE':
-    return todos.filter(todo => !todo.completed)
-  }
-}
+const visibilityFilter = (state, props) => state.visibilityFilter[props.listId]
+const todos = (state, props) => state.todos[props.listId]
 
-const visibilityFilterSelector = state => state.visibilityFilter
-const todosSelector = state => state.todos
-const maxTodosSelector = (state, props) => props.maxTodos
-
-const visibleTodosSelector = createSelector(
-  visibilityFilterSelector,
-  todosSelector,
-  maxTodosSelector,
-  (visibilityFilter, todos, maxTodos) => {
-    return {
-      todos: getVisibleTodos(todos, visibilityFilter).slice(0, maxTodos)
+export default const getVisibleTodos = createSelector(
+  visibilityFilter,
+  todos,
+  (visibilityFilter, todos) => {
+    switch (visibilityFilter) {
+      case 'SHOW_COMPLETED':
+        return todos.filter(todo => todo.completed)
+      case 'SHOW_ACTIVE':
+        return todos.filter(todo => !todo.completed)
+      default:
+        return todos
     }
   }
 )
-
-export default visibleTodosSelector;
 ```
 
-When a selector is connected to a component with `connect`, the component props are passed as the second argument to the selector. In `visibleTodosSelector` we have added a new input-selector named `maxTodosSelector`, which returns the `maxTodos` property from its props argument.
+Props are passed as the second argument to the `visibilityFilter` and `todos` selector. The `listId` prop is being used to get the filter and contents of the required `TodoList`.
+
+#### `containers/VisibleTodoList.js`
+
+```js
+import { connect } from 'react-redux'
+import { toggleTodo } from '../actions'
+import TodoList from '../components/TodoList'
+import { getVisibleTodos } from '../selectors'
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    onTodoClick: (id) => {
+      dispatch(toggleTodo(id))
+    }
+  }
+}
+
+const VisibleTodoList = connect(
+  getVisibleTodos,
+  mapDispatchToProps
+)(TodoList)
+
+export default VisibleTodoList
+```
+
+`getVisibleTodos` is passed `props` as the second parameter from `connect`.
+
+### Sharing Selectors Across Multiple Components
+
+In the previous section we set up multiple `TodoList`s, but there is a problem--`getVisibleTodos` is no longer correctly memoized. The reason for this is that `createSelector` only memoizes the result for the previous arguments. Adding the `listId` prop as an argument means that the cache will be invalidated for a given `TodoList` whenever one of the other `TodoList`s renders. To share the selector across multiple `TodoList`s and retain the memoization, we should use a factory function.
+
+#### `selectors/todoSelectors.js`
+
+```js
+import { createSelector } from 'reselect'
+
+const visibilityFilter = (state, props) => state.visibilityFilter[props.listId]
+const todos = (state, props) => state.todos[props.listId]
+
+export default const getVisibleTodos = () => {
+  createSelector(
+    visibilityFilter,
+    todos,
+    (visibilityFilter, todos) => {
+      switch (visibilityFilter) {
+        case 'SHOW_COMPLETED':
+          return todos.filter(todo => todo.completed)
+        case 'SHOW_ACTIVE':
+          return todos.filter(todo => !todo.completed)
+        default:
+          return todos
+      }
+    }
+  )
+}
+```
+
+When a `mapStateToProps` function that returns a factory function is passed to `connect`, the factory function is called each time the component is instantiated. This creates a new selector, so that each `TodoList` has its own copy of the selector. This means that having differing `listId` props across `TodoList` components won't now interfere with memoization.
 
 ## API
 
