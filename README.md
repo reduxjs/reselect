@@ -281,7 +281,7 @@ export default VisibleTodoList
 
 ### Sharing Selectors Across Multiple Components
 
-In the previous section we set up multiple `TodoList`s, but there is a problem--`getVisibleTodos` is no longer correctly memoized. The reason for this is that `createSelector` only memoizes the result for the previous arguments. Adding the `listId` prop as an argument means that the cache will be invalidated for a given `TodoList` whenever one of the other `TodoList`s renders. To share the selector across multiple `TodoList`s and retain the memoization, we should use a factory function.
+In the previous section we set up multiple `TodoList` components, but there is a problem--`getVisibleTodos` is no longer correctly memoized. The reason for this is that `createSelector` only memoizes the result for the previous arguments. Adding the `listId` prop as an argument means that the cache will be invalidated for a given `TodoList` whenever one of the other `TodoList` components renders. To share the selector across multiple `TodoList` components and retain the memoization, we should use a factory function.
 
 #### `selectors/todoSelectors.js`
 
@@ -309,7 +309,7 @@ export default const getVisibleTodos = () => {
 }
 ```
 
-When a `mapStateToProps` function that returns a factory function is passed to `connect`, the factory function is called each time the component is instantiated. This creates a new selector, so that each `TodoList` has its own copy of the selector. This means that having differing `listId` props across `TodoList` components won't now interfere with memoization.
+When a `mapStateToProps` function that returns a factory function is passed to `connect`, the factory function is called each time the component is instantiated. This creates a new selector, so that each `TodoList` componebt has its own copy of the selector. This means that having differing `listId` props across `TodoList` components won't interfere with memoization.
 
 ## API
 
