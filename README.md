@@ -251,7 +251,7 @@ export default const getVisibleTodos = createSelector(
 )
 ```
 
-Props are passed as the second argument to the `visibilityFilter` and `todos` selector. The `listId` prop is being used to get the filter and contents of the required `TodoList`.
+Props are passed as the second argument to the `visibilityFilter` and `todos` selectors. The `listId` prop is being used to get the filter and contents of the required `TodoList`.
 
 #### `containers/VisibleTodoList.js`
 
