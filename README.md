@@ -251,7 +251,7 @@ export default const getVisibleTodos = createSelector(
 )
 ```
 
-Props are passed as the second argument to the `visibilityFilter` and `todos` selectors. The `listId` prop is being used to get the filter and contents of the required `TodoList`.
+`visibilityFilter` and `todos` are receiving the props through the second parameter `props`.  To enable multiple todo list compononents, `visibilityFilter` and `todos` are now arrays indexed by the `listId`.
 
 #### `containers/VisibleTodoList.js`
 
@@ -260,6 +260,12 @@ import { connect } from 'react-redux'
 import { toggleTodo } from '../actions'
 import TodoList from '../components/TodoList'
 import { getVisibleTodos } from '../selectors'
+
+const mapStateToProps = (state, props) => {
+  return {
+    todos: getVisibleTodos(state, props)
+  }
+}
 
 const mapDispatchToProps = (dispatch) => {
   return {
@@ -270,14 +276,13 @@ const mapDispatchToProps = (dispatch) => {
 }
 
 const VisibleTodoList = connect(
-  getVisibleTodos,
+  mapStateToProps,
   mapDispatchToProps
 )(TodoList)
 
 export default VisibleTodoList
 ```
 
-`getVisibleTodos` is passed `props` as the second parameter from `connect`.
 
 ### Sharing Selectors Across Multiple Components
 
@@ -291,7 +296,7 @@ import { createSelector } from 'reselect'
 const visibilityFilter = (state, props) => state.visibilityFilter[props.listId]
 const todos = (state, props) => state.todos[props.listId]
 
-export default const getVisibleTodos = () => {
+export default const getVisibleTodosFactory = () => {
   createSelector(
     visibilityFilter,
     todos,
@@ -307,6 +312,39 @@ export default const getVisibleTodos = () => {
     }
   )
 }
+```
+
+#### `containers/VisibleTodoList.js`
+
+```js
+import { connect } from 'react-redux'
+import { toggleTodo } from '../actions'
+import TodoList from '../components/TodoList'
+import { getVisibleTodos } from '../selectors'
+
+const mapStateToProps = () => {
+  const getVisibleTodos = getVisibleTodosFactory();
+  return (state, props) => { 
+    return {
+      todos: getVisibleTodos(state, props)
+    }
+  }
+}
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    onTodoClick: (id) => {
+      dispatch(toggleTodo(id))
+    }
+  }
+}
+
+const VisibleTodoList = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(TodoList)
+
+export default VisibleTodoList
 ```
 
 When a `mapStateToProps` function that returns a factory function is passed to `connect`, the factory function is called each time the component is instantiated. This creates a new selector, so that each `TodoList` componebt has its own copy of the selector. This means that having differing `listId` props across `TodoList` components won't interfere with memoization.
