@@ -235,7 +235,7 @@ import { createSelector } from 'reselect'
 const visibilityFilter = (state, props) => state.visibilityFilter[props.listId]
 const todos = (state, props) => state.todos[props.listId]
 
-export default const getVisibleTodos = createSelector(
+const getVisibleTodos = createSelector(
   visibilityFilter,
   todos,
   (visibilityFilter, todos) => {
@@ -249,6 +249,8 @@ export default const getVisibleTodos = createSelector(
     }
   }
 )
+
+export default getVisibleTodos
 ```
 
 `visibilityFilter` and `todos` are receiving the props through the second parameter `props`.  To enable multiple todo list compononents, `visibilityFilter` and `todos` are now arrays indexed by the `listId`.
@@ -286,7 +288,7 @@ export default VisibleTodoList
 
 ### Sharing Selectors Across Multiple Components
 
-In the previous section we set up multiple `TodoList` components, but there is a problem--`getVisibleTodos` is no longer correctly memoized. The reason for this is that `createSelector` only memoizes the result for the previous arguments. Adding the `listId` prop as an argument means that the cache will be invalidated for a given `TodoList` whenever one of the other `TodoList` components renders. To share the selector across multiple `TodoList` components and retain the memoization, we should use a factory function.
+In the previous section we set up multiple `TodoList` components, but there is a problem--`getVisibleTodos` is no longer correctly memoized. The reason for this is that `createSelector` only memoizes the result for the previous arguments. Adding the `listId` prop parameter means whenever one of the `TodoList` components renders, all the other `TodoList` components will have their cache invalidated. In order to share the selector across multiple `TodoList` components **and** retain the memoization, we can use a factory function.
 
 #### `selectors/todoSelectors.js`
 
@@ -296,8 +298,8 @@ import { createSelector } from 'reselect'
 const visibilityFilter = (state, props) => state.visibilityFilter[props.listId]
 const todos = (state, props) => state.todos[props.listId]
 
-export default const getVisibleTodosFactory = () => {
-  createSelector(
+const getVisibleTodosFactory = () => {
+  return createSelector(
     visibilityFilter,
     todos,
     (visibilityFilter, todos) => {
@@ -312,6 +314,8 @@ export default const getVisibleTodosFactory = () => {
     }
   )
 }
+
+export default getVisibleTodosFactory
 ```
 
 #### `containers/VisibleTodoList.js`
@@ -320,7 +324,7 @@ export default const getVisibleTodosFactory = () => {
 import { connect } from 'react-redux'
 import { toggleTodo } from '../actions'
 import TodoList from '../components/TodoList'
-import { getVisibleTodos } from '../selectors'
+import { getVisibleTodosFactory } from '../selectors'
 
 const mapStateToProps = () => {
   const getVisibleTodos = getVisibleTodosFactory();
@@ -347,7 +351,7 @@ const VisibleTodoList = connect(
 export default VisibleTodoList
 ```
 
-When a `mapStateToProps` function that returns a factory function is passed to `connect`, the factory function is called each time the component is instantiated. This creates a new selector, so that each `TodoList` componebt has its own copy of the selector. This means that having differing `listId` props across `TodoList` components won't interfere with memoization.
+If `mapStateToProps` returns a function, `connect` will call that function for each component instance and use the function it returns as `mapStateToProps`. We can now create a new copy of the selector for each component, which means that each `TodoList` having a different `listId` prop won't interfere with memoization.
 
 ## API
 
@@ -691,7 +695,7 @@ Always check that the cost of an alternative `equalityCheck` function or deep eq
 
 A: Yes. Reselect has no dependencies on any other package, so although it was designed to be used with Redux it can be used independently. It is currently being used successfully in traditional Flux apps.
 
-> If you create selectors using `createSelector` make sure the objects in your store are immutable.
+> If you create selectors using `createSelector` make sure its arguments are immutable.
 > See [here](#createselectorinputselectors--inputselectors-resultfunc)
 
 ### Q: How do I create a selector that takes an argument?
