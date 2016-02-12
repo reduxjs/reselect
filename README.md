@@ -838,8 +838,8 @@ A: Yes! They are available from DefinitelyTyped. [Thanks to @frankwallis and @ge
 
 MIT
 
-[build-badge]: https://img.shields.io/travis/rackt/reselect/master.svg?style=flat-square
-[build]: https://travis-ci.org/rackt/reselect
+[build-badge]: https://img.shields.io/travis/reactjs/reselect/master.svg?style=flat-square
+[build]: https://travis-ci.org/reactjs/reselect
 
 [npm-badge]: https://img.shields.io/npm/v/reselect.svg?style=flat-square
 [npm]: https://www.npmjs.org/package/reselect
