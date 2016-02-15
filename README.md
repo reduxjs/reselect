@@ -133,7 +133,7 @@ export const getVisibleTodos = createSelector(
   getVisibilityFilter,
   getTodos,
   (visibilityFilter, todos) => {
-    switch (filter) {
+    switch (visibilityFilter) {
       case 'SHOW_ALL':
         return todos
       case 'SHOW_COMPLETED':
@@ -198,11 +198,9 @@ export default VisibleTodoList
 
 ### Accessing React Props in Selectors
 
-So far we have only seen selectors receive the Redux store state as input, but it is also possible for a selector to receive the props of a component wrapped by `connect`.
+So far we have only seen selectors receive the Redux store state as arguments, but it is also possible for `connect` to pass props to a selector.
 
-In the following  have extended the example to allow multiple `TodoList`s.
-
-(Note that changes to the components, reducers and action creators have been omitted for brevity.)
+Imagine that we extended our `VisibleTodoList` component to be able to render multiple todo lists at once:
 
 #### `components/App.js`
 
@@ -218,14 +216,12 @@ const App = () => (
     <VisibleTodoList listId="1" />
     <VisibleTodoList listId="2" />
     <VisibleTodoList listId="3" />
-    <VisibleTodoList listId="4" />
-    <VisibleTodoList listId="5" />
-    <VisibleTodoList listId="6" />
-    <VisibleTodoList listId="7" />
     <Footer />
   </div>
 )
 ```
+
+Notice that each `VisibleTodoList` component now has a `listId` prop to identify it.
 
 #### `selectors/todoSelectors.js`
 
@@ -253,7 +249,7 @@ const getVisibleTodos = createSelector(
 export default getVisibleTodos
 ```
 
-`visibilityFilter` and `todos` are receiving the props through the second parameter `props`.  To enable multiple todo list compononents, `visibilityFilter` and `todos` are now arrays indexed by the `listId`.
+The `todos` and `visibilityFilter` selectors now have a second parameter named `props`. All we need to do to access the props is to pass them into our selector from `mapStateToProps`:
 
 #### `containers/VisibleTodoList.js`
 
@@ -288,7 +284,13 @@ export default VisibleTodoList
 
 ### Sharing Selectors Across Multiple Components
 
-In the previous section we set up multiple `TodoList` components, but there is a problem--`getVisibleTodos` is no longer correctly memoized. The reason for this is that `createSelector` only memoizes the result for the previous arguments. Adding the `listId` prop parameter means whenever one of the `TodoList` components renders, all the other `TodoList` components will have their cache invalidated. In order to share the selector across multiple `TodoList` components **and** retain the memoization, we can use a factory function.
+| This section requires React Redux v4.3.0 or higher.
+
+In the previous section we set up multiple `TodoList` components, but there is a problem--`getVisibleTodos` is no longer correctly memoized. The reason for this is that `createSelector` only memoizes the result for the previous set of arguments. Adding the `listId` prop to the arguments of `getVisibleTodos` means that whenever one of the `TodoList` components renders, all the other `TodoList` components will have their cache invalidated.
+
+In order to share the selector across multiple `TodoList` components **and** retain memoization, we require a new selector for each individual instance of the component. We can achieve this by using a factory function:
+
+If the `mapStateToProps` argument to `connect` returns a function, React Redux will assume that function is to be used to create a individual version of `mapStateToProps` for each component instance. We'll refer to functions that return selector functions as "factory functions". Let's change `getVisibleTodos` into a factory function that creates a new selector:
 
 #### `selectors/todoSelectors.js`
 
@@ -318,6 +320,8 @@ const getVisibleTodosFactory = () => {
 export default getVisibleTodosFactory
 ```
 
+We now need a `mapStateToPropsFactory` that returns a new `mapStateToProps` each time it is called:
+
 #### `containers/VisibleTodoList.js`
 
 ```js
@@ -326,7 +330,7 @@ import { toggleTodo } from '../actions'
 import TodoList from '../components/TodoList'
 import { getVisibleTodosFactory } from '../selectors'
 
-const mapStateToProps = () => {
+const mapStateToPropsFactory = () => {
   const getVisibleTodos = getVisibleTodosFactory();
   return (state, props) => { 
     return {
@@ -344,14 +348,16 @@ const mapDispatchToProps = (dispatch) => {
 }
 
 const VisibleTodoList = connect(
-  mapStateToProps,
+  mapStateToPropsFactory,
   mapDispatchToProps
 )(TodoList)
 
 export default VisibleTodoList
 ```
 
-If `mapStateToProps` returns a function, `connect` will call that function for each component instance and use the function it returns as `mapStateToProps`. We can now create a new copy of the selector for each component, which means that each `TodoList` having a different `listId` prop won't interfere with memoization.
+Each component now has its own `mapStateToProps` function that contains its own individual selector. This segregation ensures that one component does not interfere with the memoization of another.
+
+TODO: Use proper quotes etc.
 
 ## API
 
