@@ -9,7 +9,7 @@ export function defaultMemoize(func, equalityCheck = defaultEqualityCheck) {
     if (
       lastArgs !== null &&
       lastArgs.length === args.length &&
-      args.every((value, index) => equalityCheck(value, lastArgs[index]))
+      !args.some((value, index) => !equalityCheck(value, lastArgs[index]))
     ) {
       return lastResult
     }
