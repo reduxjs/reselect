@@ -22,7 +22,7 @@ export function defaultMemoize(func, equalityCheck = defaultEqualityCheck) {
 function getDependencies(funcs) {
   const dependencies = Array.isArray(funcs[0]) ? funcs[0] : funcs
 
-  if (!dependencies.every(dep => typeof dep === 'function')) {
+  if (dependencies.some(dep => typeof dep !== 'function')) {
     const dependencyTypes = dependencies.map(
       dep => typeof dep
     ).join(', ')
