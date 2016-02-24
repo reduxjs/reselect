@@ -66,9 +66,6 @@ export const totalSelector = createSelector(
 
 ### Motivation for Memoized Selectors
 
-
-### Motivation for Memoized Selectors
-
 > The examples in this section are based on the [Redux Todos List example](http://rackt.github.io/redux/docs/basics/UsageWithReact.html).
 
 #### `containers/VisibleTodoList.js`
