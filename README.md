@@ -349,8 +349,6 @@ export default VisibleTodoList
 
 By passing `mapStateToPropsFactory` to `connect`, each `VisibleTodosList` component will receive its own `mapStateToProps` function, which in turn contains its own copy of the `getVisibleTodos` selector. Memoization will now work correctly no matter what order the `VisibleTodoList` components are rendered in.
 
-TODO: Use proper quotes etc.
-
 ## API
 
 ### createSelector(...inputSelectors | [inputSelectors], resultFunc)
