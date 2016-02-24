@@ -197,7 +197,7 @@ export default VisibleTodoList
 
 So far we have only seen selectors receive the Redux store state as arguments, but a selector can just as easily receive props.
 
-Imagine that we extended our `VisibleTodoList` component to be able to render multiple todo lists at once:
+Imagine that we somehow extend our `VisibleTodoList` component to be able to render multiple todo lists at once:
 
 #### `components/App.js`
 
@@ -246,7 +246,7 @@ const getVisibleTodos = createSelector(
 export default getVisibleTodos
 ```
 
-The `todos` and `visibilityFilter` selectors now have a second parameter named `props`. Now we can pass them into our selector from `mapStateToProps`:
+The `todos` and `visibilityFilter` selectors now have a second argument named `props` which we can pass into our selector from `mapStateToProps`:
 
 #### `containers/VisibleTodoList.js`
 
@@ -278,10 +278,9 @@ const VisibleTodoList = connect(
 export default VisibleTodoList
 ```
 
-
 ### Sharing Selectors Across Multiple Components
 
-In the previous section we saw a selector for multiple `VisibleTodoList` components, but there is a problem—`getVisibleTodos` is no longer correctly memoized. The reason for this is that `createSelector` only returns a cached result when the current set of arguments is the same as the previous set of arguments. If `<VisibleTodoList listId="1" />` and `<VisibleTodoList listId="2" />` are rendered alternately, the shared selector will alternate between being called with `{listId: 1}` and `{listId: 2}`as props. This causes the arguments to be different for each call, so the selector always recomputes instead of returning the memoized value.
+In the previous section we saw the `getVisibleTodos` selector being used with with multiple `VisibleTodoList` components. But there is a problem—`getVisibleTodos` is no longer correctly memoized because `createSelector` only returns a cached result when its set of arguments is the same as its previous set of arguments. If we alternate between rendering `<VisibleTodoList listId="1" />` and `<VisibleTodoList listId="2" />`, the shared selector will alternate between being called with `{listId: 1}` and `{listId: 2}` for props. This will cause the arguments to be different for each call, so the selector will always recompute instead of returning the cached value.
 
 In order to share a selector across multiple `VisibleTodoList` components **and** retain memoization, each instance of the component needs to have its own individual copy of the selector. The first step is to change `getVisibleTodos` from being a selector into a function that *creates* a selector:
 
@@ -312,7 +311,7 @@ const getVisibleTodosCreator = () => {
 
 export default getVisibleTodosCreator
 ```
-As of React Redux v4.3.0, if `mapStateToProps` returns a function, React Redux will assume that it should be used to create an individual `mapStateToProps` function for each instance of the component. In the example below `mapStateToPropsFactory` returns a new `mapStateToProps` function with its own copy of the `getVisibleTodos` selector:
+As of React Redux v4.3.0, if `mapStateToProps` returns a function, React Redux will assume that it should be used to create an new `mapStateToProps` function for each instance of the component. In the example below `mapStateToPropsFactory` returns a new `mapStateToProps` function with its own copy of the `getVisibleTodos` selector:
 
 #### `containers/VisibleTodoList.js`
 
@@ -347,7 +346,7 @@ const VisibleTodoList = connect(
 export default VisibleTodoList
 ```
 
-By passing `mapStateToPropsFactory` to `connect`, each `VisibleTodosList` component will receive its own `mapStateToProps` function, which in turn contains its own copy of the `getVisibleTodos` selector. Memoization will now work correctly no matter what order the `VisibleTodoList` components are rendered in.
+By passing `mapStateToPropsFactory` to `connect`, each `VisibleTodosList` component will get its own `mapStateToProps` function, which in turn will contain its own copy of the `getVisibleTodos` selector. Memoization will now work correctly no matter what order the `VisibleTodoList` components are rendered in.
 
 ## API
 
