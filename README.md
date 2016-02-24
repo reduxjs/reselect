@@ -3,7 +3,7 @@
 [![npm package][npm-badge]][npm]
 [![Coveralls][coveralls-badge]][coveralls]
 
-Simple "selector" library for Redux inspired by getters in [NuclearJS](https://github.com/optimizely/nuclear-js.git), [subscriptions](https://github.com/Day8/re-frame#just-a-read-only-cursor) in [re-frame](https://github.com/Day8/re-frame) and this [proposal](https://github.com/gaearon/redux/pull/169) from [speedskater](https://github.com/speedskater).
+Simple “selector” library for Redux inspired by getters in [NuclearJS](https://github.com/optimizely/nuclear-js.git), [subscriptions](https://github.com/Day8/re-frame#just-a-read-only-cursor) in [re-frame](https://github.com/Day8/re-frame) and this [proposal](https://github.com/gaearon/redux/pull/169) from [speedskater](https://github.com/speedskater).
 
 * Selectors can compute derived data, allowing Redux to store the minimal possible state.
 * Selectors are efficient. A selector is not recomputed unless one of its arguments change.
@@ -281,7 +281,7 @@ export default VisibleTodoList
 
 ### Sharing Selectors Across Multiple Components
 
-In the previous section we saw a selector for multiple `VisibleTodoList` components, but there is a problem--`getVisibleTodos` is no longer correctly memoized. The reason for this is that `createSelector` only returns a cached result when the current set of arguments is the same as the previous set of arguments. If `<VisibleTodoList listId="1" />` and `<VisibleTodoList listId="2" />` are rendered alternately, the shared selector will alternate between being called with `{listId: 1}` and `{listId: 2}`as props. This causes the arguments to be different for each call, so the selector always recomputes instead of returning the memoized value.
+In the previous section we saw a selector for multiple `VisibleTodoList` components, but there is a problem—`getVisibleTodos` is no longer correctly memoized. The reason for this is that `createSelector` only returns a cached result when the current set of arguments is the same as the previous set of arguments. If `<VisibleTodoList listId="1" />` and `<VisibleTodoList listId="2" />` are rendered alternately, the shared selector will alternate between being called with `{listId: 1}` and `{listId: 2}`as props. This causes the arguments to be different for each call, so the selector always recomputes instead of returning the memoized value.
 
 In order to share a selector across multiple `VisibleTodoList` components **and** retain memoization, each instance of the component needs to have its own individual copy of the selector. The first step is to change `getVisibleTodos` from being a selector into a function that *creates* a selector:
 
@@ -541,7 +541,7 @@ const nestedSelector = createStructuredSelector({
 
 ## FAQ
 
-### Q: Why isn't my selector recomputing when the input state changes?
+### Q: Why isn’t my selector recomputing when the input state changes?
 
 A: Check that your memoization function is compatible with your state update function (i.e. the reducer if you are using Redux). For example, a selector created with `createSelector` will not work with a state update function that mutates an existing object instead of creating a new one each time. `createSelector` uses an identity check (`===`) to detect that an input has changed, so mutating an existing object will not trigger the selector to recompute because mutating an object does not change its identity. Note that if you are using Redux, mutating the state object is [almost certainly a mistake](http://rackt.github.io/redux/docs/Troubleshooting.html).
 
