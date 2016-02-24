@@ -246,7 +246,7 @@ const getVisibleTodos = createSelector(
 export default getVisibleTodos
 ```
 
-The `todos` and `visibilityFilter` selectors now have a second argument named `props`. We can pass this `props` argument into our selector from `mapStateToProps`:
+The `todos` and `visibilityFilter` selectors now take a second argument named `props`. We can pass this `props` argument into our selector from `mapStateToProps`:
 
 #### `containers/VisibleTodoList.js`
 
