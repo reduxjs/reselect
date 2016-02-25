@@ -280,7 +280,7 @@ export default VisibleTodoList
 
 ### Sharing Selectors Across Multiple Components
 
-In the previous section we saw the `getVisibleTodos` selector being used with with multiple `VisibleTodoList` components. But there is a problem—`getVisibleTodos` is no longer correctly memoized because `createSelector` only returns the cached value when its set of arguments is the same as its previous set of arguments. If we alternate between rendering `<VisibleTodoList listId="1" />` and `<VisibleTodoList listId="2" />`, the shared selector will alternate between receiving `{listId: 1}` and `{listId: 2}` as its `props` argument. This will cause the arguments to be different on each call, so the selector will always recompute instead of returning the cached value.
+In the previous section we saw the `getVisibleTodos` selector being used with with multiple `VisibleTodoList` components. But there is a problem—`getVisibleTodos` is no longer correctly memoized. This is because `createSelector` only returns the cached value when its set of arguments is the same as its previous set of arguments. If we alternate between rendering `<VisibleTodoList listId="1" />` and `<VisibleTodoList listId="2" />`, the shared selector will alternate between receiving `{listId: 1}` and `{listId: 2}` as its `props` argument. This will cause the arguments to be different on each call, so the selector will always recompute instead of returning the cached value.
 
 In order to share a selector across multiple `VisibleTodoList` components **and** retain memoization, each instance of the component needs to have its own individual copy of the selector. The first step is to change `getVisibleTodos` from being a selector into a function that *creates* a selector:
 
