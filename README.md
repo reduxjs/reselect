@@ -311,7 +311,9 @@ const getVisibleTodosCreator = () => {
 
 export default getVisibleTodosCreator
 ```
-As of React Redux v4.3.0, if `mapStateToProps` returns a function, React Redux will assume that it should be used to create an new `mapStateToProps` function for each instance of the component. In the example below `mapStateToPropsFactory` returns a new `mapStateToProps` function with its own copy of the `getVisibleTodos` selector:
+As of React Redux v4.3.0, if `mapStateToProps` returns a function, React Redux will assume that it should be used to create a new `mapStateToProps` function when the component is created. 
+
+In the example below `mapStateToPropsFactory` returns a new `mapStateToProps` function with its own copy of the `getVisibleTodos` selector:
 
 #### `containers/VisibleTodoList.js`
 
