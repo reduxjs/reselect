@@ -57,6 +57,7 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
     }
 
     selector.recomputations = () => recomputations
+    selector.resetRecomputations = () => recomputations = 0
     return selector
   }
 }

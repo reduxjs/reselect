@@ -729,6 +729,11 @@ suite('selector', () => {
 })
 ```
 
+Finally, each selector has a `resetRecomputations` method that sets
+recomputations back to 0.  The intended use is for a complex selector that may
+have many independent tests and you don't want to manually manage the
+computation count or create a "dummy" selector for each test.
+
 ### Q: How do I use Reselect with Immutable.js?
 
 A: Selectors created with `createSelector` should work just fine with Immutable.js data structures.
