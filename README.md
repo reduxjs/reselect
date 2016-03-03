@@ -127,10 +127,9 @@ const getVisibilityFilter = (state) => state.visibilityFilter
 const getTodos = (state) => state.todos
 
 export const getVisibleTodos = createSelector(
-  getVisibilityFilter,
-  getTodos,
+  [ getVisibilityFilter, getTodos ],
   (visibilityFilter, todos) => {
-    switch (visibilityFilter) {
+    switch (filter) {
       case 'SHOW_ALL':
         return todos
       case 'SHOW_COMPLETED':
@@ -197,7 +196,7 @@ export default VisibleTodoList
 
 So far we have only seen selectors receive the Redux store state as an argument, but a selector can receive props too.
 
-In the following example we have somehow extended our `VisibleTodoList` component to be able to render multiple todo lists at once. Each `VisibleTodoList` component now has a `listId` prop to identify it:
+In the following example we have extended our `VisibleTodoList` component to be able to render multiple todo lists at once. Each `VisibleTodoList` component now has a `listId` prop to identify it:
 
 #### `components/App.js`
 
@@ -225,12 +224,11 @@ We can alter our `todos` and `visibilityFilter` selectors to take a second argum
 ```js
 import { createSelector } from 'reselect'
 
-const visibilityFilter = (state, props) => state.todoLists[props.listId].visibilityFilter
-const todos = (state, props) => state.todoLists[props.listId].todos
+const getVisibilityFilter = (state, props) => state.todoLists[props.listId].visibilityFilter
+const getTodos = (state, props) => state.todoLists[props.listId].todos
 
 const getVisibleTodos = createSelector(
-  visibilityFilter,
-  todos,
+  [ getVisibilityFilter, getTodos ],
   (visibilityFilter, todos) => {
     switch (visibilityFilter) {
       case 'SHOW_COMPLETED':
@@ -246,7 +244,7 @@ const getVisibleTodos = createSelector(
 export default getVisibleTodos
 ``` 
 
-The `props` argument can now be passed into our selectors from `mapStateToProps`:
+The `props` argument can now be passed to `getVisibleTodos` from `mapStateToProps`:
 
 ```js
 const mapStateToProps = (state, props) => {
@@ -256,7 +254,9 @@ const mapStateToProps = (state, props) => {
 }
 ```
 
-But beware! If we try to use the above `mapStateToProps` in our `VisibleTodoList` container component it will no longer correctly memoize:
+But beware! If we try to use this `mapStateToProps` in our `VisibleTodoList` container component it will not correctly memoize. 
+
+The following code will not work as intended:
 
 #### `containers/VisibleTodoList.js`
 
@@ -266,7 +266,7 @@ import { toggleTodo } from '../actions'
 import TodoList from '../components/TodoList'
 import { getVisibleTodos } from '../selectors'
 
-// THE FOLLOWING SELECTOR DOES RELIABLY NOT MEMOIZE
+// THE FOLLOWING SELECTOR DOES NOT RELIABLY MEMOIZE
 const mapStateToProps = (state, props) => {
   return {
     todos: getVisibleTodos(state, props)
@@ -302,13 +302,12 @@ In order to share a selector across multiple `VisibleTodoList` components **and*
 ```js
 import { createSelector } from 'reselect'
 
-const visibilityFilter = (state, props) => state.todoLists[props.listId].visibilityFilter
-const todos = (state, props) => state.todoLists[props.listId].todos
+const getVisibilityFilter = (state, props) => state.todoLists[props.listId].visibilityFilter
+const getTodos = (state, props) => state.todoLists[props.listId].todos
 
 const getVisibleTodosCreator = () => {
   return createSelector(
-    visibilityFilter,
-    todos,
+    [ getVisibilityFilter, getTodos ],
     (visibilityFilter, todos) => {
       switch (visibilityFilter) {
         case 'SHOW_COMPLETED':
@@ -327,7 +326,7 @@ export default getVisibleTodosCreator
 
 If `mapStateToProps` returns a function, React Redux will assume that it should be used to create a new `mapStateToProps` function each time an instance of the component is created.
 
-In the example below `mapStateToPropsFactory` returns a new `mapStateToProps` function with its own copy of the `getVisibleTodos` selector. By passing `mapStateToPropsFactory` to `connect`, each instance of `VisibleTodosList` will get its own `mapStateToProps` function, which in turn will contain its own copy of the `getVisibleTodos` selector. Memoization will now work correctly regardless of the order that the `VisibleTodoList` components are rendered in.
+In the example below `mapStateToPropsFactory` returns a new `mapStateToProps` function with its own copy of the `getVisibleTodos` selector. Passing `mapStateToPropsFactory` to `connect` results in each instance of `VisibleTodosList` getting its own `mapStateToProps` function, which in turn contains its own copy of the `getVisibleTodos` selector. Memoization will now work correctly regardless of the order that the `VisibleTodoList` components are rendered in:
 
 #### `containers/VisibleTodoList.js`
 
