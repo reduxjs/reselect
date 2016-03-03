@@ -245,4 +245,24 @@ suite('selector', () => {
     assert.strictEqual(selector({ a: 1, b: 2 }), firstResult)
     assert.deepEqual(selector({ a: 2, b: 2 }), { x: 2, y: 2 })
   })
+  test('resetRecomputations', () => {
+    const selector = createSelector(
+      state => state.a,
+        a => a
+    )
+    assert.equal(selector({ a: 1 }), 1)
+    assert.equal(selector({ a: 1 }), 1)
+    assert.equal(selector.recomputations(), 1)
+    assert.equal(selector({ a: 2 }), 2)
+    assert.equal(selector.recomputations(), 2)
+
+    selector.resetRecomputations()
+    assert.equal(selector.recomputations(), 0)
+
+    assert.equal(selector({ a: 1 }), 1)
+    assert.equal(selector({ a: 1 }), 1)
+    assert.equal(selector.recomputations(), 1)
+    assert.equal(selector({ a: 2 }), 2)
+    assert.equal(selector.recomputations(), 2)
+  })
 })
