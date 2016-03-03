@@ -160,7 +160,7 @@ const getVisibleTodosFilteredByKeyword = createSelector(
 
 ### Connecting a Selector to the Redux Store
 
-If you are using [React Redux](https://github.com/rackt/react-redux), you can call selectors as regular functions inside `mapStateToProps()`:
+If you are using [React Redux](https://github.com/reactjs/react-redux), you can call selectors as regular functions inside `mapStateToProps()`:
 
 #### `containers/VisibleTodoList.js`
 
@@ -217,7 +217,7 @@ const App = () => (
 )
 ```
 
-We can alter our `todos` and `visibilityFilter` selectors to take a second argument named `props`:
+We want to select a different slice of the state depending on the value of the `listId` prop, so let's modify `getVisibilityFilter` and `getTodos` to accept a  props argument:
 
 #### `selectors/todoSelectors.js`
 
@@ -254,9 +254,7 @@ const mapStateToProps = (state, props) => {
 }
 ```
 
-But beware! If we try to use this `mapStateToProps` in our `VisibleTodoList` container component it will not correctly memoize. 
-
-The following code will not work as intended:
+But there is a problem--the following code will not work as intended. `mapStateToProps` does not correctly memoize.
 
 #### `containers/VisibleTodoList.js`
 
@@ -266,7 +264,7 @@ import { toggleTodo } from '../actions'
 import TodoList from '../components/TodoList'
 import { getVisibleTodos } from '../selectors'
 
-// THE FOLLOWING SELECTOR DOES NOT RELIABLY MEMOIZE
+// THE FOLLOWING SELECTOR DOES NOT CORRECTLY MEMOIZE
 const mapStateToProps = (state, props) => {
   return {
     todos: getVisibleTodos(state, props)
@@ -289,7 +287,7 @@ const VisibleTodoList = connect(
 export default VisibleTodoList
 ```
 
-The problem is that `createSelector` only returns the cached value when its set of arguments is the same as its previous set of arguments. If we alternate between rendering `<VisibleTodoList listId="1" />` and `<VisibleTodoList listId="2" />`, the shared selector will alternate between receiving `{listId: 1}` and `{listId: 2}` as its `props` argument. This will cause the arguments to be different on each call, so the selector will always recompute instead of returning the cached value. We will see how to overcome this limitation in the next section.
+The problem is that a selector created with `createSelector` only returns the cached value when its set of arguments is the same as its previous set of arguments. If we alternate between rendering `<VisibleTodoList listId="1" />` and `<VisibleTodoList listId="2" />`, the shared selector will alternate between receiving `{listId: 1}` and `{listId: 2}` as its `props` argument. This will cause the arguments to be different on each call, so the selector will always recompute instead of returning the cached value. We will see how to overcome this limitation in the next section.
 
 ### Sharing Selectors Across Multiple Components
 
@@ -326,7 +324,7 @@ export default getVisibleTodosCreator
 
 If `mapStateToProps` returns a function, React Redux will assume that it should be used to create a new `mapStateToProps` function each time an instance of the component is created.
 
-In the example below `mapStateToPropsFactory` returns a new `mapStateToProps` function with its own copy of the `getVisibleTodos` selector. Passing `mapStateToPropsFactory` to `connect` results in each instance of `VisibleTodosList` getting its own `mapStateToProps` function, which in turn contains its own copy of the `getVisibleTodos` selector. Memoization will now work correctly regardless of the order that the `VisibleTodoList` components are rendered in:
+In the example below `mapStateToPropsFactory` returns a new `mapStateToProps` function with its own copy of the `getVisibleTodos` selector. Passing `mapStateToPropsFactory` to `connect` results in each instance of `VisibleTodosList` getting its own `mapStateToProps` function, which in turn contains its own copy of the `getVisibleTodos` selector. Memoization will now work correctly regardless of the order that the `VisibleTodoList` components are rendered in.
 
 #### `containers/VisibleTodoList.js`
 
