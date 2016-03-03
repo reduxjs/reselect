@@ -195,9 +195,9 @@ export default VisibleTodoList
 
 ### Accessing React Props in Selectors
 
-So far we have only seen selectors receive the Redux store state as arguments, but a selector can just as easily receive props.
+So far we have only seen selectors receive the Redux store state as an argument, but a selector can receive props too.
 
-Imagine that we somehow extend our `VisibleTodoList` component to be able to render multiple todo lists at once:
+In the following example we have somehow extended our `VisibleTodoList` component to be able to render multiple todo lists at once. Each `VisibleTodoList` component now has a `listId` prop to identify it:
 
 #### `components/App.js`
 
@@ -218,15 +218,15 @@ const App = () => (
 )
 ```
 
-Notice that each `VisibleTodoList` component now has a `listId` prop to identify it.
+We can alter our `todos` and `visibilityFilter` selectors to take a second argument named `props`:
 
 #### `selectors/todoSelectors.js`
 
 ```js
 import { createSelector } from 'reselect'
 
-const visibilityFilter = (state, props) => state.visibilityFilter[props.listId]
-const todos = (state, props) => state.todos[props.listId]
+const visibilityFilter = (state, props) => state.todoLists[props.listId].visibilityFilter
+const todos = (state, props) => state.todoLists[props.listId].todos
 
 const getVisibleTodos = createSelector(
   visibilityFilter,
@@ -244,9 +244,19 @@ const getVisibleTodos = createSelector(
 )
 
 export default getVisibleTodos
+``` 
+
+The `props` argument can now be passed into our selectors from `mapStateToProps`:
+
+```js
+const mapStateToProps = (state, props) => {
+  return {
+    todos: getVisibleTodos(state, props)
+  }
+}
 ```
 
-The `todos` and `visibilityFilter` selectors now take a second argument named `props`. We can pass this `props` argument into our selector from `mapStateToProps`:
+But beware! If we try to use the above `mapStateToProps` in our `VisibleTodoList` container component it will no longer correctly memoize:
 
 #### `containers/VisibleTodoList.js`
 
@@ -256,6 +266,7 @@ import { toggleTodo } from '../actions'
 import TodoList from '../components/TodoList'
 import { getVisibleTodos } from '../selectors'
 
+// THE FOLLOWING SELECTOR DOES RELIABLY NOT MEMOIZE
 const mapStateToProps = (state, props) => {
   return {
     todos: getVisibleTodos(state, props)
@@ -278,9 +289,11 @@ const VisibleTodoList = connect(
 export default VisibleTodoList
 ```
 
+The problem is that `createSelector` only returns the cached value when its set of arguments is the same as its previous set of arguments. If we alternate between rendering `<VisibleTodoList listId="1" />` and `<VisibleTodoList listId="2" />`, the shared selector will alternate between receiving `{listId: 1}` and `{listId: 2}` as its `props` argument. This will cause the arguments to be different on each call, so the selector will always recompute instead of returning the cached value. We will see how to overcome this limitation in the next section.
+
 ### Sharing Selectors Across Multiple Components
 
-In the previous section we saw the `getVisibleTodos` selector being used with with multiple `VisibleTodoList` components. But there is a problem—`getVisibleTodos` is no longer correctly memoized. This is because `createSelector` only returns the cached value when its set of arguments is the same as its previous set of arguments. If we alternate between rendering `<VisibleTodoList listId="1" />` and `<VisibleTodoList listId="2" />`, the shared selector will alternate between receiving `{listId: 1}` and `{listId: 2}` as its `props` argument. This will cause the arguments to be different on each call, so the selector will always recompute instead of returning the cached value.
+| The following will only work in React Redux v4.3.0 and greater
 
 In order to share a selector across multiple `VisibleTodoList` components **and** retain memoization, each instance of the component needs to have its own individual copy of the selector. The first step is to change `getVisibleTodos` from being a selector into a function that *creates* a selector:
 
@@ -289,8 +302,8 @@ In order to share a selector across multiple `VisibleTodoList` components **and*
 ```js
 import { createSelector } from 'reselect'
 
-const visibilityFilter = (state, props) => state.visibilityFilter[props.listId]
-const todos = (state, props) => state.todos[props.listId]
+const visibilityFilter = (state, props) => state.todoLists[props.listId].visibilityFilter
+const todos = (state, props) => state.todoLists[props.listId].todos
 
 const getVisibleTodosCreator = () => {
   return createSelector(
@@ -311,9 +324,10 @@ const getVisibleTodosCreator = () => {
 
 export default getVisibleTodosCreator
 ```
-As of React Redux v4.3.0, if `mapStateToProps` returns a function, React Redux will assume that it should be used to create a new `mapStateToProps` function when the component is created. 
 
-In the example below `mapStateToPropsFactory` returns a new `mapStateToProps` function with its own copy of the `getVisibleTodos` selector:
+If `mapStateToProps` returns a function, React Redux will assume that it should be used to create a new `mapStateToProps` function each time an instance of the component is created.
+
+In the example below `mapStateToPropsFactory` returns a new `mapStateToProps` function with its own copy of the `getVisibleTodos` selector. By passing `mapStateToPropsFactory` to `connect`, each instance of `VisibleTodosList` will get its own `mapStateToProps` function, which in turn will contain its own copy of the `getVisibleTodos` selector. Memoization will now work correctly regardless of the order that the `VisibleTodoList` components are rendered in.
 
 #### `containers/VisibleTodoList.js`
 
@@ -347,8 +361,6 @@ const VisibleTodoList = connect(
 
 export default VisibleTodoList
 ```
-
-By passing `mapStateToPropsFactory` to `connect`, each `VisibleTodosList` component will get its own `mapStateToProps` function, which in turn will contain its own copy of the `getVisibleTodos` selector. Memoization will now work correctly no matter what order the `VisibleTodoList` components are rendered in.
 
 ## API
 
