@@ -254,7 +254,7 @@ const mapStateToProps = (state, props) => {
 }
 ```
 
-But there is a problem--the following code will not work as intended. `mapStateToProps` does not correctly memoize.
+But there is a problem with using this version of `getVisibleTodos` with the `visibleTodoList` container—it does not correctly memoize:
 
 #### `containers/VisibleTodoList.js`
 
@@ -357,7 +357,7 @@ const VisibleTodoList = connect(
 )(TodoList)
 
 export default VisibleTodoList
-```
+`
 
 ## API
 
