@@ -264,5 +264,5 @@ suite('selector', () => {
     assert.equal(selector.recomputations(), 1)
     assert.equal(selector({ a: 2 }), 2)
     assert.equal(selector.recomputations(), 2)
-  });
+  })
 })
