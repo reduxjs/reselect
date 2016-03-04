@@ -194,9 +194,11 @@ export default VisibleTodoList
 
 ### Accessing React Props in Selectors
 
+| In the following section we are going to work with a extended version of our app that supports multiple Todo Lists. The code needed to accomplish this is not shown here and is left as an exercise to the reader.
+
 So far we have only seen selectors receive the Redux store state as an argument, but a selector can receive props too.
 
-In the following example we have extended our `VisibleTodoList` component to be able to render multiple todo lists at once. Each `VisibleTodoList` component now has a `listId` prop to identify it:
+Here is`App.js` with three `VisibleTodoList` components, each of which has a `listId` prop:
 
 #### `components/App.js`
 
@@ -208,11 +210,9 @@ import VisibleTodoList from '../containers/VisibleTodoList'
 
 const App = () => (
   <div>
-    <AddTodo />
     <VisibleTodoList listId="1" />
     <VisibleTodoList listId="2" />
     <VisibleTodoList listId="3" />
-    <Footer />
   </div>
 )
 ```
