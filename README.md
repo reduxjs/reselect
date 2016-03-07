@@ -326,9 +326,9 @@ const getVisibleTodosCreator = () => {
 export default getVisibleTodosCreator
 ```
 
-We can now use `getVisibleTodosCreator` to create an individual copy of the `getVisibleTodos` selector for each instance of the `VisibleTodosList` component. The `mapStateToProps` argument of `connect` has a feature that can help with this. If `mapStateToProps` returns a function instead of an object, React Redux treats it as a factory function that produces a new `mapStateToProps` function to be used instead.
+We can now use `getVisibleTodosCreator` to make new copies of the `getVisibleTodos` selector, but how do we associate a copy of the selector with an instance of the `VisibleTodosList` container? The `mapStateToProps` argument of `connect` can help with this. **If `mapStateToProps` returns a function instead of an object, React Redux treats it as a factory function that produces a new `mapStateToProps` function to be used instead**.
 
-In the example below `mapStateToPropsFactory` creates a new `getVisibleTodos` selector and then returns a `mapStateToProps` function with exclusive access to it.
+In the example below `mapStateToPropsFactory` creates a new `getVisibleTodos` selector and then returns a `mapStateToProps` function that has exclusive access to it.
 
 ```js
 const mapStateToPropsFactory = () => {
@@ -341,7 +341,7 @@ const mapStateToPropsFactory = () => {
 }
 ```
 
-If we now pass `mapStateToPropsFactory` to `connect`, each instance of `VisibleTodosList` will get its own `mapStateToProps` function with its own private copy of `getVisibleTodosSelector`. Memoization will now work correctly regardless of the order that the `VisibleTodoList` components are rendered in.
+If we pass `mapStateToPropsFactory` to `connect`, each instance of `VisibleTodosList` will get its own `mapStateToProps` function with its own private copy of `getVisibleTodosSelector`. Memoization will now work correctly regardless of the order that the `VisibleTodoList` components are rendered in.
 
 #### `containers/VisibleTodoList.js`
 
