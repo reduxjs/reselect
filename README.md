@@ -194,7 +194,7 @@ export default VisibleTodoList
 
 ### Accessing React Props in Selectors
 
-> In the following section we are going to work with a hypothetical extended version of our app that supports multiple Todo Lists.
+> This section introduces an extension to our app that allows it to support multiple Todo Lists. Please note that this extension includes changes to the reducers, components, actions etc. that aren't directly relevant to the topics discussed and have therefore been omitted for brevity.
 
 So far we have only seen selectors receive the Redux store state as an argument, but a selector can receive props too.
 
@@ -244,7 +244,7 @@ const getVisibleTodos = createSelector(
 export default getVisibleTodos
 ``` 
 
-`props` can be passed through to `getVisibleTodos` from `mapStateToProps`:
+`props` can be passed to `getVisibleTodos` from `mapStateToProps`:
 
 ```js
 const mapStateToProps = (state, props) => {
@@ -256,7 +256,7 @@ const mapStateToProps = (state, props) => {
 
 *But there is a problem!*
 
-Using `getVisibleTodos` with multiple instances of the `visibleTodoList` container will not correctly memoize:
+Using the `getVisibleTodos` selector with multiple instances of the `visibleTodoList` container will not correctly memoize:
 
 #### `containers/VisibleTodoList.js`
 
@@ -295,9 +295,9 @@ A selector created with `createSelector` only returns the cached value when its 
 
 > The following will only work with React Redux v4.3.0 and greater
 
-In order to share a selector across multiple `VisibleTodoList` components **and** retain memoization, each instance of the component needs to have its own individual copy of the selector.
+In order to share a selector across multiple `VisibleTodoList` components **and** retain memoization, each instance of the component needs its own individual copy of the selector.
 
-Firstly, we need a function that creates new instances of the `getVisibleTodos` selector:
+Let's introduce a function named `getVisibleTodosCreator` that creates new copies of the `getVisibleTodos` selector: 
 
 #### `selectors/todoSelectors.js`
 
@@ -326,9 +326,11 @@ const getVisibleTodosCreator = () => {
 export default getVisibleTodosCreator
 ```
 
-We can now use `getVisibleTodosCreator` to make new copies of the `getVisibleTodos` selector, but how do we associate a copy of the selector with an instance of the `VisibleTodosList` container? The `mapStateToProps` argument of `connect` can help with this. **If `mapStateToProps` returns a function instead of an object, React Redux treats it as a factory function that produces a new `mapStateToProps` function to be used instead**.
+We can now create selectors with `getVisibleTodosCreator`, but we also need a way to give each *instance* of a container access to its own private selector. The `mapStateToProps` argument of `connect` can help with this.
 
-In the example below `mapStateToPropsFactory` creates a new `getVisibleTodos` selector and then returns a `mapStateToProps` function that has exclusive access to it.
+**If the `mapStateToProps` argument supplied to `connect` returns a function instead of an object, it will be used as a factory function to create an individual `mapStateToProps` function for each instance of the container.**
+
+In the example below `mapStateToPropsFactory` creates a new `getVisibleTodos` selector. It returns a `mapStateToProps` function that has exclusive access to the new selector:
 
 ```js
 const mapStateToPropsFactory = () => {
@@ -341,7 +343,7 @@ const mapStateToPropsFactory = () => {
 }
 ```
 
-If we pass `mapStateToPropsFactory` to `connect`, each instance of `VisibleTodosList` will get its own `mapStateToProps` function with its own private copy of `getVisibleTodosSelector`. Memoization will now work correctly regardless of the order that the `VisibleTodoList` components are rendered in.
+If we pass `mapStateToPropsFactory` to `connect`, each instance of the `VisibleTodosList` container will get its own `mapStateToProps` function with a private `getVisibleTodos` selector. Memoization will now work correctly regardless of the render order of the `VisibleTodoList` components.
 
 #### `containers/VisibleTodoList.js`
 
