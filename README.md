@@ -245,7 +245,7 @@ const App = () => (
 )
 ```
 
-We have introduced a prop named `maxTodos` to the `App` component. We would like to access `maxTodos` in `visibleTodosSelector` so we can make sure that we do not return more Todos than it specifies. To achieve this we can make the following changes to `selectors/todoSelectors.js`:
+We have introduced a prop named `maxTodos` to the `VisibleTodoList` component. We would like to access `maxTodos` in `visibleTodosSelector` so we can make sure that we do not return more Todos than it specifies. To achieve this we can make the following changes to `selectors/todoSelectors.js`:
 
 #### `selectors/todoSelectors.js`
 
