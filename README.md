@@ -194,11 +194,11 @@ export default VisibleTodoList
 
 ### Accessing React Props in Selectors
 
-> This section introduces an extension to our app that allows it to support multiple Todo Lists. Please note that this extension includes changes to the reducers, components, actions etc. that aren't directly relevant to the topics discussed and have therefore been omitted for brevity.
+> This section introduces an hypothetical extension to our app that allows it to support multiple Todo Lists. Please note that a full implementation of this extension requires changes to the reducers, components, actions etc. that aren't directly relevant to the topics discussed and have been omitted for brevity.
 
 So far we have only seen selectors receive the Redux store state as an argument, but a selector can receive props too.
 
-Here is`App.js` with three `VisibleTodoList` components, each of which has a `listId` prop:
+Here is an `App` component that renders three `VisibleTodoList` components, each of which has a `listId` prop:
 
 #### `components/App.js`
 
@@ -217,7 +217,7 @@ const App = () => (
 )
 ```
 
-Each `VisibleTodoList` should select a different slice of the state depending on the value of the `listId` prop, so let's modify `getVisibilityFilter` and `getTodos` to accept a props argument:
+Each `VisibleTodoList` container should select a different slice of the state depending on the value of the `listId` prop, so let's modify `getVisibilityFilter` and `getTodos` to accept a props argument:
 
 #### `selectors/todoSelectors.js`
 
@@ -254,7 +254,9 @@ const mapStateToProps = (state, props) => {
 }
 ```
 
-*But there is a problem!*
+So now `getVisibleTodos` has access to `props`, and everything seems to be working fine.
+
+**But there is a problem!**
 
 Using the `getVisibleTodos` selector with multiple instances of the `visibleTodoList` container will not correctly memoize:
 
@@ -289,7 +291,7 @@ const VisibleTodoList = connect(
 export default VisibleTodoList
 ```
 
-A selector created with `createSelector` only returns the cached value when its set of arguments is the same as its previous set of arguments. If we alternate between rendering `<VisibleTodoList listId="1" />` and `<VisibleTodoList listId="2" />`, the shared selector will alternate between receiving `{listId: 1}` and `{listId: 2}` as its `props` argument. This causes the arguments to be different on each call, so the selector will always recompute instead of returning the cached value. We will see how to overcome this limitation in the next section.
+A selector created with `createSelector` only returns the cached value when its set of arguments is the same as its previous set of arguments. If we alternate between rendering `<VisibleTodoList listId="1" />` and `<VisibleTodoList listId="2" />`, the shared selector will alternate between receiving `{listId: 1}` and `{listId: 2}` as its `props` argument. This causes the arguments to be different on each call, so the selector will always recompute instead of returning the cached value. We'll see how to overcome this limitation in the next section.
 
 ### Sharing Selectors Across Multiple Components
 
@@ -326,11 +328,11 @@ const getVisibleTodosCreator = () => {
 export default getVisibleTodosCreator
 ```
 
-We can now create selectors with `getVisibleTodosCreator`, but we also need a way to give each *instance* of a container access to its own private selector. The `mapStateToProps` argument of `connect` can help with this.
+We also need a way to give each instance of a container access to its own private selector. The `mapStateToProps` argument of `connect` can help with this.
 
 **If the `mapStateToProps` argument supplied to `connect` returns a function instead of an object, it will be used as a factory function to create an individual `mapStateToProps` function for each instance of the container.**
 
-In the example below `mapStateToPropsFactory` creates a new `getVisibleTodos` selector. It returns a `mapStateToProps` function that has exclusive access to the new selector:
+In the example below `mapStateToPropsFactory` creates a new `getVisibleTodos` selector, and returns a `mapStateToProps` function that has exclusive access to the new selector:
 
 ```js
 const mapStateToPropsFactory = () => {
@@ -343,7 +345,7 @@ const mapStateToPropsFactory = () => {
 }
 ```
 
-If we pass `mapStateToPropsFactory` to `connect`, each instance of the `VisibleTodosList` container will get its own `mapStateToProps` function with a private `getVisibleTodos` selector. Memoization will now work correctly regardless of the render order of the `VisibleTodoList` components.
+If we pass `mapStateToPropsFactory` to `connect`, each instance of the `VisibleTodosList` container will get its own `mapStateToProps` function with a private `getVisibleTodos` selector. Memoization will now work correctly regardless of the render order of the `VisibleTodoList` containers.
 
 #### `containers/VisibleTodoList.js`
 
