@@ -291,15 +291,15 @@ const VisibleTodoList = connect(
 export default VisibleTodoList
 ```
 
-A selector created with `createSelector` only returns the cached value when its set of arguments is the same as its previous set of arguments. If we alternate between rendering `<VisibleTodoList listId="1" />` and `<VisibleTodoList listId="2" />`, the shared selector will alternate between receiving `{listId: 1}` and `{listId: 2}` as its `props` argument. This causes the arguments to be different on each call, so the selector will always recompute instead of returning the cached value. We'll see how to overcome this limitation in the next section.
+A selector created with `createSelector` only returns the cached value when its set of arguments is the same as its previous set of arguments. If we alternate between rendering `<VisibleTodoList listId="1" />` and `<VisibleTodoList listId="2" />`, the shared selector will alternate between receiving `{listId: 1}` and `{listId: 2}` as its `props` argument. This will cause the arguments to be different on each call, so the selector will always recompute instead of returning the cached value. We'll see how to overcome this limitation in the next section.
 
 ### Sharing Selectors Across Multiple Components
 
-> The following will only work with React Redux v4.3.0 and greater
+> The examples in this section require React Redux v4.3.0 or greater
 
-In order to share a selector across multiple `VisibleTodoList` components **and** retain memoization, each instance of the component needs its own individual copy of the selector.
+In order to share a selector across multiple `VisibleTodoList` components **and** retain memoization, each instance of the component needs its own private copy of the selector.
 
-Let's introduce a function named `getVisibleTodosCreator` that creates new copies of the `getVisibleTodos` selector: 
+Let's create a function named `getVisibleTodosCreator` that returns a new copy of the `getVisibleTodos` selector each time it is called: 
 
 #### `selectors/todoSelectors.js`
 
