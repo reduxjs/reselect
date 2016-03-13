@@ -42,6 +42,7 @@ export const totalSelector = createSelector(
   - [Composing Selectors](#composing-selectors)
   - [Connecting a Selector to the Redux Store](#connecting-a-selector-to-the-redux-store)
   - [Accessing React Props in Selectors](#accessing-react-props-in-selectors)
+  - [Sharing Selectors Across Multiple Components](#sharing-selectors-across-multiple-components)
 - [API](#api)
   - [`createSelector`](#createselectorinputselectors--inputselectors-resultfunc)
   - [`defaultMemoize`](#defaultmemoizefunc-equalitycheck--defaultequalitycheck)
@@ -860,10 +861,11 @@ If a selector's input is updated by an operation that always returns a new objec
 
 ### Q: Can I share a selector across multiple components?
 
-A: Selectors created using `createSelector` only have a cache size of one. This can make them unsuitable for sharing across multiple components if the arguments to the selector are different for each component. There are a couple of ways to get around this:
+A: Selectors created using `createSelector` only have a cache size of one. This can make them unsuitable for sharing across multiple components if the arguments to the selector are different for each instance of the component. There are a couple of ways to get around this:
 
-* Create a factory function which returns a new selector for each component. There is built-in support for selector factory functions in React Redux v4.3 or higher. See [here](#sharing-selectors-across-multiple-components) for an example.
-* Create a custom selector which uses a cache size greater than one.
+* Create a factory function which returns a new selector for each instance of the component. There is built-in support for factory functions in React Redux v4.3 or higher. See [here](#sharing-selectors-across-multiple-components) for an example.
+
+* Create a custom selector with a cache size greater than one.
 
 ### Q: Are there TypeScript Typings?
 
