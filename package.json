@@ -25,57 +25,7 @@
     "react",
     "redux"
   ],
-  "author": "Martijn Faassen",
-  "contributors": [
-    {
-      "name": "Martijn Faassen"
-    },
-    {
-      "name": "Lee Bannard"
-    },
-    {
-      "name": "Robert Binna"
-    },
-    {
-      "name": "Philip Spitzlinger"
-    },
-    {
-      "name": "Alex Guerra"
-    },
-    {
-      "name": "ryanatkn"
-    },
-    {
-      "name": "Adam Royle"
-    },
-    {
-      "name": "Christian Schuhmann"
-    },
-    {
-      "name": "Jason Huang"
-    },
-    {
-      "name": "Daniel Barreto"
-    },
-    {
-      "name": "Mihail Diordiev"
-    },
-    {
-      "name": "Daniela Borges"
-    },
-    {
-      "name": "C. T. Lin"
-    },
-    {
-      "name": "SpainTrain"
-    },
-    {
-      "name": "Mark Dalgleish"
-    },
-    {
-      "name": "Brian Ng"
-    }
-  ],
+  "authors": ["Lee Bannard", "Robert Binna", "Martijn Faassen", "Philip Spitzlinger"],
   "repository": {
     "type": "git",
     "url": "https://github.com/reactjs/reselect.git"

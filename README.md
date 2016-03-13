@@ -3,7 +3,7 @@
 [![npm package][npm-badge]][npm]
 [![Coveralls][coveralls-badge]][coveralls]
 
-Simple "selector" library for Redux inspired by getters in [NuclearJS](https://github.com/optimizely/nuclear-js.git), [subscriptions](https://github.com/Day8/re-frame#just-a-read-only-cursor) in [re-frame](https://github.com/Day8/re-frame) and this [proposal](https://github.com/gaearon/redux/pull/169) from [speedskater](https://github.com/speedskater).
+Simple “selector” library for Redux inspired by getters in [NuclearJS](https://github.com/optimizely/nuclear-js.git), [subscriptions](https://github.com/Day8/re-frame#just-a-read-only-cursor) in [re-frame](https://github.com/Day8/re-frame) and this [proposal](https://github.com/gaearon/redux/pull/169) from [speedskater](https://github.com/speedskater).
 
 * Selectors can compute derived data, allowing Redux to store the minimal possible state.
 * Selectors are efficient. A selector is not recomputed unless one of its arguments change.
@@ -42,6 +42,7 @@ export const totalSelector = createSelector(
   - [Composing Selectors](#composing-selectors)
   - [Connecting a Selector to the Redux Store](#connecting-a-selector-to-the-redux-store)
   - [Accessing React Props in Selectors](#accessing-react-props-in-selectors)
+  - [Sharing Selectors Across Multiple Components](#sharing-selectors-across-multiple-components)
 - [API](#api)
   - [`createSelector`](#createselectorinputselectors--inputselectors-resultfunc)
   - [`defaultMemoize`](#defaultmemoizefunc-equalitycheck--defaultequalitycheck)
@@ -67,8 +68,6 @@ export const totalSelector = createSelector(
 ### Motivation for Memoized Selectors
 
 > The examples in this section are based on the [Redux Todos List example](http://rackt.github.io/redux/docs/basics/UsageWithReact.html).
-
-Consider the following code:
 
 #### `containers/VisibleTodoList.js`
 
@@ -110,82 +109,59 @@ const VisibleTodoList = connect(
 export default VisibleTodoList
 ```
 
-In the above example, `mapStateToProps` calls `getVisibleTodos` to calculate visible `todos`. This works great, but there is a drawback: visible `todos` is calculated every time the component is updated. If the state tree is large, or the calculation expensive, repeating the calculation on every update may cause performance problems. Reselect can help to avoid these unnecessary recalculations.
+In the above example, `mapStateToProps` calls `getVisibleTodos` to calculate `todos`. This works great, but there is a drawback: `todos` is calculated every time the component is updated. If the state tree is large, or the calculation expensive, repeating the calculation on every update may cause performance problems. Reselect can help to avoid these unnecessary recalculations.
 
 ### Creating a Memoized Selector
 
-We would like to replace `mapStateToProps` with a memoized selector that recalculates visible `todos` when the value of `state.todos` or `state.visibilityFilter` changes, but not when changes occur in other (unrelated) parts of the state tree.
+We would like to replace `getVisibleTodos` with a memoized selector that recalculates `todos` when the value of `state.todos` or `state.visibilityFilter` changes, but not when changes occur in other (unrelated) parts of the state tree.
 
 Reselect provides a function `createSelector` for creating memoized selectors. `createSelector` takes an array of input-selectors and a transform function as its arguments. If the Redux state tree is mutated in a way that causes the value of an input-selector to change, the selector will call its transform function with the values of the input-selectors as arguments and return the result. If the values of the input-selectors are the same as the previous call to the selector, it will return the previously computed value instead of calling the transform function.
 
-Let's define a memoized selector named `visibleTodosSelector` to replace `mapStateToProps`:
+Let's define a memoized selector named `getVisibleTodos` to replace the non-memoized version above:
 
-#### `selectors/todoSelectors.js`
+#### `selectors/index.js`
 
 ```js
 import { createSelector } from 'reselect'
 
-function getVisibleTodos(todos, filter) {
-  switch (filter) {
-  case 'SHOW_ALL':
-    return todos
-  case 'SHOW_COMPLETED':
-    return todos.filter(todo => todo.completed)
-  case 'SHOW_ACTIVE':
-    return todos.filter(todo => !todo.completed)
-  }
-}
+const getVisibilityFilter = (state) => state.visibilityFilter
+const getTodos = (state) => state.todos
 
-/*
- * Definition of input-selectors.
- * Input-selectors should be used to abstract away the structure
- * of the store in cases where no calculations are needed
- * and memoization wouldn't provide any benefits.
- */
-const visibilityFilterSelector = state => state.visibilityFilter
-const todosSelector = state => state.todos
-
-/*
- * Definition of combined-selector.
- * In visibleTodosSelector, input-selectors are combined to derive new
- * information. To prevent expensive recalculation of the input-selectors
- * memoization is applied. Hence, these selectors are only recomputed when the
- * value of their input-selectors change. If none of the input-selectors return
- * a new value, the previously computed value is returned.
- */
-const visibleTodosSelector = createSelector(
-  visibilityFilterSelector,
-  todosSelector,
+export const getVisibleTodos = createSelector(
+  [ getVisibilityFilter, getTodos ],
   (visibilityFilter, todos) => {
-    return {
-      todos: getVisibleTodos(todos, visibilityFilter)
+    switch (filter) {
+      case 'SHOW_ALL':
+        return todos
+      case 'SHOW_COMPLETED':
+        return todos.filter(t => t.completed)
+      case 'SHOW_ACTIVE':
+        return todos.filter(t => !t.completed)
     }
   }
 )
-
-export default visibleTodosSelector;
 ```
 
-In the example above, `visibilityFilterSelector` and `todosSelector` are input-selectors. They are created as ordinary non-memoized selector functions because they do not transform the data they select. `visibleTodosSelector` on the other hand is a memoized selector. It takes `visibilityFilterSelector` and `todosSelector` as input-selectors, and a transform function that calculates the filtered todos list.
+In the example above, `getVisibilityFilter` and `getTodos` are input-selectors. They are created as ordinary non-memoized selector functions because they do not transform the data they select. `getVisibleTodos` on the other hand is a memoized selector. It takes `getVisibilityFilter` and `getTodos` as input-selectors, and a transform function that calculates the filtered todos list.
 
 ### Composing Selectors
 
-A memoized selector can itself be an input-selector to another memoized selector. Here is `visibleTodosSelector` being used as an input-selector to a selector that further filters the todos by keyword:
+A memoized selector can itself be an input-selector to another memoized selector. Here is `getVisibleTodos` being used as an input-selector to a selector that further filters the todos by keyword:
 
 ```js
-const keywordSelector = state => state.keyword
+const getKeyword = (state) => state.keyword
 
-const keywordFilterSelector = createSelector(
-  [ visibleTodosSelector, keywordSelector ],
+const getVisibleTodosFilteredByKeyword = createSelector(
+  [ getVisibleTodos, getKeyword ],
   (visibleTodos, keyword) => visibleTodos.filter(
-    todo => todo.indexOf(keyword) > -1
+    todo => todo.text.indexOf(keyword) > -1
   )
 )
 ```
 
 ### Connecting a Selector to the Redux Store
 
-If you are using React Redux, you connect a memoized selector to the Redux store using `connect`:
+If you are using [React Redux](https://github.com/reactjs/react-redux), you can call selectors as regular functions inside `mapStateToProps()`:
 
 #### `containers/VisibleTodoList.js`
 
@@ -193,12 +169,13 @@ If you are using React Redux, you connect a memoized selector to the Redux store
 import { connect } from 'react-redux'
 import { toggleTodo } from '../actions'
 import TodoList from '../components/TodoList'
+import { getVisibleTodos } from '../selectors'
 
-/*
- * Import the selector defined in ../selectors/todoSelectors.js.
- * This allows you to separate components from the structure of the store.
- */
-import { visibleTodosSelector } from '../selectors/todoSelectors'
+const mapStateToProps = (state) => {
+  return {
+    todos: getVisibleTodos(state)
+  }
+}
 
 const mapDispatchToProps = (dispatch) => {
   return {
@@ -208,25 +185,21 @@ const mapDispatchToProps = (dispatch) => {
   }
 }
 
-/*
- * Connect visibleTodosSelector to the `TodoList` component.
- * The keys of the selector result are available on the props object for `TodoList` component.
- * In our example there is the 'todos' key which is
- * bound to this.props.todos
- */
 const VisibleTodoList = connect(
-  visibleTodosSelector,
+  mapStateToProps,
   mapDispatchToProps
 )(TodoList)
- 
+
 export default VisibleTodoList
 ```
 
 ### Accessing React Props in Selectors
 
-So far we have only seen selectors receive the Redux store state as input, but it is also possible for a selector to receive the props of a component wrapped by `connect`.
+> This section introduces an hypothetical extension to our app that allows it to support multiple Todo Lists. Please note that a full implementation of this extension requires changes to the reducers, components, actions etc. that aren't directly relevant to the topics discussed and have been omitted for brevity.
 
-Consider the following example:
+So far we have only seen selectors receive the Redux store state as an argument, but a selector can receive props too.
+
+Here is an `App` component that renders three `VisibleTodoList` components, each of which has a `listId` prop:
 
 #### `components/App.js`
 
@@ -238,50 +211,175 @@ import VisibleTodoList from '../containers/VisibleTodoList'
 
 const App = () => (
   <div>
-    <AddTodo />
-    <VisibleTodoList maxTodos={5} />
-    <Footer />
+    <VisibleTodoList listId="1" />
+    <VisibleTodoList listId="2" />
+    <VisibleTodoList listId="3" />
   </div>
 )
 ```
 
-We have introduced a prop named `maxTodos` to the `VisibleTodoList` component. We would like to access `maxTodos` in `visibleTodosSelector` so we can make sure that we do not return more Todos than it specifies. To achieve this we can make the following changes to `selectors/todoSelectors.js`:
+Each `VisibleTodoList` container should select a different slice of the state depending on the value of the `listId` prop, so let's modify `getVisibilityFilter` and `getTodos` to accept a props argument:
 
 #### `selectors/todoSelectors.js`
 
 ```js
 import { createSelector } from 'reselect'
 
-function getVisibleTodos(todos, filter) {
-  switch (filter) {
-  case 'SHOW_ALL':
-    return todos
-  case 'SHOW_COMPLETED':
-    return todos.filter(todo => todo.completed)
-  case 'SHOW_ACTIVE':
-    return todos.filter(todo => !todo.completed)
-  }
-}
+const getVisibilityFilter = (state, props) => state.todoLists[props.listId].visibilityFilter
+const getTodos = (state, props) => state.todoLists[props.listId].todos
 
-const visibilityFilterSelector = state => state.visibilityFilter
-const todosSelector = state => state.todos
-const maxTodosSelector = (state, props) => props.maxTodos
-
-const visibleTodosSelector = createSelector(
-  visibilityFilterSelector,
-  todosSelector,
-  maxTodosSelector,
-  (visibilityFilter, todos, maxTodos) => {
-    return {
-      todos: getVisibleTodos(todos, visibilityFilter).slice(0, maxTodos)
+const getVisibleTodos = createSelector(
+  [ getVisibilityFilter, getTodos ],
+  (visibilityFilter, todos) => {
+    switch (visibilityFilter) {
+      case 'SHOW_COMPLETED':
+        return todos.filter(todo => todo.completed)
+      case 'SHOW_ACTIVE':
+        return todos.filter(todo => !todo.completed)
+      default:
+        return todos
     }
   }
 )
 
-export default visibleTodosSelector;
+export default getVisibleTodos
+``` 
+
+`props` can be passed to `getVisibleTodos` from `mapStateToProps`:
+
+```js
+const mapStateToProps = (state, props) => {
+  return {
+    todos: getVisibleTodos(state, props)
+  }
+}
 ```
 
-When a selector is connected to a component with `connect`, the component props are passed as the second argument to the selector. In `visibleTodosSelector` we have added a new input-selector named `maxTodosSelector`, which returns the `maxTodos` property from its props argument.
+So now `getVisibleTodos` has access to `props`, and everything seems to be working fine.
+
+**But there is a problem!**
+
+Using the `getVisibleTodos` selector with multiple instances of the `visibleTodoList` container will not correctly memoize:
+
+#### `containers/VisibleTodoList.js`
+
+```js
+import { connect } from 'react-redux'
+import { toggleTodo } from '../actions'
+import TodoList from '../components/TodoList'
+import { getVisibleTodos } from '../selectors'
+
+const mapStateToProps = (state, props) => {
+  return {
+    // WARNING: THE FOLLOWING SELECTOR DOES NOT CORRECTLY MEMOIZE
+    todos: getVisibleTodos(state, props)
+  }
+}
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    onTodoClick: (id) => {
+      dispatch(toggleTodo(id))
+    }
+  }
+}
+
+const VisibleTodoList = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(TodoList)
+
+export default VisibleTodoList
+```
+
+A selector created with `createSelector` only returns the cached value when its set of arguments is the same as its previous set of arguments. If we alternate between rendering `<VisibleTodoList listId="1" />` and `<VisibleTodoList listId="2" />`, the shared selector will alternate between receiving `{listId: 1}` and `{listId: 2}` as its `props` argument. This will cause the arguments to be different on each call, so the selector will always recompute instead of returning the cached value. We'll see how to overcome this limitation in the next section.
+
+### Sharing Selectors Across Multiple Components
+
+> The examples in this section require React Redux v4.3.0 or greater
+
+In order to share a selector across multiple `VisibleTodoList` components **and** retain memoization, each instance of the component needs its own private copy of the selector.
+
+Let's create a function named `getVisibleTodosCreator` that returns a new copy of the `getVisibleTodos` selector each time it is called: 
+
+#### `selectors/todoSelectors.js`
+
+```js
+import { createSelector } from 'reselect'
+
+const getVisibilityFilter = (state, props) => state.todoLists[props.listId].visibilityFilter
+const getTodos = (state, props) => state.todoLists[props.listId].todos
+
+const getVisibleTodosCreator = () => {
+  return createSelector(
+    [ getVisibilityFilter, getTodos ],
+    (visibilityFilter, todos) => {
+      switch (visibilityFilter) {
+        case 'SHOW_COMPLETED':
+          return todos.filter(todo => todo.completed)
+        case 'SHOW_ACTIVE':
+          return todos.filter(todo => !todo.completed)
+        default:
+          return todos
+      }
+    }
+  )
+}
+
+export default getVisibleTodosCreator
+```
+
+We also need a way to give each instance of a container access to its own private selector. The `mapStateToProps` argument of `connect` can help with this.
+
+**If the `mapStateToProps` argument supplied to `connect` returns a function instead of an object, it will be used as a factory function to create an individual `mapStateToProps` function for each instance of the container.**
+
+In the example below `mapStateToPropsFactory` creates a new `getVisibleTodos` selector, and returns a `mapStateToProps` function that has exclusive access to the new selector:
+
+```js
+const mapStateToPropsFactory = () => {
+  const getVisibleTodos = getVisibleTodosCreator();
+  return (state, props) => { 
+    return {
+      todos: getVisibleTodos(state, props)
+    }
+  }
+}
+```
+
+If we pass `mapStateToPropsFactory` to `connect`, each instance of the `VisibleTodosList` container will get its own `mapStateToProps` function with a private `getVisibleTodos` selector. Memoization will now work correctly regardless of the render order of the `VisibleTodoList` containers.
+
+#### `containers/VisibleTodoList.js`
+
+```js
+import { connect } from 'react-redux'
+import { toggleTodo } from '../actions'
+import TodoList from '../components/TodoList'
+import { getVisibleTodosCreator } from '../selectors'
+
+const mapStateToPropsFactory = () => {
+  const getVisibleTodos = getVisibleTodosCreator();
+  return (state, props) => { 
+    return {
+      todos: getVisibleTodos(state, props)
+    }
+  }
+}
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    onTodoClick: (id) => {
+      dispatch(toggleTodo(id))
+    }
+  }
+}
+
+const VisibleTodoList = connect(
+  mapStateToPropsFactory,
+  mapDispatchToProps
+)(TodoList)
+
+export default VisibleTodoList
+```
 
 ## API
 
@@ -473,7 +571,7 @@ const nestedSelector = createStructuredSelector({
 
 ## FAQ
 
-### Q: Why isn't my selector recomputing when the input state changes?
+### Q: Why isn’t my selector recomputing when the input state changes?
 
 A: Check that your memoization function is compatible with your state update function (i.e. the reducer if you are using Redux). For example, a selector created with `createSelector` will not work with a state update function that mutates an existing object instead of creating a new one each time. `createSelector` uses an identity check (`===`) to detect that an input has changed, so mutating an existing object will not trigger the selector to recompute because mutating an object does not change its identity. Note that if you are using Redux, mutating the state object is [almost certainly a mistake](http://rackt.github.io/redux/docs/Troubleshooting.html).
 
@@ -625,7 +723,7 @@ Always check that the cost of an alternative `equalityCheck` function or deep eq
 
 A: Yes. Reselect has no dependencies on any other package, so although it was designed to be used with Redux it can be used independently. It is currently being used successfully in traditional Flux apps.
 
-> If you create selectors using `createSelector` make sure the objects in your store are immutable.
+> If you create selectors using `createSelector` make sure its arguments are immutable.
 > See [here](#createselectorinputselectors--inputselectors-resultfunc)
 
 ### Q: How do I create a selector that takes an argument?
@@ -761,79 +859,13 @@ assert.notEqual(myMap, newMap)
 
 If a selector's input is updated by an operation that always returns a new object, it may be performing unnecessary recomputations. See [here](#q-why-is-my-selector-recomputing-when-the-input-state-stays-the-same) for a discussion on the pros and cons of using a deep equality check like `Immmutable.is` to eliminate unnecessary recomputations.
 
-### Q: Can I share a selector across multiple modules?
+### Q: Can I share a selector across multiple components?
 
-A: Yes, but with the following caveat—a selector can be shared across components and benefit from memoization, but a selector that is shared must receive the same arguments at each call site. Arguments are considered the same if they  pass the selectors equality check.
+A: Selectors created using `createSelector` only have a cache size of one. This can make them unsuitable for sharing across multiple components if the arguments to the selector are different for each instance of the component. There are a couple of ways to get around this:
 
-In the case of `createSelector` the equality check is `===`. The following example, which is a common case, memoizes because it receives state.x from the `connect` decorator for both components:
+* Create a factory function which returns a new selector for each instance of the component. There is built-in support for factory functions in React Redux v4.3 or higher. See [here](#sharing-selectors-across-multiple-components) for an example.
 
-```js
-const doublexSelector = createSelector(
-  state => state.x,
-  x => x * 2
-)
-
-class Component1 extends Component {
-...
-}
-
-Component1 = connect(doublexSelector)(Component1)
-
-class Component2 extends Component {
-...
-}
-
-Component2 = connect(doublexSelector)(Component2)
-```
-
-The following example may or may not memoize. Here memoization depends on the props passed into the components being `===` for each component:
-
-```js
-const xPlusySelector = createSelector(
-  state => state.x,
-  (_, props) => props.y,
-  (x, y) => x + y
-)
-
-class Component1 extends Component {
-...
-}
-
-Component1 = connect(xPlusySelector)(Component1)
-
-class Component2 extends Component {
-...
-}
-
-Component2 = connect(xPlusySelector)(Component2)
-```
-
-This example definitely won't memoize. The `ids` array passed into each selector are different objects:
-
-```js
-const doubleIdsSelector = createSelector(
-  state => state.ids,
-  ids => ids.map(id => id * 2)
-)
-
-class Component1 extends Component {
-...
-}
-
-Component1 = connect(
-  state => doubleIdsSelector({ ids: [ ...state.ids1, ...state.ids2 ] })
-)(Component1)
-
-class Component2 extends Component {
-...
-}
-
-Component2 = connect(
-  state => doubleIdsSelector({ ids: [ ...state.ids1, ...state.ids2 ] })
-)(Component2)
-```
-
-Note that [`createSelectorCreator`](#createselectorcreatormemoize-memoizeoptions) could be used to memoize both of the failing examples above. The second example, where the props may be different, could use a memoization function with a larger cache. The last example could use a deep equality check.
+* Create a custom selector with a cache size greater than one.
 
 ### Q: Are there TypeScript Typings?
 
