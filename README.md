@@ -337,7 +337,7 @@ In the example below `mapStateToPropsFactory` creates a new `getVisibleTodos` se
 
 ```js
 const mapStateToPropsFactory = () => {
-  const getVisibleTodos = getVisibleTodosCreator();
+  const getVisibleTodos = getVisibleTodosCreator()
   return (state, props) => { 
     return {
       todos: getVisibleTodos(state, props)
@@ -357,7 +357,7 @@ import TodoList from '../components/TodoList'
 import { getVisibleTodosCreator } from '../selectors'
 
 const mapStateToPropsFactory = () => {
-  const getVisibleTodos = getVisibleTodosCreator();
+  const getVisibleTodos = getVisibleTodosCreator()
   return (state, props) => { 
     return {
       todos: getVisibleTodos(state, props)
