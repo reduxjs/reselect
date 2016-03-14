@@ -195,7 +195,7 @@ export default VisibleTodoList
 
 ### Accessing React Props in Selectors
 
-> This section introduces an hypothetical extension to our app that allows it to support multiple Todo Lists. Please note that a full implementation of this extension requires changes to the reducers, components, actions etc. that aren't directly relevant to the topics discussed and have been omitted for brevity.
+> This section introduces an hypothetical extension to our app that allows it to support multiple Todo Lists. Please note that a full implementation of this extension requires changes to the reducers, components, actions etc. that aren’t directly relevant to the topics discussed and have been omitted for brevity.
 
 So far we have only seen selectors receive the Redux store state as an argument, but a selector can receive props too.
 
@@ -218,15 +218,18 @@ const App = () => (
 )
 ```
 
-Each `VisibleTodoList` container should select a different slice of the state depending on the value of the `listId` prop, so let's modify `getVisibilityFilter` and `getTodos` to accept a props argument:
+Each `VisibleTodoList` container should select a different slice of the state depending on the value of the `listId` prop, so let’s modify `getVisibilityFilter` and `getTodos` to accept a props argument:
 
 #### `selectors/todoSelectors.js`
 
 ```js
 import { createSelector } from 'reselect'
 
-const getVisibilityFilter = (state, props) => state.todoLists[props.listId].visibilityFilter
-const getTodos = (state, props) => state.todoLists[props.listId].todos
+const getVisibilityFilter = (state, props) =>
+  state.todoLists[props.listId].visibilityFilter
+
+const getTodos = (state, props) =>
+  state.todoLists[props.listId].todos
 
 const getVisibleTodos = createSelector(
   [ getVisibilityFilter, getTodos ],
@@ -243,7 +246,7 @@ const getVisibleTodos = createSelector(
 )
 
 export default getVisibleTodos
-``` 
+```
 
 `props` can be passed to `getVisibleTodos` from `mapStateToProps`:
 
@@ -292,7 +295,7 @@ const VisibleTodoList = connect(
 export default VisibleTodoList
 ```
 
-A selector created with `createSelector` only returns the cached value when its set of arguments is the same as its previous set of arguments. If we alternate between rendering `<VisibleTodoList listId="1" />` and `<VisibleTodoList listId="2" />`, the shared selector will alternate between receiving `{listId: 1}` and `{listId: 2}` as its `props` argument. This will cause the arguments to be different on each call, so the selector will always recompute instead of returning the cached value. We'll see how to overcome this limitation in the next section.
+A selector created with `createSelector` only returns the cached value when its set of arguments is the same as its previous set of arguments. If we alternate between rendering `<VisibleTodoList listId="1" />` and `<VisibleTodoList listId="2" />`, the shared selector will alternate between receiving `{listId: 1}` and `{listId: 2}` as its `props` argument. This will cause the arguments to be different on each call, so the selector will always recompute instead of returning the cached value. We’ll see how to overcome this limitation in the next section.
 
 ### Sharing Selectors Across Multiple Components
 
@@ -300,17 +303,20 @@ A selector created with `createSelector` only returns the cached value when its 
 
 In order to share a selector across multiple `VisibleTodoList` components **and** retain memoization, each instance of the component needs its own private copy of the selector.
 
-Let's create a function named `getVisibleTodosCreator` that returns a new copy of the `getVisibleTodos` selector each time it is called: 
+Let’s create a function named `makeGetVisibleTodos` that returns a new copy of the `getVisibleTodos` selector each time it is called:
 
 #### `selectors/todoSelectors.js`
 
 ```js
 import { createSelector } from 'reselect'
 
-const getVisibilityFilter = (state, props) => state.todoLists[props.listId].visibilityFilter
-const getTodos = (state, props) => state.todoLists[props.listId].todos
+const getVisibilityFilter = (state, props) =>
+  state.todoLists[props.listId].visibilityFilter
 
-const getVisibleTodosCreator = () => {
+const getTodos = (state, props) =>
+  state.todoLists[props.listId].todos
+
+const makeGetVisibleTodos = () => {
   return createSelector(
     [ getVisibilityFilter, getTodos ],
     (visibilityFilter, todos) => {
@@ -326,27 +332,28 @@ const getVisibleTodosCreator = () => {
   )
 }
 
-export default getVisibleTodosCreator
+export default makeGetVisibleTodos
 ```
 
 We also need a way to give each instance of a container access to its own private selector. The `mapStateToProps` argument of `connect` can help with this.
 
-**If the `mapStateToProps` argument supplied to `connect` returns a function instead of an object, it will be used as a factory function to create an individual `mapStateToProps` function for each instance of the container.**
+**If the `mapStateToProps` argument supplied to `connect` returns a function instead of an object, it will be used to create an individual `mapStateToProps` function for each instance of the container.**
 
-In the example below `mapStateToPropsFactory` creates a new `getVisibleTodos` selector, and returns a `mapStateToProps` function that has exclusive access to the new selector:
+In the example below `makeMapStateToProps` creates a new `getVisibleTodos` selector, and returns a `mapStateToProps` function that has exclusive access to the new selector:
 
 ```js
-const mapStateToPropsFactory = () => {
-  const getVisibleTodos = getVisibleTodosCreator()
-  return (state, props) => { 
+const makeMapStateToProps = () => {
+  const getVisibleTodos = makeGetVisibleTodos()
+  const mapStateToProps = (state, props) => {
     return {
       todos: getVisibleTodos(state, props)
     }
   }
+  return mapStateToProps
 }
 ```
 
-If we pass `mapStateToPropsFactory` to `connect`, each instance of the `VisibleTodosList` container will get its own `mapStateToProps` function with a private `getVisibleTodos` selector. Memoization will now work correctly regardless of the render order of the `VisibleTodoList` containers.
+If we pass `makeMapStateToProps` to `connect`, each instance of the `VisibleTodosList` container will get its own `mapStateToProps` function with a private `getVisibleTodos` selector. Memoization will now work correctly regardless of the render order of the `VisibleTodoList` containers.
 
 #### `containers/VisibleTodoList.js`
 
@@ -354,15 +361,16 @@ If we pass `mapStateToPropsFactory` to `connect`, each instance of the `VisibleT
 import { connect } from 'react-redux'
 import { toggleTodo } from '../actions'
 import TodoList from '../components/TodoList'
-import { getVisibleTodosCreator } from '../selectors'
+import { makeGetVisibleTodos } from '../selectors'
 
-const mapStateToPropsFactory = () => {
-  const getVisibleTodos = getVisibleTodosCreator()
-  return (state, props) => { 
+const makeMapStateToProps= () => {
+  const getVisibleTodos = makeGetVisibleTodos()
+  const mapStateToProps = (state, props) => {
     return {
       todos: getVisibleTodos(state, props)
     }
   }
+  return mapStateToProps
 }
 
 const mapDispatchToProps = (dispatch) => {
@@ -374,7 +382,7 @@ const mapDispatchToProps = (dispatch) => {
 }
 
 const VisibleTodoList = connect(
-  mapStateToPropsFactory,
+  makeMapStateToProps,
   mapDispatchToProps
 )(TodoList)
 
