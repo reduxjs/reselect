@@ -877,7 +877,7 @@ A: Selectors created using `createSelector` only have a cache size of one. This 
 
 ### Q: Are there TypeScript Typings?
 
-A: Yes! They are available from DefinitelyTyped. [Thanks to @frankwallis and @geon.](https://github.com/rackt/reselect/issues/55#issuecomment-173198641)
+A: Yes! They are included and referenced in `package.json`. They should Just Work™.
 
 ## License
 
