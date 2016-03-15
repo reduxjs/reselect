@@ -4,6 +4,7 @@
   "description": "Selectors for Redux.",
   "main": "lib/index.js",
   "jsnext:main": "src/index.js",
+  "typings": "src/reselect.d.ts",
   "files": [
     "lib",
     "src",
@@ -15,7 +16,7 @@
     "url": "https://github.com/reactjs/reselect/issues"
   },
   "scripts": {
-    "compile": "babel --loose es6.modules -d lib/ src/",
+    "compile": "babel --loose es6.modules -d lib/ src/ && cp ./src/reselect.d.ts lib",
     "lint": "eslint src test",
     "prepublish": "npm run compile",
     "test": "NODE_ENV=test mocha --compilers js:babel/register --recursive",
