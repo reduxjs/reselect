@@ -49,11 +49,11 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
       ...memoizeOptions
     )
 
-    const selector = (state, props, ...args) => {
+    const selector = (state, ...args) => {
       const params = dependencies.map(
-        dependency => dependency(state, props, ...args)
+        dependency => dependency(state, ...args)
       )
-      return memoizedResultFunc(...params)
+      return memoizedResultFunc(...params, ...args)
     }
 
     selector.recomputations = () => recomputations
