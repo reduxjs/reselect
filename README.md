@@ -57,7 +57,7 @@ export const totalSelector = createSelector(
   - [How do I create a selector that takes an argument? ](#q-how-do-i-create-a-selector-that-takes-an-argument)
   - [How do I use Reselect with Immutable.js?](#q-how-do-i-use-reselect-with-immutablejs)
   - [Can I share a selector across multiple components?](#q-can-i-share-a-selector-across-multiple-components)
-  - [Are there TypeScript Typings?](#q-are-there-typescript-typings)
+  - [Are there TypeScript typings?](#q-are-there-typescript-typings)
 - [License](#license)
 
 ## Installation
@@ -527,7 +527,7 @@ const selector = customSelectorCreator(
 
 ### createStructuredSelector({inputSelectors}, selectorCreator = createSelector)
 
-`createStructuredSelector` is a convenience function for a common pattern that arises when using Reselect.  The selector passed to a `connect` decorator often just takes the values of its input-selectors and maps them to keys in an object:
+`createStructuredSelector` is a convenience function for a common pattern that arises when using Reselect. The selector passed to a `connect` decorator often just takes the values of its input-selectors and maps them to keys in an object:
 
 ```js
 const mySelectorA = state => state.a
