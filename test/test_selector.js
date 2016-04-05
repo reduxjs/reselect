@@ -265,4 +265,12 @@ suite('selector', () => {
     assert.equal(selector({ a: 2 }), 2)
     assert.equal(selector.recomputations(), 2)
   })
+  test('export last function as resultFunc', () => {
+    const lastFunction = () => {}
+    const selector = createSelector(
+      state => state.a,
+        lastFunction
+    )
+    assert.equal(selector.resultFunc, lastFunction)
+  })
 })

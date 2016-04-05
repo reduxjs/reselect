@@ -55,7 +55,8 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
       )
       return memoizedResultFunc(...params)
     }
-
+    
+    selector.resultFunc = resultFunc
     selector.recomputations = () => recomputations
     selector.resetRecomputations = () => recomputations = 0
     return selector
