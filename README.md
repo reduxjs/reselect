@@ -42,7 +42,7 @@ export const totalSelector = createSelector(
   - [Composing Selectors](#composing-selectors)
   - [Connecting a Selector to the Redux Store](#connecting-a-selector-to-the-redux-store)
   - [Accessing React Props in Selectors](#accessing-react-props-in-selectors)
-  - [Sharing Selectors Across Multiple Components](#sharing-selectors-across-multiple-components)
+  - [Sharing Selectors with Props Across Multiple Components](#sharing-selectors-across-multiple-components)
 - [API](#api)
   - [`createSelector`](#createselectorinputselectors--inputselectors-resultfunc)
   - [`defaultMemoize`](#defaultmemoizefunc-equalitycheck--defaultequalitycheck)
@@ -297,11 +297,11 @@ export default VisibleTodoList
 
 A selector created with `createSelector` only returns the cached value when its set of arguments is the same as its previous set of arguments. If we alternate between rendering `<VisibleTodoList listId="1" />` and `<VisibleTodoList listId="2" />`, the shared selector will alternate between receiving `{listId: 1}` and `{listId: 2}` as its `props` argument. This will cause the arguments to be different on each call, so the selector will always recompute instead of returning the cached value. We’ll see how to overcome this limitation in the next section.
 
-### Sharing Selectors Across Multiple Components
+### Sharing Selectors with Props Across Multiple Components
 
 > The examples in this section require React Redux v4.3.0 or greater
 
-In order to share a selector across multiple `VisibleTodoList` components **and** retain memoization, each instance of the component needs its own private copy of the selector.
+To share a selector across multiple `VisibleTodoList` components while passing in `props` **and** retaining memoization, each instance of the component needs its own private copy of the selector.
 
 Let’s create a function named `makeGetVisibleTodos` that returns a new copy of the `getVisibleTodos` selector each time it is called:
 
