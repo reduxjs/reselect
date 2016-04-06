@@ -835,7 +835,7 @@ suite('selector', () => {
 })
 ```
 
-Additionally, selectors keep a reference to the last result function as `.resultFunc`. This helps you test only what's unique about each given selector without coupling all of your tests to the shape of your state. This becomes increasingly important when you have larger state trees or selectors composed of many other selectors.
+Additionally, selectors keep a reference to the last result function as `.resultFunc`. If you have selectors composed of many other selectors this can help you test each selector without coupling all of your tests to the shape of your state.
 
 For example if you have a set of selectors like this:
 
@@ -863,11 +863,8 @@ test("firstSelector unit test", () => { ... })
 test("secondSelector unit test", () => { ... })
 test("thirdSelector unit test", () => { ... })
 
-// It feels silly to have to build a fake state
-// object that produces each variant of the previous
-// three selector outputs we want to test since we've
-// already tested the other 3 independently.
-// Instead, we can just test `.resultFunc` and call it
+// We have already tested the previous
+// three selector outputs so we can just call `.resultFunc`
 // with the values we want to test directly:
 test("myComposedSelector unit test", () => {
   // here instead of calling selector()
