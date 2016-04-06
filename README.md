@@ -835,6 +835,48 @@ suite('selector', () => {
 })
 ```
 
+Additionally, selectors keep a reference to the last result function as `.resultFunc`. This helps you test only what's unique about each given selector without coupling all of your tests to the shape of your state. This becomes increasingly important when you have larger state trees or selectors composed of many other selectors.
+
+For example if you have a set of selectors like this:
+
+**selectors.js**
+```js
+export const firstSelector = createSelector( ... )
+export const secondSelector = createSelector( ... )
+export const thirdSelector = createSelector( ... )
+
+export const myComposedSelector = createSelector(
+  firstSelector,
+  secondSelector,
+  thirdSelector
+  (first, second, third) => first * second < third
+)
+```
+
+And then a set of unit tests like this:
+
+**test/selectors.js**
+
+```js
+// tests for the first three selectors...
+test("firstSelector unit test", () => { ... })
+test("secondSelector unit test", () => { ... })
+test("thirdSelector unit test", () => { ... })
+
+// It feels silly to have to build a fake state
+// object that produces each variant of the previous
+// three selector outputs we want to test since we've
+// already tested the other 3 independently.
+// Instead, we can just test `.resultFunc` and call it
+// with the values we want to test directly:
+test("myComposedSelector unit test", () => {
+  // here instead of calling selector()
+  // we just call selector.resultFunc()
+  assert(selector.resultFunc(1, 2, 3), true)
+  assert(selector.resultFunc(2, 2, 1), false)
+})
+```
+
 Finally, each selector has a `resetRecomputations` method that sets
 recomputations back to 0.  The intended use is for a complex selector that may
 have many independent tests and you don't want to manually manage the
