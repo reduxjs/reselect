@@ -13,6 +13,6 @@
   C. T. Lin, SpainTrain, Mark Dalgleish, Brian Ng, 长天之云, Michael Lancaster,
   Elliot Crosby-McCullough, Max Goodman, Simen Bekkhus, Wade Peterson,
   chungchiehlun, Dave Hendler, Leon Aves, Ian Ker-Seymer, Josh Kelley,
-  Daniel Bugl, Courtland Allen, Henrik Joreteg
+  Daniel Bugl, Courtland Allen, Henrik Joreteg, Kyle Davis
 
 * Inspired by getters in Nuclear.js and subscriptions in re-frame.
