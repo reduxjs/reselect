@@ -910,7 +910,7 @@ If a selector's input is updated by an operation that always returns a new objec
 
 A: Selectors created using `createSelector` only have a cache size of one. This can make them unsuitable for sharing across multiple components if the arguments to the selector are different for each instance of the component. There are a couple of ways to get around this:
 
-* Create a factory function which returns a new selector for each instance of the component. There is built-in support for factory functions in React Redux v4.3 or higher. See [here](#sharing-selectors-across-multiple-components) for an example.
+* Create a factory function which returns a new selector for each instance of the component. There is built-in support for factory functions in React Redux v4.3 or higher. See [here](#sharing-selectors-with-props-across-multiple-components) for an example.
 
 * Create a custom selector with a cache size greater than one.
 
