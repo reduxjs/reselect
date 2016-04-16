@@ -8,6 +8,7 @@
   "files": [
     "lib",
     "src",
+    "dist",
     "README.md",
     "LICENSE",
     "package.json"
@@ -17,8 +18,9 @@
   },
   "scripts": {
     "compile": "babel --loose es6.modules -d lib/ src/ && cp ./src/reselect.d.ts lib",
+    "compile:umd": "mkdir -p dist/ && babel --loose es6.modules --modules umd --module-id Reselect -o dist/reselect.js src/",
     "lint": "eslint src test",
-    "prepublish": "npm run compile",
+    "prepublish": "npm run compile && npm run compile:umd",
     "test": "NODE_ENV=test mocha --compilers js:babel/register --recursive",
     "test:cov": "babel-node ./node_modules/.bin/isparta cover ./node_modules/.bin/_mocha -- --recursive"
   },
