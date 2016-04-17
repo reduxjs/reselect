@@ -1,0 +1,25 @@
+{
+  "plugins": [
+    "check-es2015-constants",
+    "transform-es2015-arrow-functions",
+    "transform-es2015-block-scoping",
+    "transform-es2015-function-name",
+    ["transform-es2015-modules-commonjs", { "loose": true }],
+    "transform-es2015-parameters",
+    "transform-es2015-spread",
+    "transform-es2015-template-literals"
+  ],
+  "env": {
+    "umd": {
+      "plugins": [
+        ["transform-es2015-modules-umd", { "loose": true }]
+      ],
+      "moduleId": "Reselect"
+    },
+    "test": {
+      "plugins": [
+        "transform-es2015-shorthand-properties"
+      ]
+    }
+  }
+}
