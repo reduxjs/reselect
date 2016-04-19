@@ -24,7 +24,7 @@ function selectorConsumer (selector: (state: RootState, props: DeleteButtonConta
 
 // Explicitly typed.
 selectorConsumer(createSelector<
-	RootState, DeleteButtonStateProps,
+	RootState, DeleteButtonContainerProps, DeleteButtonStateProps,
 	boolean
 > (
 	(state, props) => !!state.items[props.itemId],
