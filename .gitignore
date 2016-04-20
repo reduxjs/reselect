@@ -3,4 +3,5 @@ lib
 .nyc_output
 coverage
 dist
+es
 
