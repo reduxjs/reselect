@@ -3,7 +3,7 @@
   "version": "2.4.0",
   "description": "Selectors for Redux.",
   "main": "lib/index.js",
-  "jsnext:main": "src/index.js",
+  "jsnext:main": "es/index.js",
   "typings": "src/reselect.d.ts",
   "files": [
     "lib",
@@ -14,10 +14,12 @@
     "url": "https://github.com/reactjs/reselect/issues"
   },
   "scripts": {
-    "compile": "babel -d lib/ src/ && cp ./src/reselect.d.ts lib",
+    "compile:commonjs": "NODE_ENV=commonjs babel -d lib/ src/ && cp ./src/reselect.d.ts lib",
     "compile:umd": "mkdir -p dist/ && NODE_ENV=umd babel -o dist/reselect.js src/",
+    "compile:es": "babel -d es/ src/",
+    "compile": "npm run compile:commonjs && npm run compile:umd && npm run compile:es",
     "lint": "eslint src test",
-    "prepublish": "npm run compile && npm run compile:umd",
+    "prepublish": "npm run compile",
     "test": "NODE_ENV=test mocha --compilers js:babel-register --recursive",
     "test:cov": "NODE_ENV=test nyc --reporter=lcov --reporter=text mocha --compilers js:babel-register"
   },
