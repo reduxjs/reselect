@@ -8,7 +8,8 @@
   "files": [
     "lib",
     "src",
-    "dist"
+    "dist",
+    "es"
   ],
   "bugs": {
     "url": "https://github.com/reactjs/reselect/issues"
