@@ -5,45 +5,63 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [v2.5.1](https://github.com/reactjs/reselect/releases/tag/v2.5.1) - 2016/04/21
 
-Bug Fix: Include es directory in package.json (#117)
+### Bug Fixes
+
+Include es directory in package.json (#117)
 
 ## [v2.5.0](https://github.com/reactjs/reselect/releases/tag/v2.5.0) - 2016/04/21
+
+### New features
 
 Add jsnext build (#116)
 
 ## [v2.4.0](https://github.com/reactjs/reselect/releases/tag/v2.4.0) - 2016/04/16
 
+### New features
+
 Add umd build (#112)
 
 ## [v2.3.0](https://github.com/reactjs/reselect/releases/tag/v2.3.0) - 2016/04/07
+
+### New features
 
 Add `resultFunc` property to selectors (#92)
 
 ## [v2.2.0](https://github.com/reactjs/reselect/releases/tag/v2.2.0) - 2016/03/15
 
+### New features
+
 Add Typescript typings to package.json (#94)
 
 ## [v2.1.0](https://github.com/reactjs/reselect/releases/tag/v2.1.0) - 2016/03/03
+
+### New features
 
 Add `resetRecomputations` method to selectors (#90)
 
 ## [v2.0.3](https://github.com/reactjs/reselect/releases/tag/v2.0.3) - 2016/02/01
 
+### New features
+
 Fix bug (#78) in `defaultMemoize` which could cause the memoized value to be mistakenly returned for variadic functions.
 
 ## [v2.0.2](https://github.com/reactjs/reselect/releases/tag/v2.0.2) - 2016/01/14
+
+### New features
 
 Fix IE8 support by compiling in 'loose' mode
 
 ## [v2.0.1](https://github.com/reactjs/reselect/releases/tag/v2.0.1) - 2015/11/08
 
-Update NPM to have latest README and github links since move to reactjs.
+### Chore
+
+Update README and github links since move to reactjs.
 
 ## [v2.0.0](https://github.com/reactjs/reselect/releases/tag/v2.0.0) - 2015/10/02
 
-## Breaking Changes
+### Breaking Changes
 
-### `createSelector`, `createStructuredSelector`, and custom selector creators check arguments
+#### `createSelector`, `createStructuredSelector`, and custom selector creators check arguments
 
 Input selectors are now verified to be functions during selector creation. If verification fails an error is thrown, allowing for a useful stack trace
 
@@ -51,9 +69,9 @@ There is a small chance that this could cause a breaking change in code that con
 
 ## [v1.1.0](https://github.com/reactjs/reselect/releases/tag/v1.1.0) - 2015/09/16
 
-## New features
+### New features
 
-### `createStructuredSelector`
+#### `createStructuredSelector`
 
 `createStructuredSelector` is a convenience function that helps with a common pattern when using Reselect.  The selector passed to a connect decorator often just takes other selectors and maps them to keys in an object:
 
@@ -89,24 +107,24 @@ const result = structuredSelector({a: 1, b: 2}); // will produce {x: 1, y: 2}
 
 ## [v1.0.0](https://github.com/reactjs/reselect/releases/tag/v1.0.0) - 2015/09/09
 
-## Breaking Changes
+### Breaking Changes
 
 If upgrading from 0.0.2, see the release notes for v1.0.0-alpha
 
 ## [v1.0.0-alpha2](https://github.com/reactjs/reselect/releases/tag/v1.0.0-alpha2) - 2015/09/01
 
-## New features
+### New features
 
 src directory included in npm package
 js:next field added to package.json
 
 ## [v1.0.0-alpha](https://github.com/reactjs/reselect/releases/tag/v1.0.0-alpha) - 2015/09/01
 
-## Breaking Changes
+### Breaking Changes
 
 `createSelectorCreator` takes a user specified memoize function instead of a custom `valueEqualsFunc`.
 
-### Before
+#### Before
 
 ```js
 import { isEqual } from 'lodash';
@@ -115,7 +133,7 @@ import { createSelectorCreator } from 'reselect';
 const deepEqualsSelectorCreator = createSelectorCreator(isEqual);
 ```
 
-### After
+#### After
 
 ```js
 import { isEqual } from 'lodash';
@@ -127,7 +145,7 @@ const deepEqualsSelectorCreator = createSelectorCreator(
 );
 ```
 
-## New features
+### New features
 
 ### Variadic Dependencies
 
