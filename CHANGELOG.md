@@ -5,7 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [v2.5.1](https://github.com/reactjs/reselect/releases/tag/v2.5.1) - 2016/04/21
 
-Bug Fix: Include es directory in package.js (#117)
+Bug Fix: Include es directory in package.json (#117)
 
 ## [v2.5.0](https://github.com/reactjs/reselect/releases/tag/v2.5.0) - 2016/04/21
 
