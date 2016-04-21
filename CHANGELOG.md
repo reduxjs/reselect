@@ -147,7 +147,7 @@ const deepEqualsSelectorCreator = createSelectorCreator(
 
 ### New features
 
-### Variadic Dependencies
+#### Variadic Dependencies
 
 Selector creators can receive a variadic number of dependencies as well as an array of dependencies.
 
@@ -170,7 +170,7 @@ const selector = createSelector(
 );
 ```
 
-### Access `ownProps` in Selector
+#### Access `ownProps` in Selector
 
 Selector dependencies can receive a variadic number of parameters allowing a selector to receive `ownProps` passed from `mapToProps` in `connect`.
 
@@ -183,7 +183,7 @@ const selector = createSelector(
 );
 ```
 
-### Configurable Memoize Function
+#### Configurable Memoize Function
 
 ```js
 import { createSelectorCreator } from 'reselect';
