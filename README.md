@@ -33,11 +33,13 @@ export const totalSelector = createSelector(
 )
 
 let exampleState = {
-  taxPercent: 8,
-  items: [
-    { name: 'apple', value: 1.20 },
-    { name: 'orange', value: 0.95 },
-  ]
+  shop: {
+    taxPercent: 8,
+    items: [
+      { name: 'apple', value: 1.20 },
+      { name: 'orange', value: 0.95 },
+    ]
+  }
 }
 
 console.log(subtotalSelector(exampleState)) // 2.15
