@@ -56,7 +56,7 @@ console.log(totalSelector(exampleState))    // { total: 2.322 }
   - [Composing Selectors](#composing-selectors)
   - [Connecting a Selector to the Redux Store](#connecting-a-selector-to-the-redux-store)
   - [Accessing React Props in Selectors](#accessing-react-props-in-selectors)
-  - [Sharing Selectors with Props Across Multiple Components](#sharing-selectors-across-multiple-components)
+  - [Sharing Selectors with Props Across Multiple Components](#sharing-selectors-with-props-across-multiple-components)
 - [API](#api)
   - [`createSelector`](#createselectorinputselectors--inputselectors-resultfunc)
   - [`defaultMemoize`](#defaultmemoizefunc-equalitycheck--defaultequalitycheck)
