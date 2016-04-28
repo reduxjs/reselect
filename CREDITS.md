@@ -14,6 +14,6 @@
   Elliot Crosby-McCullough, Max Goodman, Simen Bekkhus, Wade Peterson,
   chungchiehlun, Dave Hendler, Leon Aves, Ian Ker-Seymer, Josh Kelley,
   Daniel Bugl, Courtland Allen, Henrik Joreteg, Kyle Davis, Nick Ball,
-  Salvador Hernandez, mctep, Jacob Rask
+  Salvador Hernandez, mctep, Jacob Rask, Walter Breakell
 
 * Inspired by getters in Nuclear.js and subscriptions in re-frame.
