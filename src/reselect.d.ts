@@ -3,7 +3,7 @@
 // Definitions by: Frank Wallis <https://github.com/frankwallis>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 
-declare module Reselect {
+module Reselect {
 
     type Selector<TInput, TOutput> = (state: TInput, props?: any) => TOutput;
 
@@ -31,4 +31,6 @@ declare module Reselect {
     function createSelectorCreator(memoize: Memoizer, ...memoizeOptions: any[]): any;
 }
 
-export = Reselect;
+declare module "reselect" {
+  export = Reselect;
+}
