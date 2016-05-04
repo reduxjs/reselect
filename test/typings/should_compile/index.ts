@@ -3,7 +3,7 @@ import * as common from '../common';
 
 
 // Explicitly typed.
-common.selectorConsumer(createSelector<
+const explicitlyTypedSelector = createSelector<
 	common.RootState, common.DeleteButtonContainerProps, common.DeleteButtonStateProps,
 	boolean
 > (
@@ -11,13 +11,27 @@ common.selectorConsumer(createSelector<
 	(itemExists: boolean) => ({
 		disabled: !itemExists
 	})
-));
+);
+common.selectorConsumer(explicitlyTypedSelector);
+explicitlyTypedSelector(
+	common.rootState,
+	{
+		itemId: 'abcd',
+	}
+)
 
 
 // Implicitly typed.
-common.selectorConsumer(createSelector(
+const implicitlyTypedSelector = createSelector(
 	(state: common.RootState, props: common.DeleteButtonContainerProps) => !!state.items[props.itemId],
 	(itemExists: boolean) => ({
 		disabled: !itemExists
 	})
-));
+);
+common.selectorConsumer(implicitlyTypedSelector);
+implicitlyTypedSelector(
+	common.rootState,
+	{
+		itemId: 'abcd',
+	}
+)
