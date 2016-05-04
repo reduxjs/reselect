@@ -5,6 +5,12 @@ export type RootState = {
 	}}
 }
 
+export const rootState: RootState = {
+	items: {
+		foo: {id:'abcd'}
+	}
+};
+
 export type DeleteButtonStateProps = {
     disabled: boolean
 }

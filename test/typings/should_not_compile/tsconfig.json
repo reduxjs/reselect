@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "allowUnreachableCode": true
+  },
+  "files": [
+    "../../../src/reselect.d.ts",
+    "../common.ts",
+    "index.ts"
+  ]
+}
