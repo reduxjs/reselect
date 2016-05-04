@@ -4,7 +4,8 @@
     "allowUnreachableCode": true
   },
   "files": [
-    "../../src/reselect.d.ts",
+    "../../../src/reselect.d.ts",
+    "../common.ts",
     "index.ts"
   ]
 }
