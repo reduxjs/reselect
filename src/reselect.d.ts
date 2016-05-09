@@ -3,7 +3,7 @@
 // Definitions by: Frank Wallis <https://github.com/frankwallis>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 
-module Reselect {
+declare module Reselect {
 
     type Selector<TInput, TOutput> = (state: TInput, props?: any) => TOutput;
 
