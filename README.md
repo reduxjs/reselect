@@ -72,6 +72,7 @@ console.log(totalSelector(exampleState))    // { total: 2.322 }
   - [How do I use Reselect with Immutable.js?](#q-how-do-i-use-reselect-with-immutablejs)
   - [Can I share a selector across multiple components?](#q-can-i-share-a-selector-across-multiple-components)
   - [Are there TypeScript typings?](#q-are-there-typescript-typings)
+- [Related Projects](#related-projects)
 - [License](#license)
 
 ## Installation
@@ -931,6 +932,14 @@ A: Selectors created using `createSelector` only have a cache size of one. This 
 ### Q: Are there TypeScript Typings?
 
 A: Yes! They are included and referenced in `package.json`. They should Just Work™.
+
+## Related Projects
+
+###[reselect-map](https://github.com/HeyImAlex/reselect-map)
+
+Use when doing **very expensive** computations on elements of a collection where Reselect might not give you the granularity of caching that you need. Check out reselect-maps readme for examples.
+
+**NOTE: The optimizations in reselect-map only apply in a small number of cases. If you are unsure whether you need it, you don't!**
 
 ## License
 
