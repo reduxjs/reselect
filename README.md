@@ -939,7 +939,7 @@ A: Yes! They are included and referenced in `package.json`. They should Just Wor
 
 Can be useful when doing **very expensive** computations on elements of a collection because Reselect might not give you the granularity of caching that you need. Check out the reselect-maps README for examples.
 
-**NOTE: The optimizations in reselect-map only apply in a small number of cases. If you are unsure whether you need it, you don't!**
+**The optimizations in reselect-map only apply in a small number of cases. If you are unsure whether you need it, you don't!**
 
 ## License
 
