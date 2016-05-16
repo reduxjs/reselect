@@ -277,7 +277,7 @@ So now `getVisibleTodos` has access to `props`, and everything seems to be worki
 
 **But there is a problem!**
 
-Using the `getVisibleTodos` selector with multiple instances of the `visibleTodoList` container will not correctly memoize:
+Using the `getVisibleTodos` selector with multiple instances of the `VisibleTodoList` container will not correctly memoize:
 
 #### `containers/VisibleTodoList.js`
 
