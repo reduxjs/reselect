@@ -51,7 +51,6 @@
     "codecov.io": "^0.1.6",
     "coveralls": "^2.11.4",
     "eslint": "^2.11",
-    "eslint-config-rackt": "1.1.1",
     "eslint-plugin-react": "^5.1.1",
     "lodash.memoize": "^4.1.0",
     "mocha": "^2.2.5",
