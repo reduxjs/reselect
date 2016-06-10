@@ -13,11 +13,43 @@ export function defaultMemoize(func, equalityCheck = defaultEqualityCheck) {
     ) {
       return lastResult
     }
+    const veryLastArgs = lastArgs || [];
     lastArgs = args
-    lastResult = func(...args)
+    lastResult = func(...args, ...veryLastArgs, lastResult))
     return lastResult
   }
 }
+/*
+test('Test returning previous state', () => { 
+  const selector = createSelector(
+    [ state => state.a, state => state.b ],
+    (a, b, _a, _b, previous) => { 
+        console.log('RUN...')
+        console.log('current a', a);
+        console.log('previous _a', _a);
+        console.log('current b', b);
+        console.log('previous _b', _b);
+        console.log('previous result', previous);
+      return { c: a + b }
+    }
+  )
+})
+
+//Sample OUTPUT
+RUN...
+a 1
+_a undefined
+b 2
+_b undefined
+undefined
+
+RUN...
+a 3
+_a 1
+b 2
+_b 2
+{ c: 3 }
+*/
 
 function getDependencies(funcs) {
   const dependencies = Array.isArray(funcs[0]) ? funcs[0] : funcs
