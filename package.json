@@ -38,7 +38,7 @@
       }
     },
     "compile:commonjs": {
-      "command": "babel -d lib/ src/ && cpy ./src/reselect.d.ts lib",
+      "command": "babel -d lib/ src/ && ncp ./src/reselect.d.ts lib",
       "env": {
         "NODE_ENV": "commonjs"
       }
@@ -82,12 +82,12 @@
     "chai": "^3.0.0",
     "codecov.io": "^0.1.6",
     "coveralls": "^2.11.4",
-    "cpy-cli": "^1.0.1",
     "eslint": "^2.11",
     "eslint-plugin-react": "^5.1.1",
     "lodash.memoize": "^4.1.0",
     "mkdirp": "^0.5.1",
     "mocha": "^2.2.5",
+    "ncp": "^2.0.0",
     "nyc": "^6.4.0"
   }
 }
