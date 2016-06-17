@@ -15,20 +15,51 @@
     "url": "https://github.com/reactjs/reselect/issues"
   },
   "scripts": {
-    "compile:commonjs": "NODE_ENV=commonjs babel -d lib/ src/ && cp ./src/reselect.d.ts lib",
-    "compile:umd": "mkdir -p dist/ && NODE_ENV=umd babel -o dist/reselect.js src/",
+    "compile:commonjs": "better-npm-run compile:commonjs",
+    "compile:umd": "better-npm-run compile:umd",
     "compile:es": "babel -d es/ src/",
     "compile": "npm run compile:commonjs && npm run compile:umd && npm run compile:es",
     "lint": "eslint src test",
     "prepublish": "npm run compile",
-    "test": "NODE_ENV=test mocha --compilers js:babel-register --recursive",
-    "test:cov": "NODE_ENV=test nyc --reporter=lcov --reporter=text mocha --compilers js:babel-register"
+    "test": "better-npm-run test",
+    "test:cov": "better-npm-run test:cov"
+  },
+  "betterScripts": {
+    "test": {
+      "command": "mocha --compilers js:babel-register --recursive",
+      "env": {
+        "NODE_ENV": "test"
+      }
+    },
+    "test:cov": {
+      "command": "nyc --reporter=lcov --reporter=text mocha --compilers js:babel-register",
+      "env": {
+        "NODE_ENV": "test"
+      }
+    },
+    "compile:commonjs": {
+      "command": "babel -d lib/ src/ && ncp ./src/reselect.d.ts lib",
+      "env": {
+        "NODE_ENV": "commonjs"
+      }
+    },
+    "compile:umd": {
+      "command": "mkdirp dist/ && babel -o dist/reselect.js src/",
+      "env": {
+        "NODE_ENV": "umd"
+      }
+    }
   },
   "keywords": [
     "react",
     "redux"
   ],
-  "authors": ["Lee Bannard", "Robert Binna", "Martijn Faassen", "Philip Spitzlinger"],
+  "authors": [
+    "Lee Bannard",
+    "Robert Binna",
+    "Martijn Faassen",
+    "Philip Spitzlinger"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/reactjs/reselect.git"
@@ -47,13 +78,16 @@
     "babel-plugin-transform-es2015-spread": "^6.6.5",
     "babel-plugin-transform-es2015-template-literals": "^6.6.5",
     "babel-register": "^6.7.2",
+    "better-npm-run": "0.0.8",
     "chai": "^3.0.0",
     "codecov.io": "^0.1.6",
     "coveralls": "^2.11.4",
     "eslint": "^2.11",
     "eslint-plugin-react": "^5.1.1",
     "lodash.memoize": "^4.1.0",
+    "mkdirp": "^0.5.1",
     "mocha": "^2.2.5",
+    "ncp": "^2.0.0",
     "nyc": "^6.4.0"
   }
 }
