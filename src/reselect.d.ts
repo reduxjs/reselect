@@ -1,5 +1,5 @@
 // Type definitions for reselect v2.0.2
-// Project: https://github.com/rackt/reselect
+// Project: https://github.com/reactjs/reselect
 // Definitions by: Frank Wallis <https://github.com/frankwallis>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 
