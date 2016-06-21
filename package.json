@@ -22,7 +22,8 @@
     "lint": "eslint src test",
     "prepublish": "npm run compile",
     "test": "better-npm-run test",
-    "test:cov": "better-npm-run test:cov"
+    "test:cov": "better-npm-run test:cov",
+    "test:typescript": "better-npm-run test:typescript"
   },
   "betterScripts": {
     "test": {
@@ -36,6 +37,9 @@
       "env": {
         "NODE_ENV": "test"
       }
+    },
+    "test:typescript": {
+      "command": "node ./test/typings/test.js"
     },
     "compile:commonjs": {
       "command": "babel -d lib/ src/ && ncp ./src/reselect.d.ts lib",
@@ -88,6 +92,7 @@
     "mkdirp": "^0.5.1",
     "mocha": "^2.2.5",
     "ncp": "^2.0.0",
-    "nyc": "^6.4.0"
+    "nyc": "^6.4.0",
+    "typescript": "^1.8.10"
   }
 }
