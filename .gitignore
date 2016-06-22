@@ -6,7 +6,6 @@ dist
 es
 .vscode
 .idea
-test/typings/should_compile/index.js
-test/typings/should_not_compile/index.js
-test/typings/common.js
-
+typescript_test/should_compile/index.js
+typescript_test/should_not_compile/index.js
+typescript_test/common.js

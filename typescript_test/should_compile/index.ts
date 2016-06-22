@@ -1,4 +1,4 @@
-import {createSelector} from '../../../src/reselect.d.ts';
+import {createSelector} from '../../src/reselect.d.ts';
 import * as common from '../common';
 
 
