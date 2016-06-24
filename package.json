@@ -33,7 +33,7 @@
       }
     },
     "test:cov": {
-      "command": "nyc --reporter=lcov --reporter=text mocha --compilers js:babel-register",
+      "command": "nyc --reporter=lcov --reporter=text mocha --compilers js:babel-register --ui tdd",
       "env": {
         "NODE_ENV": "test"
       }
