@@ -27,7 +27,7 @@
   },
   "betterScripts": {
     "test": {
-      "command": "mocha --compilers js:babel-register --recursive",
+      "command": "mocha --compilers js:babel-register --ui tdd --recursive",
       "env": {
         "NODE_ENV": "test"
       }
