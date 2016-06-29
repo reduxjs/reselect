@@ -1,8 +1,7 @@
 # CREDITS
 
-* Based on a proposal for Redux by Robert Binna
-  (https://github.com/speedskater) and Philip Spitzlinger. Lots of the
-  basic structure of the code is thanks to this.
+* Based on a proposal for Redux by [Robert Binna](https://github.com/speedskater) and Philip Spitzlinger. 
+  Lots of the basic structure of the code is thanks to this.
 
 * Refactored into reselect library by Martijn Faassen and Lee Bannard
   at the React Europe Hackathon 2015. Also added tests.
@@ -18,3 +17,5 @@
   Matthew Hetherington, Mike Wilcox, David Edmondson
 
 * Inspired by getters in Nuclear.js and subscriptions in re-frame.
+
+* Special thanks to [David Edmonson](https://github.com/threehams) for maintaining the Typescript type definitions.
