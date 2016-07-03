@@ -13,8 +13,8 @@ export function defaultMemoize(func, equalityCheck = defaultEqualityCheck) {
     ) {
       return lastResult
     }
-    lastArgs = args
     lastResult = func(...args)
+    lastArgs = args
     return lastResult
   }
 }

@@ -79,6 +79,36 @@ suite('selector', () => {
     )
     assert.equal(selector({ a: 1, b: 2 }, { c: 100 }), 103)
   })
+  test('recomputes result after exception', () => {
+    let called = 0
+    const selector = createSelector(
+      state => state.a,
+      () => {
+        called++
+        throw Error('test error')
+      }
+    )
+    assert.throw(() => selector({ a: 1 }), 'test error')
+    assert.throw(() => selector({ a: 1 }), 'test error')
+    assert.equal(called, 2)
+  })
+  test('memoizes previous result before exception', () => {
+    let called = 0
+    const selector = createSelector(
+      state => state.a,
+      (a) => {
+        called++
+        if (a > 1) throw Error('test error')
+        return a
+      }
+    )
+    const state1 = { a: 1 }
+    const state2 = { a: 2 }
+    assert.equal(selector(state1), 1)
+    assert.throw(() => selector(state2), 'test error')
+    assert.equal(selector(state1), 1)
+    assert.equal(called, 2)
+  })
   test('chained selector', () => { 
     const selector1 = createSelector(
       state => state.sub,
