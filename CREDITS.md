@@ -14,7 +14,7 @@
   chungchiehlun, Dave Hendler, Leon Aves, Ian Ker-Seymer, Josh Kelley,
   Daniel Bugl, Courtland Allen, Henrik Joreteg, Kyle Davis, Nick Ball,
   Salvador Hernandez, mctep, Jacob Rask, Luqmaan Dawoodjee, Walter Breakell,
-  Matthew Hetherington, Mike Wilcox, David Edmondson
+  Matthew Hetherington, Mike Wilcox, David Edmondson, Andrey Zaytsev
 
 * Inspired by getters in Nuclear.js and subscriptions in re-frame.
 
