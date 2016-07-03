@@ -10,7 +10,7 @@ suite('selector', () => {
   test('basic selector', () => { 
     const selector = createSelector(
       state => state.a,
-        a => a
+      a => a
     )
     assert.equal(selector({ a: 1 }), 1)
     assert.equal(selector({ a: 1 }), 1)
@@ -21,8 +21,8 @@ suite('selector', () => {
   test('basic selector multiple keys', () => { 
     const selector = createSelector(
       state => state.a,
-        state => state.b,
-        (a, b) => a + b
+      state => state.b,
+      (a, b) => a + b
     )
     const state1 = { a: 1, b: 2 }
     assert.equal(selector(state1), 3)
@@ -36,7 +36,7 @@ suite('selector', () => {
   test('basic selector invalid input selector', () => { 
     assert.throw(() => createSelector(
       state => state.a,
-        'not a function',
+      'not a function',
       (a, b) => a + b
     ), /input-selectors to be functions.*function, string/)
   })
@@ -96,7 +96,7 @@ suite('selector', () => {
     let called = 0
     const selector = createSelector(
       state => state.a,
-      (a) => {
+      a => {
         called++
         if (a > 1) throw Error('test error')
         return a
@@ -112,7 +112,7 @@ suite('selector', () => {
   test('chained selector', () => { 
     const selector1 = createSelector(
       state => state.sub,
-        sub => sub
+      sub => sub
     )
     const selector2 = createSelector(
       selector1,
@@ -129,13 +129,13 @@ suite('selector', () => {
   test('chained selector with props', () => { 
     const selector1 = createSelector(
       state => state.sub,
-        (state, props) => props.x,
-        (sub, x) => ({ sub, x })
+      (state, props) => props.x,
+      (sub, x) => ({ sub, x })
     )
     const selector2 = createSelector(
       selector1,
       (state, props) => props.y,
-        (param, y) => param.sub.value + param.x + y
+      (param, y) => param.sub.value + param.x + y
     )
     const state1 = { sub: {  value: 1 } }
     assert.equal(selector2(state1, { x: 100, y: 200 }), 301)
@@ -148,13 +148,13 @@ suite('selector', () => {
   test('chained selector with variadic args', () => { 
     const selector1 = createSelector(
       state => state.sub,
-        (state, props, another) => props.x + another,
-        (sub, x) => ({ sub, x })
+      (state, props, another) => props.x + another,
+      (sub, x) => ({ sub, x })
     )
     const selector2 = createSelector(
       selector1,
       (state, props) => props.y,
-        (param, y) => param.sub.value + param.x + y
+      (param, y) => param.sub.value + param.x + y
     )
     const state1 = { sub: {  value: 1 } }
     assert.equal(selector2(state1, { x: 100, y: 200 }, 100), 401)
@@ -172,7 +172,7 @@ suite('selector', () => {
     )
     const selector = createOverridenSelector(
       state => state.a,
-        a => a
+      a => a
     )
     assert.equal(selector({ a: 1 }), 1)
     assert.equal(selector({ a: 2 }), 1) // yes, really true
@@ -278,7 +278,7 @@ suite('selector', () => {
   test('resetRecomputations', () => {
     const selector = createSelector(
       state => state.a,
-        a => a
+      a => a
     )
     assert.equal(selector({ a: 1 }), 1)
     assert.equal(selector({ a: 1 }), 1)
@@ -299,7 +299,7 @@ suite('selector', () => {
     const lastFunction = () => {}
     const selector = createSelector(
       state => state.a,
-        lastFunction
+      lastFunction
     )
     assert.equal(selector.resultFunc, lastFunction)
   })
