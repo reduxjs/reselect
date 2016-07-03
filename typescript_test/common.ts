@@ -1,22 +1,24 @@
 
 export type RootState = {
   items: {[key: string]: {
-    id: string
-  }}
+    id: string,
+  }},
 }
 
 export const rootState: RootState = {
   items: {
-    foo: {id:'abcd'}
-  }
+    foo: {id:'abcd'},
+  },
 };
 
 export type DeleteButtonStateProps = {
-  disabled: boolean
+  disabled: boolean,
 }
 
 export type DeleteButtonContainerProps = {
-  itemId: string
+  itemId: string,
 }
 
-export function selectorConsumer (selector: (state: RootState, props: DeleteButtonContainerProps) => DeleteButtonStateProps) {}
+export function selectorConsumer (
+  selector: (state: RootState, props: DeleteButtonContainerProps) => DeleteButtonStateProps
+) {}
