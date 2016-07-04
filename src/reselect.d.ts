@@ -33,21 +33,6 @@ declare module Reselect {
         T1,
         T2
     >(
-        selectors: [
-            Selector<TInput, TProps, T1>,
-            Selector<TInput, TProps, T2>
-        ],
-        combiner: (
-            arg1: T1,
-            arg2: T2
-        ) => TOutput
-    ): Selector<TInput, TProps, TOutput>;
-
-    function createSelector<
-        TInput, TProps, TOutput,
-        T1,
-        T2
-    >(
         selector1: Selector<TInput, TProps, T1>,
         selector2: Selector<TInput, TProps, T2>,
         combiner: (
