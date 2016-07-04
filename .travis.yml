@@ -8,7 +8,6 @@ script:
       - npm run lint
       - npm test
       - npm run test:cov
-      - npm run test:typescript
       - npm run compile
 
 after_success:
