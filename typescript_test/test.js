@@ -4,6 +4,7 @@ try {
   run('./node_modules/typescript/bin/tsc ./typescript_test/should_compile/index.ts')
 }
 catch(e) {
+  // eslint-disable-next-line no-console
   console.log('Typing error: valid typescript typings failed to compile')
   process.exit(1)
 }
@@ -15,5 +16,6 @@ catch(e) {
   process.exit(0)
 }
 
+// eslint-disable-next-line no-console
 console.log('Typing error: invalid typescript typings successfully compiled')
 process.exit(1)
