@@ -63,9 +63,7 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
   }
 }
 
-export function createSelector(...args) {
-  return createSelectorCreator(defaultMemoize)(...args)
-}
+export const createSelector = createSelectorCreator(defaultMemoize);
 
 export function createStructuredSelector(selectors, selectorCreator = createSelector) {
   if (typeof selectors !== 'object') {
