@@ -937,7 +937,7 @@ A: Yes! They are included and referenced in `package.json`. They should Just Wor
 
 ### Q: How can I make a [curried](https://github.com/hemanth/functional-programming-jargon#currying) selector?
 
-A: Try these [helper functions](https://github.com/reactjs/reselect/issues/159#issuecomment-238724788) courtesy of @MattSPalmer
+A: Try these [helper functions](https://github.com/reactjs/reselect/issues/159#issuecomment-238724788) courtesy of [MattSPalmer](https://github.com/MattSPalmer)
 
 ## Related Projects
 
