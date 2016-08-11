@@ -72,6 +72,8 @@ console.log(totalSelector(exampleState))    // { total: 2.322 }
   - [How do I use Reselect with Immutable.js?](#q-how-do-i-use-reselect-with-immutablejs)
   - [Can I share a selector across multiple components?](#q-can-i-share-a-selector-across-multiple-components)
   - [Are there TypeScript typings?](#q-are-there-typescript-typings)
+  - [How can I make a curried selector?](#q-how-can-i-make-a-curried-selector)
+
 - [Related Projects](#related-projects)
 - [License](#license)
 
@@ -932,6 +934,10 @@ A: Selectors created using `createSelector` only have a cache size of one. This 
 ### Q: Are there TypeScript Typings?
 
 A: Yes! They are included and referenced in `package.json`. They should Just Work™.
+
+### Q: How can I make a [curried](https://github.com/hemanth/functional-programming-jargon#currying) selector?
+
+A: Try these [helper functions](https://github.com/reactjs/reselect/issues/159#issuecomment-238724788) courtesy of @MattSPalmer
 
 ## Related Projects
 
