@@ -529,7 +529,8 @@ import memoize from 'lodash.memoize'
 
 let called = 0
 const hashFn = (...args) => args.reduce(
-  (acc, val) => acc + '-' + JSON.stringify(val)
+  (acc, val) => acc + '-' + JSON.stringify(val),
+  ''
 )
 const customSelectorCreator = createSelectorCreator(memoize, hashFn)
 const selector = customSelectorCreator(
