@@ -15,7 +15,7 @@
   Daniel Bugl, Courtland Allen, Henrik Joreteg, Kyle Davis, Nick Ball,
   Salvador Hernandez, mctep, Jacob Rask, Luqmaan Dawoodjee, Walter Breakell,
   Matthew Hetherington, Mike Wilcox, David Edmondson, Andrey Zaytsev, 1ven,
-  Alexey Yurchenko
+  Alexey Yurchenko, Douglas Russell
 
 * Inspired by getters in Nuclear.js and subscriptions in re-frame.
 
