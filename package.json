@@ -42,7 +42,7 @@
       "command": "node ./typescript_test/test.js"
     },
     "compile:commonjs": {
-      "command": "babel -d lib/ src/ && ncp ./src/reselect.d.ts lib",
+      "command": "babel -d lib/ src/ && ncp ./src/reselect.d.ts lib/reselect.d.ts",
       "env": {
         "NODE_ENV": "commonjs"
       }
