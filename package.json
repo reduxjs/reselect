@@ -43,7 +43,7 @@
       "command": "node ./typescript_test/test.js"
     },
     "test:flow": {
-      "command": "ncp ./src/index.js.flow ./flow_test/should_fail/flow-typed/ && ncp ./src/index.js.flow ./flow_test/should_pass/flow-typed/ && node ./flow_test/test.js"
+      "command": "ncp ./src/index.js.flow ./flow_test/should_fail/flow-typed/index.js.flow && ncp ./src/index.js.flow ./flow_test/should_pass/flow-typed/index.js.flow && node ./flow_test/test.js"
     },
     "compile:commonjs": {
       "command": "babel -d lib/ src/ && ncp ./src/reselect.d.ts ./lib/reselect.d.ts && ncp ./src/index.js.flow ./lib/index.js.flow",
