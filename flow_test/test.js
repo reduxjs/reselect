@@ -1,17 +1,23 @@
-/* @flow */
-const reselect = require('reselect');
+var run = require('child_process').execSync
 
-const { createSelector } = reselect;
+try {
+  run('./node_modules/flow-bin/cli.js ./flow-test/shoud_pass', {
+    cwd: '.'
+  })
+}
+catch(e) {
+  // eslint-disable-next-line no-console
+  console.log('Typing error: valid flow typings failed to lint')
+  process.exit(1)
+}
 
-const s = createSelector(
-  (state: {x: number}) : number => state.x,
-  (state: {y: number}) : number => state.y,
-  (x, y) => {
-    return x + y
-  }
-)
+try {
+  run('./node_modules/flow-bin/cli ./flow-test/shoud_fail')
+}
+catch(e) {
+  process.exit(0)
+}
 
-const a = s({x: 100, y: "200"})
-
-// Packaging issues
-// https://github.com/facebook/nuclide/issues/529
+// eslint-disable-next-line no-console
+console.log('Typing error: invalid flow typings successfully compiled')
+process.exit(1)
