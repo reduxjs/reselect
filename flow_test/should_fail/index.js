@@ -22,8 +22,8 @@ type TestState2 = {
 };
 
 createSelector(
-  (state: Test5State1) => state.x,
-  (state: Test5State2) => state.y,
+  (state: TestState1) => state.x,
+  (state: TestState2) => state.y,
   (x, y) => {
     return x + y
   }

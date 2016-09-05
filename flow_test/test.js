@@ -1,9 +1,7 @@
 var run = require('child_process').execSync
 
 try {
-  run('./node_modules/flow-bin/cli.js ./flow-test/shoud_pass', {
-    cwd: '.'
-  })
+  run('./node_modules/flow-bin/cli.js ./flow_test/should_pass')
 }
 catch(e) {
   // eslint-disable-next-line no-console
@@ -12,7 +10,7 @@ catch(e) {
 }
 
 try {
-  run('./node_modules/flow-bin/cli ./flow-test/shoud_fail')
+  run('./node_modules/flow-bin/cli.js ./flow_test/should_fail')
 }
 catch(e) {
   process.exit(0)
