@@ -677,12 +677,12 @@ export default function todos(state = initialState, action) {
 The following selector is going to recompute every time REMOVE_OLD is invoked because Array.filter always returns a new object. However, in the majority of cases the REMOVE_OLD action will not change the list of todos so the recomputation is unnecessary.
 
 ```js
-import { createselector } from 'reselect'
+import { createSelector } from 'reselect'
 
 const todosSelector = state => state.todos
 
-export const visibletodosselector = createselector(
-  todosselector,
+export const visibleTodosSelector = createSelector(
+  todosSelector,
   (todos) => {
     ...
   }

@@ -9,7 +9,7 @@ export function defaultMemoize(func, equalityCheck = defaultEqualityCheck) {
     if (
       lastArgs !== null &&
       lastArgs.length === args.length &&
-      args.every((value, index) => equalityCheck(value, lastArgs[index]))
+      args.every((value, index) => equalityCheck(value, lastArgs[index], index))
     ) {
       return lastResult
     }
@@ -63,9 +63,7 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
   }
 }
 
-export function createSelector(...args) {
-  return createSelectorCreator(defaultMemoize)(...args)
-}
+export const createSelector = createSelectorCreator(defaultMemoize)
 
 export function createStructuredSelector(selectors, selectorCreator = createSelector) {
   if (typeof selectors !== 'object') {
