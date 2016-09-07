@@ -23,6 +23,7 @@
     "prepublish": "npm run compile",
     "test": "better-npm-run test",
     "test:cov": "better-npm-run test:cov",
+    "test:flow": "better-npm-run test:flow",
     "test:typescript": "better-npm-run test:typescript"
   },
   "betterScripts": {
@@ -41,8 +42,11 @@
     "test:typescript": {
       "command": "node ./typescript_test/test.js"
     },
+    "test:flow": {
+      "command": "ncp ./src/index.js.flow ./flow_test/should_fail/flow-typed/index.js.flow && ncp ./src/index.js.flow ./flow_test/should_pass/flow-typed/index.js.flow && node ./flow_test/test.js"
+    },
     "compile:commonjs": {
-      "command": "babel -d lib/ src/ && ncp ./src/reselect.d.ts lib",
+      "command": "babel -d lib/ src/ && ncp ./src/reselect.d.ts ./lib/reselect.d.ts && ncp ./src/index.js.flow ./lib/index.js.flow",
       "env": {
         "NODE_ENV": "commonjs"
       }
@@ -88,6 +92,7 @@
     "coveralls": "^2.11.4",
     "eslint": "^2.11",
     "eslint-plugin-react": "^5.1.1",
+    "flow-bin": "^0.32.0",
     "lodash.memoize": "^4.1.0",
     "mkdirp": "^0.5.1",
     "mocha": "^2.2.5",
