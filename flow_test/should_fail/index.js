@@ -1,5 +1,5 @@
 /* @flow */
-const reselect = require('reselect');
+const reselect = require('../../src/index');
 const {
   createSelector,
   defaultMemoize,
