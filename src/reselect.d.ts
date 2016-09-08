@@ -65,8 +65,7 @@ declare namespace Reselect {
       (state: TInput, props?: any): TOutput;
     }
 
-    interface OutputSelector<TInput, TOutput, TCombiner> {
-      (state: TInput, props?: any): TOutput;
+    interface OutputSelector<TInput, TOutput, TCombiner> extends Selector<TInput, TOutput> {
       resultFunc?: TCombiner;
     }
 
