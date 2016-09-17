@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+
+## [v2.5.4](https://github.com/reactjs/reselect/releases/tag/v2.5.4) - 2016/09/17
+
+### Bug Fixes
+
+Improve performance of `defaultMemoize` when using custom equality check. (#170)
+
+## [v2.5.3](https://github.com/reactjs/reselect/releases/tag/v2.5.3) - 2016/07/04
+
+### Bug Fixes
+
+Reverts a Typescript change that was a breaking change. It will be reinstated in a major release. (#145)
+
+## [v2.5.2](https://github.com/reactjs/reselect/releases/tag/v2.5.2) - 2016/07/03
+
+### Bug Fixes
+
+When a selector uses defaultMemoize, if an exception is thrown for a set of arguments then the selector should also throw when called again with those arguments. (#144)
+
 ## [v2.5.1](https://github.com/reactjs/reselect/releases/tag/v2.5.1) - 2016/04/21
 
 ### Bug Fixes
