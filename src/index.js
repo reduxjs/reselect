@@ -5,12 +5,12 @@ function defaultEqualityCheck(a, b) {
 export function defaultMemoize(func, equalityCheck = defaultEqualityCheck) {
   let lastArgs = null
   let lastResult = null
-  const isEqual = (value, index) => equalityCheck(value, lastArgs[index])
+  const isEqualToLastArg = (value, index) => equalityCheck(value, lastArgs[index])
   return (...args) => {
     if (
       lastArgs === null ||
       lastArgs.length !== args.length ||
-      !args.every(isEqual)
+      !args.every(isEqualToLastArg)
     ) {
       lastResult = func(...args)
     }
