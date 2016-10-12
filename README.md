@@ -887,8 +887,8 @@ test("thirdSelector unit test", () => { ... })
 test("myComposedSelector unit test", () => {
   // here instead of calling selector()
   // we just call selector.resultFunc()
-  assert(selector.resultFunc(1, 2, 3), true)
-  assert(selector.resultFunc(2, 2, 1), false)
+  assert(myComposedSelector.resultFunc(1, 2, 3), true)
+  assert(myComposedSelector.resultFunc(2, 2, 1), false)
 })
 ```
 
