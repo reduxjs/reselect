@@ -866,7 +866,7 @@ export const thirdSelector = createSelector( ... )
 export const myComposedSelector = createSelector(
   firstSelector,
   secondSelector,
-  thirdSelector
+  thirdSelector,
   (first, second, third) => first * second < third
 )
 ```
