@@ -1,11 +1,10 @@
-import {createSelector} from '../../src/reselect.d.ts';
+import {createSelector, subscribeToErrors, OnError, Unsubscribe} from '../../src/reselect.d';
 import * as common from '../common';
 
 
 // Explicitly typed.
 const explicitlyTypedSelector = createSelector<
-  common.RootState, common.DeleteButtonContainerProps, common.DeleteButtonStateProps,
-  boolean
+  common.RootState, common.DeleteButtonStateProps, boolean
 > (
   (state, props) => !!state.items[props.itemId],
   (itemExists: boolean) => ({
@@ -35,3 +34,9 @@ implicitlyTypedSelector(
     itemId: 'abcd',
   }
 )
+
+const onError: OnError = (error, combiner, args, dependencies) => {
+  console.log(error, combiner, args, dependencies);
+};
+
+const errorSubscription : Unsubscribe = subscribeToErrors(onError);

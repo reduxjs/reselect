@@ -29,6 +29,10 @@ declare module Reselect {
 
     const defaultMemoize: Memoizer;
     function createSelectorCreator(memoize: Memoizer, ...memoizeOptions: any[]): any;
+
+    type OnError = (this: void, error: Error, combiner: Function, args: Array<any>, dependencies: Array<Function>) => void;
+    type Unsubscribe = () => void;
+    function subscribeToErrors(onError: OnError): Unsubscribe;
 }
 
 export = Reselect;

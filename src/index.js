@@ -1,3 +1,5 @@
+import * as errorSubscriptions from './error_subscriptions'
+
 function defaultEqualityCheck(a, b) {
   return a === b
 }
@@ -44,7 +46,12 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
     const memoizedResultFunc = memoize(
       (...args) => {
         recomputations++
-        return resultFunc(...args)
+        try {
+          return resultFunc(...args)
+        } catch (e) {
+          errorSubscriptions.emitError(e, resultFunc, args, dependencies)
+          throw e
+        }
       },
       ...memoizeOptions
     )
@@ -83,3 +90,5 @@ export function createStructuredSelector(selectors, selectorCreator = createSele
     }
   )
 }
+
+export const subscribeToErrors = errorSubscriptions.subscribe

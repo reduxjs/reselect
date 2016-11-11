@@ -62,6 +62,7 @@ console.log(totalSelector(exampleState))    // { total: 2.322 }
   - [`defaultMemoize`](#defaultmemoizefunc-equalitycheck--defaultequalitycheck)
   - [`createSelectorCreator`](#createselectorcreatormemoize-memoizeoptions)
   - [`createStructuredSelector`](#createstructuredselectorinputselectors-selectorcreator--createselector)
+  - [`subscribeToErrors`](#subscribetoerrorsonerror)
 - [FAQ](#faq)
   - [Why isn't my selector recomputing when the input state changes?](#q-why-isnt-my-selector-recomputing-when-the-input-state-changes)
   - [Why is my selector recomputing when the input state stays the same?](#q-why-is-my-selector-recomputing-when-the-input-state-stays-the-same)
@@ -592,6 +593,37 @@ const nestedSelector = createStructuredSelector({
     selectorD
   })
 })
+
+```
+
+### subscribeToErrors(onError)
+
+`subscribeToErrors` is a convenience function to make it easiser to find issues
+with your result-functions.
+
+`onError` is a callback method that will be invoked whenever one of the
+result-functions throws an error. It takes the following parameters:
+
+- `error`: The Error that was thrown.
+- `result-function`: The result-function that crashed.
+- `parameters`: An array with the parameters that were passed to the function that crashed.
+- `dependencies`: An array with the dependecy functions of the crashed function.
+
+`subscribeToErrors` returns an unsubscribe function that can be invoked if
+you want your 'listener' function to stop receiving 'onError' notifications.
+
+```js
+import { subscribeToErrors } from 'reselect';
+
+if (DEV) {
+  subscribeToErrors((error, resultFn, args, dependencies) => {
+    console.log('A selector just crashed.');
+    console.log('The error message is', error.message);
+    console.log('The code of the result function that crashed is', resultFn.toString());
+    console.log('The arguments that it received were', args);
+    console.log('The code of its dependencies is:', dependencies.map(fn => fn.toString()).join('\n\n'));
+  });
+}
 
 ```
 
