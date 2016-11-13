@@ -1,4 +1,4 @@
-import {createSelector} from '../../../src/reselect.d.ts';
+import {createSelector, subscribeToErrors} from '../../../src/reselect.d';
 import * as common from '../common';
 
 
@@ -24,3 +24,13 @@ implicitlyTypedSelector(
     foo: 'bar'
   }
 )
+
+// No missing props
+subscribeToErrors(
+  (error: Error, combiner: function, args: Array<any>) => {}
+);
+
+// No extra props
+subscribeToErrors(
+  (error: Error, combiner: function, args: Array<any>, dependencies: Array<Function>, foo: any) => {}
+);
