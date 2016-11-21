@@ -754,7 +754,9 @@ A: Yes. Reselect has no dependencies on any other package, so although it was de
 
 ### Q: How do I create a selector that takes an argument?
 
-A: Reselect doesn't have built-in support for creating selectors that accepts arguments, but here are some suggestions for implementing similar functionality...
+A: Keep in mind that selectors can access Redux props, so if your arguments are (or can be made available as) Redux props, you can use that functionality. [See here](#accessing-react-props-in-selectors) for details.
+
+Otherwise, Reselect doesn't have built-in support for creating selectors that accepts arguments, but here are some suggestions for implementing similar functionality...
 
 If the argument is not dynamic you can use a factory function:
 
