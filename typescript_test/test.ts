@@ -53,7 +53,7 @@ function testConnect() {
   const connected = connect(
     createSelector(
       (state: {foo: string}) => state.foo,
-      (state, props: {bar: number}) => state.bar,
+      (state: never, props: {bar: number}) => props.bar,
       (foo, bar) => ({foo, baz: bar}),
     )
   )(props => {
@@ -87,17 +87,18 @@ function testInvalidTypeInCombinator() {
 }
 
 function testRestParameters() {
+  type MyState = {foo: string, bar: number};
   createSelector(
-    (state: {foo: string, bar: number}) => state.foo,
-    state => state.foo,
-    state => state.foo,
-    state => state.foo,
-    state => state.foo,
-    state => state.bar,
-    state => state.bar,
-    state => state.bar,
-    state => state.bar,
-    state => state.bar,
+    (state: MyState) => state.foo,
+    (state: MyState) => state.foo,
+    (state: MyState) => state.foo,
+    (state: MyState) => state.foo,
+    (state: MyState) => state.foo,
+    (state: MyState) => state.bar,
+    (state: MyState) => state.bar,
+    (state: MyState) => state.bar,
+    (state: MyState) => state.bar,
+    (state: MyState) => state.bar,
     (foo1: string, foo2: string, foo3: string, foo4: string, foo5: string,
      bar1: number, bar2: number, bar3: number, bar4: number, bar5: string) => {
     }
@@ -110,7 +111,7 @@ function testParametricSelector() {
 
   const selector = createSelector(
     (state: State) => state.foo,
-    (state, props: Props) => props.bar,
+    (state: never, props: Props) => props.bar,
     (foo, bar) => ({foo, bar}),
   );
 
@@ -141,8 +142,8 @@ function testParametricSelector() {
 function testArrayArgument() {
   const selector = createSelector([
     (state: {foo: string}) => state.foo,
-    state => state.foo,
-    (state, props: {bar: number}) => props.bar,
+    (state: {foo: string}) => state.foo,
+    (state: never, props: {bar: number}) => props.bar,
   ], (foo1, foo2, bar) => ({foo1, foo2, bar}));
 
   const ret = selector({foo: 'fizz'}, {bar: 42});
@@ -164,36 +165,37 @@ function testArrayArgument() {
   // typings:expect-error
   createSelector([
     (state: {foo: string}) => state.foo,
-    state => state.foo,
+    (state: {foo: string}) => state.foo,
   ], (foo: string, bar: number) => {});
 
   createSelector([
     (state: {foo: string}) => state.foo,
-    state => state.foo,
-    state => state.foo,
-    state => state.foo,
-    state => state.foo,
-    state => state.foo,
-    state => state.foo,
-    state => state.foo,
-    state => state.foo,
-    state => state.foo,
-  ], (foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9, foo10) => {
+    (state: {foo: string}) => state.foo,
+    (state: {foo: string}) => state.foo,
+    (state: {foo: string}) => state.foo,
+    (state: {foo: string}) => state.foo,
+    (state: {foo: string}) => state.foo,
+    (state: {foo: string}) => state.foo,
+    (state: {foo: string}) => state.foo,
+    (state: {foo: string}) => state.foo,
+    (state: {foo: string}) => state.foo,
+  ], (foo1: string, foo2: string, foo3: string, foo4: string, foo5: string,
+      foo6: string, foo7: string, foo8: string, foo9: string, foo10: string) => {
 
   });
 
   // typings:expect-error
   createSelector([
     (state: {foo: string}) => state.foo,
-    state => state.foo,
-    state => state.foo,
-    state => state.foo,
-    state => state.foo,
-    state => state.foo,
-    state => state.foo,
-    state => state.foo,
-    state => state.foo,
-    state => state.foo,
+    (state: {foo: string}) => state.foo,
+    (state: {foo: string}) => state.foo,
+    (state: {foo: string}) => state.foo,
+    (state: {foo: string}) => state.foo,
+    (state: {foo: string}) => state.foo,
+    (state: {foo: string}) => state.foo,
+    (state: {foo: string}) => state.foo,
+    (state: {foo: string}) => state.foo,
+    (state: {foo: string}) => state.foo,
   ], (foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8: number, foo9, foo10) => {
 
   });
@@ -213,41 +215,69 @@ function testArrayArgument() {
 
   const selector2 = createSelector([
     (state: {foo: string}) => state.foo,
-    state => state.foo,
-    state => state.foo,
-    state => state.foo,
-    state => state.foo,
-    state => state.foo,
-    state => state.foo,
-    state => state.foo,
-    state => state.foo,
-  ], (foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9) => {
+    (state: {foo: string}) => state.foo,
+    (state: {foo: string}) => state.foo,
+    (state: {foo: string}) => state.foo,
+    (state: {foo: string}) => state.foo,
+    (state: {foo: string}) => state.foo,
+    (state: {foo: string}) => state.foo,
+    (state: {foo: string}) => state.foo,
+    (state: {foo: string}) => state.foo,
+  ], (foo1: string, foo2: string, foo3: string, foo4: string, foo5: string,
+      foo6: string, foo7: string, foo8: string, foo9: string) => {
     return {foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9};
   });
 
-  selector2({foo: 'fizz'});
+  {
+    const ret = selector2({foo: 'fizz'});
+    const foo1: string = ret.foo1;
+    const foo2: string = ret.foo2;
+    const foo3: string = ret.foo3;
+    const foo4: string = ret.foo4;
+    const foo5: string = ret.foo5;
+    const foo6: string = ret.foo6;
+    const foo7: string = ret.foo7;
+    const foo8: string = ret.foo8;
+    const foo9: string = ret.foo9;
+    // typings:expect-error
+    ret.foo10;
+  }
 
   // typings:expect-error
   selector2({foo: 'fizz'}, {bar: 42});
 
   const parametric = createSelector([
+    (state: never, props: {bar: number}) => props.bar,
     (state: {foo: string}) => state.foo,
-    state => state.foo,
-    state => state.foo,
-    state => state.foo,
-    state => state.foo,
-    state => state.foo,
-    state => state.foo,
-    state => state.foo,
-    (state, props: {bar: number}) => props.bar,
-  ], (foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, bar) => {
+    (state: {foo: string}) => state.foo,
+    (state: {foo: string}) => state.foo,
+    (state: {foo: string}) => state.foo,
+    (state: {foo: string}) => state.foo,
+    (state: {foo: string}) => state.foo,
+    (state: {foo: string}) => state.foo,
+    (state: {foo: string}) => state.foo,
+  ], (bar: number, foo1: string, foo2: string, foo3: string, foo4: string,
+      foo5: string, foo6: string, foo7: string, foo8: string) => {
     return {foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, bar};
   });
 
   // typings:expect-error
   parametric({foo: 'fizz'});
 
-  parametric({foo: 'fizz'}, {bar: 42});
+  {
+    const ret = parametric({foo: 'fizz'}, {bar: 42});
+    const foo1: string = ret.foo1;
+    const foo2: string = ret.foo2;
+    const foo3: string = ret.foo3;
+    const foo4: string = ret.foo4;
+    const foo5: string = ret.foo5;
+    const foo6: string = ret.foo6;
+    const foo7: string = ret.foo7;
+    const foo8: string = ret.foo8;
+    const bar: number = ret.bar;
+    // typings:expect-error
+    ret.foo9;
+  }
 }
 
 function testDefaultMemoize() {
@@ -260,8 +290,8 @@ function testDefaultMemoize() {
   const ret1: string = memoized('42');
 
   const memoized2 = defaultMemoize(
-    (str: string, arr: string[]) => ({str, arr}),
-    (a, b, index) => {
+    (str: string, arr: string[]): {str: string, arr: string[]} => ({str, arr}),
+    <T>(a: T, b: T, index: number) => {
       if (index === 0)
         return a === b;
 
@@ -288,7 +318,7 @@ function testCreateSelectorCreator() {
 
   const parametric = createSelector(
     (state: {foo: string}) => state.foo,
-    (state, props: {bar: number}) => props.bar,
+    (state: never, props: {bar: number}) => props.bar,
     (foo, bar) => ({foo, bar}),
   );
 
@@ -302,7 +332,7 @@ function testCreateSelectorCreator() {
   // typings:expect-error
   createSelectorCreator(defaultMemoize, 1);
 
-  createSelectorCreator(defaultMemoize, (a, b, index) => {
+  createSelectorCreator(defaultMemoize, <T>(a: T, b: T, index: number) => {
     if (index === 0)
       return a === b;
 

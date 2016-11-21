@@ -99,6 +99,6 @@
     "ncp": "^2.0.0",
     "nyc": "^6.4.0",
     "typescript": "^2.1.1",
-    "typings-tester": "^0.1.0"
+    "typings-tester": "^0.2.0"
   }
 }
