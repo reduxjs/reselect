@@ -2,19 +2,35 @@ function defaultEqualityCheck(a, b) {
   return a === b
 }
 
+function areArgumentsShallowlyEqual(equalityCheck, prev, next) {
+  if (prev === next) {
+    return true
+  }
+
+  if (prev === null || next === null || prev.length !== next.length) {
+    return false
+  }
+
+  const length = prev.length
+  for (let i = 0; i < length; i++) {
+    if (!equalityCheck(prev[i], next[i])) {
+      return false
+    }
+  }
+
+  return true
+}
+
 export function defaultMemoize(func, equalityCheck = defaultEqualityCheck) {
   let lastArgs = null
   let lastResult = null
-  return (...args) => {
-    if (
-      lastArgs !== null &&
-      lastArgs.length === args.length &&
-      args.every((value, index) => equalityCheck(value, lastArgs[index], index))
-    ) {
-      return lastResult
+
+  return function () {
+    if (!areArgumentsShallowlyEqual(equalityCheck, lastArgs, arguments)) {
+      lastResult = func.apply(null, arguments)
     }
-    lastResult = func(...args)
-    lastArgs = args
+
+    lastArgs = arguments
     return lastResult
   }
 }
@@ -27,7 +43,7 @@ function getDependencies(funcs) {
       dep => typeof dep
     ).join(', ')
     throw new Error(
-      `Selector creators expect all input-selectors to be functions, ` +
+      'Selector creators expect all input-selectors to be functions, ' +
       `instead received the following types: [${dependencyTypes}]`
     )
   }
@@ -42,18 +58,22 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
     const dependencies = getDependencies(funcs)
 
     const memoizedResultFunc = memoize(
-      (...args) => {
+      function () {
         recomputations++
-        return resultFunc(...args)
+        return resultFunc.apply(null, arguments)
       },
       ...memoizeOptions
     )
 
-    const selector = (state, props, ...args) => {
-      const params = dependencies.map(
-        dependency => dependency(state, props, ...args)
-      )
-      return memoizedResultFunc(...params)
+    function selector() {
+      const params = []
+      const length = dependencies.length
+
+      for (let i = 0; i < length; i++) {
+        params.push(dependencies[i].apply(null, arguments))
+      }
+
+      return memoizedResultFunc.apply(null, params)
     }
 
     selector.resultFunc = resultFunc
@@ -68,7 +88,7 @@ export const createSelector = createSelectorCreator(defaultMemoize)
 export function createStructuredSelector(selectors, selectorCreator = createSelector) {
   if (typeof selectors !== 'object') {
     throw new Error(
-      `createStructuredSelector expects first argument to be an object ` +
+      'createStructuredSelector expects first argument to be an object ' +
       `where each property is a selector, instead received a ${typeof selectors}`
     )
   }
