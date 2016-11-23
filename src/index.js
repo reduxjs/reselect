@@ -11,6 +11,7 @@ function areArgumentsShallowlyEqual(equalityCheck, prev, next) {
     return false
   }
 
+  // Do this in a for loop (and not a `forEach` or an `every`) so we can determine equality as fast as possible.
   const length = prev.length
   for (let i = 0; i < length; i++) {
     if (!equalityCheck(prev[i], next[i])) {
@@ -25,8 +26,10 @@ export function defaultMemoize(func, equalityCheck = defaultEqualityCheck) {
   let lastArgs = null
   let lastResult = null
 
+  // we reference arguments instead of spreading them for performance reasons
   return function () {
     if (!areArgumentsShallowlyEqual(equalityCheck, lastArgs, arguments)) {
+      // apply arguments instead of spreading for performance.
       lastResult = func.apply(null, arguments)
     }
 
@@ -60,6 +63,7 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
     const memoizedResultFunc = memoize(
       function () {
         recomputations++
+        // apply arguments instead of spreading for performance.
         return resultFunc.apply(null, arguments)
       },
       ...memoizeOptions
@@ -70,9 +74,11 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
       const length = dependencies.length
 
       for (let i = 0; i < length; i++) {
+        // apply arguments instead of spreading and mutate a local list of params for performance.
         params.push(dependencies[i].apply(null, arguments))
       }
 
+      // apply arguments instead of spreading for performance.
       return memoizedResultFunc.apply(null, params)
     }
 
