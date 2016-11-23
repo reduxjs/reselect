@@ -41,6 +41,10 @@ suite('selector', () => {
     ), /input-selectors to be functions.*function, string/)
   })
   test('basic selector cache hit performance', () => {
+    if (process.env.COVERAGE) {
+      return // don't run performance tests for coverage
+    }
+
     const selector = createSelector(
       state => state.a,
       state => state.b,
