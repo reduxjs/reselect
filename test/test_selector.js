@@ -239,6 +239,45 @@ suite('selector', () => {
     assert.equal(memoized('A'), 'A')
     assert.equal(called, 2)
   })
+  test('exported memoize passes correct objects to equalityCheck', () => {
+    let fallthroughs = 0
+    function shallowEqual(newVal, oldVal) {
+      if (newVal === oldVal) return true
+
+      fallthroughs += 1 // code below is expensive and should be bypassed when possible
+
+      let countA = 0
+      let countB = 0
+      for (let key in newVal) {
+        if (Object.hasOwnProperty.call(newVal, key) && newVal[key] !== oldVal[key]) return false
+        countA++
+      }
+      for (let key in oldVal) {
+        if (Object.hasOwnProperty.call(oldVal, key)) countB++
+      }
+      return countA === countB
+    }
+
+    const someObject = { foo: 'bar' }
+    const anotherObject = { foo: 'bar' }
+    const memoized = defaultMemoize(a => a, shallowEqual)
+
+    // the first call to `memoized` doesn't hit because `defaultMemoize.lastArgs` is uninitialized
+    // and so `equalityCheck` is never called
+    memoized(someObject)
+    assert.equal(fallthroughs, 0, 'first call does not shallow compare')
+
+    // the next call, with a different object reference, does fall through
+    memoized(anotherObject)
+    assert.equal(fallthroughs, 1, 'call with different object does shallow compare')
+
+    // the third call does not fall through because `defaultMemoize` passes `anotherObject` as
+    // both the `newVal` and `oldVal` params. This allows `shallowEqual` to be much more performant
+    // than if it had passed `someObject` as `oldVal`, even though `someObject` and `anotherObject`
+    // are shallowly equal
+    memoized(anotherObject)
+    assert.equal(fallthroughs, 1, 'call with same object as previous call does not shallow compare')
+  })
   test('structured selector', () => { 
     const selector = createStructuredSelector({ 
       x: state => state.a,
