@@ -31,4 +31,6 @@ declare module Reselect {
     function createSelectorCreator(memoize: Memoizer, ...memoizeOptions: any[]): any;
 }
 
-export = Reselect;
+declare module "reselect" {
+  export = Reselect;
+}
