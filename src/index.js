@@ -49,9 +49,9 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
       ...memoizeOptions
     )
 
-    const selector = (state, props, ...args) => {
+    const selector = (...args) => {
       const params = dependencies.map(
-        dependency => dependency(state, props, ...args)
+        dependency => dependency(...args)
       )
       return memoizedResultFunc(...params)
     }
