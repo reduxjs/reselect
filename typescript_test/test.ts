@@ -86,25 +86,6 @@ function testInvalidTypeInCombinator() {
   );
 }
 
-function testRestParameters() {
-  type MyState = {foo: string, bar: number};
-  createSelector(
-    (state: MyState) => state.foo,
-    (state: MyState) => state.foo,
-    (state: MyState) => state.foo,
-    (state: MyState) => state.foo,
-    (state: MyState) => state.foo,
-    (state: MyState) => state.bar,
-    (state: MyState) => state.bar,
-    (state: MyState) => state.bar,
-    (state: MyState) => state.bar,
-    (state: MyState) => state.bar,
-    (foo1: string, foo2: string, foo3: string, foo4: string, foo5: string,
-     bar1: number, bar2: number, bar3: number, bar4: number, bar5: string) => {
-    }
-  );
-}
-
 function testParametricSelector() {
   type State = {foo: string;};
   type Props = {bar: number};
@@ -364,12 +345,12 @@ function testCreateStructuredSelector() {
     bar: (state: {baz: boolean}) => 1
   });
 
-  // todo: this should fail in TypeScript 2.1
+  // typings:expect-error
   createStructuredSelector<{foo: string}, {bar: number}>({
     bar: state => state.foo
   });
 
-  // todo: this should fail in TypeScript 2.1
+  // typings:expect-error
   createStructuredSelector<{foo: string}, {bar: number}>({
     baz: state => state.foo
   });
