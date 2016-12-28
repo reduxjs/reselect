@@ -69,7 +69,8 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
       ...memoizeOptions
     )
 
-    function selector() {
+    // If a selector is called with the exact same arguments we don't need to traverse our dependencies again.
+    const selector = defaultMemoize(function () {
       const params = []
       const length = dependencies.length
 
@@ -80,7 +81,7 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
 
       // apply arguments instead of spreading for performance.
       return memoizedResultFunc.apply(null, params)
-    }
+    })
 
     selector.resultFunc = resultFunc
     selector.recomputations = () => recomputations
