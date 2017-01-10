@@ -2,22 +2,67 @@ function defaultEqualityCheck(a, b) {
   return a === b
 }
 
-export function defaultMemoize(func, equalityCheck = defaultEqualityCheck) {
-  let lastArgs = null
-  let lastResult = null
-  const isEqualToLastArg = (value, index) => equalityCheck(value, lastArgs[index])
-  return (...args) => {
-    if (
-      lastArgs === null ||
-      lastArgs.length !== args.length ||
-      !args.every(isEqualToLastArg)
-    ) {
-      lastResult = func(...args)
+export function defaultMemoize(func, equalityCheck = defaultEqualityCheck, size=1) {
+
+  let cacheArgsArr = []     // Cache store of old argument arrays
+  let cacheResultArr = []  // Cache store of old results
+
+  const memoizedResultFunc = (...args) => {
+    let foundIdx = -1
+    const oldCacheResultArr = cacheResultArr
+    const isFound = cacheArgsArr.some( (oldArgArr,idx)=>{
+      if( oldArgArr.length !== args.length ) {
+        return false
+      }
+
+      if( oldArgArr.every( (value,i) => equalityCheck(args[i],value) )) {
+        foundIdx = idx
+      }
+
+      return foundIdx > -1
+    })
+
+    // console.log( 'foundIdx: ' + foundIdx )
+    let result
+    if( isFound ) {
+      cacheArgsArr = [
+        args,
+        ...cacheArgsArr.slice( 0, foundIdx ),
+        ...cacheArgsArr.slice( foundIdx+1, size )
+      ]
+      cacheResultArr = [
+        cacheResultArr[foundIdx],
+        ...cacheResultArr.slice( 0, foundIdx ),
+        ...cacheResultArr.slice( foundIdx+1, size )
+      ]
+      result = cacheResultArr[0]
+
+    } else if( ! isFound ) {
+
+      result = func(...args)
+      cacheArgsArr = [ args, ...cacheArgsArr.slice( 0, size-1 ) ]
+      cacheResultArr = [ result, ...cacheResultArr.slice( 0, size-1 ) ]
+      result = cacheResultArr[0]
     }
-    lastArgs = args
-    return lastResult
+
+    if( oldCacheResultArr !== cacheResultArr ) {
+      // console.log( 'updated cache:' )
+      // console.log( cacheArgsArr )
+      // console.log( cacheResultArr )
+    }
+
+    return result
   }
+
+  memoizedResultFunc.getCacheArgArr = ()=> cacheArgsArr
+  memoizedResultFunc.getCacheResultArr = ()=> cacheResultArr
+  memoizedResultFunc.clearCache = ()=> {
+    cacheArgsArr = []
+    cacheResultArr = []
+  }
+  return memoizedResultFunc
 }
+
 
 function getDependencies(funcs) {
   const dependencies = Array.isArray(funcs[0]) ? funcs[0] : funcs
@@ -59,6 +104,9 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
     selector.resultFunc = resultFunc
     selector.recomputations = () => recomputations
     selector.resetRecomputations = () => recomputations = 0
+    selector.getCacheArgArr = () => memoizedResultFunc.getCacheArgArr()
+    selector.getCacheResultArr = () => memoizedResultFunc.getCacheResultArr()
+    selector.clearCache = () => memoizedResultFunc.clearCache()
     return selector
   }
 }
