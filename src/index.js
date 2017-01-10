@@ -2,7 +2,7 @@ function defaultEqualityCheck(a, b) {
   return a === b
 }
 
-export function defaultMemoize(func, equalityCheck = defaultEqualityCheck, size=1) {
+export function defaultMemoize(func, equalityCheck = defaultEqualityCheck, cacheSize=1) {
 
   let cacheArgsArr = []     // Cache store of old argument arrays
   let cacheResultArr = []  // Cache store of old results
@@ -28,20 +28,20 @@ export function defaultMemoize(func, equalityCheck = defaultEqualityCheck, size=
       cacheArgsArr = [
         args,
         ...cacheArgsArr.slice( 0, foundIdx ),
-        ...cacheArgsArr.slice( foundIdx+1, size )
+        ...cacheArgsArr.slice( foundIdx+1, cacheSize )
       ]
       cacheResultArr = [
         cacheResultArr[foundIdx],
         ...cacheResultArr.slice( 0, foundIdx ),
-        ...cacheResultArr.slice( foundIdx+1, size )
+        ...cacheResultArr.slice( foundIdx+1, cacheSize )
       ]
       result = cacheResultArr[0]
 
     } else if( ! isFound ) {
 
       result = func(...args)
-      cacheArgsArr = [ args, ...cacheArgsArr.slice( 0, size-1 ) ]
-      cacheResultArr = [ result, ...cacheResultArr.slice( 0, size-1 ) ]
+      cacheArgsArr = [ args, ...cacheArgsArr.slice( 0, cacheSize-1 ) ]
+      cacheResultArr = [ result, ...cacheResultArr.slice( 0, cacheSize-1 ) ]
       result = cacheResultArr[0]
     }
 
@@ -54,7 +54,7 @@ export function defaultMemoize(func, equalityCheck = defaultEqualityCheck, size=
     return result
   }
 
-  memoizedResultFunc.getCacheArgArr = ()=> cacheArgsArr
+  memoizedResultFunc.getCacheArgsArr = ()=> cacheArgsArr
   memoizedResultFunc.getCacheResultArr = ()=> cacheResultArr
   memoizedResultFunc.clearCache = ()=> {
     cacheArgsArr = []
@@ -104,7 +104,7 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
     selector.resultFunc = resultFunc
     selector.recomputations = () => recomputations
     selector.resetRecomputations = () => recomputations = 0
-    selector.getCacheArgArr = () => memoizedResultFunc.getCacheArgArr()
+    selector.getCacheArgsArr = () => memoizedResultFunc.getCacheArgsArr()
     selector.getCacheResultArr = () => memoizedResultFunc.getCacheResultArr()
     selector.clearCache = () => memoizedResultFunc.clearCache()
     return selector
