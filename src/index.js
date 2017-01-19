@@ -84,7 +84,7 @@ export function createStructuredSelector(selectors, selectorCreator = createSele
   )
 }
 
-const indexResolver = (state, index, ...args) => index
+const indexResolver = (state, index) => index
 
 export function createIndexedSelector(selectorFactory, resolver = indexResolver) {
   const cache = {}
