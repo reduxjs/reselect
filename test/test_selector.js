@@ -1,7 +1,7 @@
 // TODO: Add test for React Redux connect function
 
 import chai from 'chai'
-import {  createSelector, createSelectorCreator, defaultMemoize, createStructuredSelector  } from '../src/index'
+import {  createSelector, createSelectorCreator, defaultMemoize, createStructuredSelector, createIndexedSelector  } from '../src/index'
 import {  default as lodashMemoize  } from 'lodash.memoize'
 
 const assert = chai.assert
@@ -341,5 +341,21 @@ suite('selector', () => {
       lastFunction
     )
     assert.equal(selector.resultFunc, lastFunction)
+  })
+  test('indexed selector', () => {
+    const selector = createIndexedSelector(() =>
+      createSelector(
+        (state, index) => state.a[index],
+        (state, index) => state.b[index],
+        (a, b) => a + b
+      )
+    )
+    assert.equal(selector({ a: [0, 1], b: [0, 1] }, 0), 0)
+    assert.equal(selector.at(0).recomputations(), 1)
+    assert.equal(selector({ a: ['a', 1], b: [0, 1] }, 0), 'a0')
+    assert.equal(selector.at(0).recomputations(), 2)
+    assert.equal(selector({ a: [0, 1], b: [0, 1] }, 1), 2)
+    assert.equal(selector.at(0).recomputations(), 2)
+    assert.equal(selector.at(1).recomputations(), 1)
   })
 })

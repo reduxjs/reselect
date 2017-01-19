@@ -83,3 +83,17 @@ export function createStructuredSelector(selectors, selectorCreator = createSele
     }
   )
 }
+
+const indexResolver = (state, index, ...args) => index
+
+export function createIndexedSelector(selectorFactory, resolver = indexResolver) {
+  const cache = {}
+  const indexedSelector = (...args) => {
+    const key = resolver(...args)
+    const selector = cache[key] || (cache[key] = selectorFactory())
+    return selector(...args)
+  }
+
+  indexedSelector.at = (key) => cache[key]
+  return indexedSelector
+}
