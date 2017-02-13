@@ -278,6 +278,36 @@ suite('selector', () => {
     memoized(anotherObject)
     assert.equal(fallthroughs, 1, 'call with same object as previous call does not shallow compare')
   })
+  test('the subset will stay the same when the other parts of the whole collection changes.', () => {
+    function shallowEqual(newVal, oldVal) {
+      if (newVal === oldVal) return true
+
+      let countA = 0
+      let countB = 0
+      for (let key in newVal) {
+        if (Object.hasOwnProperty.call(newVal, key) && newVal[key] !== oldVal[key]) return false
+        countA++
+      }
+      for (let key in oldVal) {
+        if (Object.hasOwnProperty.call(oldVal, key)) countB++
+      }
+      return countA === countB
+    }
+
+    const a = {a: 1, filterType: 'a'}
+    const b = {b: 2, filterType: 'a'}
+    const c = {c: 3, filterType: 'b'}
+    const d = {};
+    Object.assign(d, c);
+    const arr1 = [a, b, c];
+    const arr2 = [a, b, d];
+
+    const createSelector = createSelectorCreator(defaultMemoize, shallowEqual)
+    const selector = createSelector(({list}) => list, (list) => list.filter((item) => item.filterType ==='a'));
+    const subset1 = selector({list: arr1});
+    const subset2 = selector({list: arr2});
+    assert.strictEqual(subset1, subset2);
+  })
   test('structured selector', () => { 
     const selector = createStructuredSelector({ 
       x: state => state.a,
