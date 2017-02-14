@@ -303,7 +303,7 @@ suite('selector', () => {
     const arr2 = [ a, b, d ]
 
     const createSelector = createSelectorCreator(defaultMemoize, shallowEqual)
-    const selector = createSelector(({ list }) => list, (list) => list.filter((item) => item.filterType ==='a'))
+    const selector = createSelector((state) => state.list, (list) => list.filter((item) => item.filterType ==='a'))
     const subset1 = selector({ list: arr1 })
     const subset2 = selector({ list: arr2 })
     assert.strictEqual(subset1, subset2)
