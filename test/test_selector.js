@@ -297,8 +297,7 @@ suite('selector', () => {
     const a = { a: 1, filterType: 'a' }
     const b = { b: 2, filterType: 'a' }
     const c = { c: 3, filterType: 'b' }
-    const d = {}
-    Object.assign(d, c)
+    const d = Object.create(c)
     const arr1 = [ a, b, c ]
     const arr2 = [ a, b, d ]
 
