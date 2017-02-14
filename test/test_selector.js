@@ -294,19 +294,19 @@ suite('selector', () => {
       return countA === countB
     }
 
-    const a = {a: 1, filterType: 'a'}
-    const b = {b: 2, filterType: 'a'}
-    const c = {c: 3, filterType: 'b'}
-    const d = {};
-    Object.assign(d, c);
-    const arr1 = [a, b, c];
-    const arr2 = [a, b, d];
+    const a = { a: 1, filterType: 'a' }
+    const b = { b: 2, filterType: 'a' }
+    const c = { c: 3, filterType: 'b' }
+    const d = {}
+    Object.assign(d, c)
+    const arr1 = [ a, b, c ]
+    const arr2 = [ a, b, d ]
 
     const createSelector = createSelectorCreator(defaultMemoize, shallowEqual)
-    const selector = createSelector(({list}) => list, (list) => list.filter((item) => item.filterType ==='a'));
-    const subset1 = selector({list: arr1});
-    const subset2 = selector({list: arr2});
-    assert.strictEqual(subset1, subset2);
+    const selector = createSelector(({ list }) => list, (list) => list.filter((item) => item.filterType ==='a'))
+    const subset1 = selector({ list: arr1 })
+    const subset2 = selector({ list: arr2 })
+    assert.strictEqual(subset1, subset2)
   })
   test('structured selector', () => { 
     const selector = createStructuredSelector({ 
