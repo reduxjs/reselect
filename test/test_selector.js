@@ -6,6 +6,14 @@ import {  default as lodashMemoize  } from 'lodash.memoize'
 
 const assert = chai.assert
 
+// Construct 1E6 states for perf test outside of the perf test so as to not change the execute time of the test function
+const numOfStates = 1000000
+const states = []
+
+for (let i = 0; i < numOfStates; i++) {
+  states.push({ a: 1, b: 2 })
+}
+
 suite('selector', () => {
   test('basic selector', () => {
     const selector = createSelector(
@@ -59,6 +67,31 @@ suite('selector', () => {
     const totalTime = new Date() - start
 
     assert.equal(selector(state1), 3)
+    assert.equal(selector.recomputations(), 1)
+    assert.isBelow(
+      totalTime,
+      1000,
+      'Expected a million calls to a selector with the same arguments to take less than 1 second'
+    )
+  })
+  test('basic selector cache hit performance for state changes but shallowly equal selector args', () => {
+    if (process.env.COVERAGE) {
+      return // don't run performance tests for coverage
+    }
+
+    const selector = createSelector(
+      state => state.a,
+      state => state.b,
+      (a, b) => a + b
+    )
+
+    const start = new Date()
+    for (let i = 0; i < numOfStates; i++) {
+      selector(states[i])
+    }
+    const totalTime = new Date() - start
+
+    assert.equal(selector(states[0]), 3)
     assert.equal(selector.recomputations(), 1)
     assert.isBelow(
       totalTime,
