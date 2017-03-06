@@ -20,10 +20,16 @@ suite('selector', () => {
       state => state.a,
       a => a
     )
-    assert.equal(selector({ a: 1 }), 1)
-    assert.equal(selector({ a: 1 }), 1)
+    const firstState = { a: 1 }
+    const firstStateNewPointer = { a: 1 }
+    const secondState = { a: 2 }
+    
+    assert.equal(selector(firstState), 1)
+    assert.equal(selector(firstState), 1)
     assert.equal(selector.recomputations(), 1)
-    assert.equal(selector({ a: 2 }), 2)
+    assert.equal(selector(firstStateNewPointer), 1)
+    assert.equal(selector.recomputations(), 1)
+    assert.equal(selector(secondState), 2)
     assert.equal(selector.recomputations(), 2)
   })
   test('basic selector multiple keys', () => {
