@@ -36,7 +36,8 @@
     "test:cov": {
       "command": "nyc --reporter=lcov --reporter=text mocha --compilers js:babel-register --ui tdd",
       "env": {
-        "NODE_ENV": "test"
+        "NODE_ENV": "test",
+        "COVERAGE": "true"
       }
     },
     "test:typescript": {
