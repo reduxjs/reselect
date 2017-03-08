@@ -9,7 +9,6 @@ script:
       - npm test
       - npm run test:cov
       - npm run test:typescript
-      - npm run test:flow
       - npm run compile
 
 after_success:
