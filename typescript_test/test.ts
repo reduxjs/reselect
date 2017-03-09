@@ -6,8 +6,6 @@ import {
   ParametricSelector,
 } from '../src/index';
 
-
-
 function testSelector() {
   type State = {foo: string};
 
@@ -15,6 +13,10 @@ function testSelector() {
     (state: State) => state.foo,
     (foo) => foo,
   );
+
+  const res = selector.resultFunc('test');
+  selector.recomputations();
+  selector.resetRecomputations();
 
   const foo: string = selector({foo: 'bar'});
 
