@@ -7,7 +7,13 @@ declare namespace Reselect {
     recomputations: () => number;
     resetRecomputations: () => number;
   }
+
   type ParametricSelector<S, P, R> = (state: S, props: P, ...args: any[]) => R;
+  interface OutputParametricSelector<S, P, R, C> extends ParametricSelector<S, P, R> {
+    resultFunc: C;
+    recomputations: () => number;
+    resetRecomputations: () => number;
+  }
 
   /* one selector */
   function createSelector<S, R1, T>(
@@ -17,7 +23,7 @@ declare namespace Reselect {
   function createSelector<S, P, R1, T>(
     selector: ParametricSelector<S, P, R1>,
     combiner: (res: R1) => T,
-  ): ParametricSelector<S, P, T>;
+  ): OutputParametricSelector<S, P, T, (res: R1) => T>;
 
   /* two selectors */
   function createSelector<S, R1, R2, T>(
@@ -29,7 +35,7 @@ declare namespace Reselect {
     selector1: ParametricSelector<S, P, R1>,
     selector2: ParametricSelector<S, P, R2>,
     combiner: (res1: R1, res2: R2) => T,
-  ): ParametricSelector<S, P, T>;
+  ): OutputParametricSelector<S, P, T, (res1: R1, res2: R2) => T>;
 
   /* three selectors */
   function createSelector<S, R1, R2, R3, T>(
@@ -43,7 +49,7 @@ declare namespace Reselect {
     selector2: ParametricSelector<S, P, R2>,
     selector3: ParametricSelector<S, P, R3>,
     combiner: (res1: R1, res2: R2, res3: R3) => T,
-  ): ParametricSelector<S, P, T>;
+  ): OutputParametricSelector<S, P, T, (res1: R1, res2: R2, res3: R3) => T>;
 
   /* four selectors */
   function createSelector<S, R1, R2, R3, R4, T>(
@@ -59,7 +65,7 @@ declare namespace Reselect {
     selector3: ParametricSelector<S, P, R3>,
     selector4: ParametricSelector<S, P, R4>,
     combiner: (res1: R1, res2: R2, res3: R3, res4: R4) => T,
-  ): ParametricSelector<S, P, T>;
+  ): OutputParametricSelector<S, P, T, (res1: R1, res2: R2, res3: R3, res4: R4) => T>;
 
   /* five selectors */
   function createSelector<S, R1, R2, R3, R4, R5, T>(
@@ -77,7 +83,7 @@ declare namespace Reselect {
     selector4: ParametricSelector<S, P, R4>,
     selector5: ParametricSelector<S, P, R5>,
     combiner: (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5) => T,
-  ): ParametricSelector<S, P, T>;
+  ): OutputParametricSelector<S, P, T, (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5) => T>;
 
   /* six selectors */
   function createSelector<S, R1, R2, R3, R4, R5, R6, T>(
@@ -97,7 +103,7 @@ declare namespace Reselect {
     selector5: ParametricSelector<S, P, R5>,
     selector6: ParametricSelector<S, P, R6>,
     combiner: (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6) => T,
-  ): ParametricSelector<S, P, T>;
+  ): OutputParametricSelector<S, P, T, (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6) => T>;
 
   /* seven selectors */
   function createSelector<S, R1, R2, R3, R4, R5, R6, R7, T>(
@@ -122,7 +128,8 @@ declare namespace Reselect {
     selector7: ParametricSelector<S, P, R7>,
     combiner: (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6,
               res7: R7) => T,
-  ): ParametricSelector<S, P, T>;
+  ): OutputParametricSelector<S, P, T, (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6,
+              res7: R7) => T>;
 
   /* eight selectors */
   function createSelector<S, R1, R2, R3, R4, R5, R6, R7, R8, T>(
@@ -149,7 +156,8 @@ declare namespace Reselect {
     selector8: ParametricSelector<S, P, R8>,
     combiner: (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6,
               res7: R7, res8: R8) => T,
-  ): ParametricSelector<S, P, T>;
+  ): OutputParametricSelector<S, P, T, (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6,
+              res7: R7, res8: R8) => T>;
 
   /* nine selectors */
   function createSelector<S, R1, R2, R3, R4, R5, R6, R7, R8, R9, T>(
@@ -178,7 +186,8 @@ declare namespace Reselect {
     selector9: ParametricSelector<S, P, R9>,
     combiner: (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6,
               res7: R7, res8: R8, res9: R9) => T,
-  ): ParametricSelector<S, P, T>;
+  ): OutputParametricSelector<S, P, T, (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6,
+              res7: R7, res8: R8, res9: R9) => T>;
 
   /* ten selectors */
   function createSelector<S, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T>(
@@ -209,7 +218,8 @@ declare namespace Reselect {
     selector10: ParametricSelector<S, P, R10>,
     combiner: (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6,
               res7: R7, res8: R8, res9: R9, res10: R10) => T,
-  ): ParametricSelector<S, P, T>;
+  ): OutputParametricSelector<S, P, T, (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6,
+              res7: R7, res8: R8, res9: R9, res10: R10) => T>;
 
   /* eleven selectors */
   function createSelector<S, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, T>(
@@ -242,7 +252,8 @@ declare namespace Reselect {
     selector11: ParametricSelector<S, P, R11>,
     combiner: (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6,
               res7: R7, res8: R8, res9: R9, res10: R10, res11: R11) => T,
-  ): ParametricSelector<S, P, T>;
+  ): OutputParametricSelector<S, P, T, (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6,
+              res7: R7, res8: R8, res9: R9, res10: R10, res11: R11) => T>;
 
   /* twelve selectors */
   function createSelector<S, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, T>(
@@ -277,7 +288,8 @@ declare namespace Reselect {
     selector12: ParametricSelector<S, P, R12>,
     combiner: (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6,
               res7: R7, res8: R8, res9: R9, res10: R10, res11: R11, res12: R12) => T,
-  ): ParametricSelector<S, P, T>;
+  ): OutputParametricSelector<S, P, T, (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6,
+              res7: R7, res8: R8, res9: R9, res10: R10, res11: R11, res12: R12) => T>;
 
 
   /* array argument */
@@ -290,7 +302,7 @@ declare namespace Reselect {
   function createSelector<S, P, R1, T>(
     selectors: [ParametricSelector<S, P, R1>],
     combiner: (res: R1) => T,
-  ): ParametricSelector<S, P, T>;
+  ): OutputParametricSelector<S, P, T, (res: R1) => T>;
 
   /* two selectors */
   function createSelector<S, R1, R2, T>(
@@ -302,7 +314,7 @@ declare namespace Reselect {
     selectors: [ParametricSelector<S, P, R1>,
                 ParametricSelector<S, P, R2>],
     combiner: (res1: R1, res2: R2) => T,
-  ): ParametricSelector<S, P, T>;
+  ): OutputParametricSelector<S, P, T, (res1: R1, res2: R2) => T>;
 
   /* three selectors */
   function createSelector<S, R1, R2, R3, T>(
@@ -316,7 +328,7 @@ declare namespace Reselect {
                 ParametricSelector<S, P, R2>,
                 ParametricSelector<S, P, R3>],
     combiner: (res1: R1, res2: R2, res3: R3) => T,
-  ): ParametricSelector<S, P, T>;
+  ): OutputParametricSelector<S, P, T, (res1: R1, res2: R2, res3: R3) => T>;
 
   /* four selectors */
   function createSelector<S, R1, R2, R3, R4, T>(
@@ -332,7 +344,7 @@ declare namespace Reselect {
                 ParametricSelector<S, P, R3>,
                 ParametricSelector<S, P, R4>],
     combiner: (res1: R1, res2: R2, res3: R3, res4: R4) => T,
-  ): ParametricSelector<S, P, T>;
+  ): OutputParametricSelector<S, P, T, (res1: R1, res2: R2, res3: R3, res4: R4) => T>;
 
   /* five selectors */
   function createSelector<S, R1, R2, R3, R4, R5, T>(
@@ -350,7 +362,7 @@ declare namespace Reselect {
                 ParametricSelector<S, P, R4>,
                 ParametricSelector<S, P, R5>],
     combiner: (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5) => T,
-  ): ParametricSelector<S, P, T>;
+  ): OutputParametricSelector<S, P, T, (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5) => T>;
 
   /* six selectors */
   function createSelector<S, R1, R2, R3, R4, R5, R6, T>(
@@ -370,7 +382,7 @@ declare namespace Reselect {
                 ParametricSelector<S, P, R5>,
                 ParametricSelector<S, P, R6>],
     combiner: (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6) => T,
-  ): ParametricSelector<S, P, T>;
+  ): OutputParametricSelector<S, P, T, (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6) => T>;
 
   /* seven selectors */
   function createSelector<S, R1, R2, R3, R4, R5, R6, R7, T>(
@@ -395,7 +407,8 @@ declare namespace Reselect {
                 ParametricSelector<S, P, R7>],
     combiner: (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6,
               res7: R7) => T,
-  ): ParametricSelector<S, P, T>;
+  ): OutputParametricSelector<S, P, T, (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6,
+              res7: R7) => T>;
 
   /* eight selectors */
   function createSelector<S, R1, R2, R3, R4, R5, R6, R7, R8, T>(
@@ -422,7 +435,8 @@ declare namespace Reselect {
       ParametricSelector<S, P, R8>],
     combiner: (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6,
               res7: R7, res8: R8) => T,
-  ): ParametricSelector<S, P, T>;
+  ): OutputParametricSelector<S, P, T, (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6,
+              res7: R7, res8: R8) => T>;
 
   /* nine selectors */
   function createSelector<S, R1, R2, R3, R4, R5, R6, R7, R8, R9, T>(
@@ -451,7 +465,8 @@ declare namespace Reselect {
       ParametricSelector<S, P, R9>],
     combiner: (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6,
               res7: R7, res8: R8, res9: R9) => T,
-  ): ParametricSelector<S, P, T>;
+  ): OutputParametricSelector<S, P, T, (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6,
+              res7: R7, res8: R8, res9: R9) => T>;
 
   /* ten selectors */
   function createSelector<S, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T>(
@@ -482,7 +497,8 @@ declare namespace Reselect {
       ParametricSelector<S, P, R10>],
     combiner: (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6,
               res7: R7, res8: R8, res9: R9, res10: R10) => T,
-  ): ParametricSelector<S, P, T>;
+  ): OutputParametricSelector<S, P, T, (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6,
+              res7: R7, res8: R8, res9: R9, res10: R10) => T>;
 
   /* eleven selectors */
   function createSelector<S, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, T>(
@@ -515,7 +531,8 @@ declare namespace Reselect {
       ParametricSelector<S, P, R11>],
     combiner: (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6,
               res7: R7, res8: R8, res9: R9, res10: R10, res11: R11) => T,
-  ): ParametricSelector<S, P, T>;
+  ): OutputParametricSelector<S, P, T, (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6,
+              res7: R7, res8: R8, res9: R9, res10: R10, res11: R11) => T>;
 
   /* twelve selectors */
   function createSelector<S, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, T>(
@@ -550,7 +567,8 @@ declare namespace Reselect {
       ParametricSelector<S, P, R12>],
     combiner: (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6,
               res7: R7, res8: R8, res9: R9, res10: R10, res11: R11, res12: R12) => T,
-  ): ParametricSelector<S, P, T>;
+  ): OutputParametricSelector<S, P, T, (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6,
+              res7: R7, res8: R8, res9: R9, res10: R10, res11: R11, res12: R12) => T>;
 
 
   function defaultMemoize<F extends Function>(
