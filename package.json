@@ -1,10 +1,10 @@
 {
   "name": "reselect",
-  "version": "3.0.0-rc1",
+  "version": "3.0.0-rc",
   "description": "Selectors for Redux.",
   "main": "lib/index.js",
   "jsnext:main": "es/index.js",
-  "typings": "src/reselect.d.ts",
+  "typings": "lib/index.d.ts",
   "files": [
     "lib",
     "src",
@@ -35,14 +35,15 @@
     "test:cov": {
       "command": "nyc --reporter=lcov --reporter=text mocha --compilers js:babel-register --ui tdd",
       "env": {
-        "NODE_ENV": "test"
+        "NODE_ENV": "test",
+        "COVERAGE": "true"
       }
     },
     "test:typescript": {
-      "command": "node ./typescript_test/test.js"
+      "command": "typings-tester --dir typescript_test"
     },
     "compile:commonjs": {
-      "command": "babel -d lib/ src/ && ncp ./src/reselect.d.ts lib",
+      "command": "babel -d lib/ src/ && ncp ./src/index.d.ts ./lib/index.d.ts",
       "env": {
         "NODE_ENV": "commonjs"
       }
@@ -93,6 +94,7 @@
     "mocha": "^2.2.5",
     "ncp": "^2.0.0",
     "nyc": "^6.4.0",
-    "typescript": "^1.8.10"
+    "typescript": "^2.1.4",
+    "typings-tester": "^0.2.0"
   }
 }
