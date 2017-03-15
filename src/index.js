@@ -7,12 +7,20 @@ export function defaultMemoize(func, equalityCheck = defaultEqualityCheck) {
   let lastResult = null
   const isEqualToLastArg = (value, index) => equalityCheck(value, lastArgs[index])
   return (...args) => {
+    let tempResult = null
+
     if (
       lastArgs === null ||
       lastArgs.length !== args.length ||
       !args.every(isEqualToLastArg)
     ) {
-      lastResult = func(...args)
+      tempResult = func(...args)
+
+      if (!lastResult) {
+        lastResult = tempResult
+      } else if (!equalityCheck(tempResult, lastResult)) {
+        lastResult = tempResult
+      }
     }
     lastArgs = args
     return lastResult
