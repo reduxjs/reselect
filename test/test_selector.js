@@ -304,7 +304,6 @@ suite('selector', () => {
     assert.equal(memoized('A'), 'A')
     assert.equal(called, 2)
   })
-<<<<<<< HEAD
   test('exported memoize passes correct objects to equalityCheck', () => {
     let fallthroughs = 0
     function shallowEqual(newVal, oldVal) {
