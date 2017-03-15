@@ -23,7 +23,7 @@ suite('selector', () => {
     const firstState = { a: 1 }
     const firstStateNewPointer = { a: 1 }
     const secondState = { a: 2 }
-    
+
     assert.equal(selector(firstState), 1)
     assert.equal(selector(firstState), 1)
     assert.equal(selector.recomputations(), 1)
@@ -31,6 +31,13 @@ suite('selector', () => {
     assert.equal(selector.recomputations(), 1)
     assert.equal(selector(secondState), 2)
     assert.equal(selector.recomputations(), 2)
+  })
+  test('don\'t pass extra parameters to inputSelector when only called with the state', () => {
+    const selector = createSelector(
+      (...params) => params.length,
+      a => a
+    )
+    assert.equal(selector({}), 1)
   })
   test('basic selector multiple keys', () => {
     const selector = createSelector(
