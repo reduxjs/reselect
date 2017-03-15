@@ -342,4 +342,86 @@ suite('selector', () => {
     )
     assert.equal(selector.resultFunc, lastFunction)
   })
+  test('defaultMemoize recomputations with cache size option', () => {
+
+    const createSelectorWithCacheSize2 = createSelectorCreator( defaultMemoize, void 0, 2 )
+
+    const powerSelector = createSelectorWithCacheSize2([
+      (state)=>state.num
+    ], ( num )=> num*num )
+
+    assert.equal(powerSelector({ num: 1 }), 1)  // expect recomputation
+    assert.equal(powerSelector({ num: 2 }), 4)  // expect recomputation
+    assert.equal(powerSelector({ num: 3 }), 9)  // expect recomputation
+    assert.equal(powerSelector({ num: 4 }), 16) // expect recomputation
+    assert.equal(powerSelector.recomputations(), 4)
+    
+    assert.equal(powerSelector.getCacheArgsArr()[0], 4)
+    assert.equal(powerSelector.getCacheArgsArr()[1], 3)
+
+    assert.equal(powerSelector({ num: 4 }), 16) // expect cache
+    assert.equal(powerSelector({ num: 4 }), 16) // expect cache
+    assert.equal(powerSelector({ num: 3 }), 9)  // expect cache
+    assert.equal(powerSelector({ num: 3 }), 9)  // expect cache
+    assert.equal(powerSelector({ num: 2 }), 4)  // expect recomputation
+    assert.equal(powerSelector.recomputations(), 5)
+
+    assert.equal(powerSelector({ num: 4 }), 16) // expect recomputation
+    assert.equal(powerSelector({ num: 4 }), 16) // expect cache
+
+    assert.equal(powerSelector.recomputations(), 6)
+    assert.equal(powerSelector.getCacheArgsArr().length, 2 )
+  })
+  test('defaultMemoize updatedCache with cache size option', () => {
+    const createSelectorWithCacheSize5 = createSelectorCreator( defaultMemoize, void 0, 5 )
+
+    const powerSelector = createSelectorWithCacheSize5([
+      (state)=>state.num
+    ], ( num )=> num*num )
+
+    assert.equal(powerSelector({ num: 1 }), 1)  // expect recomputation
+    assert.equal(powerSelector({ num: 2 }), 4)  // expect recomputation
+    assert.equal(powerSelector({ num: 3 }), 9)  // expect recomputation
+    assert.equal(powerSelector({ num: 4 }), 16) // expect recomputation
+    assert.equal(powerSelector({ num: 5 }), 25) // expect recomputation
+
+    assert.equal(powerSelector.getCacheArgsArr()[0], 5)
+    assert.equal(powerSelector.getCacheArgsArr()[1], 4)
+    assert.equal(powerSelector.getCacheArgsArr()[2], 3)
+    assert.equal(powerSelector.getCacheArgsArr()[3], 2)
+    assert.equal(powerSelector.getCacheArgsArr()[4], 1)
+
+    assert.equal(powerSelector({ num: 2 }), 4)  // expect cache
+    assert.equal(powerSelector.getCacheArgsArr()[0], 2)
+    assert.equal(powerSelector.getCacheArgsArr()[1], 5)
+    assert.equal(powerSelector.getCacheArgsArr()[2], 4)
+    assert.equal(powerSelector.getCacheArgsArr()[3], 3)
+    assert.equal(powerSelector.getCacheArgsArr()[4], 1)
+
+    assert.equal(powerSelector({ num: 6 }), 36) // expect recomputation
+    assert.equal(powerSelector.getCacheArgsArr()[0], 6)
+    assert.equal(powerSelector.getCacheArgsArr()[1], 2)
+    assert.equal(powerSelector.getCacheArgsArr()[2], 5)
+    assert.equal(powerSelector.getCacheArgsArr()[3], 4)
+    assert.equal(powerSelector.getCacheArgsArr()[4], 3)
+    assert.equal(powerSelector.getCacheArgsArr()[5], void 0)
+
+    assert.equal(powerSelector({ num: 1 }), 1)  // expect recomputation
+    assert.equal(powerSelector.getCacheArgsArr()[0], 1)
+    assert.equal(powerSelector.getCacheArgsArr()[1], 6)
+    assert.equal(powerSelector.getCacheArgsArr()[2], 2)
+    assert.equal(powerSelector.getCacheArgsArr()[3], 5)
+    assert.equal(powerSelector.getCacheArgsArr()[4], 4)
+    assert.equal(powerSelector.getCacheArgsArr()[5], void 0)
+
+    assert.equal(powerSelector({ num: 1 }), 1)  // expect cache
+    assert.equal(powerSelector.getCacheArgsArr()[0], 1)
+    assert.equal(powerSelector.getCacheArgsArr()[1], 6)
+    assert.equal(powerSelector.getCacheArgsArr()[2], 2)
+    assert.equal(powerSelector.getCacheArgsArr()[3], 5)
+    assert.equal(powerSelector.getCacheArgsArr()[4], 4)
+    assert.equal(powerSelector.getCacheArgsArr()[5], void 0)
+
+    assert.equal(powerSelector.recomputations(), 7)
+  })
 })
