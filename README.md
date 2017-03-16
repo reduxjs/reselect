@@ -352,25 +352,7 @@ const makeGetVisibleTodos = () => {
 export default makeGetVisibleTodos
 ```
 
-We also need a way to give each instance of a container access to its own private selector. The `mapStateToProps` argument of `connect` can help with this.
-
-**If the `mapStateToProps` argument supplied to `connect` returns a function instead of an object, it will be used to create an individual `mapStateToProps` function for each instance of the container.**
-
-In the example below `makeMapStateToProps` creates a new `getVisibleTodos` selector, and returns a `mapStateToProps` function that has exclusive access to the new selector:
-
-```js
-const makeMapStateToProps = () => {
-  const getVisibleTodos = makeGetVisibleTodos()
-  const mapStateToProps = (state, props) => {
-    return {
-      todos: getVisibleTodos(state, props)
-    }
-  }
-  return mapStateToProps
-}
-```
-
-If we pass `makeMapStateToProps` to `connect`, each instance of the `VisibleTodosList` container will get its own `mapStateToProps` function with a private `getVisibleTodos` selector. Memoization will now work correctly regardless of the render order of the `VisibleTodoList` containers.
+If we use makeGetVisibleTodos in `mapStateToProps`, each instance of the `VisibleTodosList` container will get its own private `getVisibleTodos` selector. Memoization will now work correctly regardless of the render order of the `VisibleTodoList` containers.
 
 #### `containers/VisibleTodoList.js`
 
@@ -380,14 +362,10 @@ import { toggleTodo } from '../actions'
 import TodoList from '../components/TodoList'
 import { makeGetVisibleTodos } from '../selectors'
 
-const makeMapStateToProps = () => {
-  const getVisibleTodos = makeGetVisibleTodos()
-  const mapStateToProps = (state, props) => {
-    return {
-      todos: getVisibleTodos(state, props)
-    }
+const mapStateToProps = (state, props) => {
+  return {
+    todos: makeGetVisibleTodos()(state, props)
   }
-  return mapStateToProps
 }
 
 const mapDispatchToProps = (dispatch) => {
@@ -399,7 +377,7 @@ const mapDispatchToProps = (dispatch) => {
 }
 
 const VisibleTodoList = connect(
-  makeMapStateToProps,
+  mapStateToProps,
   mapDispatchToProps
 )(TodoList)
 
