@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [v3.0.0](https://github.com/reactjs/reselect/releases/tag/v3.0.0) - 2017/03/24
+
+### New Features
+
+Performance improvements (thanks to @johnhaley81)
+Updated Typescript typings (thanks to everyone who helped)
 
 ## [v2.5.4](https://github.com/reactjs/reselect/releases/tag/v2.5.4) - 2016/09/17
 
