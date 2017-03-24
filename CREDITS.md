@@ -16,7 +16,8 @@
   Salvador Hernandez, mctep, Jacob Rask, Luqmaan Dawoodjee, Walter Breakell,
   Matthew Hetherington, Mike Wilcox, David Edmondson, Andrey Zaytsev, 1ven,
   Alexey Yurchenko, Douglas Russell, Yonatan Kogan, Peter Petrov,
-  Walter Breakell, Whien
+  Whien, Sergei Egorov, Jim Bolla, Carl Bernardo, Daniel Lytkin, John Haley,
+  alex3165,
 
 * Inspired by getters in Nuclear.js and subscriptions in re-frame.
 
