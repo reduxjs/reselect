@@ -1,6 +1,6 @@
 {
   "name": "reselect",
-  "version": "3.0.0-rc",
+  "version": "3.0.0",
   "description": "Selectors for Redux.",
   "main": "lib/index.js",
   "jsnext:main": "es/index.js",
