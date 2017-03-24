@@ -318,6 +318,8 @@ A selector created with `createSelector` only returns the cached value when its 
 
 > The examples in this section require React Redux v4.3.0 or greater
 
+> An alternative approach be found in [re-reselect](https://github.com/toomuchdesign/re-reselect)
+
 To share a selector across multiple `VisibleTodoList` components while passing in `props` **and** retaining memoization, each instance of the component needs its own private copy of the selector.
 
 Let’s create a function named `makeGetVisibleTodos` that returns a new copy of the `getVisibleTodos` selector each time it is called:
@@ -941,6 +943,12 @@ A: Yes! They are included and referenced in `package.json`. They should Just Wor
 A: Try these [helper functions](https://github.com/reactjs/reselect/issues/159#issuecomment-238724788) courtesy of [MattSPalmer](https://github.com/MattSPalmer)
 
 ## Related Projects
+
+###[re-reselect](https://github.com/toomuchdesign/re-reselect)
+
+Enhances Reselect selectors by wrapping `createSelector` and returning a memoized collection of selectors indexed with the cache key returned by a custom resolver function.
+
+Useful to reduce selectors recalculation when the same selector is repeatedly called with one/few different arguments.
 
 ###[reselect-map](https://github.com/HeyImAlex/reselect-map)
 
