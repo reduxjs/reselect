@@ -944,13 +944,13 @@ A: Try these [helper functions](https://github.com/reactjs/reselect/issues/159#i
 
 ## Related Projects
 
-###[re-reselect](https://github.com/toomuchdesign/re-reselect)
+### [re-reselect](https://github.com/toomuchdesign/re-reselect)
 
 Enhances Reselect selectors by wrapping `createSelector` and returning a memoized collection of selectors indexed with the cache key returned by a custom resolver function.
 
 Useful to reduce selectors recalculation when the same selector is repeatedly called with one/few different arguments.
 
-###[reselect-map](https://github.com/HeyImAlex/reselect-map)
+### [reselect-map](https://github.com/HeyImAlex/reselect-map)
 
 Can be useful when doing **very expensive** computations on elements of a collection because Reselect might not give you the granularity of caching that you need. Check out the reselect-maps README for examples.
 
