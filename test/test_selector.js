@@ -32,6 +32,49 @@ suite('selector', () => {
     assert.equal(selector(secondState), 2)
     assert.equal(selector.recomputations(), 2)
   })
+  test('selector with deep mutated object', () => {
+    const selector = createSelector(
+      state => state.a,
+      a => a.b.c
+    )
+    const firstState = { a: {b: {c: 1}} }
+    const firstStateNewPointer = { a: firstState.a }
+    const firstStateNewDeep = {a: { b: firstState.a.b }}
+
+    assert.equal(selector(firstState), 1)
+    assert.equal(selector(firstState), 1)
+    assert.equal(selector.recomputations(), 1)
+    assert.equal(selector(firstStateNewPointer), 1)
+    assert.equal(selector.recomputations(), 1)
+    assert.equal(selector(firstStateNewDeep), 1)
+    assert.equal(selector.recomputations(), 2)
+    firstStateNewDeep.a.b.c = 7
+    const secondStateNewDeep = {a: { b: firstStateNewDeep.a.b }}
+    // Shallow comparison misses deep mutation
+    assert.equal(selector(firstStateNewDeep), 1)
+    assert.equal(selector.recomputations(), 2)
+    // Shallow update exposes new mutation
+    assert.equal(selector(secondStateNewDeep), 7)
+    assert.equal(selector.recomputations(), 3)
+    // Shallow mutation is detected
+    secondStateNewDeep.a = {b: {c: 5}}
+    assert.equal(selector(secondStateNewDeep), 5)
+    assert.equal(selector.recomputations(), 4)
+  })
+  test('selector with bound inputSelector', () => {
+    const state = { a: 1 }
+    const selector = createSelector(
+      () => state.a,
+      a => a
+    )
+    assert.equal(selector(), 1)
+    assert.equal(selector(), 1)
+    assert.equal(selector.recomputations(), 1)
+    state.a = 3
+    assert.equal(selector(), 3)
+    assert.equal(selector(), 3)
+    assert.equal(selector.recomputations(), 2)
+  })
   test('don\'t pass extra parameters to inputSelector when only called with the state', () => {
     const selector = createSelector(
       (...params) => params.length,
