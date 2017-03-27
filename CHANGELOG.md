@@ -10,11 +10,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 Performance improvements (thanks to @johnhaley81)  
 Updated Typescript typings (thanks to everyone who helped)
 
-## Breaking Changes
+### Breaking Changes
 
 For performance reasons, a selector is now not recalculated if its input is equal by reference (`===`).
 
-### Example:
+#### Example:
 
 ```js
 import { createSelector } from 'reselect';
@@ -38,7 +38,7 @@ console.log(mySelector(state2));
 console.log(mySelector(state3));
 ```
 
-### Output in v2.5.4:
+#### Output in v2.5.4:
 
 ```
 calling..
@@ -51,7 +51,7 @@ calling..
 7
 ```
 
-### Output in v3.0.0:
+#### Output in v3.0.0:
 
 ```
 calling..
