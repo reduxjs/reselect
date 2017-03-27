@@ -7,8 +7,61 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### New Features
 
-Performance improvements (thanks to @johnhaley81)
+Performance improvements (thanks to @johnhaley81)  
 Updated Typescript typings (thanks to everyone who helped)
+
+## Breaking Changes
+
+For performance reasons, a selector is now not recalculated if its input is equal by reference (`===`).
+
+### Example:
+
+```js
+import { createSelector } from 'reselect';
+
+const mySelector = createSelector(
+  state => state.values.filter(val => val < 5),
+  values => {
+    console.log('calling..')
+    return values.reduce((acc, val) => acc + val, 0)
+  }
+)
+
+var state1 = {values: [1,2,3,4,5,6,7,8,9]};
+state1 = {values: [1,2,3,4,5,6,7,8,9]};
+var state2 = {values: [1,2,3,4,5,6,7,8,9]};
+var state3 = {values: [3,4,5,6,7]};
+
+console.log(mySelector(state1));
+console.log(mySelector(state1));
+console.log(mySelector(state2));
+console.log(mySelector(state3));
+```
+
+### Output in v2.5.4:
+
+```
+calling..
+10
+calling..
+10
+calling..
+10
+calling..
+7
+```
+
+### Output in v3.0.0:
+
+```
+calling..
+10
+10
+calling..
+10
+calling..
+7
+```
 
 ## [v2.5.4](https://github.com/reactjs/reselect/releases/tag/v2.5.4) - 2016/09/17
 
