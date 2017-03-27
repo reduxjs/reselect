@@ -27,14 +27,23 @@ const mySelector = createSelector(
   }
 )
 
-var state1 = {values: [1,2,3,4,5,6,7,8,9]};
-state1 = {values: [1,2,3,4,5,6,7,8,9]};
-var state2 = {values: [1,2,3,4,5,6,7,8,9]};
-var state3 = {values: [3,4,5,6,7]};
+var createSelector = require('./dist/reselect.js').createSelector;
 
+const mySelector = createSelector(
+  state => state.values.filter(val => val < 5),
+  values => {
+    console.log('calling..')
+    return values.reduce((acc, val) => acc + val, 0)
+  }
+)
+
+var state1 = {values: [1,2,3,4,5,6,7,8,9]};
 console.log(mySelector(state1));
+state1.values = [3,4,5,6,7,8,9];
 console.log(mySelector(state1));
+var state2 = {values: [1,2,3,4,5,6,7,8,9]};
 console.log(mySelector(state2));
+var state3 = {values: [3,4,5,6,7]};
 console.log(mySelector(state3));
 ```
 
@@ -44,7 +53,7 @@ console.log(mySelector(state3));
 calling..
 10
 calling..
-10
+7
 calling..
 10
 calling..
