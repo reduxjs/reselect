@@ -1,4 +1,4 @@
-function defaultEqualityCheck(a, b) {
+export function defaultEqualityCheck(a, b) {
   return a === b
 }
 
@@ -18,19 +18,73 @@ function areArgumentsShallowlyEqual(equalityCheck, prev, next) {
   return true
 }
 
-export function defaultMemoize(func, equalityCheck = defaultEqualityCheck) {
-  let lastArgs = null
-  let lastResult = null
+export function defaultMemoize(func, equalityCheck = defaultEqualityCheck, cacheSize = 1) {
+  if (cacheSize < 1) throw new Error('cacheSize must be greater than zero!')
+
+  let argsArr, resultsArr, resultsLength, lastIndex, endIndex, lastCacheHitIndex, i, j
+
+  const clearCache = () => {
+    argsArr = []
+    resultsArr = []
+    for (i = 0; i < cacheSize; i++) {
+      // Must set to null for the test in areArgumentsShallowlyEqual.
+      argsArr[i] = null
+      resultsArr[i] = null
+    }
+    resultsLength = 0
+    lastIndex = cacheSize
+    endIndex = cacheSize
+    lastCacheHitIndex = cacheSize - 1
+  }
+  clearCache()
+
   // we reference arguments instead of spreading them for performance reasons
-  return function () {
-    if (!areArgumentsShallowlyEqual(equalityCheck, lastArgs, arguments)) {
-      // apply arguments instead of spreading for performance.
-      lastResult = func.apply(null, arguments)
+  const memoizedResultFunc = function () {
+    // Check the most recent cache hit first
+    if (areArgumentsShallowlyEqual(equalityCheck, argsArr[lastCacheHitIndex], arguments)) {
+      argsArr[lastCacheHitIndex] = arguments
+      return resultsArr[lastCacheHitIndex]
     }
 
-    lastArgs = arguments
-    return lastResult
+    // Search from newest to oldest, skipping the last cache hit
+    for (i = lastIndex; i < endIndex; i++) {
+      if (i === lastCacheHitIndex) continue
+
+      // Use modulus to cycle through the array
+      j = i % cacheSize
+      if (areArgumentsShallowlyEqual(equalityCheck, argsArr[j], arguments)) {
+        lastCacheHitIndex = j
+        argsArr[j] = arguments
+        return resultsArr[j]
+      }
+    }
+
+    if (lastIndex === 0) {
+      lastIndex = cacheSize - 1
+    } else {
+      if (resultsLength < cacheSize) resultsLength++
+      lastIndex--
+    }
+    endIndex = lastIndex + resultsLength
+    lastCacheHitIndex = lastIndex
+
+    // Apply arguments instead of spreading for performance.
+    resultsArr[lastIndex] = func.apply(null, arguments)
+
+    // Must set arguments after result, in case result func throws an error.
+    argsArr[lastIndex] = arguments
+
+    return resultsArr[lastIndex]
   }
+
+  memoizedResultFunc.getArgsArr = () => argsArr
+  memoizedResultFunc.getResultsArr = () => resultsArr
+  memoizedResultFunc.getLastIndex = () => lastIndex
+  memoizedResultFunc.getLastCacheHitIndex = () => lastCacheHitIndex
+  memoizedResultFunc.getResultsLength = () => resultsLength
+  memoizedResultFunc.clearCache = clearCache
+
+  return memoizedResultFunc
 }
 
 function getDependencies(funcs) {
@@ -79,13 +133,19 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
     })
 
     selector.resultFunc = resultFunc
+    selector.memoizedResultFunc = memoizedResultFunc
+    if (typeof memoizedResultFunc.clearCache === 'function')
+      selector.clearCache = memoizedResultFunc.clearCache
     selector.recomputations = () => recomputations
-    selector.resetRecomputations = () => recomputations = 0
+    selector.resetRecomputations = () => { recomputations = 0 }
     return selector
   }
 }
 
 export const createSelector = createSelectorCreator(defaultMemoize)
+export const createSelectorWithCacheSize = (cacheSize, ...args) => (
+  createSelectorCreator(defaultMemoize, defaultEqualityCheck, cacheSize)
+)(...args)
 
 export function createStructuredSelector(selectors, selectorCreator = createSelector) {
   if (typeof selectors !== 'object') {

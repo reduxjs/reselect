@@ -417,6 +417,7 @@ Takes one or more selectors, or an array of selectors, computes their values and
 `createSelector` determines if the value returned by an input-selector has changed between calls using reference equality (`===`). Inputs to selectors created with `createSelector` should be immutable.
 
 Selectors created with `createSelector` have a cache size of 1. This means they always recalculate when the value of an input-selector changes, as a selector only stores the preceding value of each input-selector.
+Most of the time this is all you need, but you can use `createSelectorWithCacheSize` to set a larger cache size. You can also create [a custom selector creator]((#customize-equalitycheck-for-defaultmemoize) to also configure the equality check.
 
 ```js
 const mySelector = createSelector(
@@ -457,11 +458,16 @@ const totalSelector = createSelector(
 
 ```
 
-### defaultMemoize(func, equalityCheck = defaultEqualityCheck)
+### createSelectorWithCacheSize(cacheSize, ...inputSelectors | [inputSelectors], resultFunc)
+
+Same as createSelector, but the first argument configures the cache size. The selector will store results in a [FIFO cache](https://en.wikipedia.org/wiki/Cache_replacement_policies#First_In_First_Out_.28FIFO.29), which means that it will overwrite the oldest value when the cache is full.
+
+
+### defaultMemoize(func, equalityCheck = defaultEqualityCheck, cacheSize = 1)
 
 `defaultMemoize` memoizes the function passed in the func parameter. It is the memoize function used by `createSelector`.
 
-`defaultMemoize` has a cache size of 1. This means it always recalculates when the value of an argument changes.
+`defaultMemoize` has a default cache size of 1. This means it always recalculates when the value of an argument changes. You can specify a larger cache size to store multiple results. It uses a simple [FIFO cache](https://en.wikipedia.org/wiki/Cache_replacement_policies#First_In_First_Out_.28FIFO.29), which means that it will overwrite the oldest result when the cache is full.
 
 `defaultMemoize` determines if an argument has changed by calling the `equalityCheck` function. As `defaultMemoize` is designed to be used with immutable data, the default `equalityCheck` function checks for changes using reference equality:
 
@@ -472,6 +478,7 @@ function defaultEqualityCheck(currentVal, previousVal) {
 ```
 
 `defaultMemoize` can be used with `createSelectorCreator` to [customize the `equalityCheck` function](#customize-equalitycheck-for-defaultmemoize).
+
 
 ### createSelectorCreator(memoize, ...memoizeOptions)
 
@@ -503,6 +510,18 @@ customMemoize(resultFunc, option1, option2, option3)
 ```
 
 Here are some examples of how you might use `createSelectorCreator`:
+
+#### Customize `cacheSize` for `defaultMemoize`
+
+```js
+import { createSelectorCreator, defaultMemoize, defaultEqualityCheck } from 'reselect'
+
+const createDeepEqualSelector = createSelectorCreator(
+  defaultMemoize,
+  defaultEqualityCheck,
+  5  // cache up to 5 results
+)
+```
 
 #### Customize `equalityCheck` for `defaultMemoize`
 
@@ -795,7 +814,7 @@ const veryExpensive = expensiveFilter(1000000)
 
 ### Q: The default memoization function is no good, can I use a different one?
 
-A: We think it works great for a lot of use cases, but sure. See [these examples](#customize-equalitycheck-for-defaultmemoize).
+A: You can set the `cacheSize` option to cache more than one result. See [these examples](#customize-equalitycheck-for-defaultmemoize) for more ways to customize memoization and equality.
 
 ### Q: How do I test a selector?
 
