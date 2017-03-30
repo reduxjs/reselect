@@ -1,13 +1,17 @@
 export as namespace Reselect;
 
-export type Selector<S, R> = (state: S) => R;
+export interface Selector<S, R> {
+  (state: S): R;
+}
 export interface OutputSelector<S, R, C> extends Selector<S, R> {
   resultFunc: C;
   recomputations: () => number;
   resetRecomputations: () => number;
 }
 
-export type ParametricSelector<S, P, R> = (state: S, props: P, ...args: any[]) => R;
+export interface ParametricSelector<S, P, R> {
+  (state: S, props: P, ...args: any[]): R;
+}
 export interface OutputParametricSelector<S, P, R, C> extends ParametricSelector<S, P, R> {
   resultFunc: C;
   recomputations: () => number;
