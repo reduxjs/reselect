@@ -60,6 +60,29 @@ function testNestedSelector() {
   )
 }
 
+function testSelectorAsCombiner() {
+  type SubState = {foo: string};
+  type State = {bar: SubState};
+
+  const subSelector = createSelector(
+    (state: SubState) => state.foo,
+    foo => foo,
+  );
+
+  const selector = createSelector(
+    (state: State) => state.bar,
+    subSelector,
+  );
+
+  // typings:expect-error
+  selector({foo: ''});
+
+  // typings:expect-error
+  const n: number = selector({bar: {foo: ''}});
+
+  const s: string = selector({bar: {foo: ''}});
+}
+
 type Component<P> = (props: P) => any;
 
 declare function connect<S, P, R>(selector: ParametricSelector<S, P, R>):
