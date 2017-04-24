@@ -312,7 +312,7 @@ const VisibleTodoList = connect(
 export default VisibleTodoList
 ```
 
-A selector created with `createSelector` only returns the cached value when its set of arguments is the same as its previous set of arguments. If we alternate between rendering `<VisibleTodoList listId="1" />` and `<VisibleTodoList listId="2" />`, the shared selector will alternate between receiving `{listId: 1}` and `{listId: 2}` as its `props` argument. This will cause the arguments to be different on each call, so the selector will always recompute instead of returning the cached value. We’ll see how to overcome this limitation in the next section.
+A selector created with `createSelector` has a cache size of 1 and only returns the cached value when its set of arguments is the same as its previous set of arguments. If we alternate between rendering `<VisibleTodoList listId="1" />` and `<VisibleTodoList listId="2" />`, the shared selector will alternate between receiving `{listId: 1}` and `{listId: 2}` as its `props` argument. This will cause the arguments to be different on each call, so the selector will always recompute instead of returning the cached value. We’ll see how to overcome this limitation in the next section.
 
 ### Sharing Selectors with Props Across Multiple Components
 
