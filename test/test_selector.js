@@ -414,4 +414,15 @@ suite('selector', () => {
     )
     assert.equal(selector.resultFunc, lastFunction)
   })
+  test('export composed selectors as dependencies', () => {
+    const selectorA = (state) => state.a
+    const selectorB = (state) => state.b
+    const selector = createSelector(
+      selectorA,
+      selectorB,
+      (a, b) => a + b
+    )
+
+    assert.deepEqual([ selectorA, selectorB ], selector.dependencies)
+  })
 })
