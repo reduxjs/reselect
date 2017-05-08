@@ -105,3 +105,28 @@ export function createStructuredSelector(selectors, selectorCreator = createSele
     }
   )
 }
+
+function bindSelectorCreator(selectorCreator, getState) {
+  var selector = selectorCreator()
+  return () => selector(getState())
+}
+
+export function bindSelectorCreators(selectorCreators, getState) {
+  if (typeof selectorCreators !== 'object') {
+    throw new Error(
+      `bindSelectorCreators expects first argument to be an object ` +
+      `where each property is a selector creator, instead received a ${typeof selectorCreators}`
+    )
+  }
+  if (typeof getState !== 'function') {
+    throw new Error(
+      `bindSelectorCreators expects second argument to be a function, ` +
+      `instead received a ${typeof getState}`
+    )
+  }
+  const objectKeys = Object.keys(selectorCreators)
+  return objectKeys.reduce((selectors, key) => {
+    selectors[key] = bindSelectorCreator(selectorCreators[key], getState)
+    return selectors
+  }, {})
+}

@@ -1,7 +1,7 @@
 // TODO: Add test for React Redux connect function
 
 import chai from 'chai'
-import {  createSelector, createSelectorCreator, defaultMemoize, createStructuredSelector  } from '../src/index'
+import {  createSelector, createSelectorCreator, defaultMemoize, createStructuredSelector, bindSelectorCreators  } from '../src/index'
 import {  default as lodashMemoize  } from 'lodash.memoize'
 
 const assert = chai.assert
@@ -413,5 +413,41 @@ suite('selector', () => {
       lastFunction
     )
     assert.equal(selector.resultFunc, lastFunction)
+  })
+  test('bind selector creator with getState function', () => {
+    const state = { a: { c: 1 }, b: { d: 2 } }
+    const getState = () => state
+    const selectorCreatorA = () => createSelector(
+      state => state.a,
+        a => a.c
+    )
+    const selectorCreatorB = () => createSelector(
+      state => state.b,
+        b => b.d
+    )
+    const { selectorA, selectorB } = bindSelectorCreators({
+      selectorA: selectorCreatorA,
+      selectorB: selectorCreatorB
+    }, getState)
+    assert.equal(selectorA(), 1)
+    assert.equal(selectorB(), 2)
+    state.a.c = 10
+    state.b.d = 20
+    assert.equal(selectorA(), 1)
+    assert.equal(selectorB(), 2)
+    state.a = { c: 10 }
+    state.b = { d: 20 }
+    assert.equal(selectorA(), 10)
+    assert.equal(selectorB(), 20)
+  })
+  test('bind selector creator with invalid arguments', () => {
+    assert.throw(
+      () => bindSelectorCreators(() => {}),
+      /expects first argument to be an object.*function/
+    )
+    assert.throw(
+      () => bindSelectorCreators({}, {}),
+      /expects second argument to be a function.*object/
+    )
   })
 })
