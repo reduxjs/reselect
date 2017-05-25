@@ -489,7 +489,7 @@ const customSelectorCreator = createSelectorCreator(
   option3 // option3 will be passed as fourth argument to customMemoize
 )
 
-const customSelector = customSelectorCreator(
+const customSelector = customSelector(
   input1,
   input2,
   resultFunc // resultFunc will be passed as first argument to customMemoize
