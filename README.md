@@ -322,7 +322,7 @@ A selector created with `createSelector` has a cache size of 1 and only returns 
 
 To share a selector across multiple `VisibleTodoList` components while passing in `props` **and** retaining memoization, each instance of the component needs its own private copy of the selector.
 
-Let’s create a function named `makeGetVisibleTodos` that returns a new copy of the `getVisibleTodos` selector each time it is called:
+Let’s create a function named `makeVisibleTodosSelector` that returns a new copy of the `getVisibleTodos` selector each time it is called:
 
 #### `selectors/todoSelectors.js`
 
@@ -335,7 +335,7 @@ const getVisibilityFilter = (state, props) =>
 const getTodos = (state, props) =>
   state.todoLists[props.listId].todos
 
-const makeGetVisibleTodos = () => {
+const makeVisibleTodosSelector = () => {
   return createSelector(
     [ getVisibilityFilter, getTodos ],
     (visibilityFilter, todos) => {
@@ -346,12 +346,12 @@ const makeGetVisibleTodos = () => {
           return todos.filter(todo => !todo.completed)
         default:
           return todos
-      }
+        }
     }
   )
 }
 
-export default makeGetVisibleTodos
+export default makeVisibleTodosSelector
 ```
 
 We also need a way to give each instance of a container access to its own private selector. The `mapStateToProps` argument of `connect` can help with this.
@@ -362,7 +362,7 @@ In the example below `makeMapStateToProps` creates a new `getVisibleTodos` selec
 
 ```js
 const makeMapStateToProps = () => {
-  const getVisibleTodos = makeGetVisibleTodos()
+  const getVisibleTodos = makeVisibleTodosSelector()
   const mapStateToProps = (state, props) => {
     return {
       todos: getVisibleTodos(state, props)
@@ -380,10 +380,10 @@ If we pass `makeMapStateToProps` to `connect`, each instance of the `VisibleTodo
 import { connect } from 'react-redux'
 import { toggleTodo } from '../actions'
 import TodoList from '../components/TodoList'
-import { makeGetVisibleTodos } from '../selectors'
+import { makeVisibleTodosSelector } from '../selectors'
 
 const makeMapStateToProps = () => {
-  const getVisibleTodos = makeGetVisibleTodos()
+  const getVisibleTodos = makeVisibleTodosSelector()
   const mapStateToProps = (state, props) => {
     return {
       todos: getVisibleTodos(state, props)
