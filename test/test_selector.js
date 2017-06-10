@@ -217,6 +217,15 @@ suite('selector', () => {
     assert.equal(selector2(state2, { x: 100, y: 201 }), 303)
     assert.equal(selector2.recomputations(), 2)
   })
+  test('selector with props in result func', () => {
+    const selector1 = state1 => state1.data
+    const selector2 = createSelector(
+      selector1,
+      (data, props) => data[props.key]
+    )
+    const state = { data: { foo: 'bar' } }
+    assert.equal(selector2(state, { key: 'foo' }), 'bar')
+  })
   test('chained selector with variadic args', () => {
     const selector1 = createSelector(
       state => state.sub,
