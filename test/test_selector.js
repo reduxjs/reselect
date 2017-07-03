@@ -219,8 +219,10 @@ suite('selector', () => {
   })
   test('selector with props in result func', () => {
     const selector1 = state1 => state1.data
+    const selectProps = (state, props) => props
     const selector2 = createSelector(
       selector1,
+      selectProps,
       (data, props) => data[props.key]
     )
     const state = { data: { foo: 'bar' } }
