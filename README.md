@@ -82,6 +82,8 @@ console.log(totalSelector(exampleState))    // { total: 2.322 }
 
 ## Example
 
+If you prefer a video tutorial, you can find one [here](https://www.youtube.com/watch?v=6Xwo5mVxDqI).
+
 ### Motivation for Memoized Selectors
 
 > The examples in this section are based on the [Redux Todos List example](http://redux.js.org/docs/basics/UsageWithReact.html).
