@@ -424,8 +424,6 @@ function testCreateSelectorCreator() {
   // typings:expect-error
   createSelectorCreator(defaultMemoize, 1);
 
-  createSelectorCreator(defaultMemoize, (a: number, b: number) => a === b);
-
   createSelectorCreator(defaultMemoize, <T>(a: T, b: T, index: number) => {
     if (index === 0)
       return a === b;
