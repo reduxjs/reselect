@@ -9,6 +9,8 @@ Simple “selector” library for Redux inspired by getters in [NuclearJS](https
 * Selectors are efficient. A selector is not recomputed unless one of its arguments change.
 * Selectors are composable. They can be used as input to other selectors.
 
+You can play around with the following **example** in [this codepen](https://codepen.io/Domiii/pen/LzGNWj?editors=0010):
+
 ```js
 import { createSelector } from 'reselect'
 
