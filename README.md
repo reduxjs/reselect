@@ -56,7 +56,7 @@ console.log(totalSelector(exampleState))    // { total: 2.322 }
   - [Composing Selectors](#composing-selectors)
   - [Connecting a Selector to the Redux Store](#connecting-a-selector-to-the-redux-store)
   - [Accessing React Props in Selectors](#accessing-react-props-in-selectors)
-  - [Sharing Selectors with Props Across Multiple Components](#sharing-selectors-with-props-across-multiple-components)
+  - [Sharing Selectors with Props Across Multiple Component Instances](#sharing-selectors-with-props-across-multiple-component-instances)
 - [API](#api)
   - [`createSelector`](#createselectorinputselectors--inputselectors-resultfunc)
   - [`defaultMemoize`](#defaultmemoizefunc-equalitycheck--defaultequalitycheck)
@@ -70,7 +70,7 @@ console.log(totalSelector(exampleState))    // { total: 2.322 }
   - [How do I test a selector?](#q-how-do-i-test-a-selector)
   - [How do I create a selector that takes an argument? ](#q-how-do-i-create-a-selector-that-takes-an-argument)
   - [How do I use Reselect with Immutable.js?](#q-how-do-i-use-reselect-with-immutablejs)
-  - [Can I share a selector across multiple components?](#q-can-i-share-a-selector-across-multiple-components)
+  - [Can I share a selector across multiple component instances?](#q-can-i-share-a-selector-across-multiple-component-instances)
   - [Are there TypeScript typings?](#q-are-there-typescript-typings)
   - [How can I make a curried selector?](#q-how-can-i-make-a-curried-selector)
 
@@ -218,7 +218,7 @@ export default VisibleTodoList
 
 So far we have only seen selectors receive the Redux store state as an argument, but a selector can receive props too.
 
-Here is an `App` component that renders three `VisibleTodoList` components, each of which has a `listId` prop:
+Here is an `App` component that renders three `VisibleTodoList` component instances, each of which has a `listId` prop:
 
 #### `components/App.js`
 
@@ -316,13 +316,13 @@ export default VisibleTodoList
 
 A selector created with `createSelector` has a cache size of 1 and only returns the cached value when its set of arguments is the same as its previous set of arguments. If we alternate between rendering `<VisibleTodoList listId="1" />` and `<VisibleTodoList listId="2" />`, the shared selector will alternate between receiving `{listId: 1}` and `{listId: 2}` as its `props` argument. This will cause the arguments to be different on each call, so the selector will always recompute instead of returning the cached value. We’ll see how to overcome this limitation in the next section.
 
-### Sharing Selectors with Props Across Multiple Components
+### Sharing Selectors with Props Across Multiple Component Instances
 
 > The examples in this section require React Redux v4.3.0 or greater
 
 > An alternative approach be found in [re-reselect](https://github.com/toomuchdesign/re-reselect)
 
-To share a selector across multiple `VisibleTodoList` components while passing in `props` **and** retaining memoization, each instance of the component needs its own private copy of the selector.
+To share a selector across multiple `VisibleTodoList` instances while passing in `props` **and** retaining memoization, each instance of the component needs its own private copy of the selector.
 
 Let’s create a function named `makeGetVisibleTodos` that returns a new copy of the `getVisibleTodos` selector each time it is called:
 
@@ -930,11 +930,11 @@ assert.notEqual(myMap, newMap)
 
 If a selector's input is updated by an operation that always returns a new object, it may be performing unnecessary recomputations. See [here](#q-why-is-my-selector-recomputing-when-the-input-state-stays-the-same) for a discussion on the pros and cons of using a deep equality check like `Immutable.is` to eliminate unnecessary recomputations.
 
-### Q: Can I share a selector across multiple components?
+### Q: Can I share a selector across multiple component instances?
 
-A: Selectors created using `createSelector` only have a cache size of one. This can make them unsuitable for sharing across multiple components if the arguments to the selector are different for each instance of the component. There are a couple of ways to get around this:
+A: Selectors created using `createSelector` only have a cache size of one. This can make them unsuitable for sharing across multiple instances if the arguments to the selector are different for each instance of the component. There are a couple of ways to get around this:
 
-* Create a factory function which returns a new selector for each instance of the component. There is built-in support for factory functions in React Redux v4.3 or higher. See [here](#sharing-selectors-with-props-across-multiple-components) for an example.
+* Create a factory function which returns a new selector for each instance of the component. There is built-in support for factory functions in React Redux v4.3 or higher. See [here](#sharing-selectors-with-props-across-multiple-component-instances) for an example.
 
 * Create a custom selector with a cache size greater than one.
 
