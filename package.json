@@ -4,6 +4,7 @@
   "description": "Selectors for Redux.",
   "main": "lib/index.js",
   "jsnext:main": "es/index.js",
+  "module": "es/index.js",
   "typings": "lib/index.d.ts",
   "files": [
     "lib",
