@@ -921,7 +921,7 @@ let myMap = Immutable.Map({
  // set, merge and others only return a new obj when update changes collection
 let newMap = myMap.set('a', 1)
 assert.equal(myMap, newMap)
-newMap = myMap.merge({ 'a', 1 })
+newMap = myMap.merge({ 'a': 1 })
 assert.equal(myMap, newMap)
 // map, reduce, filter and others always return a new obj
 newMap = myMap.map(a => a * 1)
