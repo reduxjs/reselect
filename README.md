@@ -954,6 +954,13 @@ Enhances Reselect selectors by wrapping `createSelector` and returning a memoize
 
 Useful to reduce selectors recalculation when the same selector is repeatedly called with one/few different arguments.
 
+### [reselect-tools](https://github.com/skortchmark9/reselect-tools)
+
+Some tools for helping to debug selectors.
+
+* Check selector dependencies, inputs, outputs, and recomputations at any time.
+* Output a JSON representation of your selector graph (soon to be a visual browser extension!)
+
 ### [reselect-map](https://github.com/HeyImAlex/reselect-map)
 
 Can be useful when doing **very expensive** computations on elements of a collection because Reselect might not give you the granularity of caching that you need. Check out the reselect-maps README for examples.
