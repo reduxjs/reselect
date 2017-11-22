@@ -374,7 +374,7 @@ const makeMapStateToProps = () => {
 }
 ```
 
-If we pass `makeMapStateToProps` to `connect`, each instance of the `VisibleTodosList` container will get its own `mapStateToProps` function with a private `getVisibleTodos` selector. Memoization will now work correctly regardless of the render order of the `VisibleTodoList` containers.
+If we pass `makeMapStateToProps` to `connect`, each instance of the `VisibleTodoList` container will get its own `mapStateToProps` function with a private `getVisibleTodos` selector. Memoization will now work correctly regardless of the render order of the `VisibleTodoList` containers.
 
 #### `containers/VisibleTodoList.js`
 
