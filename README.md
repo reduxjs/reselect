@@ -956,10 +956,11 @@ Useful to reduce selectors recalculation when the same selector is repeatedly ca
 
 ### [reselect-tools](https://github.com/skortchmark9/reselect-tools)
 
-Some tools for helping to debug selectors.
+[Chrome extension](https://chrome.google.com/webstore/detail/reselect-devtools/cjmaipngmabglflfeepmdiffcijhjlbb?hl=en) and [companion lib](https://github.com/skortchmark9/reselect-tools) for debugging selectors.
 
-* Check selector dependencies, inputs, outputs, and recomputations at any time.
-* Output a JSON representation of your selector graph (soon to be a visual browser extension!)
+* Measure selector recomputations across the app and identify performance bottlenecks
+* Check selector dependencies, inputs, outputs, and recomputations at any time with the chrome extension
+* Statically export a JSON representation of your selector graph for further analysis
 
 ### [reselect-map](https://github.com/HeyImAlex/reselect-map)
 
