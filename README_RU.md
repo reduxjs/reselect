@@ -49,11 +49,11 @@ console.log(totalSelector(exampleState))    // { total: 2.322 }
 
 ## Содержание
 
-- [Установка](#installation)
-- [Пример](#example)
-  - [Причины использовать Мемоизированные Селекторы](#motivation-for-memoized-selectors)
-  - [Создание Мемоизированного Селектора](#creating-a-memoized-selector)
-  - [Композиция Селекторов](#composing-selectors)
+- [Установка](#установка)
+- [Пример](#пример)
+  - [Причины использовать Мемоизированные Селекторы](#причины-использовать-мемоизированные-селекторы)
+  - [Создание Мемоизированного Селектора](#создание-мемоизированного-селектора)
+  - [Композиция Селекторов](#композиция-селекторов)
   - [Подключение Селектора к Redux Store](#connecting-a-selector-to-the-redux-store)
   - [Доступ к React Props в Селекторах](#accessing-react-props-in-selectors)
   - [Совместное использование селекторов с Props в многокомпонентных вхождениях](#sharing-selectors-with-props-across-multiple-component-instances)
@@ -84,7 +84,7 @@ console.log(totalSelector(exampleState))    // { total: 2.322 }
 
 If you prefer a video tutorial, you can find one [here](https://www.youtube.com/watch?v=6Xwo5mVxDqI).
 
-### Motivation for Memoized Selectors
+### Причины использовать Мемоизированные Селекторы
 
 > The examples in this section are based on the [Redux Todos List example](http://redux.js.org/docs/basics/UsageWithReact.html).
 
@@ -130,7 +130,7 @@ export default VisibleTodoList
 
 In the above example, `mapStateToProps` calls `getVisibleTodos` to calculate `todos`. This works great, but there is a drawback: `todos` is calculated every time the state tree is updated. If the state tree is large, or the calculation expensive, repeating the calculation on every update may cause performance problems. Reselect can help to avoid these unnecessary recalculations.
 
-### Creating a Memoized Selector
+### Создание Мемоизированного Селектора
 
 We would like to replace `getVisibleTodos` with a memoized selector that recalculates `todos` when the value of `state.todos` or `state.visibilityFilter` changes, but not when changes occur in other (unrelated) parts of the state tree.
 
@@ -163,7 +163,7 @@ export const getVisibleTodos = createSelector(
 
 In the example above, `getVisibilityFilter` and `getTodos` are input-selectors. They are created as ordinary non-memoized selector functions because they do not transform the data they select. `getVisibleTodos` on the other hand is a memoized selector. It takes `getVisibilityFilter` and `getTodos` as input-selectors, and a transform function that calculates the filtered todos list.
 
-### Composing Selectors
+### Композиция Селекторов
 
 A memoized selector can itself be an input-selector to another memoized selector. Here is `getVisibleTodos` being used as an input-selector to a selector that further filters the todos by keyword:
 
