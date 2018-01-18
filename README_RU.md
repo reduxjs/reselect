@@ -356,11 +356,12 @@ const makeGetVisibleTodos = () => {
 export default makeGetVisibleTodos
 ```
 
-We also need a way to give each instance of a container access to its own private selector. The `mapStateToProps` argument of `connect` can help with this.
 
-**If the `mapStateToProps` argument supplied to `connect` returns a function instead of an object, it will be used to create an individual `mapStateToProps` function for each instance of the container.**
+Нам также нужен способ предоставить каждому экземпляру контейнера доступ к его собственному селектору. Аргумент `mapStateToProps` от `connect` может помочь в этом.
 
-In the example below `makeMapStateToProps` creates a new `getVisibleTodos` selector, and returns a `mapStateToProps` function that has exclusive access to the new selector:
+**Если аргумент `mapStateToProps` предоставленный `connect` возвращает функцию вместо объекта, он будет использоваться для создания отдельной функции `mapStateToProps` для каждого экземпляра контейнера.**
+
+В приведённом ниже примере `makeMapStateToProps` создаёт новый `getVisibleTodos` селектор, и возвращает функцию `mapStateToProps`, которая имеет эксклюзивный доступ к новому селектору:
 
 ```js
 const makeMapStateToProps = () => {
@@ -374,7 +375,7 @@ const makeMapStateToProps = () => {
 }
 ```
 
-If we pass `makeMapStateToProps` to `connect`, each instance of the `VisibleTodoList` container will get its own `mapStateToProps` function with a private `getVisibleTodos` selector. Memoization will now work correctly regardless of the render order of the `VisibleTodoList` containers.
+Если мы передадим `makeMapStateToProps`  `connect`, каждый экземпляр контейнера `VisibleTodosList` получит свою собственную функцию `mapStateToProps` с собственным селектором `getVisibleTodos`. Мемоизация теперь будет работать правильно, независимо от порядка отрисовки (рендера) контейнеров `VisibleTodoList`.
 
 #### `containers/VisibleTodoList.js`
 
