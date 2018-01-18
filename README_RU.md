@@ -56,7 +56,7 @@ console.log(totalSelector(exampleState))    // { total: 2.322 }
   - [Композиция Селекторов](#Композиция-Селекторов)
   - [Подключение Селектора к Redux Store](#Подключение-Селектора-к-Redux-Store)
   - [Доступ к React Props в Селекторах](#Доступ-к-React-Props-в-Селекторах)
-  - [Совместное использование селекторов с Props в многокомпонентных вхождениях](#Совместное-использование-селекторов-с Props-в-многокомпонентных-вхождениях)
+  - [Совместное использование селекторов с Props в многокомпонентных вхождениях](#Совместное-использование-селекторов-с-Props-в-многокомпонентных-вхождениях)
 - [API](#api)
   - [`createSelector`](#createselectorinputselectors--inputselectors-resultfunc)
   - [`defaultMemoize`](#defaultmemoizefunc-equalitycheck--defaultequalitycheck)
