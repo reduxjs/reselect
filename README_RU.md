@@ -82,11 +82,11 @@ console.log(totalSelector(exampleState))    // { total: 2.322 }
 
 ## Пример
 
-If you prefer a video tutorial, you can find one [here](https://www.youtube.com/watch?v=6Xwo5mVxDqI).
+Если Вы предпочитаете видео урок, вы можете найти его [здесь](https://www.youtube.com/watch?v=6Xwo5mVxDqI).
 
 ### Причины использовать Мемоизированные Селекторы
 
-> The examples in this section are based on the [Redux Todos List example](http://redux.js.org/docs/basics/UsageWithReact.html).
+> Примеры в этом разделе основаны на [списке задачи Redux (Todos List)](http://redux.js.org/docs/basics/UsageWithReact.html).
 
 #### `containers/VisibleTodoList.js`
 
@@ -415,11 +415,11 @@ export default VisibleTodoList
 
 ### createSelector(...inputSelectors | [inputSelectors], resultFunc)
 
-Takes one or more selectors, or an array of selectors, computes their values and passes them as arguments to `resultFunc`.
+Принимает один или несколько селекторов, или массив селекторов, вычисляет их значения и передаёт их в качестве аргументов `resultFunc`.
 
-`createSelector` determines if the value returned by an input-selector has changed between calls using reference equality (`===`). Inputs to selectors created with `createSelector` should be immutable.
+`createSelector` определяет, изменилось ли значение, возвращаемое входным селектором между вызовами, с и использованием строгого равенства (`===`). Входы для селекторов, созданных с помощью `createSelector` должны быть неизменными.
 
-Selectors created with `createSelector` have a cache size of 1. This means they always recalculate when the value of an input-selector changes, as a selector only stores the preceding value of each input-selector.
+Селекторы, созданные с помощью `createSelector` имеют размер кеша 1. Это означает, что они всегда пересчитываются, когда изменяется значение входного селектора, так как селектор сохраняет только своё предыдущее значение каждого входного селектора.
 
 ```js
 const mySelector = createSelector(
