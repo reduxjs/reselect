@@ -3,11 +3,11 @@
 [![npm package][npm-badge]][npm]
 [![Coveralls][coveralls-badge]][coveralls]
 
-Simple “selector” library for Redux inspired by getters in [NuclearJS](https://github.com/optimizely/nuclear-js.git), [subscriptions](https://github.com/Day8/re-frame#just-a-read-only-cursor) in [re-frame](https://github.com/Day8/re-frame) and this [proposal](https://github.com/gaearon/redux/pull/169) from [speedskater](https://github.com/speedskater).
+Простая библиотека “селекторов” для Redux, вдохновлённая геттерами в [NuclearJS](https://github.com/optimizely/nuclear-js.git), [подписками](https://github.com/Day8/re-frame#just-a-read-only-cursor) в [re-frame](https://github.com/Day8/re-frame) и этим [предложением](https://github.com/gaearon/redux/pull/169) от [speedskater](https://github.com/speedskater).
 
-* Selectors can compute derived data, allowing Redux to store the minimal possible state.
-* Selectors are efficient. A selector is not recomputed unless one of its arguments change.
-* Selectors are composable. They can be used as input to other selectors.
+* Селекторы могут вычислять производные данные, позволяя Redux сохранять (store) минимально возможное состояние (state).
+* Селекторы эффективны. Селектор не пересчитывается пока один из его аргументов не изменился.
+* Селекторы являются составными. Они могут использоваться в качестве входных для других селекторов.
 
 ```js
 import { createSelector } from 'reselect'
@@ -47,40 +47,40 @@ console.log(taxSelector(exampleState))      // 0.172
 console.log(totalSelector(exampleState))    // { total: 2.322 }
 ```
 
-## Table of Contents
+## Содержание
 
-- [Installation](#installation)
-- [Example](#example)
-  - [Motivation for Memoized Selectors](#motivation-for-memoized-selectors)
-  - [Creating a Memoized Selector](#creating-a-memoized-selector)
-  - [Composing Selectors](#composing-selectors)
-  - [Connecting a Selector to the Redux Store](#connecting-a-selector-to-the-redux-store)
-  - [Accessing React Props in Selectors](#accessing-react-props-in-selectors)
-  - [Sharing Selectors with Props Across Multiple Component Instances](#sharing-selectors-with-props-across-multiple-component-instances)
+- [Установка](#installation)
+- [Пример](#example)
+  - [Причины использовать Мемоизированные Селекторы](#motivation-for-memoized-selectors)
+  - [Создание Мемоизированного Селектора](#creating-a-memoized-selector)
+  - [Композиция Селекторов](#composing-selectors)
+  - [Подключение Селектора к Redux Store](#connecting-a-selector-to-the-redux-store)
+  - [Доступ к React Props в Селекторах](#accessing-react-props-in-selectors)
+  - [Совместное использование селекторов с Props в многокомпонентных вхождениях](#sharing-selectors-with-props-across-multiple-component-instances)
 - [API](#api)
   - [`createSelector`](#createselectorinputselectors--inputselectors-resultfunc)
   - [`defaultMemoize`](#defaultmemoizefunc-equalitycheck--defaultequalitycheck)
   - [`createSelectorCreator`](#createselectorcreatormemoize-memoizeoptions)
   - [`createStructuredSelector`](#createstructuredselectorinputselectors-selectorcreator--createselector)
 - [FAQ](#faq)
-  - [Why isn't my selector recomputing when the input state changes?](#q-why-isnt-my-selector-recomputing-when-the-input-state-changes)
-  - [Why is my selector recomputing when the input state stays the same?](#q-why-is-my-selector-recomputing-when-the-input-state-stays-the-same)
-  - [Can I use Reselect without Redux?](#q-can-i-use-reselect-without-redux)
-  - [The default memoization function is no good, can I use a different one?](#q-the-default-memoization-function-is-no-good-can-i-use-a-different-one)
-  - [How do I test a selector?](#q-how-do-i-test-a-selector)
-  - [How do I create a selector that takes an argument? ](#q-how-do-i-create-a-selector-that-takes-an-argument)
-  - [How do I use Reselect with Immutable.js?](#q-how-do-i-use-reselect-with-immutablejs)
-  - [Can I share a selector across multiple component instances?](#q-can-i-share-a-selector-across-multiple-component-instances)
-  - [Are there TypeScript typings?](#q-are-there-typescript-typings)
-  - [How can I make a curried selector?](#q-how-can-i-make-a-curried-selector)
+  - [Почему мой селектор не запускает пересчёт когда изменяется входное состояние?](#q-why-isnt-my-selector-recomputing-when-the-input-state-changes)
+  - [Почему мой селектор запускает пересчёт когда входное состояние остаётся прежним?](#q-why-is-my-selector-recomputing-when-the-input-state-stays-the-same)
+  - [Могу ли я использовать Reselect без Redux?](#q-can-i-use-reselect-without-redux)
+  - [Мне не подходит функция мемоизации по умолчанию, можно ли использовать другую?](#q-the-default-memoization-function-is-no-good-can-i-use-a-different-one)
+  - [Как протестировать селектор?](#q-how-do-i-test-a-selector)
+  - [Как создать селектор, который принимает аргумент? ](#q-how-do-i-create-a-selector-that-takes-an-argument)
+  - [Как использовать Reselect с Immutable.js?](#q-how-do-i-use-reselect-with-immutablejs)
+  - [Могу ли я использовать селектор в многокомпонентных вхождениях?](#q-can-i-share-a-selector-across-multiple-component-instances)
+  - [Существуют ли типы Typecript?](#q-are-there-typescript-typings)
+  - [Как сделать каррированный селектор?](#q-how-can-i-make-a-curried-selector)
 
-- [Related Projects](#related-projects)
-- [License](#license)
+- [Связанные проекты](#related-projects)
+- [Лицензия](#license)
 
-## Installation
+## Установка
     npm install reselect
 
-## Example
+## Пример
 
 If you prefer a video tutorial, you can find one [here](https://www.youtube.com/watch?v=6Xwo5mVxDqI).
 
