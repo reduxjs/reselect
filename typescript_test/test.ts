@@ -6,6 +6,39 @@ import {
   ParametricSelector,
 } from '../src/index';
 
+interface IHashTable<T> {
+  [key: string]: T | undefined;
+}
+const b: IHashTable<number> = {};
+
+const combinerNumber = (param: number) => param / 1;
+
+const selectorNumberOrUndefined = () => b['asdf'];
+function testNumberOrUndefined() {
+  // Why doesn't this error?
+  createSelector(
+    selectorNumberOrUndefined,
+    combinerNumber,
+  );
+
+  // This errors as expected
+  // Argument of type 'number | undefined' is not assignable to parameter of type 'number'. Type 'undefined' is not assignable to type 'number'.
+  combinerNumber(selectorNumberOrUndefined());
+}
+
+const selectorNumberOrString = () => b['asdf'] || 'mystring';
+function testNumberOrString() {
+  // Why doesn't this error?
+  createSelector(
+    selectorNumberOrString,
+    combinerNumber
+  );
+
+  // This errors as expected
+  // Argument of type 'number | "mystring"' is not assignable to parameter of type 'number'. Type '"mystring"' is not assignable to type 'number'.
+  combinerNumber(selectorNumberOrString());
+}
+
 function testSelector() {
   type State = {foo: string};
 
