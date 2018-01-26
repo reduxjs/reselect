@@ -428,7 +428,7 @@ const mySelector = createSelector(
   (value1, value2) => value1 + value2
 )
 
-// You can also pass an array of selectors
+// Вы также можете передать массив селекторов
 const totalSelector = createSelector(
   [
     state => state.values.value1,
@@ -438,15 +438,15 @@ const totalSelector = createSelector(
 )
 ```
 
-It can be useful to access the props of a component from within a selector. When a selector is connected to a component with `connect`, the component props are passed as the second argument to the selector:
+Может быть полезно получить  доступ к props компонента внутри селектора. Когда селектор подключен к компоненту с `connect`, props компонента передаются в качестве второго аргумента в селектор:
 
 ```js
 const abSelector = (state, props) => state.a * props.b
 
-// props only (ignoring state argument)
+// только props (игнорирование аргумента state)
 const cSelector =  (_, props) => props.c
 
-// state only (props argument omitted as not required)
+// только state (аргумент props опущен, так как не требуется)
 const dSelector = state => state.d
 
 const totalSelector = createSelector(
@@ -462,7 +462,7 @@ const totalSelector = createSelector(
 
 ### defaultMemoize(func, equalityCheck = defaultEqualityCheck)
 
-`defaultMemoize` memoizes the function passed in the func parameter. It is the memoize function used by `createSelector`.
+`defaultMemoize` запоминает (мемоизирует) функцию, переданную в параметре func. Это мемоизирующая функция, используемая `createSelector`.
 
 `defaultMemoize` has a cache size of 1. This means it always recalculates when the value of an argument changes.
 
