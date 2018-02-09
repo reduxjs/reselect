@@ -75,7 +75,6 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
         if (typeof paramOrFactory === 'function') {
           // replace the dependency to avoid calling the factory again
           dependencies[i] = paramOrFactory
-
           params.push(paramOrFactory.apply(null, arguments))
         } else {
           params.push(paramOrFactory)
