@@ -46,10 +46,6 @@ function getDependencies(funcs) {
     )
   }
 
-  // return dependencies.map(dep => {
-  //   console.log('mapping dep ' + dep.length + ' ' + dep.toString());
-  //   return dep.length === 0 ? dep() : dep;
-  // })
   return dependencies
 }
 
