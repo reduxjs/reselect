@@ -161,7 +161,7 @@ export const getVisibleTodos = createSelector(
 )
 ```
 
-В примере выше, `getVisibilityFilter` and `getTodos` входные селекторы. Они создаются как обычные не мемоизированные селекторные функции, потому что они не преобразуют данные, которые они выбирают. Что же касается `getVisibleTodos` - это мемоизированный селектор. Он принимает `getVisibilityFilter` и `getTodos` в качестве входных селекторов, и функцию преобразования, которая вычисляет отфильтрованный список задач (todos list).
+В примере выше, `getVisibilityFilter` и `getTodos` это входные селекторы. Они создаются как обычные не мемоизированные селекторные функции, потому что они не преобразуют данные, которые они выбирают. Что же касается `getVisibleTodos` - это мемоизированный селектор. Он принимает `getVisibilityFilter` и `getTodos` в качестве входных селекторов, и функцию преобразования, которая вычисляет отфильтрованный список задач (todos list).
 
 ### Композиция Селекторов
 
@@ -293,7 +293,7 @@ import { getVisibleTodos } from '../selectors'
 
 const mapStateToProps = (state, props) => {
   return {
-    // WARNING: THE FOLLOWING SELECTOR DOES NOT CORRECTLY MEMOIZE
+    // ВНИМАНИЕ: СЛЕДУЮЩИЙ СЕЛЕКТОР МЕМОИЗИРУЕТСЯ НЕ ПРАВИЛЬНО
     todos: getVisibleTodos(state, props)
   }
 }
@@ -506,7 +506,7 @@ customMemoize(resultFunc, option1, option2, option3)
 
 Вот несколько примеров того, как вы можете использовать `createSelectorCreator`:
 
-#### Customize `equalityCheck` for `defaultMemoize`
+#### Настройте `equalityCheck` для `defaultMemoize`
 
 ```js
 import { createSelectorCreator, defaultMemoize } from 'reselect'
