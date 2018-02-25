@@ -454,7 +454,7 @@ function defaultEqualityCheck(currentVal, previousVal) {
 }
 ```
 
-`defaultMemoize` может использовать `createSelectorCreator`, чтобы [кастомизировать функцию `equalityCheck`](#Настройте-equalityCheck-для-defaultMemoize).
+`defaultMemoize` может использовать `createSelectorCreator`, чтобы [кастомизировать функцию `equalityCheck`](#Настройте-equalitycheck-для-defaultmemoize).
 
 ### createSelectorCreator(memoize, ...memoizeOptions)
 
@@ -628,7 +628,7 @@ export default function todos(state = initialState, action) {
 }
 ```
 
-Если вы не используете Redux и вам необходимо работать с изменяемыми данными, вы можете использовать `createSelectorCreator` для чтобы заменить функцию мемоизации по умолчанию и/или использовать другую функцию проверки равенства. См. [здесь](#Используйте-функцию-memoize-из-lodash-для-неограниченного-кеша) и [здесь](#Настройте-equalityCheck-для-defaultMemoize) для примеров.
+Если вы не используете Redux и вам необходимо работать с изменяемыми данными, вы можете использовать `createSelectorCreator` для чтобы заменить функцию мемоизации по умолчанию и/или использовать другую функцию проверки равенства. См. [здесь](#Используйте-функцию-memoize-из-lodash-для-неограниченного-кеша) и [здесь](#Настройте-equalitycheck-для-defaultmemoize) для примеров.
 
 ### Q: Почему мой селектор производит перерасчёт когда входное состояние остаётся прежним?
 
@@ -773,7 +773,7 @@ const veryExpensive = expensiveFilter(1000000);
 
 ### Q: Мне не подходит функция мемоизации по умолчанию, можно ли использовать другую?
 
-A: Мы всё же считаем, что это отлично работает для многих случаев использования. См [эти примеры](#Настройте-equalityCheck-для-defaultMemoize).
+A: Мы всё же считаем, что это отлично работает для многих случаев использования. См [эти примеры](#Настройте-equalitycheck-для-defaultmemoize).
 
 ### Q: Как протестировать селектор?
 
