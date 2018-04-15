@@ -1,8 +1,8 @@
 // TODO: Add test for React Redux connect function
 
 import chai from 'chai'
-import {  createSelector, createSelectorCreator, defaultMemoize, createStructuredSelector  } from '../src/index'
-import {  default as lodashMemoize  } from 'lodash.memoize'
+import { createSelector, createSelectorCreator, defaultMemoize, createStructuredSelector } from '../src/index'
+import { default as lodashMemoize } from 'lodash.memoize'
 
 const assert = chai.assert
 
@@ -115,19 +115,19 @@ suite('selector', () => {
   test('memoized composite arguments', () => {
     const selector = createSelector(
       state => state.sub,
-        sub => sub
+      sub => sub
     )
-    const state1 = {  sub: {  a: 1  }  }
-    assert.deepEqual(selector(state1), {  a: 1  })
-    assert.deepEqual(selector(state1), {  a: 1  })
+    const state1 = { sub: { a: 1 } }
+    assert.deepEqual(selector(state1), { a: 1 })
+    assert.deepEqual(selector(state1), { a: 1 })
     assert.equal(selector.recomputations(), 1)
-    const state2 = {  sub: {  a: 2  }  }
-    assert.deepEqual(selector(state2), {  a: 2  })
+    const state2 = { sub: { a: 2 } }
+    assert.deepEqual(selector(state2), { a: 2 })
     assert.equal(selector.recomputations(), 2)
   })
   test('first argument can be an array', () => {
     const selector = createSelector(
-      [ state => state.a, state => state.b ],
+      [state => state.a, state => state.b],
       (a, b) => {
         return a + b
       }
@@ -190,13 +190,18 @@ suite('selector', () => {
       selector1,
       sub => sub.value
     )
-    const state1 = { sub: {  value: 1 } }
+    const state1 = { sub: { value: 1 } }
     assert.equal(selector2(state1), 1)
     assert.equal(selector2(state1), 1)
+    assert.equal(selector1.recomputations(), 1)
     assert.equal(selector2.recomputations(), 1)
-    const state2 = { sub: {  value: 2 } }
+    const state2 = { sub: { value: 2 } }
     assert.equal(selector2(state2), 2)
+    assert.equal(selector1.recomputations(), 2)
     assert.equal(selector2.recomputations(), 2)
+    assert.equal(selector2(state1), 1)
+    assert.equal(selector1.recomputations(), 3)
+    assert.equal(selector2.recomputations(), 3)
   })
   test('chained selector with props', () => {
     const selector1 = createSelector(
@@ -209,11 +214,11 @@ suite('selector', () => {
       (state, props) => props.y,
       (param, y) => param.sub.value + param.x + y
     )
-    const state1 = { sub: {  value: 1 } }
+    const state1 = { sub: { value: 1 } }
     assert.equal(selector2(state1, { x: 100, y: 200 }), 301)
     assert.equal(selector2(state1, { x: 100, y: 200 }), 301)
     assert.equal(selector2.recomputations(), 1)
-    const state2 = { sub: {  value: 2 } }
+    const state2 = { sub: { value: 2 } }
     assert.equal(selector2(state2, { x: 100, y: 201 }), 303)
     assert.equal(selector2.recomputations(), 2)
   })
@@ -228,11 +233,11 @@ suite('selector', () => {
       (state, props) => props.y,
       (param, y) => param.sub.value + param.x + y
     )
-    const state1 = { sub: {  value: 1 } }
+    const state1 = { sub: { value: 1 } }
     assert.equal(selector2(state1, { x: 100, y: 200 }, 100), 401)
     assert.equal(selector2(state1, { x: 100, y: 200 }, 100), 401)
     assert.equal(selector2.recomputations(), 1)
-    const state2 = { sub: {  value: 2 } }
+    const state2 = { sub: { value: 2 } }
     assert.equal(selector2(state2, { x: 100, y: 201 }, 200), 503)
     assert.equal(selector2.recomputations(), 2)
   })
@@ -272,6 +277,12 @@ suite('selector', () => {
     assert.equal(selector.recomputations(), 2)
     assert.equal(selector({ a: 2, b: 3 }), 5)
     assert.equal(selector.recomputations(), 3)
+    assert.equal(selector({ a: 1, b: 2 }), 3)
+    assert.equal(selector.recomputations(), 3)
+    assert.equal(selector({ a: 2, b: 3 }), 5)
+    assert.equal(selector.recomputations(), 3)
+    assert.equal(selector({ a: 3, b: 3 }), 6)
+    assert.equal(selector.recomputations(), 4)
     // TODO: Check correct memoize function was called
   })
   test('exported memoize', () => {
@@ -407,7 +418,7 @@ suite('selector', () => {
     assert.equal(selector.recomputations(), 2)
   })
   test('export last function as resultFunc', () => {
-    const lastFunction = () => {}
+    const lastFunction = () => { }
     const selector = createSelector(
       state => state.a,
       lastFunction
