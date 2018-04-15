@@ -127,7 +127,7 @@ suite('selector', () => {
   })
   test('first argument can be an array', () => {
     const selector = createSelector(
-      [state => state.a, state => state.b],
+      [ state => state.a, state => state.b ],
       (a, b) => {
         return a + b
       }
@@ -150,6 +150,7 @@ suite('selector', () => {
       }
     )
     assert.equal(selector({ a: 1, b: 2 }, { c: 100 }), 103)
+    assert.equal(called, 1)
   })
   test('recomputes result after exception', () => {
     let called = 0
