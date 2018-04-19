@@ -26,7 +26,7 @@ function testSelector() {
   // typings:expect-error
   const num: number = selector({foo: 'bar'});
 
-  // typings:expect-error
+  // allows heterogeneous parameter type input selectors
   createSelector(
     (state: {foo: string}) => state.foo,
     (state: {bar: number}) => state.bar,
@@ -135,11 +135,61 @@ function testInvalidTypeInCombinator() {
     state => state.baz,
     (foo: string, bar: number, baz: boolean, fizz: string) => {}
   );
+
+  // does not allow heterogeneous parameter type
+  // selectors when the combinator function is typed differently
+  createSelector(
+    (state: {testString: string}) => state.testString,
+    (state: {testNumber: number}) => state.testNumber,
+    (state: {testBoolean: boolean}) => state.testBoolean,
+    (state: {testString: string}) => state.testString,
+    (state: {testString: string}) => state.testString,
+    (state: {testString: string}) => state.testString,
+    (state: {testString: string}) => state.testString,
+    (state: {testNumber: string}) => state.testNumber,
+    (state: {testStringArray: string[]}) => state.testStringArray,
+    // typings:expect-error
+    (foo1: string, foo2: number, foo3: boolean, foo4: string, foo5: string, foo6: string, foo7: string, foo8: number, foo9: string[]) => {
+      return {foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9};
+    });
+
+  // does not allow a large array of heterogeneous parameter type
+  // selectors when the combinator function is typed differently
+  createSelector(
+    // typings:expect-error
+    [
+      (state: {testString: string}) => state.testString,
+      (state: {testNumber: number}) => state.testNumber,
+      (state: {testBoolean: boolean}) => state.testBoolean,
+      (state: {testString: string}) => state.testString,
+      (state: {testString: string}) => state.testString,
+      (state: {testString: string}) => state.testString,
+      (state: {testString: string}) => state.testString,
+      (state: {testNumber: string}) => state.testNumber,
+      (state: {testStringArray: string[]}) => state.testStringArray,
+    ], (foo1: string, foo2: number, foo3: boolean, foo4: string, foo5: string, foo6: string, foo7: string, foo8: number, foo9: string[]) => {
+      return {foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9};
+    });
 }
 
 function testParametricSelector() {
   type State = {foo: string;};
   type Props = {bar: number};
+
+  // allows heterogeneous parameter type selectors
+  createSelector(
+    (state: {testString: string}) => state.testString,
+    (state: {testNumber: number}) => state.testNumber,
+    (state: {testBoolean: boolean}) => state.testBoolean,
+    (state: {testString: string}) => state.testString,
+    (state: {testString: string}) => state.testString,
+    (state: {testString: string}) => state.testString,
+    (state: {testString: string}) => state.testString,
+    (state: {testString: string}) => state.testString,
+    (state: {testStringArray: string[]}) => state.testStringArray,
+    (foo1: string, foo2: number, foo3: boolean, foo4: string, foo5: string, foo6: string, foo7: string, foo8: string, foo9: string[]) => {
+      return {foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9};
+    });
 
   const selector = createSelector(
     (state: State) => state.foo,
@@ -187,12 +237,6 @@ function testArrayArgument() {
   createSelector([
     (state: {foo: string}) => state.foo,
   ]);
-
-  // typings:expect-error
-  createSelector([
-    (state: {foo: string}) => state.foo,
-    (state: {bar: number}) => state.bar,
-  ], (foo, bar) => {});
 
   // typings:expect-error
   createSelector([
@@ -291,6 +335,22 @@ function testArrayArgument() {
   ], (bar: number, foo1: string, foo2: string, foo3: string, foo4: string,
       foo5: string, foo6: string, foo7: string, foo8: string) => {
     return {foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, bar};
+  });
+
+  // allows a large array of heterogeneous parameter type selectors
+  const correctlyTypedArraySelector = createSelector([
+    (state: {testString: string}) => state.testString,
+    (state: {testNumber: number}) => state.testNumber,
+    (state: {testBoolean: boolean}) => state.testBoolean,
+    (state: {testString: string}) => state.testString,
+    (state: {testString: string}) => state.testString,
+    (state: {testString: string}) => state.testString,
+    (state: {testString: string}) => state.testString,
+    (state: {testString: string}) => state.testString,
+    (state: {testStringArray: string[]}) => state.testStringArray,
+  ], (foo1: string, foo2: number, foo3: boolean, foo4: string, foo5: string,
+      foo6: string, foo7: string, foo8: string, foo9: string[]) => {
+    return {foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9};
   });
 
   // typings:expect-error
