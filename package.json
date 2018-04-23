@@ -13,7 +13,7 @@
     "es"
   ],
   "bugs": {
-    "url": "https://github.com/reactjs/reselect/issues"
+    "url": "https://github.com/reduxjs/reselect/issues"
   },
   "scripts": {
     "compile:commonjs": "better-npm-run compile:commonjs",
@@ -69,7 +69,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/reactjs/reselect.git"
+    "url": "https://github.com/reduxjs/reselect.git"
   },
   "license": "MIT",
   "devDependencies": {
