@@ -3,7 +3,7 @@
 [![npm package][npm-badge]][npm]
 [![Coveralls][coveralls-badge]][coveralls]
 
-Simple “selector” library for Redux (and others) inspired by getters in [NuclearJS](https://github.com/optimizely/nuclear-js.git), [subscriptions](https://github.com/Day8/re-frame#just-a-read-only-cursor) in [re-frame](https://github.com/Day8/re-frame) and this [proposal](https://github.com/gaearon/redux/pull/169) from [speedskater](https://github.com/speedskater).
+Simple “selector” library for Redux (and others) inspired by getters in [NuclearJS](https://github.com/optimizely/nuclear-js.git), [subscriptions](https://github.com/Day8/re-frame#just-a-read-only-cursor) in [re-frame](https://github.com/Day8/re-frame) and this [proposal](https://github.com/reduxjs/redux/pull/169) from [speedskater](https://github.com/speedskater).
 
 * Selectors can compute derived data, allowing Redux to store the minimal possible state.
 * Selectors are efficient. A selector is not recomputed unless one of its arguments changes.
@@ -182,7 +182,7 @@ const getVisibleTodosFilteredByKeyword = createSelector(
 
 ### Connecting a Selector to the Redux Store
 
-If you are using [React Redux](https://github.com/reactjs/react-redux), you can call selectors as regular functions inside `mapStateToProps()`:
+If you are using [React Redux](https://github.com/reduxjs/react-redux), you can call selectors as regular functions inside `mapStateToProps()`:
 
 #### `containers/VisibleTodoList.js`
 
@@ -780,7 +780,7 @@ const subtotalSelector = createSelector(
 )
 ```
 
-The general consensus [here](https://github.com/reactjs/reselect/issues/38) and [over at nuclear-js](https://github.com/optimizely/nuclear-js/issues/14) is that if a selector needs a dynamic argument, then that argument should probably be state in the store. If you decide that you do require a selector with a dynamic argument, then a selector that returns a memoized function may be suitable:
+The general consensus [here](https://github.com/reduxjs/reselect/issues/38) and [over at nuclear-js](https://github.com/optimizely/nuclear-js/issues/14) is that if a selector needs a dynamic argument, then that argument should probably be state in the store. If you decide that you do require a selector with a dynamic argument, then a selector that returns a memoized function may be suitable:
 
 ```js
 import { createSelector } from 'reselect'
@@ -946,7 +946,7 @@ A: Yes! They are included and referenced in `package.json`. They should Just Wor
 
 ### Q: How can I make a [curried](https://github.com/hemanth/functional-programming-jargon#currying) selector?
 
-A: Try these [helper functions](https://github.com/reactjs/reselect/issues/159#issuecomment-238724788) courtesy of [MattSPalmer](https://github.com/MattSPalmer)
+A: Try these [helper functions](https://github.com/reduxjs/reselect/issues/159#issuecomment-238724788) courtesy of [MattSPalmer](https://github.com/MattSPalmer)
 
 ## Related Projects
 
@@ -974,11 +974,11 @@ Can be useful when doing **very expensive** computations on elements of a collec
 
 MIT
 
-[build-badge]: https://img.shields.io/travis/reactjs/reselect/master.svg?style=flat-square
-[build]: https://travis-ci.org/reactjs/reselect
+[build-badge]: https://img.shields.io/travis/reduxjs/reselect/master.svg?style=flat-square
+[build]: https://travis-ci.org/reduxjs/reselect
 
 [npm-badge]: https://img.shields.io/npm/v/reselect.svg?style=flat-square
 [npm]: https://www.npmjs.org/package/reselect
 
-[coveralls-badge]: https://img.shields.io/coveralls/reactjs/reselect/master.svg?style=flat-square
-[coveralls]: https://coveralls.io/github/reactjs/reselect
+[coveralls-badge]: https://img.shields.io/coveralls/reduxjs/reselect/master.svg?style=flat-square
+[coveralls]: https://coveralls.io/github/reduxjs/reselect

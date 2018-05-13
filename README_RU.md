@@ -4,7 +4,7 @@
 [![npm package][npm-badge]][npm]
 [![Coveralls][coveralls-badge]][coveralls]
 
-Простая библиотека “селекторов” для Redux, вдохновлённая геттерами в [NuclearJS](https://github.com/optimizely/nuclear-js.git), [подписками](https://github.com/Day8/re-frame#just-a-read-only-cursor) в [re-frame](https://github.com/Day8/re-frame) и этим [предложением](https://github.com/gaearon/redux/pull/169) от [speedskater](https://github.com/speedskater).
+Простая библиотека “селекторов” для Redux, вдохновлённая геттерами в [NuclearJS](https://github.com/optimizely/nuclear-js.git), [подписками](https://github.com/Day8/re-frame#just-a-read-only-cursor) в [re-frame](https://github.com/Day8/re-frame) и этим [предложением](https://github.com/reduxjs/redux/pull/169) от [speedskater](https://github.com/speedskater).
 
 * Селекторы могут вычислять производные данные, позволяя Redux сохранять (store) минимально возможное состояние (state).
 * Селекторы эффективны. Селектор не производит вычислений, пока один из его аргументов не изменился.
@@ -175,7 +175,7 @@ const getVisibleTodosFilteredByKeyword = createSelector(
 
 ### Подключение Селектора к Redux Store
 
-Если Вы используете [React Redux](https://github.com/reactjs/react-redux), Вы можете вызывать селекторы в качестве регулярных функций внутри `mapStateToProps()`:
+Если Вы используете [React Redux](https://github.com/reduxjs/react-redux), Вы можете вызывать селекторы в качестве регулярных функций внутри `mapStateToProps()`:
 
 #### `containers/VisibleTodoList.js`
 
@@ -754,7 +754,7 @@ const subtotalSelector = createSelector(
 );
 ```
 
-Общее решение [здесь](https://github.com/reactjs/reselect/issues/38) и [посредством nuclear-js](https://github.com/optimizely/nuclear-js/issues/14) заключается в том, что если селектору нужен динамический аргумент, то этот аргумент, вероятно, должен иметь своё состояние (state) в хранилище (store). Если вы решите, что вам нужен селектор с динамическим аргументом, то подходящим окажется селектор, который возвращает мемоизированную функцию:
+Общее решение [здесь](https://github.com/reduxjs/reselect/issues/38) и [посредством nuclear-js](https://github.com/optimizely/nuclear-js/issues/14) заключается в том, что если селектору нужен динамический аргумент, то этот аргумент, вероятно, должен иметь своё состояние (state) в хранилище (store). Если вы решите, что вам нужен селектор с динамическим аргументом, то подходящим окажется селектор, который возвращает мемоизированную функцию:
 
 ```js
 import { createSelector } from "reselect";
@@ -915,7 +915,7 @@ A: Да! Они включены и указаны в `package.json`. Они д�
 
 ### Q: Как я могу сделать [каррированный](https://github.com/hemanth/functional-programming-jargon#currying) селектор?
 
-A: Попробуйте эти [вспомогательные функции](https://github.com/reactjs/reselect/issues/159#issuecomment-238724788), любезно предоставленные [MattSPalmer](https://github.com/MattSPalmer)
+A: Попробуйте эти [вспомогательные функции](https://github.com/reduxjs/reselect/issues/159#issuecomment-238724788), любезно предоставленные [MattSPalmer](https://github.com/MattSPalmer)
 
 ## Связанные проекты
 
@@ -943,9 +943,9 @@ A: Попробуйте эти [вспомогательные функции](h
 
 MIT
 
-[build-badge]: https://img.shields.io/travis/reactjs/reselect/master.svg?style=flat-square
-[build]: https://travis-ci.org/reactjs/reselect
+[build-badge]: https://img.shields.io/travis/reduxjs/reselect/master.svg?style=flat-square
+[build]: https://travis-ci.org/reduxjs/reselect
 [npm-badge]: https://img.shields.io/npm/v/reselect.svg?style=flat-square
 [npm]: https://www.npmjs.org/package/reselect
-[coveralls-badge]: https://img.shields.io/coveralls/reactjs/reselect/master.svg?style=flat-square
-[coveralls]: https://coveralls.io/github/reactjs/reselect
+[coveralls-badge]: https://img.shields.io/coveralls/reduxjs/reselect/master.svg?style=flat-square
+[coveralls]: https://coveralls.io/github/reduxjs/reselect

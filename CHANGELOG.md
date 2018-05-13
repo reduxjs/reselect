@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [v3.0.0](https://github.com/reactjs/reselect/releases/tag/v3.0.0) - 2017/03/24
+## [v3.0.0](https://github.com/reduxjs/reselect/releases/tag/v3.0.0) - 2017/03/24
 
 ### New Features
 
@@ -72,79 +72,79 @@ calling..
 7
 ```
 
-## [v2.5.4](https://github.com/reactjs/reselect/releases/tag/v2.5.4) - 2016/09/17
+## [v2.5.4](https://github.com/reduxjs/reselect/releases/tag/v2.5.4) - 2016/09/17
 
 ### Bug Fixes
 
 Improve performance of `defaultMemoize` when using custom equality check. (#170)
 
-## [v2.5.3](https://github.com/reactjs/reselect/releases/tag/v2.5.3) - 2016/07/04
+## [v2.5.3](https://github.com/reduxjs/reselect/releases/tag/v2.5.3) - 2016/07/04
 
 ### Bug Fixes
 
 Reverts a Typescript change that was a breaking change. It will be reinstated in a major release. (#145)
 
-## [v2.5.2](https://github.com/reactjs/reselect/releases/tag/v2.5.2) - 2016/07/03
+## [v2.5.2](https://github.com/reduxjs/reselect/releases/tag/v2.5.2) - 2016/07/03
 
 ### Bug Fixes
 
 When a selector uses defaultMemoize, if an exception is thrown for a set of arguments then the selector should also throw when called again with those arguments. (#144)
 
-## [v2.5.1](https://github.com/reactjs/reselect/releases/tag/v2.5.1) - 2016/04/21
+## [v2.5.1](https://github.com/reduxjs/reselect/releases/tag/v2.5.1) - 2016/04/21
 
 ### Bug Fixes
 
 Include es directory in package.json (#117)
 
-## [v2.5.0](https://github.com/reactjs/reselect/releases/tag/v2.5.0) - 2016/04/21
+## [v2.5.0](https://github.com/reduxjs/reselect/releases/tag/v2.5.0) - 2016/04/21
 
 ### New features
 
 Add jsnext build (#116)
 
-## [v2.4.0](https://github.com/reactjs/reselect/releases/tag/v2.4.0) - 2016/04/16
+## [v2.4.0](https://github.com/reduxjs/reselect/releases/tag/v2.4.0) - 2016/04/16
 
 ### New features
 
 Add umd build (#112)
 
-## [v2.3.0](https://github.com/reactjs/reselect/releases/tag/v2.3.0) - 2016/04/07
+## [v2.3.0](https://github.com/reduxjs/reselect/releases/tag/v2.3.0) - 2016/04/07
 
 ### New features
 
 Add `resultFunc` property to selectors (#92)
 
-## [v2.2.0](https://github.com/reactjs/reselect/releases/tag/v2.2.0) - 2016/03/15
+## [v2.2.0](https://github.com/reduxjs/reselect/releases/tag/v2.2.0) - 2016/03/15
 
 ### New features
 
 Add Typescript typings to package.json (#94)
 
-## [v2.1.0](https://github.com/reactjs/reselect/releases/tag/v2.1.0) - 2016/03/03
+## [v2.1.0](https://github.com/reduxjs/reselect/releases/tag/v2.1.0) - 2016/03/03
 
 ### New features
 
 Add `resetRecomputations` method to selectors (#90)
 
-## [v2.0.3](https://github.com/reactjs/reselect/releases/tag/v2.0.3) - 2016/02/01
+## [v2.0.3](https://github.com/reduxjs/reselect/releases/tag/v2.0.3) - 2016/02/01
 
 ### New features
 
 Fix bug (#78) in `defaultMemoize` which could cause the memoized value to be mistakenly returned for variadic functions.
 
-## [v2.0.2](https://github.com/reactjs/reselect/releases/tag/v2.0.2) - 2016/01/14
+## [v2.0.2](https://github.com/reduxjs/reselect/releases/tag/v2.0.2) - 2016/01/14
 
 ### New features
 
 Fix IE8 support by compiling in 'loose' mode
 
-## [v2.0.1](https://github.com/reactjs/reselect/releases/tag/v2.0.1) - 2015/11/08
+## [v2.0.1](https://github.com/reduxjs/reselect/releases/tag/v2.0.1) - 2015/11/08
 
 ### Chore
 
-Update README and github links since move to reactjs.
+Update README and github links since move to reduxjs.
 
-## [v2.0.0](https://github.com/reactjs/reselect/releases/tag/v2.0.0) - 2015/10/02
+## [v2.0.0](https://github.com/reduxjs/reselect/releases/tag/v2.0.0) - 2015/10/02
 
 ### Breaking Changes
 
@@ -154,7 +154,7 @@ Input selectors are now verified to be functions during selector creation. If ve
 
 There is a small chance that this could cause a breaking change in code that contains a faulty selector that is never called.
 
-## [v1.1.0](https://github.com/reactjs/reselect/releases/tag/v1.1.0) - 2015/09/16
+## [v1.1.0](https://github.com/reduxjs/reselect/releases/tag/v1.1.0) - 2015/09/16
 
 ### New features
 
@@ -192,20 +192,20 @@ const structuredSelector = createStructuredSelector({
 const result = structuredSelector({a: 1, b: 2}); // will produce {x: 1, y: 2}
 ```
 
-## [v1.0.0](https://github.com/reactjs/reselect/releases/tag/v1.0.0) - 2015/09/09
+## [v1.0.0](https://github.com/reduxjs/reselect/releases/tag/v1.0.0) - 2015/09/09
 
 ### Breaking Changes
 
 If upgrading from 0.0.2, see the release notes for v1.0.0-alpha
 
-## [v1.0.0-alpha2](https://github.com/reactjs/reselect/releases/tag/v1.0.0-alpha2) - 2015/09/01
+## [v1.0.0-alpha2](https://github.com/reduxjs/reselect/releases/tag/v1.0.0-alpha2) - 2015/09/01
 
 ### New features
 
 src directory included in npm package
 js:next field added to package.json
 
-## [v1.0.0-alpha](https://github.com/reactjs/reselect/releases/tag/v1.0.0-alpha) - 2015/09/01
+## [v1.0.0-alpha](https://github.com/reduxjs/reselect/releases/tag/v1.0.0-alpha) - 2015/09/01
 
 ### Breaking Changes
 
