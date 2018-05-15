@@ -1,7 +1,9 @@
 // TODO: Add test for React Redux connect function
 
 import chai from 'chai'
-import {  createSelector, createSelectorCreator, defaultMemoize, createStructuredSelector  } from '../src/index'
+import { createSelector, createSelectorWithCacheSize, createSelectorCreator,
+  defaultMemoize, createStructuredSelector
+} from '../src/index'
 import {  default as lodashMemoize  } from 'lodash.memoize'
 
 const assert = chai.assert
@@ -32,6 +34,7 @@ suite('selector', () => {
     assert.equal(selector(secondState), 2)
     assert.equal(selector.recomputations(), 2)
   })
+
   test('don\'t pass extra parameters to inputSelector when only called with the state', () => {
     const selector = createSelector(
       (...params) => params.length,
@@ -39,6 +42,7 @@ suite('selector', () => {
     )
     assert.equal(selector({}), 1)
   })
+
   test('basic selector multiple keys', () => {
     const selector = createSelector(
       state => state.a,
@@ -54,6 +58,7 @@ suite('selector', () => {
     assert.equal(selector(state2), 5)
     assert.equal(selector.recomputations(), 2)
   })
+
   test('basic selector invalid input selector', () => {
     assert.throw(() => createSelector(
       state => state.a,
@@ -61,6 +66,7 @@ suite('selector', () => {
       (a, b) => a + b
     ), /input-selectors to be functions.*function, string/)
   })
+
   test('basic selector cache hit performance', () => {
     if (process.env.COVERAGE) {
       return // don't run performance tests for coverage
@@ -87,7 +93,35 @@ suite('selector', () => {
       'Expected a million calls to a selector with the same arguments to take less than 1 second'
     )
   })
-  test('basic selector cache hit performance for state changes but shallowly equal selector args', () => {
+
+  test('selector cacheSize=2 cache hit performance', () => {
+    if (process.env.COVERAGE) {
+      return // don't run performance tests for coverage
+    }
+
+    const selector = createSelectorWithCacheSize(2,
+      state => state.a,
+      state => state.b,
+      (a, b) => a + b
+    )
+    const state1 = { a: 1, b: 2 }
+
+    const start = new Date()
+    for (let i = 0; i < 1000000; i++) {
+      selector(state1)
+    }
+    const totalTime = new Date() - start
+
+    assert.equal(selector(state1), 3)
+    assert.equal(selector.recomputations(), 1)
+    assert.isBelow(
+      totalTime,
+      1000,
+      'Expected a million calls to a selector with the same arguments to take less than 1 second'
+    )
+  })
+
+  test('selector cache hit performance for state changes but shallowly equal selector args', () => {
     if (process.env.COVERAGE) {
       return // don't run performance tests for coverage
     }
@@ -112,6 +146,33 @@ suite('selector', () => {
       'Expected a million calls to a selector with the same arguments to take less than 1 second'
     )
   })
+
+  test('selector cacheSize=2 cache hit performance for state changes but shallowly equal selector args', () => {
+    if (process.env.COVERAGE) {
+      return // don't run performance tests for coverage
+    }
+
+    const selector = createSelectorWithCacheSize(2,
+      state => state.a,
+      state => state.b,
+      (a, b) => a + b
+    )
+
+    const start = new Date()
+    for (let i = 0; i < numOfStates; i++) {
+      selector(states[i])
+    }
+    const totalTime = new Date() - start
+
+    assert.equal(selector(states[0]), 3)
+    assert.equal(selector.recomputations(), 1)
+    assert.isBelow(
+      totalTime,
+      1000,
+      'Expected a million calls to a selector with the same arguments to take less than 1 second'
+    )
+  })
+
   test('memoized composite arguments', () => {
     const selector = createSelector(
       state => state.sub,
@@ -125,6 +186,7 @@ suite('selector', () => {
     assert.deepEqual(selector(state2), {  a: 2  })
     assert.equal(selector.recomputations(), 2)
   })
+
   test('first argument can be an array', () => {
     const selector = createSelector(
       [ state => state.a, state => state.b ],
@@ -138,6 +200,7 @@ suite('selector', () => {
     assert.equal(selector({ a: 3, b: 2 }), 5)
     assert.equal(selector.recomputations(), 2)
   })
+
   test('can accept props', () => {
     let called = 0
     const selector = createSelector(
@@ -151,6 +214,7 @@ suite('selector', () => {
     )
     assert.equal(selector({ a: 1, b: 2 }, { c: 100 }), 103)
   })
+
   test('recomputes result after exception', () => {
     let called = 0
     const selector = createSelector(
@@ -164,6 +228,7 @@ suite('selector', () => {
     assert.throw(() => selector({ a: 1 }), 'test error')
     assert.equal(called, 2)
   })
+
   test('memoizes previous result before exception', () => {
     let called = 0
     const selector = createSelector(
@@ -178,9 +243,11 @@ suite('selector', () => {
     const state2 = { a: 2 }
     assert.equal(selector(state1), 1)
     assert.throw(() => selector(state2), 'test error')
+    assert.equal(selector.memoizedResultFunc.getArgsArr()[0][0], 1)
     assert.equal(selector(state1), 1)
     assert.equal(called, 2)
   })
+
   test('chained selector', () => {
     const selector1 = createSelector(
       state => state.sub,
@@ -198,6 +265,7 @@ suite('selector', () => {
     assert.equal(selector2(state2), 2)
     assert.equal(selector2.recomputations(), 2)
   })
+
   test('chained selector with props', () => {
     const selector1 = createSelector(
       state => state.sub,
@@ -217,6 +285,7 @@ suite('selector', () => {
     assert.equal(selector2(state2, { x: 100, y: 201 }), 303)
     assert.equal(selector2.recomputations(), 2)
   })
+
   test('chained selector with variadic args', () => {
     const selector1 = createSelector(
       state => state.sub,
@@ -236,6 +305,7 @@ suite('selector', () => {
     assert.equal(selector2(state2, { x: 100, y: 201 }, 200), 503)
     assert.equal(selector2.recomputations(), 2)
   })
+
   test('override valueEquals', () => {
     // a rather absurd equals operation we can verify in tests
     const createOverridenSelector = createSelectorCreator(
@@ -252,6 +322,7 @@ suite('selector', () => {
     assert.equal(selector({ a: 'A' }), 'A')
     assert.equal(selector.recomputations(), 2)
   })
+
   test('custom memoize', () => {
     const hashFn = (...args) => args.reduce((acc, val) => acc + '-' + JSON.stringify(val))
     const customSelectorCreator = createSelectorCreator(
@@ -274,6 +345,7 @@ suite('selector', () => {
     assert.equal(selector.recomputations(), 3)
     // TODO: Check correct memoize function was called
   })
+
   test('exported memoize', () => {
     let called = 0
     const memoized = defaultMemoize(state => {
@@ -289,11 +361,13 @@ suite('selector', () => {
     assert.equal(memoized(o2), 2)
     assert.equal(called, 2)
   })
+
   test('exported memoize with multiple arguments', () => {
     const memoized = defaultMemoize((...args) => args.reduce((sum, value) => sum + value, 0))
     assert.equal(memoized(1, 2), 3)
     assert.equal(memoized(1), 1)
   })
+
   test('exported memoize with valueEquals override', () => {
     // a rather absurd equals operation we can verify in tests
     let called = 0
@@ -311,12 +385,12 @@ suite('selector', () => {
     assert.equal(memoized('A'), 'A')
     assert.equal(called, 2)
   })
-  test('exported memoize passes correct objects to equalityCheck', () => {
-    let fallthroughs = 0
-    function shallowEqual(newVal, oldVal) {
+
+  const createShallowEqualWithFallthroughCounter = () => {
+    const shallowEqual = (newVal, oldVal) => {
       if (newVal === oldVal) return true
 
-      fallthroughs += 1 // code below is expensive and should be bypassed when possible
+      shallowEqual.fallthroughs += 1 // code below is expensive and should be bypassed when possible
 
       let countA = 0
       let countB = 0
@@ -329,27 +403,48 @@ suite('selector', () => {
       }
       return countA === countB
     }
+    shallowEqual.fallthroughs = 0
+    return shallowEqual
+  }
+
+  test('defaultMemoize with cacheSize 1 passes correct objects to equalityCheck', () => {
+    const shallowEqual = createShallowEqualWithFallthroughCounter()
 
     const someObject = { foo: 'bar' }
     const anotherObject = { foo: 'bar' }
-    const memoized = defaultMemoize(a => a, shallowEqual)
+    const memoized = defaultMemoize(a => a, shallowEqual, 1)
 
     // the first call to `memoized` doesn't hit because `defaultMemoize.lastArgs` is uninitialized
     // and so `equalityCheck` is never called
     memoized(someObject)
-    assert.equal(fallthroughs, 0, 'first call does not shallow compare')
+    assert.equal(shallowEqual.fallthroughs, 0, 'first call does not shallow compare')
 
     // the next call, with a different object reference, does fall through
     memoized(anotherObject)
-    assert.equal(fallthroughs, 1, 'call with different object does shallow compare')
+    assert.equal(shallowEqual.fallthroughs, 1, 'call with different object does shallow compare')
 
     // the third call does not fall through because `defaultMemoize` passes `anotherObject` as
     // both the `newVal` and `oldVal` params. This allows `shallowEqual` to be much more performant
     // than if it had passed `someObject` as `oldVal`, even though `someObject` and `anotherObject`
     // are shallowly equal
     memoized(anotherObject)
-    assert.equal(fallthroughs, 1, 'call with same object as previous call does not shallow compare')
+    assert.equal(shallowEqual.fallthroughs, 1, 'call with same object as previous call does not shallow compare')
   })
+
+  test('defaultMemoize with cacheSize 2 passes correct objects to equalityCheck', () => {
+    const shallowEqual = createShallowEqualWithFallthroughCounter()
+    const someObject = { foo: 'bar' }
+    const anotherObject = { foo: 'bar' }
+    const memoized = defaultMemoize(a => a, shallowEqual, 2)
+
+    memoized(someObject)
+    assert.equal(shallowEqual.fallthroughs, 0, 'first call does not shallow compare')
+    memoized(anotherObject)
+    assert.equal(shallowEqual.fallthroughs, 1, 'call with different object does shallow compare')
+    memoized(anotherObject)
+    assert.equal(shallowEqual.fallthroughs, 1, 'call with same object as previous call does not shallow compare')
+  })
+
   test('structured selector', () => {
     const selector = createStructuredSelector({
       x: state => state.a,
@@ -362,6 +457,7 @@ suite('selector', () => {
     assert.deepEqual(secondResult, { x: 2, y: 2 })
     assert.strictEqual(selector({ a: 2, b: 2 }), secondResult)
   })
+
   test('structured selector with invalid arguments', () => {
     assert.throw(() => createStructuredSelector(
       state => state.a,
@@ -372,6 +468,7 @@ suite('selector', () => {
       c: 'd'
     }), /input-selectors to be functions.*function, string/)
   })
+
   test('structured selector with custom selector creator', () => {
     const customSelectorCreator = createSelectorCreator(
       defaultMemoize,
@@ -386,6 +483,7 @@ suite('selector', () => {
     assert.strictEqual(selector({ a: 1, b: 2 }), firstResult)
     assert.deepEqual(selector({ a: 2, b: 2 }), { x: 2, y: 2 })
   })
+
   test('resetRecomputations', () => {
     const selector = createSelector(
       state => state.a,
@@ -406,6 +504,7 @@ suite('selector', () => {
     assert.equal(selector({ a: 2 }), 2)
     assert.equal(selector.recomputations(), 2)
   })
+
   test('export last function as resultFunc', () => {
     const lastFunction = () => {}
     const selector = createSelector(
@@ -413,5 +512,187 @@ suite('selector', () => {
       lastFunction
     )
     assert.equal(selector.resultFunc, lastFunction)
+  })
+
+  test('defaultMemoize with cacheSize 2', () => {
+    const selector = createSelectorWithCacheSize(2, [
+      (state) => state.num
+    ], (num) => num * num)
+
+    assert.equal(selector({ num: 1 }), 1)  // expect recomputation
+    assert.equal(selector.memoizedResultFunc.getLastIndex(), 1)
+
+    assert.equal(selector({ num: 2 }), 4)  // expect recomputation
+    assert.equal(selector.memoizedResultFunc.getLastIndex(), 0)
+
+    assert.equal(selector({ num: 3 }), 9)  // expect recomputation
+    assert.equal(selector.memoizedResultFunc.getLastIndex(), 1)
+    assert.equal(selector.recomputations(), 3)
+
+    assert.equal(selector({ num: 2 }), 4)  // expect cache
+    assert.equal(selector.recomputations(), 3)
+    assert.equal(selector.memoizedResultFunc.getLastIndex(), 1)
+
+    assert.equal(selector({ num: 4 }), 16) // expect recomputation
+    assert.equal(selector.memoizedResultFunc.getLastIndex(), 0)
+    assert.equal(selector.recomputations(), 4)
+
+    assert.equal(selector.memoizedResultFunc.getArgsArr()[0][0], 4)
+    assert.equal(selector.memoizedResultFunc.getArgsArr()[1][0], 3)
+
+    assert.equal(selector({ num: 4 }), 16) // expect cache
+    assert.equal(selector.recomputations(), 4)
+    assert.equal(selector({ num: 3 }), 9)  // expect cache
+    assert.equal(selector.recomputations(), 4)
+    assert.equal(selector({ num: 3 }), 9)  // expect cache
+    assert.equal(selector.recomputations(), 4)
+    assert.equal(selector.memoizedResultFunc.getLastIndex(), 0)
+
+    assert.equal(selector({ num: 2 }), 4)  // expect recomputation
+    assert.equal(selector.recomputations(), 5)
+    assert.equal(selector.memoizedResultFunc.getLastIndex(), 1)
+
+    assert.equal(selector.memoizedResultFunc.getArgsArr()[0][0], 4)
+    assert.equal(selector.memoizedResultFunc.getArgsArr()[1][0], 2)
+
+    assert.equal(selector({ num: 4 }), 16) // expect cache
+    assert.equal(selector.recomputations(), 5)
+
+    assert.equal(selector({ num: 3 }), 9) // expect recomputation
+    assert.equal(selector.recomputations(), 6)
+    assert.equal(selector.memoizedResultFunc.getLastIndex(), 0)
+    assert.equal(selector({ num: 3 }), 9) // expect cache
+    assert.equal(selector.recomputations(), 6)
+
+    assert.equal(selector.memoizedResultFunc.getArgsArr().length, 2)
+  })
+
+  test('defaultMemoize with cacheSize 5', () => {
+    const selector = createSelectorWithCacheSize(5, [
+      (state) => state.num
+    ], (num) => num * num)
+
+    assert.equal(selector({ num: 1 }), 1)  // expect recomputation
+    assert.equal(selector.memoizedResultFunc.getLastIndex(), 4)
+    assert.equal(selector.memoizedResultFunc.getResultsLength(), 1)
+    assert.equal(selector({ num: 2 }), 4)  // expect recomputation
+    assert.equal(selector.memoizedResultFunc.getLastIndex(), 3)
+    assert.equal(selector({ num: 3 }), 9)  // expect recomputation
+    assert.equal(selector.memoizedResultFunc.getLastIndex(), 2)
+    assert.equal(selector({ num: 4 }), 16) // expect recomputation
+    assert.equal(selector.memoizedResultFunc.getLastIndex(), 1)
+    assert.equal(selector({ num: 5 }), 25) // expect recomputation
+    assert.equal(selector.memoizedResultFunc.getLastIndex(), 0)
+    assert.equal(selector.memoizedResultFunc.getResultsLength(), 5)
+    assert.equal(selector.recomputations(), 5)
+
+    assert.deepEqual(
+      selector.memoizedResultFunc.getArgsArr().map(args => args[0]),
+      [ 5, 4, 3, 2, 1 ])
+
+    assert.equal(selector({ num: 2 }), 4)  // expect cache
+    assert.equal(selector.recomputations(), 5)
+    assert.equal(selector.memoizedResultFunc.getLastIndex(), 0)
+    assert.deepEqual(
+      selector.memoizedResultFunc.getArgsArr().map(args => args[0]),
+      [ 5, 4, 3, 2, 1 ])
+
+    assert.equal(selector({ num: 6 }), 36) // expect recomputation
+    assert.equal(selector.recomputations(), 6)
+    assert.equal(selector.memoizedResultFunc.getLastIndex(), 4)
+    assert.deepEqual(
+      selector.memoizedResultFunc.getArgsArr().map(args => args[0]),
+      [ 5, 4, 3, 2, 6 ])
+    assert.equal(selector.memoizedResultFunc.getArgsArr()[5], undefined)
+
+    assert.equal(selector({ num: 1 }), 1)  // expect recomputation
+    assert.equal(selector.recomputations(), 7)
+    assert.deepEqual(
+      selector.memoizedResultFunc.getArgsArr().map(args => args[0]),
+      [ 5, 4, 3, 1, 6 ])
+    assert.equal(selector.memoizedResultFunc.getArgsArr()[5], undefined)
+
+    assert.equal(selector({ num: 1 }), 1)  // expect cache
+    assert.deepEqual(
+      selector.memoizedResultFunc.getArgsArr().map(args => args[0]),
+      [ 5, 4, 3, 1, 6 ])
+    assert.equal(selector.recomputations(), 7)
+
+    selector.clearCache()
+    assert.equal(selector.memoizedResultFunc.getResultsLength(), 0)
+    assert.equal(selector.memoizedResultFunc.getLastIndex(), 5)
+
+    assert.equal(selector({ num: 5 }), 25)  // expect recomputation
+    assert.equal(selector.memoizedResultFunc.getLastIndex(), 4)
+    assert.equal(selector.memoizedResultFunc.getResultsLength(), 1)
+    assert.equal(selector({ num: 4 }), 16)  // expect recomputation
+    assert.equal(selector.memoizedResultFunc.getLastIndex(), 3)
+    assert.equal(selector.memoizedResultFunc.getResultsLength(), 2)
+    assert.equal(selector({ num: 3 }), 9)   // expect recomputation
+    assert.equal(selector.memoizedResultFunc.getLastIndex(), 2)
+    assert.equal(selector.memoizedResultFunc.getResultsLength(), 3)
+    assert.equal(selector({ num: 2 }), 4)   // expect recomputation
+    assert.equal(selector.memoizedResultFunc.getLastIndex(), 1)
+    assert.equal(selector({ num: 1 }), 1)   // expect recomputation
+    assert.equal(selector.memoizedResultFunc.getLastIndex(), 0)
+    assert.equal(selector.recomputations(), 12)
+    assert.equal(selector({ num: 6 }), 36)   // expect recomputation
+    assert.equal(selector.memoizedResultFunc.getLastIndex(), 4)
+    assert.equal(selector.recomputations(), 13)
+    assert.equal(selector({ num: 7 }), 49)   // expect recomputation
+    assert.equal(selector.memoizedResultFunc.getLastIndex(), 3)
+    assert.equal(selector.recomputations(), 14)
+
+    assert.equal(selector({ num: 3 }), 9)   // expect cache
+    assert.equal(selector.recomputations(), 14)
+
+    assert.equal(selector({ num: 10 }), 100) // expect recomputation
+    assert.equal(selector.recomputations(), 15)
+    assert.equal(selector.memoizedResultFunc.getLastIndex(), 2)
+
+    assert.deepEqual(
+      selector.memoizedResultFunc.getArgsArr().map(args => args[0]),
+      [ 1, 2, 10, 7, 6 ])
+    assert.equal(selector.memoizedResultFunc.getArgsArr()[5], undefined)
+  })
+
+  test('defaultMemoize cache access', () => {
+    const selector = createSelectorWithCacheSize(5, [
+      (state) => state.num
+    ], (num) => num * num)
+
+
+    selector({ num: 1 })
+    assert.equal(selector.memoizedResultFunc.getLastCacheHitIndex(), 4)
+    selector({ num: 2 })
+    assert.equal(selector.memoizedResultFunc.getLastCacheHitIndex(), 3)
+    selector({ num: 3 })
+    assert.equal(selector.memoizedResultFunc.getLastCacheHitIndex(), 2)
+    selector({ num: 3 })
+    assert.equal(selector.memoizedResultFunc.getLastCacheHitIndex(), 2)
+    selector({ num: 4 })
+    assert.equal(selector.memoizedResultFunc.getLastCacheHitIndex(), 1)
+    selector({ num: 5 })
+    assert.equal(selector.memoizedResultFunc.getLastCacheHitIndex(), 0)
+
+    selector({ num: 2 })
+    assert.equal(selector.memoizedResultFunc.getLastCacheHitIndex(), 3)
+    selector({ num: 2 })
+    assert.equal(selector.memoizedResultFunc.getLastCacheHitIndex(), 3)
+    selector({ num: 1 })
+    assert.equal(selector.memoizedResultFunc.getLastCacheHitIndex(), 4)
+    selector({ num: 2 })
+    assert.equal(selector.memoizedResultFunc.getLastCacheHitIndex(), 3)
+
+    // Mock the cache results to make sure we fall back to searching from newest to oldest
+    for (let i = 0; i < 5; i++) {
+      // Update all args to 5, except the most recent cache hit.
+      if (i === 3) continue
+      selector.memoizedResultFunc.getArgsArr()[i][0] = 5
+    }
+
+    selector({ num: 5 })
+    // Should have jumped straight to the newest index (0) and found the result.
+    assert.equal(selector.memoizedResultFunc.getLastCacheHitIndex(), 0)
   })
 })
