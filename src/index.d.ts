@@ -3,6 +3,7 @@ export as namespace Reselect;
 export type Selector<S, R> = (state: S) => R;
 
 export type OutputSelector<S, R, C> = Selector<S, R> & {
+  memoizedResultFunc: C;
   resultFunc: C;
   recomputations: () => number;
   resetRecomputations: () => number;
@@ -11,6 +12,7 @@ export type OutputSelector<S, R, C> = Selector<S, R> & {
 export type ParametricSelector<S, P, R> = (state: S, props: P, ...args: any[]) => R;
 
 export type OutputParametricSelector<S, P, R, C> = ParametricSelector<S, P, R> & {
+  memoizedResultFunc: C;
   resultFunc: C;
   recomputations: () => number;
   resetRecomputations: () => number;
