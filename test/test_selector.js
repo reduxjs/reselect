@@ -414,4 +414,18 @@ suite('selector', () => {
     )
     assert.equal(selector.resultFunc, lastFunction)
   })
+  test('export dependencies as dependencies', () => {
+    const dependency1 = (state) => { state.a }
+    const dependency2 = (state) => { state.a }
+
+    const selector = createSelector(
+      dependency1,
+      dependency2,
+      () => {}
+    )
+    assert.deepEqual(selector.dependencies, [
+      dependency1,
+      dependency2
+    ])
+  })
 })
