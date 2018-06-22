@@ -322,7 +322,7 @@ A selector created with `createSelector` has a cache size of 1 and only returns 
 
 > The examples in this section require React Redux v4.3.0 or greater
 
-> An alternative approach be found in [re-reselect](https://github.com/toomuchdesign/re-reselect)
+> An alternative approach can be found in [re-reselect](https://github.com/toomuchdesign/re-reselect)
 
 To share a selector across multiple `VisibleTodoList` instances while passing in `props` **and** retaining memoization, each instance of the component needs its own private copy of the selector.
 
