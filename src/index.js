@@ -65,7 +65,7 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
     )
 
     // If a selector is called with the exact same arguments we don't need to traverse our dependencies again.
-    const selector = defaultMemoize(function () {
+    const selector = memoize(function () {
       const params = []
       const length = dependencies.length
 
