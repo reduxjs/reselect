@@ -952,6 +952,15 @@ export function createSelector<S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12
   combiner: (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6, res7: R7, res8: R8, res9: R9, res10: R10, res11: R11, res12: R12) => T,
 ): OutputParametricSelector<S1 & S2 & S3 & S4 & S5 & S6 & S7 & S8 & S9 & S10 & S11 & S12, P1 & P2 & P3 & P4 & P5 & P6 & P7 & P8 & P9 & P10 & P11 & P12, T, (res1: R1, res2: R2, res3: R3, res4: R4, res5: R5, res6: R6, res7: R7, res8: R8, res9: R9, res10: R10, res11: R11, res12: R12) => T>;
 
+/* any number of uniform selectors */
+export function createSelector<S, R, T>(
+  selectors: Selector<S, R>[],
+  combiner: (...res: R[]) => T,
+): OutputSelector<S, T, (...res: R[]) => T>;
+export function createSelector<S, P, R, T>(
+  selectors: ParametricSelector<S, P, R>[],
+  combiner: (...res: R[]) => T,
+): OutputParametricSelector<S, P, T, (...res: R[]) => T>;
 
 export function defaultMemoize<F extends Function>(
   func: F, equalityCheck?: <T>(a: T, b: T, index: number) => boolean,

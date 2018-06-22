@@ -466,3 +466,26 @@ function testCreateStructuredSelector() {
     baz: state => state.foo
   });
 }
+
+function testDynamicArrayArgument() {
+  interface Elem {
+    val1: string;
+    val2: string;
+  }
+  const data: ReadonlyArray<Elem> = [{val1: 'a', val2: 'aa'}, {val1: 'b', val2: 'bb'}];
+
+  createSelector(data.map(obj => () => obj.val1), (...vals) => vals.join(','));
+
+  // typings:expect-error
+  createSelector(data.map(obj => () => obj.val1), (vals) => vals.join(','))
+
+  createSelector(data.map(obj => () => obj.val1), (...vals: string[]) => 0)
+  // typings:expect-error
+  createSelector(data.map(obj => () => obj.val1), (...vals: number[]) => 0)
+
+  const s = createSelector(data.map(obj => (state: {}, fld: keyof Elem) => obj[fld]), (...vals) => vals.join(','));
+  s({}, 'val1');
+  s({}, 'val2');
+  // typings:expect-error
+  s({}, 'val3');
+}
