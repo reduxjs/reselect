@@ -65,18 +65,21 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
     )
 
     // If a selector is called with the exact same arguments we don't need to traverse our dependencies again.
-    const selector = memoize(function () {
-      const params = []
-      const length = dependencies.length
+    const selector = memoize(
+      function () {
+        const params = []
+        const length = dependencies.length
 
-      for (let i = 0; i < length; i++) {
-        // apply arguments instead of spreading and mutate a local list of params for performance.
-        params.push(dependencies[i].apply(null, arguments))
-      }
+        for (let i = 0; i < length; i++) {
+          // apply arguments instead of spreading and mutate a local list of params for performance.
+          params.push(dependencies[i].apply(null, arguments))
+        }
 
-      // apply arguments instead of spreading for performance.
-      return memoizedResultFunc.apply(null, params)
-    })
+        // apply arguments instead of spreading for performance.
+        return memoizedResultFunc.apply(null, params)
+      },
+      ...memoizeOptions
+    )
 
     selector.resultFunc = resultFunc
     selector.dependencies = dependencies
