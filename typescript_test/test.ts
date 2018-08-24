@@ -3,6 +3,7 @@ import {
   defaultMemoize,
   createSelectorCreator,
   createStructuredSelector,
+  createComposedSelector,
   ParametricSelector,
 } from '../src/index';
 
@@ -488,4 +489,109 @@ function testDynamicArrayArgument() {
   s({}, 'val2');
   // typings:expect-error
   s({}, 'val3');
+}
+
+function testComposedSelector() {
+  const state = { tag: 'State' };
+  type State = typeof state;
+  type Props1 = { id1: number };
+  type Props2 = { id2: number };
+  type Result1 = { result1: number; result1Str: string; result1Number: number; };
+  type Result2 = { result2: number };
+ 
+  const selector1: ParametricSelector<State, Props1, Result1> = (state, {id1}) => 
+    ({result1: id1, result1Str: '123', result1Number: id1 + 100});
+  const selector2: ParametricSelector<State, Props2, Result2> = (state, {id2}) => ({result2: id2});
+
+  ////////////// mapper function case
+
+  // check type inference for result of first selector
+  createComposedSelector(
+    selector2, selector1,
+    // typings:expect-error
+    result1 => ({id2: result1.result1234})
+  );
+
+  // check type of mapper function return value (should match type Props2)
+  createComposedSelector(
+    selector2, selector1,
+    // typings:expect-error
+    result1 => ({id1234: result1.result1})
+  );
+
+  // correct case
+  const composedWithMapperFunc = createComposedSelector(
+    selector2, selector1,
+    result1 => ({id2: result1.result1})
+  );  
+
+  ////////////// check composed selector props type
+
+  composedWithMapperFunc(
+    state, 
+    // typings:expect-error
+    {} // absence of required key
+  );
+
+  composedWithMapperFunc(
+    state,
+    // typings:expect-error
+    {nonexistent: 123} // nonexistent field in props
+  );
+
+  composedWithMapperFunc(
+    state, 
+    // typings:expect-error
+    {id1: 'zzz'} // incorrect field type in props
+  );
+
+  const result1 = composedWithMapperFunc(state, {id1: 123});
+
+  // check result type
+  (
+    // typings:expect-error
+    result1.result123
+  );
+
+  // correct result type
+  result1.result2;
+
+
+  ////////////// mapping object case
+
+  createComposedSelector(
+    selector2, selector1,
+    // typings:expect-error
+    {id2: 'nonexistent_in_result1'} // pick non-existent field from result of first selector
+  );
+
+  createComposedSelector(
+    selector2, selector1,
+    // typings:expect-error
+    {nonexistent_in_props2: 'result1'} // fill non-existent field of props of second selector
+  );
+
+  createComposedSelector(
+    selector2, selector1,
+    // typings:expect-error
+    {id2: 'result1Str'} // parameter types mismatch (Props2.id2 is number but Result1.result1Str is string)
+  );
+
+  createComposedSelector(
+    selector2, selector1,
+    // typings:expect-error
+    {id2: 1234} // mapped key of wrong type
+  );  
+
+  // correct case with compatible types (Props2.id2 is number and Result1.result1 is number)
+  createComposedSelector(
+    selector2, selector1,
+    {id2: 'result1'} 
+  );
+
+  // correct case with compatible types (Props2.id2 is number and Result1.result1Number is number)
+  createComposedSelector(
+    selector2, selector1,
+    {id2: 'result1Number'} 
+  );  
 }

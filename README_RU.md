@@ -59,6 +59,7 @@ console.log(totalSelector(exampleState)); // { total: 2.322 }
   * [`defaultMemoize`](#defaultmemoizefunc-equalitycheck-defaultequalitycheck)
   * [`createSelectorCreator`](#createselectorcreatormemoize-memoizeoptions)
   * [`createStructuredSelector`](#createstructuredselectorinputselectors-selectorcreator--createselector)
+  * [`createComposedSelector`](#createcomposedselectorinputselectors-selectorcreator--createselector)
 * [FAQ](#faq)
 
   * [Почему мой селектор не производит вычисления, когда изменяется входное состояние?](#q-Почему-мой-входной-селектор-не-производит-вычисления-когда-изменяется-входное-состояние)
@@ -572,6 +573,42 @@ const nestedSelector = createStructuredSelector({
     selectorD
   })
 });
+```
+
+### createComposedSelector(selector2, selector1, mapperOrMapping)
+
+Часто бывает нужно объединить два селектора по принципу функции compose: результат первого селектора (как-либо преобразованный) является параметрами для второго селектора.
+Заметьте, что селекторы в аргументах идут как у функции compose (https://ramdajs.com/docs/#compose) - справа налево. 
+Например, есть две таблицы в redux store: user и order. В первой хранятся пользователи, во второй - их заказы. Таблица order связана с таблицей user через поле userId.
+Есть два параметризованных селектора - userSelector и orderSelector, для получения пользователей и заказов соответственно.
+Тип параметров первого: {userId: number}, второго - {orderId: number}. 
+Есть задача: скомбинировать эти два селектора так, чтобы получить третий, который будет выдавать пользователя по id заказа.
+Это можно сделать с помощью функции createComposedSelector: первым селектором будет orderSelector, и его параметрами будет объект с orderId, а вторым селектором будет userSelector, и его параметрами будет объект с полем userId.
+Значение поля userId будет получено из результата первого селектора, и передано в параметры второго.
+Таким образом, можно выбрать пользователя по id заказа.
+
+Есть два варианта параметра mapperOrMapping:
+
+1. Функция, принимающая результат первого селектора
+```js
+const userByOrderSelector = createComposedSelector(userSelector, orderSelector, order => ({userId: order.orderUserId}));
+```
+
+2. Объект с отображением ключей параметров второго селектора на ключи результата первого селектора.
+Ключи в этом объекте - это ключи из объекта параметров второго селектора, а значения - ключи из объекта результатов первого селектора.
+В типах для typescript реализована проверка ключей и совместимости типов значений по этим ключам.
+```js
+const userByOrderSelector = createComposedSelector(userSelector, orderSelector, {userId: 'orderUserId'});
+```
+
+Без функции createComposedSelector код был бы более многословным, и требовал бы тестирования комбинирующей функции:
+
+```js
+const userByOrderSelector = createSelector(
+  orderSelector,
+  state => state,
+  (order, state) => userSelector(state, {userId: order.orderUserId})
+);
 ```
 
 ## FAQ

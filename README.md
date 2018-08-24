@@ -64,6 +64,7 @@ console.log(totalSelector(exampleState))    // { total: 2.322 }
   - [`defaultMemoize`](#defaultmemoizefunc-equalitycheck--defaultequalitycheck)
   - [`createSelectorCreator`](#createselectorcreatormemoize-memoizeoptions)
   - [`createStructuredSelector`](#createstructuredselectorinputselectors-selectorcreator--createselector)
+  - [`createComposedSelector`](#createcomposedselectorinputselectors-selectorcreator--createselector)
 - [FAQ](#faq)
   - [Why isn't my selector recomputing when the input state changes?](#q-why-isnt-my-selector-recomputing-when-the-input-state-changes)
   - [Why is my selector recomputing when the input state stays the same?](#q-why-is-my-selector-recomputing-when-the-input-state-stays-the-same)
@@ -599,6 +600,41 @@ const nestedSelector = createStructuredSelector({
   })
 })
 
+```
+
+### createComposedSelector(selector2, selector1, mapperOrMapping)
+
+Often it is necessary to combine two selectors according to the principle of the compose function: the result of the first selector (somehow transformed) is parameters for the second selector.
+Note that the selectors in the arguments go like arguments of compose function (https://ramdajs.com/docs/#compose) - from right to left.
+For example, there are two tables in redux store: user and order. The first store users, the second - their orders. The order table is associated with the user table through the userId field.
+There are two parameterized selectors - userSelector and orderSelector, to get users and orders accordingly.
+The type of the first parameter is: {userId: number}, the second is {orderId: number}.
+We want to combine these two selectors so that to receive the third which will give out the user by order id.
+This can be done with the createComposedSelector function: the first selector is the orderSelector, and its parameters will be an object with the orderId, and the second selector will be the userSelector, and its parameters will be an object with the userId field.
+The value of the userId field will be obtained from the result of the first selector, and passed to the parameters of the second one.
+Thus, you can select a user by order id.
+
+There are two options for the mapperOrMapping parameter:
+
+1. Function that takes the result of the first selector
+```js
+const userByOrderSelector = createComposedSelector(userSelector, orderSelector, order => ({userId: order.orderUserId}));
+```
+
+2. Object which maps second selector parameter keys to the result keys of the first selector.
+The keys in this object are keys from the parameter object of the second selector, and the values are keys from the result object of the first selector.
+In typescript types, key validation and compatibility of value types for these keys are implemented.
+```js
+const userByOrderSelector = createComposedSelector(userSelector, orderSelector, {userId: 'orderUserId'});
+```
+
+Without the createComposedSelector function, the code would be more verbose, and would require testing the combining function:
+```js
+const userByOrderSelector = createSelector(
+  orderSelector,
+  state => state,
+  (order, state) => userSelector(state, {userId: order.orderUserId})
+);
 ```
 
 ## FAQ

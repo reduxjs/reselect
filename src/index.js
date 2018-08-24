@@ -106,3 +106,23 @@ export function createStructuredSelector(selectors, selectorCreator = createSele
     }
   )
 }
+
+export function createComposedSelector(selector2, selector1, mapperOrMapping, selectorCreator = createSelector) {
+  let mapper
+
+  if (typeof mapperOrMapping === 'function') {
+    mapper = mapperOrMapping
+  } else {
+    const keys = Object.keys(mapperOrMapping)
+    mapper = r1 => keys.reduce((result, key) => {
+      result[key] = r1[mapperOrMapping[key]]
+      return result
+    }, {})
+  }
+
+  return selectorCreator(
+    selector1,
+    state => state,
+    (result1, state) => (result1 !== null && result1 !== undefined) ? selector2(state, mapper(result1)) : result1
+  )
+}
