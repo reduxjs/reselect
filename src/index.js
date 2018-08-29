@@ -114,10 +114,10 @@ export function createComposedSelector(selector2, selector1, mapperOrMapping) {
       mapper = mapperOrMapping;
   } else {
       const keys = Object.keys(mapperOrMapping);
-      mapper = r1 => keys.reduce(mapperOrMapping, (result, key) => ({
-          ...result,
-          [key]: r1[mapperOrMapping[key]],
-      }), {});
+      mapper = r1 => keys.reduce((result, key) => {
+          result[key] = r1 ? r1[mapperOrMapping[key]] : undefined;
+          return result;
+      }, {});
   }
 
   return (state, props1) => selector2(state, mapper(selector1(state, props1)));

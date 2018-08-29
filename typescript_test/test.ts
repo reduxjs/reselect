@@ -489,3 +489,7 @@ function testDynamicArrayArgument() {
   // typings:expect-error
   s({}, 'val3');
 }
+
+function testComposedSelector() {
+  
+}

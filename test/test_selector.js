@@ -1,7 +1,7 @@
 // TODO: Add test for React Redux connect function
 
 import chai from 'chai'
-import {  createSelector, createSelectorCreator, defaultMemoize, createStructuredSelector  } from '../src/index'
+import {  createSelector, createSelectorCreator, defaultMemoize, createStructuredSelector, createComposedSelector, createPathSelector  } from '../src/index'
 import {  default as lodashMemoize  } from 'lodash.memoize'
 
 const assert = chai.assert
@@ -428,4 +428,87 @@ suite('selector', () => {
       dependency2
     ])
   })
+})
+
+suite('createComposedSelector', () => {
+  const selector1 = (state, {id1}) => ({result1: id1});
+  const selector1Undef = () => undefined;
+  const selector2 = (state, {id2}) => ({result2: id2});
+  const value = 55;
+
+  test('combine selectors with mapping function', () => {
+    const composedSelector = createComposedSelector(
+      selector2, selector1,
+      result => ({id2: result.result1})
+    );
+
+    assert.deepEqual(composedSelector(null, {id1: value}), {result2: value});
+  })
+
+  test('combine selectors with mapping object', () => {
+    const composedSelector = createComposedSelector(
+        selector2, selector1,
+        {id2: 'result1'}
+    );
+
+    assert.deepEqual(composedSelector(null, {id1: value}), {result2: value});
+  });
+
+  test('handle undefined return values from selector1 when mapping object used', () => {
+    const composedSelector = createComposedSelector(
+        selector2, selector1Undef,
+        {id2: 'result1'}
+    );
+
+    assert.deepEqual(composedSelector(null, {id1: value}), {result2: undefined});
+  });  
+})
+
+suite('createPathSelector', () => {
+  test('should create new selector by given path', () => {
+    const accountId = 123;
+
+    const stateSnapshot = {
+        account: {
+            id: accountId
+        }
+    };
+
+    const selector = state => state;
+    const actual = createPathSelector(selector, 'account', 'id');
+
+    assert.isTrue(actual instanceof Function);
+    assert.strictEqual(actual(stateSnapshot), accountId);
+  })
+
+  test('should work with parametric selector', () => {
+    const accountId1 = 123;
+    const accountId2 = 321;
+
+    const stateSnapshot = {
+        accounts: {
+            [accountId1]: {
+                id: accountId1
+            },
+            [accountId2]: {
+                id: accountId2
+            }
+        }
+    };
+
+    const selector = (state, props) => state.accounts[props.id];
+    const actual = createPathSelector(selector, 'id');
+
+    assert.strictEqual(actual(stateSnapshot, {id: accountId1}), accountId1);
+    assert.strictEqual(actual(stateSnapshot, {id: accountId2}), accountId2);
+  });
+
+  test('should be null/undefined safe', () => {
+    const stateSnapshot = {};
+
+    const selector = state => state;
+    const actual = createPathSelector(selector, 'account', 'id');
+
+    assert.strictEqual(actual(stateSnapshot), undefined);
+  });  
 })
