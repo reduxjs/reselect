@@ -1007,6 +1007,8 @@ export function createStructuredSelector<S, P, T>(
 ): ParametricSelector<S, P, T>;
 
 
+type CompatibleKeys<T, O extends object> = {[key in keyof O]: O[key] extends T ? key : never}[keyof O];
+
 export function createComposedSelector<S1, S2, P1, P2, R1, R2>(
     selector2: ParametricSelector<S2, P2, R2>,
     selector1: ParametricSelector<S1, P1, R1>,
@@ -1014,7 +1016,7 @@ export function createComposedSelector<S1, S2, P1, P2, R1, R2>(
 ): ParametricSelector<S1 & S2, P1, R2>;
 
 export function createComposedSelector<
-    M extends { [key in keyof P2]: keyof R1},
+    M extends { [key in keyof P2]: CompatibleKeys<P2[key], R1>},
     S1,
     S2,
     P1,
@@ -1022,7 +1024,7 @@ export function createComposedSelector<
     R1 extends { [key: string]: any },
     R2
     >(
-    selector2: ParametricSelector<S2, {[key in keyof P2]: R1[M[key]]}, R2>,
+    selector2: ParametricSelector<S2, P2, R2>,
     selector1: ParametricSelector<S1, P1, R1>,
     mapping: M
-): ParametricSelector<S1 & S2, P1, R2>;
+): ParametricSelector<S1 & S2, P1, R2>
