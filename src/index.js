@@ -106,3 +106,33 @@ export function createStructuredSelector(selectors, selectorCreator = createSele
     }
   )
 }
+
+export function createComposedSelector(selector2, selector1, mapperOrMapping) {
+  let mapper;
+
+  if (typeof mapperOrMapping === 'function') {
+      mapper = mapperOrMapping;
+  } else {
+      const keys = Object.keys(mapperOrMapping);
+      mapper = r1 => keys.reduce((result, key) => {
+          result[key] = r1 ? r1[mapperOrMapping[key]] : undefined;
+          return result;
+      }, {});
+  }
+
+  return (state, props1) => selector2(state, mapper(selector1(state, props1)));
+}
+
+
+export function createPathSelector(selector, ...path) {
+  return (state, props) => {
+      let result = selector(state, props);
+      let index = 0;
+
+      while (result !== null && result !== undefined && index < path.length) {
+          result = result[path[index++]];
+      }
+
+      return result;
+  };
+}
