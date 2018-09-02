@@ -29,13 +29,13 @@
   },
   "betterScripts": {
     "test": {
-      "command": "mocha --compilers js:babel-register --ui tdd --recursive",
+      "command": "mocha --compilers js:@babel/register --ui tdd --recursive",
       "env": {
         "NODE_ENV": "test"
       }
     },
     "test:cov": {
-      "command": "nyc --reporter=lcov --reporter=text mocha --compilers js:babel-register --ui tdd",
+      "command": "nyc --reporter=lcov --reporter=text mocha --compilers js:@babel/register --ui tdd",
       "env": {
         "NODE_ENV": "test",
         "COVERAGE": "true"
@@ -73,18 +73,18 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "babel-cli": "^6.7.5",
-    "babel-plugin-check-es2015-constants": "^6.7.2",
-    "babel-plugin-transform-es2015-arrow-functions": "^6.5.2",
-    "babel-plugin-transform-es2015-block-scoping": "^6.7.1",
-    "babel-plugin-transform-es2015-function-name": "^6.5.0",
-    "babel-plugin-transform-es2015-modules-commonjs": "^6.7.4",
-    "babel-plugin-transform-es2015-modules-umd": "^6.6.5",
-    "babel-plugin-transform-es2015-parameters": "^6.7.0",
-    "babel-plugin-transform-es2015-shorthand-properties": "^6.5.0",
-    "babel-plugin-transform-es2015-spread": "^6.6.5",
-    "babel-plugin-transform-es2015-template-literals": "^6.6.5",
-    "babel-register": "^6.7.2",
+    "@babel/cli": "^7.0.0",
+    "@babel/core": "^7.0.0",
+    "@babel/plugin-transform-arrow-functions": "^7.0.0",
+    "@babel/plugin-transform-block-scoping": "^7.0.0",
+    "@babel/plugin-transform-function-name": "^7.0.0",
+    "@babel/plugin-transform-modules-commonjs": "^7.0.0",
+    "@babel/plugin-transform-modules-umd": "^7.0.0",
+    "@babel/plugin-transform-parameters": "^7.0.0",
+    "@babel/plugin-transform-shorthand-properties": "^7.0.0",
+    "@babel/plugin-transform-spread": "^7.0.0",
+    "@babel/plugin-transform-template-literals": "^7.0.0",
+    "@babel/register": "^7.0.0",
     "better-npm-run": "0.0.8",
     "chai": "^3.0.0",
     "codecov.io": "^0.1.6",

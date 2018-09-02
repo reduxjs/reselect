@@ -1,29 +1,43 @@
 {
   "plugins": [
-    "check-es2015-constants",
-    "transform-es2015-arrow-functions",
-    "transform-es2015-block-scoping",
-    "transform-es2015-function-name",
-    "transform-es2015-parameters",
-    "transform-es2015-spread",
-    "transform-es2015-template-literals"
+    "@babel/plugin-transform-arrow-functions",
+    "@babel/plugin-transform-block-scoping",
+    "@babel/plugin-transform-function-name",
+    "@babel/plugin-transform-parameters",
+    "@babel/plugin-transform-spread",
+    "@babel/plugin-transform-template-literals"
   ],
   "env": {
     "commonjs": {
       "plugins": [
-        ["transform-es2015-modules-commonjs", { "loose": true }]
+        [
+          "@babel/plugin-transform-modules-commonjs",
+          {
+            "loose": true
+          }
+        ]
       ]
     },
     "umd": {
       "plugins": [
-        ["transform-es2015-modules-umd", { "loose": true }]
+        [
+          "@babel/plugin-transform-modules-umd",
+          {
+            "loose": true
+          }
+        ]
       ],
       "moduleId": "Reselect"
     },
     "test": {
       "plugins": [
-        ["transform-es2015-modules-commonjs", { "loose": true }],
-        "transform-es2015-shorthand-properties"
+        [
+          "@babel/plugin-transform-modules-commonjs",
+          {
+            "loose": true
+          }
+        ],
+        "@babel/plugin-transform-shorthand-properties"
       ]
     }
   }
