@@ -7,9 +7,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### New Features
 
-Updated TypeScript typings (#274, #315)
-Exposed selector dependencies (#251)
-Use provided memoize function for selectors (#297)
+Updated TypeScript typings (#274, #315) 
+Exposed selector dependencies (#251) 
+Use provided memoize function for selectors (#297) 
 
 ## [v3.0.0](https://github.com/reduxjs/reselect/releases/tag/v3.0.0) - 2017/03/24
 
