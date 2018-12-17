@@ -15,6 +15,7 @@ function testSelector() {
   );
 
   const res = selector.resultFunc('test');
+  const deps = selector.dependencies;
   selector.recomputations();
   selector.resetRecomputations();
 
