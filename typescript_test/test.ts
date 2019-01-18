@@ -4,7 +4,7 @@ import {
   createSelectorCreator,
   createStructuredSelector,
   ParametricSelector,
-} from '../src/index';
+} from '../lib/index';
 
 function testSelector() {
   type State = {foo: string};
@@ -147,9 +147,9 @@ function testInvalidTypeInCombinator() {
     (state: {testString: string}) => state.testString,
     (state: {testString: string}) => state.testString,
     (state: {testString: string}) => state.testString,
+    // typings:expect-error
     (state: {testNumber: string}) => state.testNumber,
     (state: {testStringArray: string[]}) => state.testStringArray,
-    // typings:expect-error
     (foo1: string, foo2: number, foo3: boolean, foo4: string, foo5: string, foo6: string, foo7: string, foo8: number, foo9: string[]) => {
       return {foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9};
     });
@@ -194,7 +194,7 @@ function testParametricSelector() {
 
   const selector = createSelector(
     (state: State) => state.foo,
-    (state: never, props: Props) => props.bar,
+    (state: {}, props: Props) => props.bar,
     (foo, bar) => ({foo, bar}),
   );
 
@@ -208,11 +208,11 @@ function testParametricSelector() {
   const bar: number = ret.bar;
 
   const selector2 = createSelector(
-    (state) => state.foo,
-    (state) => state.foo,
-    (state) => state.foo,
-    (state) => state.foo,
-    (state) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
     (state: State, props: Props) => props.bar,
     (foo1, foo2, foo3, foo4, foo5, bar) => ({
       foo1, foo2, foo3, foo4, foo5, bar,
@@ -226,7 +226,7 @@ function testArrayArgument() {
   const selector = createSelector([
     (state: {foo: string}) => state.foo,
     (state: {foo: string}) => state.foo,
-    (state: never, props: {bar: number}) => props.bar,
+    (state: {}, props: {bar: number}) => props.bar,
   ], (foo1, foo2, bar) => ({foo1, foo2, bar}));
 
   const ret = selector({foo: 'fizz'}, {bar: 42});
@@ -324,7 +324,7 @@ function testArrayArgument() {
   selector2({foo: 'fizz'}, {bar: 42});
 
   const parametric = createSelector([
-    (state: never, props: {bar: number}) => props.bar,
+    (state: {}, props: {bar: number}) => props.bar,
     (state: {foo: string}) => state.foo,
     (state: {foo: string}) => state.foo,
     (state: {foo: string}) => state.foo,
@@ -411,7 +411,7 @@ function testCreateSelectorCreator() {
 
   const parametric = createSelector(
     (state: {foo: string}) => state.foo,
-    (state: never, props: {bar: number}) => props.bar,
+    (state: {}, props: {bar: number}) => props.bar,
     (foo, bar) => ({foo, bar}),
   );
 
