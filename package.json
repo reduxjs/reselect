@@ -59,7 +59,7 @@
       }
     },
     "compile:typescript": {
-      "command": "mkdirp lib/ && ncp ./src/index.d.ts ./lib/index.d.ts && ts-node src/index.gen.ts && prettier --write lib/index.d.ts"
+      "command": "mkdirp lib/ && ncp ./src/index.d.ts ./lib/index.d.ts && ts-node src/index.gen.ts --harmony && prettier --write lib/index.d.ts"
     }
   },
   "keywords": [
