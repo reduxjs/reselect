@@ -562,11 +562,9 @@ const mySelectorB = state => state.b
 const structuredSelector = createSelector(
    mySelectorA,
    mySelectorB,
-   mySelectorC,
-   (a, b, c) => ({
+   (a, b) => ({
      a,
-     b,
-     c
+     b
    })
 )
 ```
