@@ -16,11 +16,13 @@
     "url": "https://github.com/reduxjs/reselect/issues"
   },
   "scripts": {
+    "clean": "rimraf dist es lib",
     "compile:commonjs": "better-npm-run compile:commonjs",
     "compile:umdmin": "uglifyjs dist/reselect.js -mt -o dist/reselect.min.js",
     "compile:umd": "better-npm-run compile:umd",
     "compile:es": "babel -d es/ src/",
-    "compile": "npm run compile:commonjs && npm run compile:umd && npm run compile:umdmin && npm run compile:es",
+    "compile:typescript": "better-npm-run compile:typescript",
+    "compile": "npm run clean && npm run compile:commonjs && npm run compile:umd && npm run compile:umdmin && npm run compile:es && npm run compile:typescript",
     "lint": "eslint src test",
     "prepublish": "npm run compile",
     "test": "better-npm-run test",
@@ -42,7 +44,7 @@
       }
     },
     "test:typescript": {
-      "command": "typings-tester --dir typescript_test"
+      "command": "tsc --noEmit && typings-tester --dir typescript_test"
     },
     "compile:commonjs": {
       "command": "babel -d lib/ src/ && ncp ./src/index.d.ts ./lib/index.d.ts",
@@ -55,6 +57,9 @@
       "env": {
         "NODE_ENV": "umd"
       }
+    },
+    "compile:typescript": {
+      "command": "mkdirp lib/ && ncp ./src/index.d.ts ./lib/index.d.ts && ts-node src/index.gen.ts && prettier --write lib/index.d.ts"
     }
   },
   "keywords": [
@@ -73,6 +78,7 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "@types/node": "^10.12.18",
     "babel-cli": "^6.7.5",
     "babel-plugin-check-es2015-constants": "^6.7.2",
     "babel-plugin-transform-es2015-arrow-functions": "^6.5.2",
@@ -96,8 +102,12 @@
     "mocha": "^2.2.5",
     "ncp": "^2.0.0",
     "nyc": "^6.4.0",
-    "typescript": "^2.9.2",
-    "typings-tester": "^0.2.0",
+    "prettier": "^1.15.3",
+    "rimraf": "^2.6.3",
+    "ts-node": "^7.0.1",
+    "ts-simple-ast": "^21.0.0",
+    "typescript": "^3.2.4",
+    "typings-tester": "^0.3.2",
     "uglify-js": "^3.0.20"
   }
 }
