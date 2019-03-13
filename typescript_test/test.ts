@@ -219,6 +219,13 @@ function testParametricSelector() {
   );
 
   selector2({foo: 'fizz'}, {bar: 42});
+
+  // props type should be inferred from first input selector
+  const selector3 = createSelector(
+    (state, props: Props) => 1,
+    (state, props) => props.bar,
+    (foo, bar) => ({foo, bar}),
+  );
 }
 
 function testArrayArgument() {
