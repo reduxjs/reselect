@@ -29,16 +29,16 @@ export function createSelector<S, P, R1, T>(
 ): OutputParametricSelector<S, P, T, (res: R1) => T>;
 
 /* two selectors */
-export function createSelector<S, R1, R2, T>(
-  selector1: Selector<S, R1>,
-  selector2: Selector<S, R2>,
-  combiner: (res1: R1, res2: R2) => T,
-): OutputSelector<S, T, (res1: R1, res2: R2) => T>;
 export function createSelector<S, P, R1, R2, T>(
   selector1: ParametricSelector<S, P, R1>,
   selector2: ParametricSelector<S, P, R2>,
   combiner: (res1: R1, res2: R2) => T,
 ): OutputParametricSelector<S, P, T, (res1: R1, res2: R2) => T>;
+export function createSelector<S, R1, R2, T>(
+  selector1: Selector<S, R1>,
+  selector2: Selector<S, R2>,
+  combiner: (res1: R1, res2: R2) => T,
+): OutputSelector<S, T, (res1: R1, res2: R2) => T>;
 
 /* three selectors */
 export function createSelector<S, R1, R2, R3, T>(
