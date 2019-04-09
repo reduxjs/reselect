@@ -38,7 +38,7 @@ function getDependencies(funcs) {
 
   if (!dependencies.every(dep => typeof dep === 'function')) {
     const dependencyTypes = dependencies.map(
-      dep => typeof dep
+      dep => typeof dep === 'function' ? `function: ${dep.name}` : typeof dep
     ).join(', ')
     throw new Error(
       'Selector creators expect all input-selectors to be functions, ' +
