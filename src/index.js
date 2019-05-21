@@ -3,7 +3,7 @@ function defaultEqualityCheck(a, b) {
 }
 
 function areArgumentsShallowlyEqual(equalityCheck, prev, next) {
-  if (prev === null || next === null || prev.length !== next.length) {
+  if (prev === null || prev.length !== next.length) {
     return false
   }
 
