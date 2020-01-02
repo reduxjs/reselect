@@ -89,7 +89,7 @@
     "chai": "^3.0.0",
     "codecov.io": "^0.1.6",
     "coveralls": "^2.11.4",
-    "eslint": "^2.11",
+    "eslint": "^4.18",
     "eslint-plugin-react": "^5.1.1",
     "lodash.memoize": "^4.1.0",
     "mkdirp": "^0.5.1",
