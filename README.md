@@ -88,7 +88,7 @@ If you prefer a video tutorial, you can find one [here](https://www.youtube.com/
 
 ### Motivation for Memoized Selectors
 
-> The examples in this section are based on the [Redux Todos List example](http://redux.js.org/docs/basics/UsageWithReact.html).
+> The examples in this section are based on the [Redux Todos List example](https://redux.js.org/basics/usage-with-react).
 
 #### `containers/VisibleTodoList.js`
 
