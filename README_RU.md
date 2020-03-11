@@ -85,7 +85,7 @@ console.log(totalSelector(exampleState)); // { total: 2.322 }
 
 ### Причины использовать Мемоизированные Селекторы
 
-> Примеры в этом разделе основаны на [списке задач Redux (Todos List)](http://redux.js.org/docs/basics/UsageWithReact.html).
+> Примеры в этом разделе основаны на [списке задач Redux (Todos List)](https://redux.js.org/recipes/computing-derived-data/).
 
 #### `containers/VisibleTodoList.js`
 
