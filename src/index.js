@@ -76,8 +76,8 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
       }
 
       // apply arguments instead of spreading for performance.
-      lastResult = memoizedResultFunc.apply(null, params);
-      return lastResult;
+      lastResult = memoizedResultFunc.apply(null, params)
+      return lastResult
     })
 
     selector.resultFunc = resultFunc
