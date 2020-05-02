@@ -1,4 +1,5 @@
 export as namespace Reselect;
+type $Values<T> = T[keyof T];
 
 export type Selector<S, R> = (state: S) => R;
 
@@ -996,12 +997,21 @@ export function createSelectorCreator<O1, O2, O3>(
   ...rest: any[],
 ): typeof createSelector;
 
-export function createStructuredSelector<S, T>(
-  selectors: {[K in keyof T]: Selector<S, T[K]>},
+export function createStructuredSelector<
+  T extends {[key: string]: (state: any) => any},
+  S = $Values<{[K in keyof T]: Parameters<T[K]>[0]}>
+>(
+  selectors: T,
   selectorCreator?: typeof createSelector,
-): Selector<S, T>;
+): Selector<S, {[K in keyof T]: ReturnType<T[K]>}>;
 
-export function createStructuredSelector<S, P, T>(
-  selectors: {[K in keyof T]: ParametricSelector<S, P, T[K]>},
+export function createStructuredSelector<
+  T extends {
+    [key: string]: (state: any, props: any, ...args: any[]) => any;
+  },
+  S = $Values<{[K in keyof T]: Parameters<T[K]>[0]}>,
+  P = Exclude<$Values<{[K in keyof T]: Parameters<T[K]>[1]}>, undefined>,
+>(
+  selectors: T,
   selectorCreator?: typeof createSelector,
-): ParametricSelector<S, P, T>;
+): ParametricSelector<S, P, {[K in keyof T]: ReturnType<T[K]>}>;

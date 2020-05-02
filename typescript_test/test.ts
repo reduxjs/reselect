@@ -433,38 +433,81 @@ function testCreateSelectorCreator() {
 }
 
 function testCreateStructuredSelector() {
-  const selector = createStructuredSelector<{foo: string}, {
-    foo: string;
-    bar: number;
-  }>({
+  type State = { foo: string };
+  const FooSelector = (state: State) => state.foo;
+  const BarSelector = (state: State) => +state.foo;
+
+  const selector = createStructuredSelector({
+    foo: FooSelector,
+    bar: BarSelector,
+  });
+
+  const selectorGenerics = createStructuredSelector<
+    {
+      foo: typeof FooSelector;
+      bar: typeof BarSelector;
+    }
+  >({
     foo: state => state.foo,
     bar: state => +state.foo,
   });
 
-  const res = selector({foo: '42'});
-  const foo: string = res.foo;
-  const bar: number = res.bar;
+  type ExpectedResult = {
+    foo: string;
+    bar: number;
+  };
+
+  const res: ExpectedResult = selector({foo: '42'});
+  const resGenerics: ExpectedResult = selectorGenerics({foo: '42'});
 
   // typings:expect-error
   selector({bar: '42'});
+  // typings:expect-error
+  selectorGenerics({bar: '42'});
 
   // typings:expect-error
   selector({foo: '42'}, {bar: 42});
-
   // typings:expect-error
-  createStructuredSelector<{foo: string}, {bar: number}>({
-    bar: (state: {baz: boolean}) => 1
+  selectorGenerics({foo: '42'}, {bar: 42});
+
+  createStructuredSelector<{foo: () => string}>({
+    foo: () => 'string'
   });
 
   // typings:expect-error
-  createStructuredSelector<{foo: string}, {bar: number}>({
-    bar: state => state.foo
+  createStructuredSelector<{foo: () => string}>({
+    foo: () => 1
   });
 
   // typings:expect-error
-  createStructuredSelector<{foo: string}, {bar: number}>({
-    baz: state => state.foo
+  createStructuredSelector<{foo: () => string}>({
+    bar: () => 'string'
   });
+}
+
+function testParametricCreateStructuredSelector(){
+  type State = {foo: string; bar: {[key: string]: number}};
+  const FooSelector = (state: State, id: string) => state.foo;
+  const BarSelector = (state: State, id: string) => state.bar[id];
+
+  const selector = createStructuredSelector({
+    foo: FooSelector,
+    bar: BarSelector,
+  });
+
+  type ExpectedResult = {
+    foo: string;
+    bar: number;
+  };
+
+  const state: State = {foo: 'foo', bar: {foo: 1, bar: 2}};
+  const result: ExpectedResult = selector(state, 'foo');
+
+  // typings:expect-error
+  selector(state, 2);
+
+  // typings:expect-error
+  selector({foo: 3}, 2);
 }
 
 function testDynamicArrayArgument() {
