@@ -1,7 +1,7 @@
 // TODO: Add test for React Redux connect function
 
 import chai from 'chai'
-import {  createSelector, createSelectorCreator, defaultMemoize, createStructuredSelector  } from '../src/index'
+import {  createSelector, createSelectorCreator, defaultMemoize, createStructuredSelector, resultCheckMemoize  } from '../src/index'
 import {  default as lodashMemoize  } from 'lodash.memoize'
 
 const assert = chai.assert
@@ -273,6 +273,21 @@ suite('selector', () => {
     assert.equal(selector({ a: 2, b: 3 }), 5)
     assert.equal(selector.recomputations(), 3)
     // TODO: Check correct memoize function was called
+  })
+  test('custom memoize using `resultCheckMemoize`', () => {
+    const customSelectorCreator = createSelectorCreator(
+      resultCheckMemoize,
+      undefined,
+      (a, b) => JSON.stringify(a) === JSON.stringify(b)
+    )
+    const selector = customSelectorCreator(
+      state => state.users,
+      users => Object.keys(users)
+    )
+    const result = selector({ users: { a: {}, b: {} } })
+    assert.deepEqual(result, [ 'a', 'b' ])
+    assert.equal(selector({ users: { a: {}, b: {} } }), result)
+    assert.equal(selector.recomputations(), 2)
   })
   test('exported memoize', () => {
     let called = 0

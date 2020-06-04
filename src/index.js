@@ -33,6 +33,22 @@ export function defaultMemoize(func, equalityCheck = defaultEqualityCheck) {
   }
 }
 
+export function resultCheckMemoize(func, equalityCheck = defaultEqualityCheck, resultCheck = defaultEqualityCheck) {
+  let lastArgs = null
+  let lastResult = null
+  // we reference arguments instead of spreading them for performance reasons
+  return function () {
+    if (areArgumentsShallowlyEqual(equalityCheck, lastArgs, arguments)) {
+      // apply arguments instead of spreading for performance.
+      return lastResult
+    }
+
+    lastArgs = arguments
+    const result = func.apply(null, arguments)
+    return resultCheck(lastResult, result) ? lastResult : (lastResult = result)
+  }
+}
+
 function getDependencies(funcs) {
   const dependencies = Array.isArray(funcs[0]) ? funcs[0] : funcs
 
