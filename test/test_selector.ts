@@ -161,7 +161,7 @@ describe('Basic selector behavior', () => {
 
   test('first argument can be an array', () => {
     const selector = createSelector(
-      [state => state.a, state => state.b],
+      [ state => state.a, state => state.b ],
       (a, b) => {
         return a + b
       }
@@ -429,7 +429,7 @@ describe('defaultMemoize', () => {
 
       let countA = 0
       let countB = 0
-      for (let key in newVal) {
+      for (const key in newVal) {
         if (
           Object.hasOwnProperty.call(newVal, key) &&
           newVal[key] !== oldVal[key]
@@ -437,7 +437,7 @@ describe('defaultMemoize', () => {
           return false
         countA++
       }
-      for (let key in oldVal) {
+      for (const key in oldVal) {
         if (Object.hasOwnProperty.call(oldVal, key)) countB++
       }
       return countA === countB
@@ -576,7 +576,7 @@ describe('defaultMemoize', () => {
       return true
     }
 
-    for (let maxSize of [1, 3]) {
+    for (const maxSize of [ 1, 3 ]) {
       let funcCalls = 0
 
       const memoizer = defaultMemoize(
@@ -728,7 +728,7 @@ describe('createSelector exposed utils', () => {
     }
 
     const selector = createSelector(dependency1, dependency2, () => {})
-    expect(selector.dependencies).toEqual([dependency1, dependency2])
+    expect(selector.dependencies).toEqual([ dependency1, dependency2 ])
   })
 
   test('export lastResult function', () => {

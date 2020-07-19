@@ -28,7 +28,7 @@ function createSingletonCache(equals: EqualityFn): Cache {
     },
 
     getValues() {
-      return entry ? [entry.value] : []
+      return entry ? [ entry.value ] : []
     }
   }
 }
@@ -106,7 +106,7 @@ export interface DefaultMemoizeOptions {
 
 // defaultMemoize now supports a configurable cache size with LRU behavior,
 // and optional comparison of the result value with existing values
-export function defaultMemoize<F extends (...args: any[]) => any>(
+export function defaultMemoize<F extends(...args: any[]) => any>(
   func: F,
   equalityCheckOrOptions?: EqualityFn | DefaultMemoizeOptions
 ): F {
