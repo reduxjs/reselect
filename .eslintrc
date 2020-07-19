@@ -6,7 +6,8 @@
   },
   "extends": "eslint:recommended",
   "parserOptions": {
-    "sourceType": "module"
+    "sourceType": "module",
+    "ecmaVersion": 2015
   },
   "rules": {
     "array-bracket-spacing": [2, "always"],
