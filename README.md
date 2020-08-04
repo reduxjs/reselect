@@ -470,7 +470,7 @@ const totalSelector = createSelector(
 `defaultMemoize` determines if an argument has changed by calling the `equalityCheck` function. As `defaultMemoize` is designed to be used with immutable data, the default `equalityCheck` function checks for changes using reference equality:
 
 ```js
-function defaultEqualityCheck(currentVal, previousVal) {
+function defaultEqualityCheck(previousVal, currentVal) {
   return currentVal === previousVal
 }
 ```
