@@ -449,7 +449,7 @@ const totalSelector = createSelector(
 `defaultMemoize` определяет, изменился ли аргумент, вызывая функцию `equalityCheck`. Поскольку `defaultMemoize` предназначен для использования с неизменяемыми данными, функция по умолчанию `equalityCheck` проверяет наличие изменений с использованием строгого равенства:
 
 ```js
-function defaultEqualityCheck(currentVal, previousVal) {
+function defaultEqualityCheck(previousVal, currentVal) {
   return currentVal === previousVal;
 }
 ```
