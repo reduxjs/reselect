@@ -512,9 +512,9 @@ Here are some examples of how you might use `createSelectorCreator`:
 
 ```js
 import { createSelectorCreator, defaultMemoize } from 'reselect'
-import isEqual from 'lodash.isEqual'
+import isEqual from 'lodash.isequal'
 
-// create a "selector creator" that uses lodash.isEqual instead of ===
+// create a "selector creator" that uses lodash.isequal instead of ===
 const createDeepEqualSelector = createSelectorCreator(
   defaultMemoize,
   isEqual
@@ -700,7 +700,7 @@ You can eliminate unnecessary recomputations by returning a new object from the 
 
 ```js
 import { REMOVE_OLD } from '../constants/ActionTypes'
-import isEqual from 'lodash.isEqual'
+import isEqual from 'lodash.isequal'
 
 const initialState = [
   {
@@ -728,11 +728,11 @@ Alternatively, the default `equalityCheck` function in the selector can be repla
 
 ```js
 import { createSelectorCreator, defaultMemoize } from 'reselect'
-import isEqual from 'lodash.isEqual'
+import isEqual from 'lodash.isequal'
 
 const todosSelector = state => state.todos
 
-// create a "selector creator" that uses lodash.isEqual instead of ===
+// create a "selector creator" that uses lodash.isequal instead of ===
 const createDeepEqualSelector = createSelectorCreator(
   defaultMemoize,
   isEqual
