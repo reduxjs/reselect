@@ -2,8 +2,7 @@ import {
   createSelector,
   defaultMemoize,
   createSelectorCreator,
-  createStructuredSelector,
-  ParametricSelector,
+  createStructuredSelector, Selector,
 } from '../src/index';
 
 function testSelector() {
@@ -85,26 +84,26 @@ function testSelectorAsCombiner() {
 
 type Component<P> = (props: P) => any;
 
-declare function connect<S, P, R>(selector: ParametricSelector<S, P, R>):
+declare function connect<S, P, R>(selector: Selector<S, R, P[]>):
   (component: Component<P & R>) => Component<P>;
 
 function testConnect() {
   connect(
     createSelector(
       (state: {foo: string}) => state.foo,
-      foo => ({foo}),
+      foo => ({changeUp: foo}),
     )
   )(props => {
     // typings:expect-error
     props.bar;
 
-    const foo: string = props.foo;
+    const foo: string = props.changeUp;
   });
 
   const connected = connect(
     createSelector(
       (state: {foo: string}) => state.foo,
-      (state: never, props: {bar: number}) => props.bar,
+      (state: {foo: string}, props: {bar: number}) => props.bar,
       (foo, bar) => ({foo, baz: bar}),
     )
   )(props => {
@@ -155,8 +154,8 @@ function testInvalidTypeInCombinator() {
 
   // does not allow a large array of heterogeneous parameter type
   // selectors when the combinator function is typed differently
+  // typings:expect-error
   createSelector(
-    // typings:expect-error
     [
       (state: {testString: string}) => state.testString,
       (state: {testNumber: number}) => state.testNumber,
@@ -167,7 +166,7 @@ function testInvalidTypeInCombinator() {
       (state: {testString: string}) => state.testString,
       (state: {testNumber: string}) => state.testNumber,
       (state: {testStringArray: string[]}) => state.testStringArray,
-    ], (foo1: string, foo2: number, foo3: boolean, foo4: string, foo5: string, foo6: string, foo7: string, foo8: number, foo9: string[]) => {
+    ], (foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8: number, foo9: string[]) => {
       return {foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9};
     });
 }
@@ -177,7 +176,7 @@ function testParametricSelector() {
   type Props = {bar: number};
 
   // allows heterogeneous parameter type selectors
-  createSelector(
+  const heterogeneousSelector = createSelector(
     (state: {testString: string}) => state.testString,
     (state: {testNumber: number}) => state.testNumber,
     (state: {testBoolean: boolean}) => state.testBoolean,
@@ -189,11 +188,14 @@ function testParametricSelector() {
     (state: {testStringArray: string[]}) => state.testStringArray,
     (foo1: string, foo2: number, foo3: boolean, foo4: string, foo5: string, foo6: string, foo7: string, foo8: string, foo9: string[]) => {
       return {foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9};
-    });
+    },
+  );
+
+  heterogeneousSelector({testString: 'foo', testBoolean: true, testNumber: 2})
 
   const selector = createSelector(
     (state: State) => state.foo,
-    (state: never, props: Props) => props.bar,
+    (state: State, props: Props) => props.bar,
     (foo, bar) => ({foo, bar}),
   );
 
@@ -207,11 +209,11 @@ function testParametricSelector() {
   const bar: number = ret.bar;
 
   const selector2 = createSelector(
-    (state) => state.foo,
-    (state) => state.foo,
-    (state) => state.foo,
-    (state) => state.foo,
-    (state) => state.foo,
+    (state: any) => state.foo,
+    (state: any) => state.foo,
+    (state: any) => state.foo,
+    (state: any) => state.foo,
+    (state: any) => state.foo,
     (state: State, props: Props) => props.bar,
     (foo1, foo2, foo3, foo4, foo5, bar) => ({
       foo1, foo2, foo3, foo4, foo5, bar,
@@ -323,7 +325,7 @@ function testArrayArgument() {
   selector2({foo: 'fizz'}, {bar: 42});
 
   const parametric = createSelector([
-    (state: never, props: {bar: number}) => props.bar,
+    (state: {foo: string}, props: {bar: number}) => props.bar,
     (state: {foo: string}) => state.foo,
     (state: {foo: string}) => state.foo,
     (state: {foo: string}) => state.foo,
@@ -337,17 +339,24 @@ function testArrayArgument() {
     return {foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, bar};
   });
 
+  interface TestState {
+    testString: string
+    testNumber: number
+    testBoolean: boolean
+    testStringArray: string[]
+  }
+
   // allows a large array of heterogeneous parameter type selectors
   const correctlyTypedArraySelector = createSelector([
-    (state: {testString: string}) => state.testString,
-    (state: {testNumber: number}) => state.testNumber,
-    (state: {testBoolean: boolean}) => state.testBoolean,
-    (state: {testString: string}) => state.testString,
-    (state: {testString: string}) => state.testString,
-    (state: {testString: string}) => state.testString,
-    (state: {testString: string}) => state.testString,
-    (state: {testString: string}) => state.testString,
-    (state: {testStringArray: string[]}) => state.testStringArray,
+    (state: TestState) => state.testString,
+    (state: TestState) => state.testNumber,
+    (state: TestState) => state.testBoolean,
+    (state: TestState) => state.testString,
+    (state: TestState) => state.testString,
+    (state: TestState) => state.testString,
+    (state: TestState) => state.testString,
+    (state: TestState) => state.testString,
+    (state: TestState) => state.testStringArray,
   ], (foo1: string, foo2: number, foo3: boolean, foo4: string, foo5: string,
       foo6: string, foo7: string, foo8: string, foo9: string[]) => {
     return {foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9};
@@ -387,7 +396,7 @@ function testDefaultMemoize() {
       if (index === 0)
         return a === b;
 
-      return a.toString() === b.toString();
+      return `${a}` === `${b}`;
     }
   );
 
@@ -428,7 +437,7 @@ function testCreateSelectorCreator() {
     if (index === 0)
       return a === b;
 
-    return a.toString() === b.toString();
+    return `${a}` === `${b}`;
   });
 }
 
@@ -481,7 +490,7 @@ function testDynamicArrayArgument() {
 
   createSelector(data.map(obj => () => obj.val1), (...vals: string[]) => 0)
   // typings:expect-error
-  createSelector(data.map(obj => () => obj.val1), (...vals: number[]) => 0)
+  createSelector(data.map(obj => () => obj.val1), (...args: number[]) => 0)
 
   const s = createSelector(data.map(obj => (state: {}, fld: keyof Elem) => obj[fld]), (...vals) => vals.join(','));
   s({}, 'val1');
