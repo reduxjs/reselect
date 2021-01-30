@@ -17,7 +17,7 @@
   },
   "scripts": {
     "compile:commonjs": "better-npm-run compile:commonjs",
-    "compile:umdmin": "uglifyjs dist/reselect.js -mt -o dist/reselect.min.js",
+    "compile:umdmin": "uglifyjs dist/reselect.js -m -o dist/reselect.min.js",
     "compile:umd": "better-npm-run compile:umd",
     "compile:es": "babel -d es/ src/",
     "compile": "npm run compile:commonjs && npm run compile:umd && npm run compile:umdmin && npm run compile:es",
