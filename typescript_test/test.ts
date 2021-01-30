@@ -340,24 +340,17 @@ function testArrayArgument() {
     return {foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, bar};
   });
 
-  interface TestState {
-    testString: string
-    testNumber: number
-    testBoolean: boolean
-    testStringArray: string[]
-  }
-
   // allows a large array of heterogeneous parameter type selectors
   const correctlyTypedArraySelector = createSelector([
-    (state: TestState) => state.testString,
-    (state: TestState) => state.testNumber,
-    (state: TestState) => state.testBoolean,
-    (state: TestState) => state.testString,
-    (state: TestState) => state.testString,
-    (state: TestState) => state.testString,
-    (state: TestState) => state.testString,
-    (state: TestState) => state.testString,
-    (state: TestState) => state.testStringArray,
+    (state: {testString: string}) => state.testString,
+    (state: {testNumber: number}) => state.testNumber,
+    (state: {testBoolean: boolean}) => state.testBoolean,
+    (state: {testString: string}) => state.testString,
+    (state: {testString: string}) => state.testString,
+    (state: {testString: string}) => state.testString,
+    (state: {testString: string}) => state.testString,
+    (state: {testString: string}) => state.testString,
+    (state: {testStringArray: string[]}) => state.testStringArray,
   ], (foo1: string, foo2: number, foo3: boolean, foo4: string, foo5: string,
       foo6: string, foo7: string, foo8: string, foo9: string[]) => {
     return {foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9};
