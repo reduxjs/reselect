@@ -42,7 +42,7 @@
       }
     },
     "test:typescript": {
-      "command": "typings-tester --dir typescript_test"
+      "command": "dtslint --expectOnly types"
     },
     "compile:commonjs": {
       "command": "babel -d lib/ src/ && ncp ./src/index.d.ts ./lib/index.d.ts",
@@ -89,6 +89,7 @@
     "chai": "^3.0.0",
     "codecov.io": "^0.1.6",
     "coveralls": "^2.11.4",
+    "dtslint": "^4.0.6",
     "eslint": "^2.11",
     "eslint-plugin-react": "^5.1.1",
     "lodash.memoize": "^4.1.0",
@@ -97,7 +98,7 @@
     "ncp": "^2.0.0",
     "nyc": "^6.4.0",
     "typescript": "^4.1.3",
-    "typings-tester": "^0.3.2",
     "uglify-js": "^3.0.20"
-  }
+  },
+  "types": "./src/index.d.ts"
 }

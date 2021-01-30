@@ -1,0 +1,1 @@
+../src/index.d.ts

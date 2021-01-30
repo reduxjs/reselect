@@ -1,6 +1,8 @@
+// Minimum TypeScript Version: 4.2
+
 export as namespace Reselect;
 
-export type Selector<S = unknown, R = unknown, P extends readonly any[] = any[]> = (state: S, ...params: P) => R;
+export type Selector<S = any, R = unknown, P extends never | (readonly any[]) = any[]> = [P] extends [never] ? (state: S) => R : (state: S, ...params: P) => R;
 export type OutputSelector<S extends SelectorArray, Result, Params extends readonly any[], Combiner> = Selector<GetStateFromSelectors<S>, Result, Params> & {
   resultFunc: Combiner;
   recomputations: () => number;
@@ -20,7 +22,7 @@ type GetStateFromSelectors<S extends SelectorArray> =
     : S extends (infer Elem)[] ? GetStateFromSelector<Elem> : never;
 
 type GetParamsFromSelector<S> = S extends Selector<any, any, infer P> ? P extends [] ? never : P : never;
-type GetParamsFromSelectors<S, Found = never> = S extends SelectorArray
+export type GetParamsFromSelectors<S, Found = never> = S extends SelectorArray
   ? S extends (infer s)[]
     ? GetParamsFromSelector<s>
     : S extends [infer Current, ...infer Rest]
