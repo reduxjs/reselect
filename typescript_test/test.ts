@@ -2,7 +2,8 @@ import {
   createSelector,
   defaultMemoize,
   createSelectorCreator,
-  createStructuredSelector, Selector,
+  createStructuredSelector,
+  Selector,
 } from '../src/index';
 
 function testSelector() {
