@@ -19,7 +19,7 @@ const taxPercentSelector = state => state.shop.taxPercent
 
 const subtotalSelector = createSelector(
   shopItemsSelector,
-  items => items.reduce((acc, item) => acc + item.value, 0)
+  items => items.reduce((subtotal, item) => subtotal + item.value, 0)
 )
 
 const taxSelector = createSelector(
@@ -28,13 +28,13 @@ const taxSelector = createSelector(
   (subtotal, taxPercent) => subtotal * (taxPercent / 100)
 )
 
-export const totalSelector = createSelector(
+const totalSelector = createSelector(
   subtotalSelector,
   taxSelector,
   (subtotal, tax) => ({ total: subtotal + tax })
 )
 
-let exampleState = {
+const exampleState = {
   shop: {
     taxPercent: 8,
     items: [
