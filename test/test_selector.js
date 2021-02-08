@@ -1,7 +1,7 @@
 // TODO: Add test for React Redux connect function
 
 import chai from 'chai'
-import {  createSelector, createSelectorCreator, defaultMemoize, createStructuredSelector  } from '../src/index'
+import {  createSelector, createSelectorCreator, defaultMemoize, createStructuredSelector, createComposedSelector  } from '../src/index'
 import {  default as lodashMemoize  } from 'lodash.memoize'
 
 const assert = chai.assert
@@ -427,5 +427,48 @@ suite('selector', () => {
       dependency1,
       dependency2
     ])
+  })
+})
+
+suite('createComposedSelector', () => {
+  const selector1 = (state, props1) => ({ result1: props1.id1 })
+  const selector1Undef = () => undefined
+  const selector2 = (state, props2) => ({ result2: props2.id2 })
+  const value = 55
+
+  test('combine selectors with mapping function', () => {
+    const composedSelector = createComposedSelector(
+      selector2, selector1,
+      result => ({ id2: result.result1 })
+    )
+
+    assert.deepEqual(composedSelector(null, { id1: value }), { result2: value })
+  })
+
+  test('handle undefined return values from selector1 when mapping function used', () => {
+    const composedSelector = createComposedSelector(
+        selector2, selector1Undef,
+        result => ({ id2: result.result1 })
+    )
+
+    assert.equal(composedSelector(null, { id1: value }), undefined)
+  })  
+
+  test('combine selectors with mapping object', () => {
+    const composedSelector = createComposedSelector(
+        selector2, selector1,
+        { id2: 'result1' }
+    )
+
+    assert.deepEqual(composedSelector(null, { id1: value }), { result2: value })
+  })
+
+  test('handle undefined return values from selector1 when mapping object used', () => {
+    const composedSelector = createComposedSelector(
+        selector2, selector1Undef,
+        { id2: 'result1' }
+    )
+
+    assert.equal(composedSelector(null, { id1: value }), undefined)
   })
 })
