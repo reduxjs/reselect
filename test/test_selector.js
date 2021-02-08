@@ -115,7 +115,7 @@ suite('selector', () => {
   test('memoized composite arguments', () => {
     const selector = createSelector(
       state => state.sub,
-        sub => sub
+      sub => sub
     )
     const state1 = {  sub: {  a: 1  }  }
     assert.deepEqual(selector(state1), {  a: 1  })
@@ -139,13 +139,11 @@ suite('selector', () => {
     assert.equal(selector.recomputations(), 2)
   })
   test('can accept props', () => {
-    let called = 0
     const selector = createSelector(
       state => state.a,
       state => state.b,
       (state, props) => props.c,
       (a, b, c) => {
-        called++
         return a + b + c
       }
     )
