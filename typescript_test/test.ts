@@ -519,4 +519,15 @@ function testStructuredSelectorTypeParams() {
     // bar: selectBar,
     // ^^^ because this is missing, an error is thrown
   });
+
+  // This works
+  createStructuredSelector<GlobalState>({
+    foo: selectFoo,
+    bar: selectBar,
+  });
+
+  // So does this
+  createStructuredSelector<GlobalState, Omit<GlobalState, 'bar'>>({
+    foo: selectFoo,
+  });
 }
