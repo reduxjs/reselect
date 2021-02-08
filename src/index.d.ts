@@ -996,7 +996,7 @@ export function createSelectorCreator<O1, O2, O3>(
   ...rest: any[],
 ): typeof createSelector;
 
-export function createStructuredSelector<S, T>(
+export function createStructuredSelector<S, T = S>(
   selectors: {[K in keyof T]: Selector<S, T[K]>},
   selectorCreator?: typeof createSelector,
 ): Selector<S, T>;

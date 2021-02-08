@@ -501,3 +501,22 @@ function testDynamicArrayArgument() {
   // @ts-expect-error
   s({}, 'val3');
 }
+
+
+function testStructuredSelectorTypeParams() {
+  type GlobalState = {
+    foo: string;
+    bar: number;
+  };
+
+  const selectFoo = (state: GlobalState) => state.foo;
+  const selectBar = (state: GlobalState) => state.bar;
+
+  // Output state should be the same as input, if not provided
+  // @ts-expect-error
+  createStructuredSelector<GlobalState>({
+    foo: selectFoo,
+    // bar: selectBar,
+    // ^^^ because this is missing, an error is thrown
+  });
+}
