@@ -54,7 +54,7 @@ jobs:
       fail-fast: false
       matrix:
         node: ['14.x']
-        ts: ['2.9', '3.0']
+        ts: ['3.9', '4.0', '4.1', 'next']
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
