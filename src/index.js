@@ -53,6 +53,17 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
   return (...funcs) => {
     let recomputations = 0
     const resultFunc = funcs.pop()
+    if (typeof resultFunc !== 'function') {
+      throw new Error(
+        'Selector creators expect resultFunc to be function, ' +
+        `instead received following type: [${typeof resultFunc}].` +
+        (
+          typeof resultFunc === 'undefined' ?
+            'function' && 'This may happen if you\'re mistakenly passing resultFunc within array of inputSelectors: `createSelector([inputSelector1, inputSelector2, resultFunc])`' :
+            ''
+        )
+      )
+    }
     const dependencies = getDependencies(funcs)
 
     const memoizedResultFunc = memoize(
