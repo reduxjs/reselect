@@ -52,6 +52,7 @@ function getDependencies(funcs) {
 export function createSelectorCreator(memoize, ...memoizeOptions) {
   return (...funcs) => {
     let recomputations = 0
+    let firstRun = true
     const resultFunc = funcs.pop()
     const dependencies = getDependencies(funcs)
 
@@ -71,8 +72,17 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
 
       for (let i = 0; i < length; i++) {
         // apply arguments instead of spreading and mutate a local list of params for performance.
-        params.push(dependencies[i].apply(null, arguments))
+        const paramOrFactory = dependencies[i].apply(null, arguments)
+        if (firstRun && typeof paramOrFactory === 'function') {
+          // replace the dependency to avoid calling the factory again
+          dependencies[i] = paramOrFactory
+          params.push(paramOrFactory.apply(null, arguments))
+        } else {
+          params.push(paramOrFactory)
+        }
       }
+
+      firstRun = false
 
       // apply arguments instead of spreading for performance.
       return memoizedResultFunc.apply(null, params)

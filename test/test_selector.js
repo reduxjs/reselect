@@ -1,8 +1,6 @@
-// TODO: Add test for React Redux connect function
-
-import chai from 'chai'
 import {  createSelector, createSelectorCreator, defaultMemoize, createStructuredSelector  } from '../src/index'
 import {  default as lodashMemoize  } from 'lodash.memoize'
+import chai from 'chai'
 
 const assert = chai.assert
 
@@ -43,15 +41,16 @@ suite('selector', () => {
     const selector = createSelector(
       state => state.a,
       state => state.b,
-      (a, b) => a + b
+      () => state => state.c,
+      (a, b, c) => a + b + c
     )
-    const state1 = { a: 1, b: 2 }
-    assert.equal(selector(state1), 3)
-    assert.equal(selector(state1), 3)
+    const state1 = { a: 1, b: 2, c: 3 }
+    assert.equal(selector(state1), 6)
+    assert.equal(selector(state1), 6)
     assert.equal(selector.recomputations(), 1)
-    const state2 = { a: 3, b: 2 }
-    assert.equal(selector(state2), 5)
-    assert.equal(selector(state2), 5)
+    const state2 = { a: 3, b: 4, c: 5 }
+    assert.equal(selector(state2), 12)
+    assert.equal(selector(state2), 12)
     assert.equal(selector.recomputations(), 2)
   })
   test('basic selector invalid input selector', () => {
@@ -353,14 +352,15 @@ suite('selector', () => {
   test('structured selector', () => {
     const selector = createStructuredSelector({
       x: state => state.a,
-      y: state => state.b
+      y: state => state.b,
+      z: () => state => state.c
     })
-    const firstResult = selector({ a: 1, b: 2 })
-    assert.deepEqual(firstResult, { x: 1, y: 2 })
-    assert.strictEqual(selector({ a: 1, b: 2 }), firstResult)
-    const secondResult = selector({ a: 2, b: 2 })
-    assert.deepEqual(secondResult, { x: 2, y: 2 })
-    assert.strictEqual(selector({ a: 2, b: 2 }), secondResult)
+    const firstResult = selector({ a: 1, b: 2, c: 3 })
+    assert.deepEqual(firstResult, { x: 1, y: 2, z: 3 })
+    assert.strictEqual(selector({ a: 1, b: 2, c: 3 }), firstResult)
+    const secondResult = selector({ a: 2, b: 2, c: 2 })
+    assert.deepEqual(secondResult, { x: 2, y: 2, z: 2 })
+    assert.strictEqual(selector({ a: 2, b: 2, c: 2 }), secondResult)
   })
   test('structured selector with invalid arguments', () => {
     assert.throw(() => createStructuredSelector(
