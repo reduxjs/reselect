@@ -247,10 +247,12 @@ suite('selector', () => {
       a => a
     )
     assert.equal(selector({ a: 1 }), 1)
-    assert.equal(selector({ a: 2 }), 1) // yes, really true
+    // still returns `1` since `typeof state` is still "object"
+    assert.equal(selector({ a: 2 }), 1)
     assert.equal(selector.recomputations(), 1)
-    assert.equal(selector({ a: 'A' }), 'A')
-    assert.equal(selector.recomputations(), 2)
+    // again returns `1` since `typeof state` is still "object"
+    assert.equal(selector({ a: 'A' }), 1)
+    assert.equal(selector.recomputations(), 1)
   })
   test('custom memoize', () => {
     const hashFn = (...args) => args.reduce((acc, val) => acc + '-' + JSON.stringify(val))
