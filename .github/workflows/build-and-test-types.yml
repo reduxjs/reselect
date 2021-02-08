@@ -1,0 +1,78 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  build:
+    name: Lint, Test, Report Coverage on Node ${{ matrix.node }}
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ['10.x', '12.x', '14.x', '15.x']
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Use node ${{ matrix.node }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - uses: c-hive/gha-npm-cache@v1
+
+      - name: Install deps
+        run: npm ci --ignore-scripts
+
+      - name: Run linter
+        run: npm run lint
+
+      - name: Run tests
+        run: npm test
+
+      - name: Generate test coverage
+        run: npm run test:cov
+
+      - name: Compile
+        run: npm run compile
+
+      - name: Report to Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Report to Codecov.io
+        uses: codecov/codecov-action@v1
+        with:
+          files: ./coverage/lcov.info
+
+  test-types:
+    name: Test Types with TypeScript ${{ matrix.ts }}
+
+    needs: [build]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['14.x']
+        ts: ['2.9', '3.0']
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Use node ${{ matrix.node }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - uses: c-hive/gha-npm-cache@v1
+
+      - name: Install deps
+        run: npm ci --ignore-scripts
+
+      - name: Install TypeScript ${{ matrix.ts }}
+        run: npm install typescript@${{ matrix.ts }} --ignore-scripts
+
+      - name: Test types
+        run: |
+          ./node_modules/.bin/tsc --version
+          npm run test:typescript
