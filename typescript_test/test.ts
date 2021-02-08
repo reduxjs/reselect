@@ -122,17 +122,19 @@ function testConnect() {
 }
 
 function testInvalidTypeInCombinator() {
-  // @ts-expect-error
   createSelector(
+    // @ts-expect-error
     (state: {foo: string}) => state.foo,
     (foo: number) => foo,
   );
 
-  // @ts-expect-error
   createSelector(
     (state: {foo: string, bar: number, baz: boolean}) => state.foo,
+    // @ts-expect-error
     state => state.bar,
+    // @ts-expect-error
     state => state.baz,
+    // @ts-expect-error
     (foo: string, bar: number, baz: boolean, fizz: string) => {}
   );
 
@@ -146,9 +148,9 @@ function testInvalidTypeInCombinator() {
     (state: {testString: string}) => state.testString,
     (state: {testString: string}) => state.testString,
     (state: {testString: string}) => state.testString,
+    // @ts-expect-error
     (state: {testNumber: string}) => state.testNumber,
     (state: {testStringArray: string[]}) => state.testStringArray,
-    // @ts-expect-error
     (foo1: string, foo2: number, foo3: boolean, foo4: string, foo5: string, foo6: string, foo7: string, foo8: number, foo9: string[]) => {
       return {foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9};
     });
@@ -156,16 +158,19 @@ function testInvalidTypeInCombinator() {
   // does not allow a large array of heterogeneous parameter type
   // selectors when the combinator function is typed differently
   createSelector(
-    // @ts-expect-error
     [
       (state: {testString: string}) => state.testString,
+      // @ts-expect-error
       (state: {testNumber: number}) => state.testNumber,
+      // @ts-expect-error
       (state: {testBoolean: boolean}) => state.testBoolean,
       (state: {testString: string}) => state.testString,
       (state: {testString: string}) => state.testString,
       (state: {testString: string}) => state.testString,
       (state: {testString: string}) => state.testString,
+      // @ts-expect-error
       (state: {testNumber: string}) => state.testNumber,
+      // @ts-expect-error
       (state: {testStringArray: string[]}) => state.testStringArray,
     ], (foo1: string, foo2: number, foo3: boolean, foo4: string, foo5: string, foo6: string, foo7: string, foo8: number, foo9: string[]) => {
       return {foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9};
@@ -193,7 +198,7 @@ function testParametricSelector() {
 
   const selector = createSelector(
     (state: State) => state.foo,
-    (state: never, props: Props) => props.bar,
+    (state: State, props: Props) => props.bar,
     (foo, bar) => ({foo, bar}),
   );
 
@@ -225,7 +230,7 @@ function testArrayArgument() {
   const selector = createSelector([
     (state: {foo: string}) => state.foo,
     (state: {foo: string}) => state.foo,
-    (state: never, props: {bar: number}) => props.bar,
+    (state: {foo: string}, props: {bar: number}) => props.bar,
   ], (foo1, foo2, bar) => ({foo1, foo2, bar}));
 
   const ret = selector({foo: 'fizz'}, {bar: 42});
@@ -238,10 +243,10 @@ function testArrayArgument() {
     (state: {foo: string}) => state.foo,
   ]);
 
-  // @ts-expect-error
   createSelector([
     (state: {foo: string}) => state.foo,
     (state: {foo: string}) => state.foo,
+  // @ts-expect-error
   ], (foo: string, bar: number) => {});
 
   createSelector([
@@ -260,7 +265,6 @@ function testArrayArgument() {
 
   });
 
-  // @ts-expect-error
   createSelector([
     (state: {foo: string}) => state.foo,
     (state: {foo: string}) => state.foo,
@@ -272,20 +276,28 @@ function testArrayArgument() {
     (state: {foo: string}) => state.foo,
     (state: {foo: string}) => state.foo,
     (state: {foo: string}) => state.foo,
+  // @ts-expect-error
   ], (foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8: number, foo9, foo10) => {
 
   });
 
-  // @ts-expect-error
   createSelector([
     (state: {foo: string}) => state.foo,
+    // @ts-expect-error
     state => state.foo,
+    // @ts-expect-error
     state => state.foo,
+    // @ts-expect-error
     state => state.foo,
+    // @ts-expect-error
     state => state.foo,
+    // @ts-expect-error
     state => state.foo,
+    // @ts-expect-error
     state => state.foo,
+    // @ts-expect-error
     state => state.foo,
+    // @ts-expect-error
     1,
   ], (foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9) => {});
 
@@ -323,7 +335,7 @@ function testArrayArgument() {
   selector2({foo: 'fizz'}, {bar: 42});
 
   const parametric = createSelector([
-    (state: never, props: {bar: number}) => props.bar,
+    (state: {foo: string}, props: {bar: number}) => props.bar,
     (state: {foo: string}) => state.foo,
     (state: {foo: string}) => state.foo,
     (state: {foo: string}) => state.foo,
@@ -387,7 +399,7 @@ function testDefaultMemoize() {
       if (index === 0)
         return a === b;
 
-      return a.toString() === b.toString();
+      return `${a}` === `${b}`;
     }
   );
 
@@ -410,7 +422,7 @@ function testCreateSelectorCreator() {
 
   const parametric = createSelector(
     (state: {foo: string}) => state.foo,
-    (state: never, props: {bar: number}) => props.bar,
+    (state: {foo: string}, props: {bar: number}) => props.bar,
     (foo, bar) => ({foo, bar}),
   );
 
@@ -428,7 +440,7 @@ function testCreateSelectorCreator() {
     if (index === 0)
       return a === b;
 
-    return a.toString() === b.toString();
+    return `${a}` === `${b}`;
   });
 }
 
@@ -451,18 +463,18 @@ function testCreateStructuredSelector() {
   // @ts-expect-error
   selector({foo: '42'}, {bar: 42});
 
-  // @ts-expect-error
   createStructuredSelector<{foo: string}, {bar: number}>({
+    // @ts-expect-error
     bar: (state: {baz: boolean}) => 1
   });
 
-  // @ts-expect-error
   createStructuredSelector<{foo: string}, {bar: number}>({
+    // @ts-expect-error
     bar: state => state.foo
   });
 
-  // @ts-expect-error
   createStructuredSelector<{foo: string}, {bar: number}>({
+    // @ts-expect-error
     baz: state => state.foo
   });
 }
