@@ -962,22 +962,22 @@ export function createSelector<S, P, R, T>(
   combiner: (...res: R[]) => T,
 ): OutputParametricSelector<S, P, T, (...res: R[]) => T>;
 
-export function defaultMemoize<F extends Function>(
+export function defaultMemoize<F extends (...args: any[]) => any>(
   func: F, equalityCheck?: <T>(a: T, b: T, index: number) => boolean,
 ): F;
 
 export function createSelectorCreator(
-  memoize: <F extends Function>(func: F) => F,
+  memoize: <F extends (...args: any[]) => any>(func: F) => F,
 ): typeof createSelector;
 
 export function createSelectorCreator<O1>(
-  memoize: <F extends Function>(func: F,
+  memoize: <F extends (...args: any[]) => any>(func: F,
                                 option1: O1) => F,
   option1: O1,
 ): typeof createSelector;
 
 export function createSelectorCreator<O1, O2>(
-  memoize: <F extends Function>(func: F,
+  memoize: <F extends (...args: any[]) => any>(func: F,
                                 option1: O1,
                                 option2: O2) => F,
   option1: O1,
@@ -985,7 +985,7 @@ export function createSelectorCreator<O1, O2>(
 ): typeof createSelector;
 
 export function createSelectorCreator<O1, O2, O3>(
-  memoize: <F extends Function>(func: F,
+  memoize: <F extends (...args: any[]) => any>(func: F,
                                 option1: O1,
                                 option2: O2,
                                 option3: O3,
