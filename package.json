@@ -42,7 +42,7 @@
       }
     },
     "test:typescript": {
-      "command": "tsc --noEmit"
+      "command": "tsc --noEmit -p typescript_test/tsconfig.json"
     },
     "compile:commonjs": {
       "command": "babel -d lib/ src/ && ncp ./src/index.d.ts ./lib/index.d.ts",
