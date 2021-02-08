@@ -20,10 +20,10 @@ function testSelector() {
 
   const foo: string = selector({foo: 'bar'});
 
-  // typings:expect-error
+  // @ts-expect-error
   selector({foo: 'bar'}, {prop: 'value'});
 
-  // typings:expect-error
+  // @ts-expect-error
   const num: number = selector({foo: 'bar'});
 
   // allows heterogeneous parameter type input selectors
@@ -46,15 +46,15 @@ function testNestedSelector() {
     (state: State) => state.baz,
     ({foo, bar}, baz) => {
       const foo1: string = foo;
-      // typings:expect-error
+      // @ts-expect-error
       const foo2: number = foo;
 
       const bar1: number = bar;
-      // typings:expect-error
+      // @ts-expect-error
       const bar2: string = bar;
 
       const baz1: boolean = baz;
-      // typings:expect-error
+      // @ts-expect-error
       const baz2: string = baz;
     },
   )
@@ -74,10 +74,10 @@ function testSelectorAsCombiner() {
     subSelector,
   );
 
-  // typings:expect-error
+  // @ts-expect-error
   selector({foo: ''});
 
-  // typings:expect-error
+  // @ts-expect-error
   const n: number = selector({bar: {foo: ''}});
 
   const s: string = selector({bar: {foo: ''}});
@@ -95,7 +95,7 @@ function testConnect() {
       foo => ({foo}),
     )
   )(props => {
-    // typings:expect-error
+    // @ts-expect-error
     props.bar;
 
     const foo: string = props.foo;
@@ -111,24 +111,24 @@ function testConnect() {
     const foo: string = props.foo;
     const bar: number = props.bar;
     const baz: number = props.baz;
-    // typings:expect-error
+    // @ts-expect-error
     props.fizz;
   });
 
   connected({bar: 42});
 
-  // typings:expect-error
+  // @ts-expect-error
   connected({bar: 42, baz: 123});
 }
 
 function testInvalidTypeInCombinator() {
-  // typings:expect-error
+  // @ts-expect-error
   createSelector(
     (state: {foo: string}) => state.foo,
     (foo: number) => foo,
   );
 
-  // typings:expect-error
+  // @ts-expect-error
   createSelector(
     (state: {foo: string, bar: number, baz: boolean}) => state.foo,
     state => state.bar,
@@ -148,7 +148,7 @@ function testInvalidTypeInCombinator() {
     (state: {testString: string}) => state.testString,
     (state: {testNumber: string}) => state.testNumber,
     (state: {testStringArray: string[]}) => state.testStringArray,
-    // typings:expect-error
+    // @ts-expect-error
     (foo1: string, foo2: number, foo3: boolean, foo4: string, foo5: string, foo6: string, foo7: string, foo8: number, foo9: string[]) => {
       return {foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9};
     });
@@ -156,7 +156,7 @@ function testInvalidTypeInCombinator() {
   // does not allow a large array of heterogeneous parameter type
   // selectors when the combinator function is typed differently
   createSelector(
-    // typings:expect-error
+    // @ts-expect-error
     [
       (state: {testString: string}) => state.testString,
       (state: {testNumber: number}) => state.testNumber,
@@ -197,9 +197,9 @@ function testParametricSelector() {
     (foo, bar) => ({foo, bar}),
   );
 
-  // typings:expect-error
+  // @ts-expect-error
   selector({foo: 'fizz'});
-  // typings:expect-error
+  // @ts-expect-error
   selector({foo: 'fizz'}, {bar: 'baz'});
 
   const ret = selector({foo: 'fizz'}, {bar: 42});
@@ -233,12 +233,12 @@ function testArrayArgument() {
   const foo2: string = ret.foo2;
   const bar: number = ret.bar;
 
-  // typings:expect-error
+  // @ts-expect-error
   createSelector([
     (state: {foo: string}) => state.foo,
   ]);
 
-  // typings:expect-error
+  // @ts-expect-error
   createSelector([
     (state: {foo: string}) => state.foo,
     (state: {foo: string}) => state.foo,
@@ -260,7 +260,7 @@ function testArrayArgument() {
 
   });
 
-  // typings:expect-error
+  // @ts-expect-error
   createSelector([
     (state: {foo: string}) => state.foo,
     (state: {foo: string}) => state.foo,
@@ -276,7 +276,7 @@ function testArrayArgument() {
 
   });
 
-  // typings:expect-error
+  // @ts-expect-error
   createSelector([
     (state: {foo: string}) => state.foo,
     state => state.foo,
@@ -315,11 +315,11 @@ function testArrayArgument() {
     const foo7: string = ret.foo7;
     const foo8: string = ret.foo8;
     const foo9: string = ret.foo9;
-    // typings:expect-error
+    // @ts-expect-error
     ret.foo10;
   }
 
-  // typings:expect-error
+  // @ts-expect-error
   selector2({foo: 'fizz'}, {bar: 42});
 
   const parametric = createSelector([
@@ -353,7 +353,7 @@ function testArrayArgument() {
     return {foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9};
   });
 
-  // typings:expect-error
+  // @ts-expect-error
   parametric({foo: 'fizz'});
 
   {
@@ -367,7 +367,7 @@ function testArrayArgument() {
     const foo7: string = ret.foo7;
     const foo8: string = ret.foo8;
     const bar: number = ret.bar;
-    // typings:expect-error
+    // @ts-expect-error
     ret.foo9;
   }
 }
@@ -378,7 +378,7 @@ function testDefaultMemoize() {
   const memoized = defaultMemoize(func);
 
   const ret0: number = memoized('42');
-  // typings:expect-error
+  // @ts-expect-error
   const ret1: string = memoized('42');
 
   const memoized2 = defaultMemoize(
@@ -405,7 +405,7 @@ function testCreateSelectorCreator() {
   );
   const value: string = selector({foo: 'fizz'});
 
-  // typings:expect-error
+  // @ts-expect-error
   selector({foo: 'fizz'}, {bar: 42});
 
   const parametric = createSelector(
@@ -414,14 +414,14 @@ function testCreateSelectorCreator() {
     (foo, bar) => ({foo, bar}),
   );
 
-  // typings:expect-error
+  // @ts-expect-error
   parametric({foo: 'fizz'});
 
   const ret = parametric({foo: 'fizz'}, {bar: 42});
   const foo: string = ret.foo;
   const bar: number = ret.bar;
 
-  // typings:expect-error
+  // @ts-expect-error
   createSelectorCreator(defaultMemoize, 1);
 
   createSelectorCreator(defaultMemoize, <T>(a: T, b: T, index: number) => {
@@ -445,23 +445,23 @@ function testCreateStructuredSelector() {
   const foo: string = res.foo;
   const bar: number = res.bar;
 
-  // typings:expect-error
+  // @ts-expect-error
   selector({bar: '42'});
 
-  // typings:expect-error
+  // @ts-expect-error
   selector({foo: '42'}, {bar: 42});
 
-  // typings:expect-error
+  // @ts-expect-error
   createStructuredSelector<{foo: string}, {bar: number}>({
     bar: (state: {baz: boolean}) => 1
   });
 
-  // typings:expect-error
+  // @ts-expect-error
   createStructuredSelector<{foo: string}, {bar: number}>({
     bar: state => state.foo
   });
 
-  // typings:expect-error
+  // @ts-expect-error
   createStructuredSelector<{foo: string}, {bar: number}>({
     baz: state => state.foo
   });
@@ -476,16 +476,16 @@ function testDynamicArrayArgument() {
 
   createSelector(data.map(obj => () => obj.val1), (...vals) => vals.join(','));
 
-  // typings:expect-error
+  // @ts-expect-error
   createSelector(data.map(obj => () => obj.val1), (vals) => vals.join(','))
 
   createSelector(data.map(obj => () => obj.val1), (...vals: string[]) => 0)
-  // typings:expect-error
+  // @ts-expect-error
   createSelector(data.map(obj => () => obj.val1), (...vals: number[]) => 0)
 
   const s = createSelector(data.map(obj => (state: {}, fld: keyof Elem) => obj[fld]), (...vals) => vals.join(','));
   s({}, 'val1');
   s({}, 'val2');
-  // typings:expect-error
+  // @ts-expect-error
   s({}, 'val3');
 }
