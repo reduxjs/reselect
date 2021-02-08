@@ -96,8 +96,8 @@
     "mocha": "^2.2.5",
     "ncp": "^2.0.0",
     "nyc": "^6.4.0",
-    "typescript": "^2.9.2",
-    "typings-tester": "^0.2.0",
+    "typescript": "^3.8.3",
+    "typings-tester": "^0.3.2",
     "uglify-js": "^3.0.20"
   }
 }

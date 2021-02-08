@@ -146,9 +146,9 @@ function testInvalidTypeInCombinator() {
     (state: {testString: string}) => state.testString,
     (state: {testString: string}) => state.testString,
     (state: {testString: string}) => state.testString,
+    // typings:expect-error
     (state: {testNumber: string}) => state.testNumber,
     (state: {testStringArray: string[]}) => state.testStringArray,
-    // typings:expect-error
     (foo1: string, foo2: number, foo3: boolean, foo4: string, foo5: string, foo6: string, foo7: string, foo8: number, foo9: string[]) => {
       return {foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9};
     });
@@ -193,7 +193,7 @@ function testParametricSelector() {
 
   const selector = createSelector(
     (state: State) => state.foo,
-    (state: never, props: Props) => props.bar,
+    (state: State, props: Props) => props.bar,
     (foo, bar) => ({foo, bar}),
   );
 
@@ -225,7 +225,7 @@ function testArrayArgument() {
   const selector = createSelector([
     (state: {foo: string}) => state.foo,
     (state: {foo: string}) => state.foo,
-    (state: never, props: {bar: number}) => props.bar,
+    (state: {foo: string}, props: {bar: number}) => props.bar,
   ], (foo1, foo2, bar) => ({foo1, foo2, bar}));
 
   const ret = selector({foo: 'fizz'}, {bar: 42});
@@ -323,7 +323,7 @@ function testArrayArgument() {
   selector2({foo: 'fizz'}, {bar: 42});
 
   const parametric = createSelector([
-    (state: never, props: {bar: number}) => props.bar,
+    (state: {foo: string}, props: {bar: number}) => props.bar,
     (state: {foo: string}) => state.foo,
     (state: {foo: string}) => state.foo,
     (state: {foo: string}) => state.foo,
@@ -383,7 +383,7 @@ function testDefaultMemoize() {
 
   const memoized2 = defaultMemoize(
     (str: string, arr: string[]): {str: string, arr: string[]} => ({str, arr}),
-    <T>(a: T, b: T, index: number) => {
+    <T>(a: T & {}, b: T & {}, index: number) => {
       if (index === 0)
         return a === b;
 
@@ -410,7 +410,7 @@ function testCreateSelectorCreator() {
 
   const parametric = createSelector(
     (state: {foo: string}) => state.foo,
-    (state: never, props: {bar: number}) => props.bar,
+    (state: {foo: string}, props: {bar: number}) => props.bar,
     (foo, bar) => ({foo, bar}),
   );
 
@@ -424,7 +424,7 @@ function testCreateSelectorCreator() {
   // typings:expect-error
   createSelectorCreator(defaultMemoize, 1);
 
-  createSelectorCreator(defaultMemoize, <T>(a: T, b: T, index: number) => {
+  createSelectorCreator(defaultMemoize, <T>(a: T & {}, b: T & {}, index: number) => {
     if (index === 0)
       return a === b;
 
@@ -433,38 +433,81 @@ function testCreateSelectorCreator() {
 }
 
 function testCreateStructuredSelector() {
-  const selector = createStructuredSelector<{foo: string}, {
-    foo: string;
-    bar: number;
-  }>({
+  type State = { foo: string };
+  const FooSelector = (state: State) => state.foo;
+  const BarSelector = (state: State) => +state.foo;
+
+  const selector = createStructuredSelector({
+    foo: FooSelector,
+    bar: BarSelector,
+  });
+
+  const selectorGenerics = createStructuredSelector<
+    {
+      foo: typeof FooSelector;
+      bar: typeof BarSelector;
+    }
+  >({
     foo: state => state.foo,
     bar: state => +state.foo,
   });
 
-  const res = selector({foo: '42'});
-  const foo: string = res.foo;
-  const bar: number = res.bar;
+  type ExpectedResult = {
+    foo: string;
+    bar: number;
+  };
+
+  const res: ExpectedResult = selector({foo: '42'});
+  const resGenerics: ExpectedResult = selectorGenerics({foo: '42'});
 
   // typings:expect-error
   selector({bar: '42'});
+  // typings:expect-error
+  selectorGenerics({bar: '42'});
 
   // typings:expect-error
   selector({foo: '42'}, {bar: 42});
-
   // typings:expect-error
-  createStructuredSelector<{foo: string}, {bar: number}>({
-    bar: (state: {baz: boolean}) => 1
+  selectorGenerics({foo: '42'}, {bar: 42});
+
+  createStructuredSelector<{foo: () => string}>({
+    foo: () => 'string'
   });
 
   // typings:expect-error
-  createStructuredSelector<{foo: string}, {bar: number}>({
-    bar: state => state.foo
+  createStructuredSelector<{foo: () => string}>({
+    foo: () => 1
   });
 
   // typings:expect-error
-  createStructuredSelector<{foo: string}, {bar: number}>({
-    baz: state => state.foo
+  createStructuredSelector<{foo: () => string}>({
+    bar: () => 'string'
   });
+}
+
+function testParametricCreateStructuredSelector(){
+  type State = {foo: string; bar: {[key: string]: number}};
+  const FooSelector = (state: State, id: string) => state.foo;
+  const BarSelector = (state: State, id: string) => state.bar[id];
+
+  const selector = createStructuredSelector({
+    foo: FooSelector,
+    bar: BarSelector,
+  });
+
+  type ExpectedResult = {
+    foo: string;
+    bar: number;
+  };
+
+  const state: State = {foo: 'foo', bar: {foo: 1, bar: 2}};
+  const result: ExpectedResult = selector(state, 'foo');
+
+  // typings:expect-error
+  selector(state, 2);
+
+  // typings:expect-error
+  selector({foo: 3}, 2);
 }
 
 function testDynamicArrayArgument() {
