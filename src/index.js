@@ -10,7 +10,7 @@ function areArgumentsShallowlyEqual(equalityCheck, prev, next) {
   // Do this in a for loop (and not a `forEach` or an `every`) so we can determine equality as fast as possible.
   const length = prev.length
   for (let i = 0; i < length; i++) {
-    if (!equalityCheck(prev[i], next[i])) {
+    if (!equalityCheck(prev[i], next[i], i)) {
       return false
     }
   }
