@@ -387,7 +387,7 @@ function testDefaultMemoize() {
       if (index === 0)
         return a === b;
 
-      return a.toString() === b.toString();
+      return `${a}` === `${b}`;
     }
   );
 
@@ -428,7 +428,7 @@ function testCreateSelectorCreator() {
     if (index === 0)
       return a === b;
 
-    return a.toString() === b.toString();
+    return `${a}` === `${b}`;
   });
 }
 
