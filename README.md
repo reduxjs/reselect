@@ -981,3 +981,4 @@ MIT
 
 [coveralls-badge]: https://img.shields.io/coveralls/reduxjs/reselect/master.svg?style=flat-square
 [coveralls]: https://coveralls.io/github/reduxjs/reselect
+deneme2 addded
