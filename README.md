@@ -31,6 +31,7 @@ const taxSelector = createSelector(
 const totalSelector = createSelector(
   subtotalSelector,
   taxSelector,
+  deneme
   (subtotal, tax) => ({ total: subtotal + tax })
 )
 
