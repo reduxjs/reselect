@@ -445,6 +445,8 @@ function testCreateStructuredSelector() {
   const foo: string = res.foo;
   const bar: number = res.bar;
 
+  const recomputations: number = selector.recomputations()
+
   // typings:expect-error
   selector({bar: '42'});
 
