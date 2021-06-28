@@ -4,27 +4,58 @@ import {
   createSelectorCreator,
   createStructuredSelector,
   ParametricSelector,
+  TypedCreateSelector,
 } from '../src/index';
 
 function testSelector() {
   type State = {foo: string};
 
-  const selector = createSelector(
-    (state: State) => state.foo,
-    (foo) => foo,
+  const typedCreateSelector: TypedCreateSelector<State> = createSelector;
+
+  // typings:expect-error
+  typedCreateSelector(
+    (state: {bar: number}) => state.bar,
+    (bar) => bar
   );
 
-  const res = selector.resultFunc('test');
-  selector.recomputations();
-  selector.resetRecomputations();
+  {
+    const selector = createSelector(
+      (state: State) => state.foo,
+      (foo) => foo,
+    );
 
-  const foo: string = selector({foo: 'bar'});
+    const res = selector.resultFunc('test');
+    selector.recomputations();
+    selector.resetRecomputations();
 
-  // typings:expect-error
-  selector({foo: 'bar'}, {prop: 'value'});
+    const foo: string = selector({foo: 'bar'});
 
-  // typings:expect-error
-  const num: number = selector({foo: 'bar'});
+    // typings:expect-error
+    selector({foo: 'bar'}, {prop: 'value'});
+
+    // typings:expect-error
+    const num: number = selector({foo: 'bar'});
+  }
+
+  {
+    const selector = typedCreateSelector(
+      (state: State) => state.foo,
+      (foo) => foo
+    );
+
+    const res = selector.resultFunc('test');
+    selector.recomputations();
+    selector.resetRecomputations();
+
+    const foo: string = selector({foo: 'bar'});
+
+    // typings:expect-error
+    selector({foo: 'bar'}, {prop: 'value'});
+
+
+    // typings:expect-error
+    const num: number = selector({foo: 'bar'});
+  }
 
   // allows heterogeneous parameter type input selectors
   createSelector(
@@ -37,7 +68,9 @@ function testSelector() {
 function testNestedSelector() {
   type State = {foo: string, bar: number, baz: boolean};
 
-  const selector = createSelector(
+  const typedCreateSelector: TypedCreateSelector<State> = createSelector;
+
+  createSelector(
     createSelector(
       (state: State) => state.foo,
       (state: State) => state.bar,
@@ -57,30 +90,71 @@ function testNestedSelector() {
       // typings:expect-error
       const baz2: string = baz;
     },
-  )
+  );
+
+  typedCreateSelector(
+    typedCreateSelector(
+      (state: State) => state.foo,
+      (state: State) => state.bar,
+      (foo, bar) => ({foo, bar}),
+    ),
+    (state: State) => state.baz,
+    ({foo, bar}, baz) => {
+      const foo1: string = foo;
+      // typings:expect-error
+      const foo2: number = foo;
+
+      const bar1: number = bar;
+      // typings:expect-error
+      const bar2: string = bar;
+
+      const baz1: boolean = baz;
+      // typings:expect-error
+      const baz2: string = baz;
+    }
+  );
 }
 
 function testSelectorAsCombiner() {
   type SubState = {foo: string};
   type State = {bar: SubState};
 
+  const typedCreateSelector: TypedCreateSelector<State> = createSelector;
+
   const subSelector = createSelector(
     (state: SubState) => state.foo,
     foo => foo,
   );
 
-  const selector = createSelector(
-    (state: State) => state.bar,
-    subSelector,
-  );
+  {
+    const selector = createSelector(
+      (state: State) => state.bar,
+      subSelector,
+    );
 
-  // typings:expect-error
-  selector({foo: ''});
+    // typings:expect-error
+    selector({foo: ''});
 
-  // typings:expect-error
-  const n: number = selector({bar: {foo: ''}});
+    // typings:expect-error
+    const n: number = selector({bar: {foo: ''}});
 
-  const s: string = selector({bar: {foo: ''}});
+    const s: string = selector({bar: {foo: ''}});
+  }
+  
+  {
+    const selector = typedCreateSelector(
+      (state: State) => state.bar,
+      subSelector,
+    );
+
+    // typings:expect-error
+    selector({foo: ''})
+
+    // typings:expect-error
+    const n2: number = selector({bar: {foo: ''}});
+
+    const s2: string = selector({bar: {foo: ''}});
+  }
 }
 
 type Component<P> = (props: P) => any;
@@ -89,9 +163,25 @@ declare function connect<S, P, R>(selector: ParametricSelector<S, P, R>):
   (component: Component<P & R>) => Component<P>;
 
 function testConnect() {
+  type State = {foo: string};
+
+  const typedCreateSelector: TypedCreateSelector<State> = createSelector;
+
   connect(
     createSelector(
-      (state: {foo: string}) => state.foo,
+      (state: State) => state.foo,
+      foo => ({foo}),
+    )
+  )(props => {
+    // typings:expect-error
+    props.bar;
+
+    const foo: string = props.foo;
+  });
+  
+  connect(
+    typedCreateSelector(
+      (state: State) => state.foo,
       foo => ({foo}),
     )
   )(props => {
@@ -101,24 +191,47 @@ function testConnect() {
     const foo: string = props.foo;
   });
 
-  const connected = connect(
-    createSelector(
-      (state: {foo: string}) => state.foo,
-      (state: never, props: {bar: number}) => props.bar,
-      (foo, bar) => ({foo, baz: bar}),
-    )
-  )(props => {
-    const foo: string = props.foo;
-    const bar: number = props.bar;
-    const baz: number = props.baz;
+  {
+    const connected = connect(
+      createSelector(
+        (state: State) => state.foo,
+        (state: never, props: {bar: number}) => props.bar,
+        (foo, bar) => ({foo, baz: bar}),
+      )
+    )(props => {
+      const foo: string = props.foo;
+      const bar: number = props.bar;
+      const baz: number = props.baz;
+      // typings:expect-error
+      props.fizz;
+    });
+
+    connected({bar: 42});
+
     // typings:expect-error
-    props.fizz;
-  });
+    connected({bar: 42, baz: 123});
+  }
 
-  connected({bar: 42});
+  {
+    const connected = connect(
+      typedCreateSelector(
+        (state: State) => state.foo,
+        (state: never, props: {bar: number}) => props.bar,
+        (foo, bar) => ({foo, baz: bar}),
+      )
+    )(props => {
+      const foo: string = props.foo;
+      const bar: number = props.bar;
+      const baz: number = props.baz;
+      // typings:expect-error
+      props.fizz;
+    });
 
-  // typings:expect-error
-  connected({bar: 42, baz: 123});
+    connected({bar: 42});
+
+    // typings:expect-error
+    connected({bar: 42, baz: 123});
+  }
 }
 
 function testInvalidTypeInCombinator() {
@@ -176,6 +289,8 @@ function testParametricSelector() {
   type State = {foo: string;};
   type Props = {bar: number};
 
+  const typedCreateSelector: TypedCreateSelector<State> = createSelector;
+
   // allows heterogeneous parameter type selectors
   createSelector(
     (state: {testString: string}) => state.testString,
@@ -206,55 +321,119 @@ function testParametricSelector() {
   const foo: string = ret.foo;
   const bar: number = ret.bar;
 
-  const selector2 = createSelector(
-    (state) => state.foo,
-    (state) => state.foo,
-    (state) => state.foo,
-    (state) => state.foo,
-    (state) => state.foo,
-    (state: State, props: Props) => props.bar,
-    (foo1, foo2, foo3, foo4, foo5, bar) => ({
-      foo1, foo2, foo3, foo4, foo5, bar,
-    }),
-  );
+  {
+    const selector = createSelector(
+      (state) => state.foo,
+      (state) => state.foo,
+      (state) => state.foo,
+      (state) => state.foo,
+      (state) => state.foo,
+      (state: State, props: Props) => props.bar,
+      (foo1, foo2, foo3, foo4, foo5, bar) => ({
+        foo1, foo2, foo3, foo4, foo5, bar,
+      }),
+    );
 
-  selector2({foo: 'fizz'}, {bar: 42});
+    selector({foo: 'fizz'}, {bar: 42});
+  }
+
+  {
+    const selector = typedCreateSelector(
+      (state) => state.foo,
+      (state) => state.foo,
+      (state) => state.foo,
+      (state) => state.foo,
+      (state) => state.foo,
+      (state: State, props: Props) => props.bar,
+      (foo1, foo2, foo3, foo4, foo5, bar) => ({
+        foo1, foo2, foo3, foo4, foo5, bar,
+      }),
+    );
+
+    selector({foo: 'fizz'}, {bar: 42});
+  }
 }
 
 function testArrayArgument() {
-  const selector = createSelector([
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: never, props: {bar: number}) => props.bar,
-  ], (foo1, foo2, bar) => ({foo1, foo2, bar}));
+  type State = {foo: string};
 
-  const ret = selector({foo: 'fizz'}, {bar: 42});
-  const foo1: string = ret.foo1;
-  const foo2: string = ret.foo2;
-  const bar: number = ret.bar;
+  const typedCreateSelector: TypedCreateSelector<State> = createSelector;
+
+  {
+    const selector = createSelector([
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+      (state: never, props: {bar: number}) => props.bar,
+    ], (foo1, foo2, bar) => ({foo1, foo2, bar}));
+
+    const ret = selector({foo: 'fizz'}, {bar: 42});
+    const foo1: string = ret.foo1;
+    const foo2: string = ret.foo2;
+    const bar: number = ret.bar;
+  }
+
+  {
+    const selector = typedCreateSelector([
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+      (state: never, props: {bar: number}) => props.bar,
+    ], (foo1, foo2, bar) => ({foo1, foo2, bar}));
+
+    const ret = selector({foo: 'fizz'}, {bar: 42});
+    const foo1: string = ret.foo1;
+    const foo2: string = ret.foo2;
+    const bar: number = ret.bar;
+  }
 
   // typings:expect-error
   createSelector([
-    (state: {foo: string}) => state.foo,
+    (state: State) => state.foo,
+  ]);
+  
+  // typings:expect-error
+  typedCreateSelector([
+    (state: State) => state.foo,
   ]);
 
   // typings:expect-error
   createSelector([
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+  ], (foo: string, bar: number) => {});
+
+  // typings:expect-error
+  typedCreateSelector([
+    (state: State) => state.foo,
+    (state: State) => state.foo,
   ], (foo: string, bar: number) => {});
 
   createSelector([
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+  ], (foo1: string, foo2: string, foo3: string, foo4: string, foo5: string,
+      foo6: string, foo7: string, foo8: string, foo9: string, foo10: string) => {
+
+  });
+
+  typedCreateSelector([
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
   ], (foo1: string, foo2: string, foo3: string, foo4: string, foo5: string,
       foo6: string, foo7: string, foo8: string, foo9: string, foo10: string) => {
 
@@ -262,23 +441,39 @@ function testArrayArgument() {
 
   // typings:expect-error
   createSelector([
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+  ], (foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8: number, foo9, foo10) => {
+
+  });
+
+  // typings:expect-error
+  typedCreateSelector([
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
   ], (foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8: number, foo9, foo10) => {
 
   });
 
   // typings:expect-error
   createSelector([
-    (state: {foo: string}) => state.foo,
+    (state: State) => state.foo,
     state => state.foo,
     state => state.foo,
     state => state.foo,
@@ -289,23 +484,36 @@ function testArrayArgument() {
     1,
   ], (foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9) => {});
 
-  const selector2 = createSelector([
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-  ], (foo1: string, foo2: string, foo3: string, foo4: string, foo5: string,
-      foo6: string, foo7: string, foo8: string, foo9: string) => {
-    return {foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9};
-  });
+  // typings:expect-error
+  typedCreateSelector([
+    (state: State) => state.foo,
+    state => state.foo,
+    state => state.foo,
+    state => state.foo,
+    state => state.foo,
+    state => state.foo,
+    state => state.foo,
+    state => state.foo,
+    1,
+  ], (foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9) => {});
 
   {
-    const ret = selector2({foo: 'fizz'});
+    const selector = createSelector([
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+    ], (foo1: string, foo2: string, foo3: string, foo4: string, foo5: string,
+        foo6: string, foo7: string, foo8: string, foo9: string) => {
+      return {foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9};
+    });
+
+    const ret = selector({foo: 'fizz'});
     const foo1: string = ret.foo1;
     const foo2: string = ret.foo2;
     const foo3: string = ret.foo3;
@@ -317,25 +525,109 @@ function testArrayArgument() {
     const foo9: string = ret.foo9;
     // typings:expect-error
     ret.foo10;
+
+    // typings:expect-error
+    selector({foo: 'fizz'}, {bar: 42});
+  }
+  
+  {
+    const selector = typedCreateSelector([
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+    ], (foo1: string, foo2: string, foo3: string, foo4: string, foo5: string,
+        foo6: string, foo7: string, foo8: string, foo9: string) => {
+      return {foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9};
+    });
+
+    const ret = selector({foo: 'fizz'});
+    const foo1: string = ret.foo1;
+    const foo2: string = ret.foo2;
+    const foo3: string = ret.foo3;
+    const foo4: string = ret.foo4;
+    const foo5: string = ret.foo5;
+    const foo6: string = ret.foo6;
+    const foo7: string = ret.foo7;
+    const foo8: string = ret.foo8;
+    const foo9: string = ret.foo9;
+    // typings:expect-error
+    ret.foo10;
+
+    // typings:expect-error
+    selector({foo: 'fizz'}, {bar: 42});
   }
 
-  // typings:expect-error
-  selector2({foo: 'fizz'}, {bar: 42});
+  {
+    const parametric = createSelector([
+      (state: never, props: {bar: number}) => props.bar,
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+    ], (bar: number, foo1: string, foo2: string, foo3: string, foo4: string,
+        foo5: string, foo6: string, foo7: string, foo8: string) => {
+      return {foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, bar};
+    });
 
-  const parametric = createSelector([
-    (state: never, props: {bar: number}) => props.bar,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-    (state: {foo: string}) => state.foo,
-  ], (bar: number, foo1: string, foo2: string, foo3: string, foo4: string,
-      foo5: string, foo6: string, foo7: string, foo8: string) => {
-    return {foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, bar};
-  });
+    // typings:expect-error
+    parametric({foo: 'fizz'});
+
+    const ret = parametric({foo: 'fizz'}, {bar: 42});
+    const foo1: string = ret.foo1;
+    const foo2: string = ret.foo2;
+    const foo3: string = ret.foo3;
+    const foo4: string = ret.foo4;
+    const foo5: string = ret.foo5;
+    const foo6: string = ret.foo6;
+    const foo7: string = ret.foo7;
+    const foo8: string = ret.foo8;
+    const bar: number = ret.bar;
+    // typings:expect-error
+    ret.foo9;
+  }
+
+  {
+    const parametric = typedCreateSelector([
+      (state: never, props: {bar: number}) => props.bar,
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+      (state: State) => state.foo,
+    ], (bar: number, foo1: string, foo2: string, foo3: string, foo4: string,
+        foo5: string, foo6: string, foo7: string, foo8: string) => {
+      return {foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, bar};
+    });
+
+    // typings:expect-error
+    parametric({foo: 'fizz'});
+
+    const ret = parametric({foo: 'fizz'}, {bar: 42});
+    const foo1: string = ret.foo1;
+    const foo2: string = ret.foo2;
+    const foo3: string = ret.foo3;
+    const foo4: string = ret.foo4;
+    const foo5: string = ret.foo5;
+    const foo6: string = ret.foo6;
+    const foo7: string = ret.foo7;
+    const foo8: string = ret.foo8;
+    const bar: number = ret.bar;
+    // typings:expect-error
+    ret.foo9;
+  }
 
   // allows a large array of heterogeneous parameter type selectors
   const correctlyTypedArraySelector = createSelector([
@@ -352,24 +644,6 @@ function testArrayArgument() {
       foo6: string, foo7: string, foo8: string, foo9: string[]) => {
     return {foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9};
   });
-
-  // typings:expect-error
-  parametric({foo: 'fizz'});
-
-  {
-    const ret = parametric({foo: 'fizz'}, {bar: 42});
-    const foo1: string = ret.foo1;
-    const foo2: string = ret.foo2;
-    const foo3: string = ret.foo3;
-    const foo4: string = ret.foo4;
-    const foo5: string = ret.foo5;
-    const foo6: string = ret.foo6;
-    const foo7: string = ret.foo7;
-    const foo8: string = ret.foo8;
-    const bar: number = ret.bar;
-    // typings:expect-error
-    ret.foo9;
-  }
 }
 
 function testDefaultMemoize() {
