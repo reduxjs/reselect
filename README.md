@@ -1,5 +1,5 @@
 # Reselect
-[![Travis][build-badge]][build]
+[![GitHub Workflow Status][build-badge]][build]
 [![npm package][npm-badge]][npm]
 [![Coveralls][coveralls-badge]][coveralls]
 
@@ -972,8 +972,8 @@ Can be useful when doing **very expensive** computations on elements of a collec
 
 MIT
 
-[build-badge]: https://img.shields.io/travis/reduxjs/reselect/master.svg?style=flat-square
-[build]: https://travis-ci.org/reduxjs/reselect
+[build-badge]: https://img.shields.io/github/workflow/status/reduxjs/redux-thunk/Tests
+[build]: https://github.com/reduxjs/reselect/actions/workflows/build-and-test-types.yml
 
 [npm-badge]: https://img.shields.io/npm/v/reselect.svg?style=flat-square
 [npm]: https://www.npmjs.org/package/reselect
