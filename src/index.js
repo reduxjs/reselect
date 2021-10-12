@@ -36,7 +36,7 @@ export function defaultMemoize(func, equalityCheck = defaultEqualityCheck) {
 function getDependencies(funcs) {
   const dependencies = Array.isArray(funcs[0]) ? funcs[0] : funcs
 
-  if (!dependencies.every(dep => typeof dep === 'function')) {
+  if (process.env.NODE_ENV !== 'production' && !dependencies.every(dep => typeof dep === 'function')) {
     const dependencyTypes = dependencies.map(
       dep => typeof dep
     ).join(', ')
@@ -89,7 +89,7 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
 export const createSelector = /* #__PURE__ */ createSelectorCreator(defaultMemoize)
 
 export function createStructuredSelector(selectors, selectorCreator = createSelector) {
-  if (typeof selectors !== 'object') {
+  if (process.env.NODE_ENV !== 'production' && typeof selectors !== 'object') {
     throw new Error(
       'createStructuredSelector expects first argument to be an object ' +
       `where each property is a selector, instead received a ${typeof selectors}`
