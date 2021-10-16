@@ -470,6 +470,40 @@ function testCreateStructuredSelector() {
     // @ts-expect-error
     baz: state => state.foo
   });
+
+
+  // Test automatic inference of types for createStructuredSelector via overload
+  type State = { foo: string };
+  const FooSelector = (state: State) => state.foo;
+  const BarSelector = (state: State) => +state.foo;
+
+  const selector2 = createStructuredSelector({
+    foo: FooSelector,
+    bar: BarSelector,
+  });
+
+  const selectorGenerics = createStructuredSelector<
+    {
+      foo: typeof FooSelector;
+      bar: typeof BarSelector;
+    }
+  >({
+    foo: state => state.foo,
+    bar: state => +state.foo,
+  });
+
+  type ExpectedResult = {
+    foo: string;
+    bar: number;
+  };
+
+  const res2: ExpectedResult = selector({foo: '42'});
+  const resGenerics: ExpectedResult = selectorGenerics({foo: '42'});
+
+    //@ts-expect-error
+    selector2({bar: '42'});
+    // @ts-expect-error
+    selectorGenerics({bar: '42'});
 }
 
 function testDynamicArrayArgument() {

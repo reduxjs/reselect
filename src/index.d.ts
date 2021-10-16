@@ -96,6 +96,17 @@ export function createSelectorCreator<O1, O2, O3>(
   ...rest: any[],
 ): typeof createSelector;
 
+
+// Automatic inference of state and selector+output arguments for createStructuredSelector
+export function createStructuredSelector<SelectorMap extends { [key: string]: (...args: any[]) => any }>(
+  selectorMap: SelectorMap
+):  (
+  state: SelectorMap[keyof SelectorMap] extends (state: infer State) => unknown ? State : never
+) => {
+  [Key in keyof SelectorMap]: ReturnType<SelectorMap[Key]>;
+}
+
+// Manual definition of state and output arguments
 export function createStructuredSelector<State, Result = State>(
   selectors: {[K in keyof Result]: Selector<State, Result[K], never>},
   selectorCreator?: typeof createSelector,
