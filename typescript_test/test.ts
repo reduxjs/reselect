@@ -396,10 +396,7 @@ function testDefaultMemoize() {
 
   const memoized2 = defaultMemoize(
     (str: string, arr: string[]): {str: string, arr: string[]} => ({str, arr}),
-    <T>(a: T, b: T, index: number) => {
-      if (index === 0)
-        return a === b;
-
+    <T>(a: T, b: T,) => {
       return `${a}` === `${b}`;
     }
   );
@@ -437,10 +434,7 @@ function testCreateSelectorCreator() {
   // @ts-expect-error
   createSelectorCreator(defaultMemoize, 1);
 
-  createSelectorCreator(defaultMemoize, <T>(a: T, b: T, index: number) => {
-    if (index === 0)
-      return a === b;
-
+  createSelectorCreator(defaultMemoize, <T>(a: T, b: T) => {
     return `${a}` === `${b}`;
   });
 }
@@ -532,3 +526,28 @@ function testStructuredSelectorTypeParams() {
     foo: selectFoo,
   });
 }
+
+
+
+// #384: check for defaultMemoize
+import { isEqual, groupBy } from 'lodash'
+
+{
+  interface Transaction {
+    transactionId: string
+  }
+  
+  const toId = (transaction: Transaction) => transaction.transactionId
+  const transactionsIds = (transactions: Transaction[]) => transactions.map(toId)
+  const collectionsEqual = (ts1: Transaction[], ts2: Transaction[]) => isEqual(transactionsIds(ts1), transactionsIds(ts2))
+  
+  const createTransactionsSelector = createSelectorCreator(defaultMemoize, collectionsEqual)
+
+
+  const groupTransactionsByLabel = defaultMemoize(
+    (transactions: Transaction[]) => groupBy(transactions, item => item.transactionId),
+    collectionsEqual,
+  )
+  
+}
+

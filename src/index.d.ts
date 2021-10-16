@@ -51,13 +51,24 @@ export function createSelector<Selectors extends SelectorArray, Result>(
   combiner: (...args: SelectorResultArray<Selectors>) => Result,
 ): OutputSelector<Selectors, Result, GetParamsFromSelectors<Selectors>, (...args: SelectorResultArray<Selectors>) => Result>;
 
-export function defaultMemoize<F extends (...args: any[]) => any>(
-  func: F, equalityCheck?: <T>(a: T, b: T, index: number) => boolean,
+export type EqualityFn<T> = (a: T, b: T /*, index: number*/) => boolean
+
+export function defaultMemoize<F extends (...args: any[]) => any, T>(
+  func: F, equalityCheck?: EqualityFn<T>,
 ): F;
 
 export function createSelectorCreator(
   memoize: <F extends (...args: any[]) => any>(func: F) => F,
 ): typeof createSelector;
+
+
+
+export function createSelectorCreator<T>(
+  memoize: typeof defaultMemoize, 
+  equalityCheck: EqualityFn<T>
+) : typeof createSelector
+
+
 
 export function createSelectorCreator<O1>(
   memoize: <F extends (...args: any[]) => any>(func: F,
