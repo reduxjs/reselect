@@ -3,7 +3,7 @@
 export as namespace Reselect;
 
 export type Selector<S = any, R = unknown, P extends never | (readonly any[]) = any[]> = [P] extends [never] ? (state: S) => R : (state: S, ...params: P) => R;
-export type ParametricSelector<S = any, P extends never | (readonly any[]) = any[], R = unknown> = Selector<S, R, P>
+export type ParametricSelector<S, P, R> = Selector<S, R, [P, ...any]>
 export type OutputSelector<S extends SelectorArray, Result, Params extends readonly any[], Combiner> = Selector<GetStateFromSelectors<S>, Result, Params> & {
   resultFunc: Combiner;
   recomputations: () => number;

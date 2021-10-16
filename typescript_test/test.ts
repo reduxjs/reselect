@@ -111,14 +111,12 @@ function testConnect() {
     )
   )(props => {
     const foo: string = props.foo;
-    // @ts-expect-error
     const bar: number = props.bar;
     const baz: number = props.baz;
     // @ts-expect-error
     props.fizz;
   });
 
-  // @ts-expect-error
   connected({bar: 42});
 
   // @ts-expect-error
