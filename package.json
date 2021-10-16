@@ -84,7 +84,7 @@
     "ncp": "^2.0.0",
     "nyc": "^6.4.0",
     "rollup": "^2.38.5",
-    "typescript": "^3.9.7",
+    "typescript": "^4.4.0",
     "uglify-js": "^3.0.20"
   }
 }
