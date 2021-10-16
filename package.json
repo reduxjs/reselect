@@ -6,6 +6,13 @@
   "jsnext:main": "es/index.js",
   "module": "es/index.js",
   "typings": "lib/index.d.ts",
+  "typesVersions": {
+    "<4.2.0": {
+      "*": [
+        "src/typesVersions/ts4.1/*"
+      ]
+    }
+  },
   "files": [
     "lib",
     "src",
