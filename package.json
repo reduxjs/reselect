@@ -2,10 +2,11 @@
   "name": "reselect",
   "version": "4.1.0-alpha.0",
   "description": "Selectors for Redux.",
-  "main": "lib/index.js",
-  "jsnext:main": "es/index.js",
-  "module": "es/index.js",
-  "typings": "lib/index.d.ts",
+  "main": "./lib/index.js",
+  "jsnext:main": "./es/index.js",
+  "module": "./es/index.js",
+  "types": "./es/index.d.ts",
+  "unpkg": "./dist/reselect.js",
   "typesVersions": {
     "<4.2.0": {
       "*": [
@@ -23,15 +24,19 @@
     "url": "https://github.com/reduxjs/reselect/issues"
   },
   "scripts": {
-    "compile:commonjs": "better-npm-run compile:commonjs",
-    "compile:umdmin": "uglifyjs dist/reselect.js -mt -o dist/reselect.min.js",
-    "compile:umd": "rollup -c",
-    "compile:es": "babel -d es/ src/",
-    "compile": "npm run compile:commonjs && npm run compile:umd && npm run compile:umdmin && npm run compile:es",
+    "build:commonjs": "cross-env BABEL_ENV=commonjs babel src/index.ts --extensions .ts --out-dir lib ",
+    "build:es": "babel src/index.ts --extensions .ts --out-dir es",
+    "build:umd": "cross-env NODE_ENV=development rollup -c -o dist/reselect.js",
+    "build:umd:min": "cross-env NODE_ENV=production rollup -c -o dist/reselect.min.js",
+    "build:types": "tsc",
+    "build": "rimraf dist lib es && npm run build:types && npm run build:commonjs && npm run build:es && npm run build:umd && npm run build:umd:min",
+    "clean": "rimraf lib dist es coverage",
+    "api-types": "api-extractor run --local",
+    "format": "prettier --write \"{src,test}/**/*.{js,ts}\" \"docs/**/*.md\"",
     "lint": "eslint src test",
-    "prepublish": "npm run compile",
-    "test": "better-npm-run test",
-    "test:cov": "better-npm-run test:cov",
+    "prepublishOnly": "npm run build",
+    "test": "jest",
+    "test:cov": "jest --coverage",
     "test:typescript": "better-npm-run test:typescript"
   },
   "betterScripts": {
@@ -52,7 +57,7 @@
       "command": "tsc --noEmit -p typescript_test/tsconfig.json"
     },
     "compile:commonjs": {
-      "command": "babel -d lib/ src/ && ncp ./src/index.d.ts ./lib/index.d.ts",
+      "command": "babel -d lib/ src/",
       "env": {
         "BABEL_ENV": "cjs"
       }
@@ -77,22 +82,33 @@
     "@babel/cli": "^7.12.13",
     "@babel/core": "^7.12.13",
     "@babel/preset-env": "^7.12.13",
+    "@babel/preset-typescript": "^7.14.5",
     "@babel/register": "^7.12.13",
+    "@microsoft/api-extractor": "^7.18.1",
     "@rollup/plugin-babel": "^5.2.3",
+    "@rollup/plugin-commonjs": "^15.1.0",
+    "@rollup/plugin-node-resolve": "^9.0.0",
+    "@rollup/plugin-replace": "^2.3.3",
+    "@types/jest": "^27.0.2",
     "@types/lodash": "^4.14.175",
     "better-npm-run": "0.0.8",
     "chai": "^3.0.0",
     "codecov.io": "^0.1.6",
     "coveralls": "^2.11.4",
+    "cross-env": "^7.0.2",
     "eslint": "^2.11",
     "eslint-plugin-react": "^5.1.1",
+    "jest": "^26.6.1",
     "lodash.memoize": "^4.1.0",
     "mkdirp": "^0.5.1",
     "mocha": "^2.2.5",
     "ncp": "^2.0.0",
     "nyc": "^6.4.0",
+    "prettier": "^2.1.2",
     "rollup": "^2.38.5",
-    "typescript": "^4.4.0",
-    "uglify-js": "^3.0.20"
-  }
+    "rollup-plugin-terser": "^7.0.2",
+    "ts-jest": "26.5.6",
+    "typescript": "^4.4.0"
+  },
+  "dependencies": {}
 }
