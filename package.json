@@ -2,10 +2,11 @@
   "name": "reselect",
   "version": "4.1.0-alpha.0",
   "description": "Selectors for Redux.",
-  "main": "lib/index.js",
-  "jsnext:main": "es/index.js",
-  "module": "es/index.js",
-  "typings": "lib/index.d.ts",
+  "main": "./lib/index.js",
+  "jsnext:main": "./es/index.js",
+  "module": "./es/index.js",
+  "types": "./es/index.d.ts",
+  "unpkg": "./dist/reselect.js",
   "typesVersions": {
     "<4.2.0": {
       "*": [
@@ -23,13 +24,17 @@
     "url": "https://github.com/reduxjs/reselect/issues"
   },
   "scripts": {
-    "compile:commonjs": "better-npm-run compile:commonjs",
-    "compile:umdmin": "uglifyjs dist/reselect.js -mt -o dist/reselect.min.js",
-    "compile:umd": "rollup -c",
-    "compile:es": "babel -d es/ src/",
-    "compile": "npm run compile:commonjs && npm run compile:umd && npm run compile:umdmin && npm run compile:es",
+    "build:commonjs": "cross-env BABEL_ENV=commonjs babel src/index.ts --extensions .ts --out-dir lib ",
+    "build:es": "babel src/index.ts --extensions .ts --out-dir es",
+    "build:umd": "cross-env NODE_ENV=development rollup -c -o dist/reselect.js",
+    "build:umd:min": "cross-env NODE_ENV=production rollup -c -o dist/reselect.min.js",
+    "build:types": "tsc",
+    "build": "rimraf dist lib es && npm run build:types && npm run build:commonjs && npm run build:es && npm run build:umd && npm run build:umd:min",
+    "clean": "rimraf lib dist es coverage",
+    "api-types": "api-extractor run --local",
+    "format": "prettier --write \"{src,test}/**/*.{js,ts}\" \"docs/**/*.md\"",
     "lint": "eslint src test",
-    "prepublish": "npm run compile",
+    "prepare": "npm run build",
     "test": "better-npm-run test",
     "test:cov": "better-npm-run test:cov",
     "test:typescript": "better-npm-run test:typescript"
@@ -52,7 +57,7 @@
       "command": "tsc --noEmit -p typescript_test/tsconfig.json"
     },
     "compile:commonjs": {
-      "command": "babel -d lib/ src/ && ncp ./src/index.d.ts ./lib/index.d.ts",
+      "command": "babel -d lib/ src/",
       "env": {
         "BABEL_ENV": "cjs"
       }

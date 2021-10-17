@@ -11,3 +11,4 @@ typescript_test/should_not_compile/index.js
 typescript_test/common.js
 flow_test/should_fail/flow-typed/index.js.flow
 flow_test/should_pass/flow-typed/index.js.flow
+reselect-builds/

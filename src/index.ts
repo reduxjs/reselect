@@ -1,4 +1,4 @@
-import {
+import type {
   Selector,
   GetParamsFromSelectors,
   OutputSelector,
@@ -7,7 +7,15 @@ import {
   SelectorResultArray
 } from './types'
 
-export * from './types'
+export type {
+  Selector,
+  GetParamsFromSelectors,
+  OutputSelector,
+  EqualityFn,
+  SelectorArray,
+  SelectorResultArray,
+  ParametricSelector
+} from './types'
 
 export const defaultEqualityCheck: EqualityFn = (a, b) => {
   return a === b
