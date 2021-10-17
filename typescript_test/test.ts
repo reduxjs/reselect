@@ -4,8 +4,13 @@ import {
   defaultEqualityCheck,
   createSelectorCreator,
   createStructuredSelector,
-  ParametricSelector
+  ParametricSelector,
+  OutputSelector
 } from '../src/index'
+
+export function expectType<T>(t: T): T {
+  return t
+}
 
 function testSelector() {
   type State = { foo: string }
@@ -259,6 +264,16 @@ function testParametricSelector() {
   )
 
   selector2({ foo: 'fizz' }, { bar: 42 })
+
+  // TODO Should should error because two of the inputs have conflicting types for arg 2
+  const selector3 = createSelector(
+    (s: State) => s.foo,
+    (s: State, x: string) => x,
+    (s: State, y: number) => y,
+    (v, x) => {
+      return x + v
+    }
+  )
 }
 
 function testArrayArgument() {
@@ -701,9 +716,16 @@ import { isEqual, groupBy } from 'lodash'
 
   const createMultiMemoizeArgSelector = createSelectorCreator(
     multiArgMemoize,
-    defaultEqualityCheck,
     42,
-    'test'
+    'abcd',
+    defaultEqualityCheck
+  )
+
+  const createMultiMemoizeArgSelector2 = createSelectorCreator(
+    multiArgMemoize,
+    42,
+    // @ts-expect-error
+    defaultEqualityCheck
   )
 
   const groupTransactionsByLabel = defaultMemoize(
@@ -711,4 +733,152 @@ import { isEqual, groupBy } from 'lodash'
       groupBy(transactions, item => item.transactionId),
     collectionsEqual
   )
+}
+
+// #445
+{
+  interface TestState {
+    someNumber: number | null
+    someString: string | null
+  }
+
+  interface Object1 {
+    str: string
+  }
+  interface Object2 {
+    num: number
+  }
+
+  const getNumber = (state: TestState) => state.someNumber
+  const getString = (state: TestState) => state.someString
+
+  function generateObject1(str: string): Object1 {
+    return {
+      str
+    }
+  }
+  function generateObject2(num: number): Object2 {
+    return {
+      num
+    }
+  }
+  function generateComplexObject(
+    num: number,
+    subObject: Object1,
+    subObject2: Object2
+  ): boolean {
+    return true
+  }
+
+  // ################ Tests ################
+
+  // Compact selector examples
+
+  // Should error because generateObject1 can't take null
+  // @ts-expect-error
+  const getObject1 = createSelector([getString], generateObject1)
+
+  // Should error because generateObject2 can't take null
+  // @ts-expect-error
+  const getObject2 = createSelector([getNumber], generateObject2)
+
+  // Should error because mismatch of params
+  // @ts-expect-error
+  const getComplexObjectTest1 = createSelector(
+    [getObject1],
+    generateComplexObject
+  )
+
+  // Does error, but error is really weird and talks about "Object1 is not assignable to type number"
+  // @ts-expect-error
+  const getComplexObjectTest2 = createSelector(
+    [getNumber, getObject1],
+    generateComplexObject
+  )
+
+  // Should error because number can't be null
+  const getComplexObjectTest3 = createSelector(
+    // @ts-expect-error
+    [getNumber, getObject1, getObject2],
+    generateComplexObject
+  )
+
+  // Does error, but error is really weird and talks about "Object1 is not assignable to type number"
+  const getComplexObjectTest4 = createSelector(
+    // @ts-expect-error
+    [getObject1, getNumber, getObject2],
+    generateComplexObject
+  )
+
+  // Verbose selector examples
+
+  // Errors correctly, says str can't be null
+  const getVerboseObject1 = createSelector([getString], str =>
+    // @ts-expect-error
+    generateObject1(str)
+  )
+
+  // Errors correctly, says num can't be null
+  const getVerboseObject2 = createSelector([getNumber], num =>
+    // @ts-expect-error
+    generateObject2(num)
+  )
+
+  // Errors correctly
+  // @ts-expect-error
+  const getVerboseComplexObjectTest1 = createSelector([getObject1], obj1 =>
+    // @ts-expect-error
+    generateComplexObject(obj1)
+  )
+
+  // Errors correctly
+  // @ts-expect-error
+  const getVerboseComplexObjectTest2 = createSelector(
+    [getNumber, getObject1],
+    // @ts-expect-error
+    (num, obj1) => generateComplexObject(num, obj1)
+  )
+
+  // Errors correctly
+  const getVerboseComplexObjectTest3 = createSelector(
+    // @ts-expect-error
+    [getNumber, getObject1, getObject2],
+    (num, obj1, obj2) => generateComplexObject(num, obj1, obj2)
+  )
+
+  // Errors correctly
+  const getVerboseComplexObjectTest4 = createSelector(
+    // @ts-expect-error
+    [getObject1, getNumber, getObject2],
+    (num, obj1, obj2) => generateComplexObject(num, obj1, obj2)
+  )
+}
+
+// #492
+{
+  const fooPropSelector = (_: {}, ownProps: { foo: string }) => ownProps.foo
+  const fooBarPropsSelector = (
+    _: {},
+    ownProps: { foo: string; bar: string }
+  ) => [ownProps.foo, ownProps.bar]
+
+  const combinedSelector = createSelector(
+    fooPropSelector,
+    fooBarPropsSelector,
+    (foo, fooBar) => fooBar
+  )
+
+  /*
+  expectType<
+    OutputSelector<
+      {},
+      {
+        foo: string
+        bar: string
+      },
+      string[],
+      (res1: string, res2: string[]) => string[]
+    >
+  >(combinedSelector)
+  */
 }
