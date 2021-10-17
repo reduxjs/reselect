@@ -1,66 +1,13 @@
-export type Selector<
-  S = any,
-  R = unknown,
-  P extends never | readonly any[] = any[]
-> = [P] extends [never] ? (state: S) => R : (state: S, ...params: P) => R
-export type ParametricSelector<S, P, R> = Selector<S, R, [P, ...any]>
-export type OutputSelector<
-  S extends SelectorArray,
-  Result,
-  Params extends readonly any[],
-  Combiner
-> = Selector<GetStateFromSelectors<S>, Result, Params> & {
-  resultFunc: Combiner
-  dependencies: SelectorArray
-  recomputations: () => number
-  resetRecomputations: () => number
-}
+import {
+  Selector,
+  GetParamsFromSelectors,
+  OutputSelector,
+  EqualityFn,
+  SelectorArray,
+  SelectorResultArray
+} from './types'
 
-type SelectorArray = ReadonlyArray<Selector>
-
-type GetStateFromSelector<S> = S extends Selector<infer State> ? State : never
-type GetStateFromSelectors<S extends SelectorArray> = S extends [
-  infer Current,
-  ...infer Other
-]
-  ? Current extends Selector
-    ? Other extends SelectorArray
-      ? GetStateFromSelector<Current> | GetStateFromSelectors<Other>
-      : GetStateFromSelector<Current>
-    : never
-  : S extends (infer Elem)[]
-  ? GetStateFromSelector<Elem>
-  : never
-
-type GetParamsFromSelector<S> = S extends Selector<any, any, infer P>
-  ? P extends []
-    ? never
-    : P
-  : never
-export type GetParamsFromSelectors<S, Found = never> = S extends SelectorArray
-  ? S extends (infer s)[]
-    ? GetParamsFromSelector<s>
-    : S extends [infer Current, ...infer Rest]
-    ? GetParamsFromSelector<Current> extends []
-      ? GetParamsFromSelectors<Rest, Found>
-      : GetParamsFromSelector<Current>
-    : S
-  : Found
-
-type SelectorResultArray<
-  Selectors extends SelectorArray,
-  Rest extends SelectorArray = Selectors
-> = Rest extends [infer S, ...infer Remaining]
-  ? S extends Selector
-    ? Remaining extends SelectorArray
-      ? [ReturnType<S>, ...SelectorResultArray<Selectors, Remaining>]
-      : [ReturnType<S>]
-    : []
-  : Rest extends ((...args: any) => infer S)[]
-  ? S[]
-  : []
-
-export type EqualityFn = (a: any, b: any) => boolean
+export * from './types'
 
 export const defaultEqualityCheck: EqualityFn = (a, b) => {
   return a === b
@@ -118,23 +65,15 @@ function getDependencies(funcs: unknown[]) {
 
   return dependencies as SelectorArray
 }
-/*
+
 export function createSelectorCreator(
   memoize: <F extends (...args: any[]) => any>(func: F) => F
-): typeof createSelector
+): CreateSelectorFunction
 
-
-export function createSelectorCreator<T>(
-  memoize: typeof defaultMemoize,
-  equalityCheck: EqualityFn
-): typeof createSelector
-*/
-
-/*
 export function createSelectorCreator<O1>(
   memoize: <F extends (...args: any[]) => any>(func: F, option1: O1) => F,
   option1: O1
-): typeof createSelector
+): CreateSelectorFunction
 
 export function createSelectorCreator<O1, O2>(
   memoize: <F extends (...args: any[]) => any>(
@@ -144,7 +83,7 @@ export function createSelectorCreator<O1, O2>(
   ) => F,
   option1: O1,
   option2: O2
-): typeof createSelector
+): CreateSelectorFunction
 
 export function createSelectorCreator<O1, O2, O3>(
   memoize: <F extends (...args: any[]) => any>(
@@ -158,34 +97,11 @@ export function createSelectorCreator<O1, O2, O3>(
   option2: O2,
   option3: O3,
   ...rest: any[]
-): typeof createSelector
-
-*/
-
-interface CreateSelectorCreator {
-  (
-    memoize: <F extends (...args: any[]) => any>(func: F) => F
-  ): CreateSelectorFunction
-
-  <O1>(
-    memoize: <F extends (...args: any[]) => any>(func: F, option1: O1) => F,
-    option1: O1
-  ): CreateSelectorFunction
-
-  <O1, O2>(
-    memoize: <F extends (...args: any[]) => any>(
-      func: F,
-      option1: O1,
-      option2: O2
-    ) => F,
-    option1: O1,
-    option2: O2
-  ): CreateSelectorFunction
-}
+): CreateSelectorFunction
 
 export function createSelectorCreator<F extends (...args: any[]) => any>(
-  memoize: (func: F) => F,
-  ...memoizeOptions: Parameters<F>
+  memoize: (func: F, ...options: any[]) => F,
+  ...memoizeOptions: any[]
 ): typeof createSelector {
   // @ts-ignore
   return (...funcs: Function[]) => {
@@ -193,6 +109,7 @@ export function createSelectorCreator<F extends (...args: any[]) => any>(
     const resultFunc = funcs.pop()
     const dependencies = getDependencies(funcs)
 
+    // @ts-ignore
     const memoizedResultFunc = memoize(function () {
       recomputations++
       // apply arguments instead of spreading for performance.
@@ -223,29 +140,6 @@ export function createSelectorCreator<F extends (...args: any[]) => any>(
     return selector
   }
 }
-
-/*
-type CreateSelectorInline = <Selectors extends SelectorArray, Result>(
-  ...items: [...Selectors, (...args: SelectorResultArray<Selectors>) => Result]
-) => OutputSelector<
-  Selectors,
-  Result,
-  GetParamsFromSelectors<Selectors>,
-  (...args: SelectorResultArray<Selectors>) => Result
->
-
-type CreateSelectorArray = <Selectors extends SelectorArray, Result>(
-  selectors: [...Selectors],
-  combiner: (...args: SelectorResultArray<Selectors>) => Result
-) => OutputSelector<
-  Selectors,
-  Result,
-  GetParamsFromSelectors<Selectors>,
-  (...args: SelectorResultArray<Selectors>) => Result
->
-
-type CreateSelectorFunction = CreateSelectorInline | CreateSelectorArray
-*/
 
 interface CreateSelectorFunction {
   <Selectors extends SelectorArray, Result>(
