@@ -34,8 +34,8 @@
     "api-types": "api-extractor run --local",
     "format": "prettier --write \"{src,test}/**/*.{js,ts}\" \"docs/**/*.md\"",
     "lint": "eslint src test",
-    "prepare": "npm run build",
-    "test": "better-npm-run test",
+    "prepublishOnly": "npm run build",
+    "test": "jest",
     "test:cov": "better-npm-run test:cov",
     "test:typescript": "better-npm-run test:typescript"
   },
