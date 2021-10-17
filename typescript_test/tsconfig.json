@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "strict": true
+    "strict": true,
+    "target": "ES2015"
   },
   "include": ["test.ts"]
 }

@@ -4,8 +4,14 @@ import {
   defaultEqualityCheck,
   createSelectorCreator,
   createStructuredSelector,
-  ParametricSelector
+  ParametricSelector,
+  OutputSelector,
+  OutputParametricSelector
 } from '../src/index'
+
+export function expectType<T>(t: T): T {
+  return t
+}
 
 function testSelector() {
   type State = { foo: string }
@@ -701,9 +707,16 @@ import { isEqual, groupBy } from 'lodash'
 
   const createMultiMemoizeArgSelector = createSelectorCreator(
     multiArgMemoize,
-    defaultEqualityCheck,
     42,
-    'test'
+    'abcd',
+    defaultEqualityCheck
+  )
+
+  const createMultiMemoizeArgSelector2 = createSelectorCreator(
+    multiArgMemoize,
+    42,
+    // @ts-expect-error
+    defaultEqualityCheck
   )
 
   const groupTransactionsByLabel = defaultMemoize(
@@ -711,4 +724,136 @@ import { isEqual, groupBy } from 'lodash'
       groupBy(transactions, item => item.transactionId),
     collectionsEqual
   )
+}
+
+// #445
+{
+  interface TestState {
+    someNumber: number | null
+    someString: string | null
+  }
+
+  interface Object1 {
+    str: string
+  }
+  interface Object2 {
+    num: number
+  }
+
+  const getNumber = (state: TestState) => state.someNumber
+  const getString = (state: TestState) => state.someString
+
+  function generateObject1(str: string): Object1 {
+    return {
+      str
+    }
+  }
+  function generateObject2(num: number): Object2 {
+    return {
+      num
+    }
+  }
+  function generateComplexObject(
+    num: number,
+    subObject: Object1,
+    subObject2: Object2
+  ): boolean {
+    return true
+  }
+
+  // ################ Tests ################
+
+  // Compact selector examples
+
+  // Doesn't error, but should because generateObject1 can't take null
+  const getObject1 = createSelector([getString], generateObject1)
+
+  // Doesn't error, but should because generateObject2 can't take null
+  const getObject2 = createSelector([getNumber], generateObject2)
+
+  // Doesn't error, but should because mismatch of params
+  const getComplexObjectTest1 = createSelector(
+    [getObject1],
+    generateComplexObject
+  )
+
+  // Does error, but error is really weird and talks about "Object1 is not assignable to type number"
+  const getComplexObjectTest2 = createSelector(
+    [getNumber, getObject1],
+    generateComplexObject
+  )
+
+  // Doesn't error, but should because number can't be null
+  const getComplexObjectTest3 = createSelector(
+    [getNumber, getObject1, getObject2],
+    generateComplexObject
+  )
+
+  // Does error, but error is really weird and talks about "Object1 is not assignable to type number"
+  const getComplexObjectTest4 = createSelector(
+    [getObject1, getNumber, getObject2],
+    generateComplexObject
+  )
+
+  // Verbose selector examples
+
+  // Errors correctly, says str can't be null
+  const getVerboseObject1 = createSelector([getString], str =>
+    generateObject1(str)
+  )
+
+  // Errors correctly, says num can't be null
+  const getVerboseObject2 = createSelector([getNumber], num =>
+    generateObject2(num)
+  )
+
+  // Errors correctly
+  const getVerboseComplexObjectTest1 = createSelector([getObject1], obj1 =>
+    generateComplexObject(obj1)
+  )
+
+  // Errors correctly
+  const getVerboseComplexObjectTest2 = createSelector(
+    [getNumber, getObject1],
+    (num, obj1) => generateComplexObject(num, obj1)
+  )
+
+  // Errors correctly
+  const getVerboseComplexObjectTest3 = createSelector(
+    [getNumber, getObject1, getObject2],
+    (num, obj1, obj2) => generateComplexObject(num, obj1, obj2)
+  )
+
+  // Errors correctly
+  const getVerboseComplexObjectTest4 = createSelector(
+    [getObject1, getNumber, getObject2],
+    (num, obj1, obj2) => generateComplexObject(num, obj1, obj2)
+  )
+}
+
+// #492
+{
+  const fooPropSelector = (_: {}, ownProps: { foo: string }) => ownProps.foo
+  const fooBarPropsSelector = (
+    _: {},
+    ownProps: { foo: string; bar: string }
+  ) => [ownProps.foo, ownProps.bar]
+
+  const combinedSelector = createSelector(
+    fooPropSelector,
+    fooBarPropsSelector,
+    (foo, fooBar) => fooBar
+  )
+
+  expectType<
+    OutputParametricSelector<
+      {},
+      {
+        foo: string
+        bar: string
+      },
+      string[],
+      (res1: string, res2: string[]) => string[]
+    >
+  >(combinedSelector)
 }
