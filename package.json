@@ -77,13 +77,19 @@
     "@babel/cli": "^7.12.13",
     "@babel/core": "^7.12.13",
     "@babel/preset-env": "^7.12.13",
+    "@babel/preset-typescript": "^7.14.5",
     "@babel/register": "^7.12.13",
+    "@microsoft/api-extractor": "^7.18.1",
     "@rollup/plugin-babel": "^5.2.3",
+    "@rollup/plugin-commonjs": "^15.1.0",
+    "@rollup/plugin-node-resolve": "^9.0.0",
+    "@rollup/plugin-replace": "^2.3.3",
     "@types/lodash": "^4.14.175",
     "better-npm-run": "0.0.8",
     "chai": "^3.0.0",
     "codecov.io": "^0.1.6",
     "coveralls": "^2.11.4",
+    "cross-env": "^7.0.2",
     "eslint": "^2.11",
     "eslint-plugin-react": "^5.1.1",
     "lodash.memoize": "^4.1.0",
@@ -91,8 +97,10 @@
     "mocha": "^2.2.5",
     "ncp": "^2.0.0",
     "nyc": "^6.4.0",
+    "prettier": "^2.1.2",
     "rollup": "^2.38.5",
-    "typescript": "^4.4.0",
-    "uglify-js": "^3.0.20"
-  }
+    "rollup-plugin-terser": "^7.0.2",
+    "typescript": "^4.4.0"
+  },
+  "dependencies": {}
 }
