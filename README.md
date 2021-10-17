@@ -962,6 +962,20 @@ Useful to reduce selectors recalculation when the same selector is repeatedly ca
 * Check selector dependencies, inputs, outputs, and recomputations at any time with the chrome extension
 * Statically export a JSON representation of your selector graph for further analysis
 
+### [reselect-debugger](https://github.com/vlanemcev/reselect-debugger-flipper)
+
+[Flipper plugin](https://github.com/vlanemcev/flipper-plugin-reselect-debugger) and [and the connect app](https://github.com/vlanemcev/reselect-debugger-flipper) for debugging selectors in **React Native Apps**.
+
+Inspired by Reselect Tools, so it also has all functionality from this library and more, but only for React Native and Flipper.
+
+* Selectors Recomputations count in live time across the App for identify performance bottlenecks
+* Highlight most recomputed selectors
+* Dependency Graph
+* Search by Selectors Graph
+* Selectors Inputs
+* Selectors Output (In case if selector not dependent from external arguments)
+* Shows "Not Memoized (NM)" selectors
+
 ### [reselect-map](https://github.com/HeyImAlex/reselect-map)
 
 Can be useful when doing **very expensive** computations on elements of a collection because Reselect might not give you the granularity of caching that you need. Check out the reselect-maps README for examples.
