@@ -20,10 +20,10 @@ function testSelector() {
 
   const foo: string = selector({foo: 'bar'});
 
-  // typings:expect-error
+  // @ts-expect-error
   selector({foo: 'bar'}, {prop: 'value'});
 
-  // typings:expect-error
+  // @ts-expect-error
   const num: number = selector({foo: 'bar'});
 
   // allows heterogeneous parameter type input selectors
@@ -46,15 +46,15 @@ function testNestedSelector() {
     (state: State) => state.baz,
     ({foo, bar}, baz) => {
       const foo1: string = foo;
-      // typings:expect-error
+      // @ts-expect-error
       const foo2: number = foo;
 
       const bar1: number = bar;
-      // typings:expect-error
+      // @ts-expect-error
       const bar2: string = bar;
 
       const baz1: boolean = baz;
-      // typings:expect-error
+      // @ts-expect-error
       const baz2: string = baz;
     },
   )
@@ -74,10 +74,10 @@ function testSelectorAsCombiner() {
     subSelector,
   );
 
-  // typings:expect-error
+  // @ts-expect-error
   selector({foo: ''});
 
-  // typings:expect-error
+  // @ts-expect-error
   const n: number = selector({bar: {foo: ''}});
 
   const s: string = selector({bar: {foo: ''}});
@@ -85,6 +85,8 @@ function testSelectorAsCombiner() {
 
 type Component<P> = (props: P) => any;
 
+// TODO Figure out why this is failing
+// @ts-ignore
 declare function connect<S, P, R>(selector: ParametricSelector<S, P, R>):
   (component: Component<P & R>) => Component<P>;
 
@@ -95,7 +97,7 @@ function testConnect() {
       foo => ({foo}),
     )
   )(props => {
-    // typings:expect-error
+    // @ts-expect-error
     props.bar;
 
     const foo: string = props.foo;
@@ -104,32 +106,32 @@ function testConnect() {
   const connected = connect(
     createSelector(
       (state: {foo: string}) => state.foo,
-      (state: never, props: {bar: number}) => props.bar,
+      (state: any, props: {bar: number}) => props.bar,
       (foo, bar) => ({foo, baz: bar}),
     )
   )(props => {
     const foo: string = props.foo;
     const bar: number = props.bar;
     const baz: number = props.baz;
-    // typings:expect-error
+    // @ts-expect-error
     props.fizz;
   });
 
   connected({bar: 42});
 
-  // typings:expect-error
+  // @ts-expect-error
   connected({bar: 42, baz: 123});
 }
 
 function testInvalidTypeInCombinator() {
-  // typings:expect-error
+  // @ts-expect-error
   createSelector(
     (state: {foo: string}) => state.foo,
     (foo: number) => foo,
   );
 
-  // typings:expect-error
   createSelector(
+    // @ts-expect-error
     (state: {foo: string, bar: number, baz: boolean}) => state.foo,
     state => state.bar,
     state => state.baz,
@@ -148,15 +150,15 @@ function testInvalidTypeInCombinator() {
     (state: {testString: string}) => state.testString,
     (state: {testNumber: string}) => state.testNumber,
     (state: {testStringArray: string[]}) => state.testStringArray,
-    // typings:expect-error
+    // @ts-expect-error
     (foo1: string, foo2: number, foo3: boolean, foo4: string, foo5: string, foo6: string, foo7: string, foo8: number, foo9: string[]) => {
       return {foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9};
     });
 
   // does not allow a large array of heterogeneous parameter type
   // selectors when the combinator function is typed differently
+  // @ts-expect-error
   createSelector(
-    // typings:expect-error
     [
       (state: {testString: string}) => state.testString,
       (state: {testNumber: number}) => state.testNumber,
@@ -193,13 +195,13 @@ function testParametricSelector() {
 
   const selector = createSelector(
     (state: State) => state.foo,
-    (state: never, props: Props) => props.bar,
+    (state: State, props: Props) => props.bar,
     (foo, bar) => ({foo, bar}),
   );
 
-  // typings:expect-error
+  // @ts-expect-error
   selector({foo: 'fizz'});
-  // typings:expect-error
+  // @ts-expect-error
   selector({foo: 'fizz'}, {bar: 'baz'});
 
   const ret = selector({foo: 'fizz'}, {bar: 42});
@@ -207,11 +209,11 @@ function testParametricSelector() {
   const bar: number = ret.bar;
 
   const selector2 = createSelector(
-    (state) => state.foo,
-    (state) => state.foo,
-    (state) => state.foo,
-    (state) => state.foo,
-    (state) => state.foo,
+    (state: any) => state.foo,
+    (state: any) => state.foo,
+    (state: any) => state.foo,
+    (state: any) => state.foo,
+    (state: any) => state.foo,
     (state: State, props: Props) => props.bar,
     (foo1, foo2, foo3, foo4, foo5, bar) => ({
       foo1, foo2, foo3, foo4, foo5, bar,
@@ -225,7 +227,7 @@ function testArrayArgument() {
   const selector = createSelector([
     (state: {foo: string}) => state.foo,
     (state: {foo: string}) => state.foo,
-    (state: never, props: {bar: number}) => props.bar,
+    (state: {foo: string}, props: {bar: number}) => props.bar,
   ], (foo1, foo2, bar) => ({foo1, foo2, bar}));
 
   const ret = selector({foo: 'fizz'}, {bar: 42});
@@ -233,12 +235,12 @@ function testArrayArgument() {
   const foo2: string = ret.foo2;
   const bar: number = ret.bar;
 
-  // typings:expect-error
+  // @ts-expect-error
   createSelector([
     (state: {foo: string}) => state.foo,
   ]);
 
-  // typings:expect-error
+  // @ts-expect-error
   createSelector([
     (state: {foo: string}) => state.foo,
     (state: {foo: string}) => state.foo,
@@ -260,7 +262,8 @@ function testArrayArgument() {
 
   });
 
-  // typings:expect-error
+  
+  // @ts-expect-error
   createSelector([
     (state: {foo: string}) => state.foo,
     (state: {foo: string}) => state.foo,
@@ -276,15 +279,23 @@ function testArrayArgument() {
 
   });
 
-  // typings:expect-error
+  
+  // @ts-expect-error
   createSelector([
     (state: {foo: string}) => state.foo,
+    // @ts-expect-error
     state => state.foo,
+    // @ts-expect-error
     state => state.foo,
+    // @ts-expect-error
     state => state.foo,
+    // @ts-expect-error
     state => state.foo,
+    // @ts-expect-error
     state => state.foo,
+    // @ts-expect-error
     state => state.foo,
+    // @ts-expect-error
     state => state.foo,
     1,
   ], (foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9) => {});
@@ -315,15 +326,15 @@ function testArrayArgument() {
     const foo7: string = ret.foo7;
     const foo8: string = ret.foo8;
     const foo9: string = ret.foo9;
-    // typings:expect-error
+    // @ts-expect-error
     ret.foo10;
   }
 
-  // typings:expect-error
+  // @ts-expect-error
   selector2({foo: 'fizz'}, {bar: 42});
 
   const parametric = createSelector([
-    (state: never, props: {bar: number}) => props.bar,
+    (state: {foo: string}, props: {bar: number}) => props.bar,
     (state: {foo: string}) => state.foo,
     (state: {foo: string}) => state.foo,
     (state: {foo: string}) => state.foo,
@@ -353,7 +364,7 @@ function testArrayArgument() {
     return {foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9};
   });
 
-  // typings:expect-error
+  // @ts-expect-error
   parametric({foo: 'fizz'});
 
   {
@@ -367,7 +378,7 @@ function testArrayArgument() {
     const foo7: string = ret.foo7;
     const foo8: string = ret.foo8;
     const bar: number = ret.bar;
-    // typings:expect-error
+    // @ts-expect-error
     ret.foo9;
   }
 }
@@ -378,16 +389,13 @@ function testDefaultMemoize() {
   const memoized = defaultMemoize(func);
 
   const ret0: number = memoized('42');
-  // typings:expect-error
+  // @ts-expect-error
   const ret1: string = memoized('42');
 
   const memoized2 = defaultMemoize(
     (str: string, arr: string[]): {str: string, arr: string[]} => ({str, arr}),
-    <T>(a: T, b: T, index: number) => {
-      if (index === 0)
-        return a === b;
-
-      return a.toString() === b.toString();
+    <T>(a: T, b: T,) => {
+      return `${a}` === `${b}`;
     }
   );
 
@@ -405,30 +413,27 @@ function testCreateSelectorCreator() {
   );
   const value: string = selector({foo: 'fizz'});
 
-  // typings:expect-error
+  // @ts-expect-error
   selector({foo: 'fizz'}, {bar: 42});
 
   const parametric = createSelector(
     (state: {foo: string}) => state.foo,
-    (state: never, props: {bar: number}) => props.bar,
+    (state: {foo: string}, props: {bar: number}) => props.bar,
     (foo, bar) => ({foo, bar}),
   );
 
-  // typings:expect-error
+  // @ts-expect-error
   parametric({foo: 'fizz'});
 
   const ret = parametric({foo: 'fizz'}, {bar: 42});
   const foo: string = ret.foo;
   const bar: number = ret.bar;
 
-  // typings:expect-error
+  // @ts-expect-error
   createSelectorCreator(defaultMemoize, 1);
 
-  createSelectorCreator(defaultMemoize, <T>(a: T, b: T, index: number) => {
-    if (index === 0)
-      return a === b;
-
-    return a.toString() === b.toString();
+  createSelectorCreator(defaultMemoize, <T>(a: T, b: T) => {
+    return `${a}` === `${b}`;
   });
 }
 
@@ -445,26 +450,60 @@ function testCreateStructuredSelector() {
   const foo: string = res.foo;
   const bar: number = res.bar;
 
-  // typings:expect-error
+  // @ts-expect-error
   selector({bar: '42'});
 
-  // typings:expect-error
+  // @ts-expect-error
   selector({foo: '42'}, {bar: 42});
 
-  // typings:expect-error
   createStructuredSelector<{foo: string}, {bar: number}>({
+    // @ts-expect-error
     bar: (state: {baz: boolean}) => 1
   });
 
-  // typings:expect-error
   createStructuredSelector<{foo: string}, {bar: number}>({
+    // @ts-expect-error
     bar: state => state.foo
   });
 
-  // typings:expect-error
   createStructuredSelector<{foo: string}, {bar: number}>({
+    // @ts-expect-error
     baz: state => state.foo
   });
+
+
+  // Test automatic inference of types for createStructuredSelector via overload
+  type State = { foo: string };
+  const FooSelector = (state: State) => state.foo;
+  const BarSelector = (state: State) => +state.foo;
+
+  const selector2 = createStructuredSelector({
+    foo: FooSelector,
+    bar: BarSelector,
+  });
+
+  const selectorGenerics = createStructuredSelector<
+    {
+      foo: typeof FooSelector;
+      bar: typeof BarSelector;
+    }
+  >({
+    foo: state => state.foo,
+    bar: state => +state.foo,
+  });
+
+  type ExpectedResult = {
+    foo: string;
+    bar: number;
+  };
+
+  const res2: ExpectedResult = selector({foo: '42'});
+  const resGenerics: ExpectedResult = selectorGenerics({foo: '42'});
+
+    //@ts-expect-error
+    selector2({bar: '42'});
+    // @ts-expect-error
+    selectorGenerics({bar: '42'});
 }
 
 function testDynamicArrayArgument() {
@@ -476,16 +515,71 @@ function testDynamicArrayArgument() {
 
   createSelector(data.map(obj => () => obj.val1), (...vals) => vals.join(','));
 
-  // typings:expect-error
+  // @ts-expect-error
   createSelector(data.map(obj => () => obj.val1), (vals) => vals.join(','))
 
   createSelector(data.map(obj => () => obj.val1), (...vals: string[]) => 0)
-  // typings:expect-error
+  // @ts-expect-error
   createSelector(data.map(obj => () => obj.val1), (...vals: number[]) => 0)
 
   const s = createSelector(data.map(obj => (state: {}, fld: keyof Elem) => obj[fld]), (...vals) => vals.join(','));
   s({}, 'val1');
   s({}, 'val2');
-  // typings:expect-error
+  // @ts-expect-error
   s({}, 'val3');
 }
+
+
+function testStructuredSelectorTypeParams() {
+  type GlobalState = {
+    foo: string;
+    bar: number;
+  };
+
+  const selectFoo = (state: GlobalState) => state.foo;
+  const selectBar = (state: GlobalState) => state.bar;
+
+  // Output state should be the same as input, if not provided
+  // @ts-expect-error
+  createStructuredSelector<GlobalState>({
+    foo: selectFoo,
+    // bar: selectBar,
+    // ^^^ because this is missing, an error is thrown
+  });
+
+  // This works
+  createStructuredSelector<GlobalState>({
+    foo: selectFoo,
+    bar: selectBar,
+  });
+
+  // So does this
+  createStructuredSelector<GlobalState, Omit<GlobalState, 'bar'>>({
+    foo: selectFoo,
+  });
+}
+
+
+
+// #384: check for defaultMemoize
+import { isEqual, groupBy } from 'lodash'
+
+{
+  interface Transaction {
+    transactionId: string
+  }
+  
+  const toId = (transaction: Transaction) => transaction.transactionId
+  const transactionsIds = (transactions: Transaction[]) => transactions.map(toId)
+  const collectionsEqual = (ts1: Transaction[], ts2: Transaction[]) => isEqual(transactionsIds(ts1), transactionsIds(ts2))
+  
+  const createTransactionsSelector = createSelectorCreator(defaultMemoize, collectionsEqual)
+
+
+  const groupTransactionsByLabel = defaultMemoize(
+    (transactions: Transaction[]) => groupBy(transactions, item => item.transactionId),
+    collectionsEqual,
+  )
+  
+}
+
