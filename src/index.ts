@@ -37,12 +37,10 @@ function getDependencies(funcs) {
   const dependencies = Array.isArray(funcs[0]) ? funcs[0] : funcs
 
   if (!dependencies.every(dep => typeof dep === 'function')) {
-    const dependencyTypes = dependencies.map(
-      dep => typeof dep
-    ).join(', ')
+    const dependencyTypes = dependencies.map(dep => typeof dep).join(', ')
     throw new Error(
       'Selector creators expect all input-selectors to be functions, ' +
-      `instead received the following types: [${dependencyTypes}]`
+        `instead received the following types: [${dependencyTypes}]`
     )
   }
 
@@ -55,14 +53,11 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
     const resultFunc = funcs.pop()
     const dependencies = getDependencies(funcs)
 
-    const memoizedResultFunc = memoize(
-      function () {
-        recomputations++
-        // apply arguments instead of spreading for performance.
-        return resultFunc.apply(null, arguments)
-      },
-      ...memoizeOptions
-    )
+    const memoizedResultFunc = memoize(function () {
+      recomputations++
+      // apply arguments instead of spreading for performance.
+      return resultFunc.apply(null, arguments)
+    }, ...memoizeOptions)
 
     // If a selector is called with the exact same arguments we don't need to traverse our dependencies again.
     const selector = memoize(function () {
@@ -81,18 +76,22 @@ export function createSelectorCreator(memoize, ...memoizeOptions) {
     selector.resultFunc = resultFunc
     selector.dependencies = dependencies
     selector.recomputations = () => recomputations
-    selector.resetRecomputations = () => recomputations = 0
+    selector.resetRecomputations = () => (recomputations = 0)
     return selector
   }
 }
 
-export const createSelector = /* #__PURE__ */ createSelectorCreator(defaultMemoize)
+export const createSelector =
+  /* #__PURE__ */ createSelectorCreator(defaultMemoize)
 
-export function createStructuredSelector(selectors, selectorCreator = createSelector) {
+export function createStructuredSelector(
+  selectors,
+  selectorCreator = createSelector
+) {
   if (typeof selectors !== 'object') {
     throw new Error(
       'createStructuredSelector expects first argument to be an object ' +
-      `where each property is a selector, instead received a ${typeof selectors}`
+        `where each property is a selector, instead received a ${typeof selectors}`
     )
   }
   const objectKeys = Object.keys(selectors)
