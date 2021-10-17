@@ -33,7 +33,7 @@ jobs:
         run: npm run test:cov
 
       - name: Compile
-        run: npm run compile
+        run: npm run build
 
       - name: Report to Coveralls
         uses: coverallsapp/github-action@master

@@ -36,7 +36,7 @@
     "lint": "eslint src test",
     "prepublishOnly": "npm run build",
     "test": "jest",
-    "test:cov": "better-npm-run test:cov",
+    "test:cov": "jest --coverage",
     "test:typescript": "better-npm-run test:typescript"
   },
   "betterScripts": {
