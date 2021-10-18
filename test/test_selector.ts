@@ -73,8 +73,8 @@ describe('selector', () => {
   })
   test('basic selector invalid input selector', () => {
     expect(() =>
+      // @ts-ignore
       createSelector(
-        // @ts-ignore
         (state: StateAB) => state.a,
         'not a function',
         (a, b) => a + b
@@ -169,7 +169,7 @@ describe('selector', () => {
   test('recomputes result after exception', () => {
     let called = 0
     const selector = createSelector(
-      state => state.a,
+      (state: StateA) => state.a,
       () => {
         called++
         throw Error('test error')
@@ -436,7 +436,7 @@ describe('selector', () => {
   })
   test('export last function as resultFunc', () => {
     const lastFunction = () => {}
-    const selector = createSelector(state => state.a, lastFunction)
+    const selector = createSelector((state: StateA) => state.a, lastFunction)
     expect(selector.resultFunc).toBe(lastFunction)
   })
   test('export dependencies as dependencies', () => {

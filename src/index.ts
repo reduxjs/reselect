@@ -112,7 +112,7 @@ export function createSelectorCreator<F extends (...args: any[]) => any>(
   ...memoizeOptions: any[]
 ): typeof createSelector {
   // @ts-ignore
-  return (...funcs: Function[]) => {
+  return (...funcs: Function[], options?: CreateSelectorOptions) => {
     let recomputations = 0
     const resultFunc = funcs.pop()
     const dependencies = getDependencies(funcs)
@@ -149,12 +149,20 @@ export function createSelectorCreator<F extends (...args: any[]) => any>(
   }
 }
 
+interface CreateSelectorOptions {
+  cacheSize?: number
+}
+
 interface CreateSelectorFunction {
+  // Input selectors as separate inline arguments
   <Selectors extends SelectorArray, Result>(
-    ...items: [
-      ...Selectors,
-      (...args: SelectorResultArray<Selectors>) => Result
-    ]
+    ...items:
+      | [...Selectors, (...args: SelectorResultArray<Selectors>) => Result]
+      | [
+          ...Selectors,
+          (...args: SelectorResultArray<Selectors>) => Result,
+          CreateSelectorOptions
+        ]
   ): OutputSelector<
     Selectors,
     Result,
@@ -162,9 +170,11 @@ interface CreateSelectorFunction {
     (...args: SelectorResultArray<Selectors>) => Result
   >
 
+  // Input selectors as a separate array
   <Selectors extends SelectorArray, Result>(
     selectors: [...Selectors],
-    combiner: (...args: SelectorResultArray<Selectors>) => Result
+    combiner: (...args: SelectorResultArray<Selectors>) => Result,
+    options?: CreateSelectorOptions
   ): OutputSelector<
     Selectors,
     Result,
