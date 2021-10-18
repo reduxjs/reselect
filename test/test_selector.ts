@@ -285,6 +285,29 @@ describe('selector', () => {
     expect(selector({ a: 2, b: 3 })).toBe(5)
     expect(selector.recomputations()).toBe(3)
     // TODO: Check correct memoize function was called
+
+    const customMemoize = (
+      f: (...args: any[]) => any,
+      a: string,
+      b: number,
+      c: boolean
+    ) => {
+      return f
+    }
+
+    const customSelectorCreator2 = createSelectorCreator(
+      customMemoize,
+      'a',
+      42,
+      true
+    )
+
+    // @ts-expect-error
+    const customSelectorCreator3 = createSelectorCreator(
+      customMemoize,
+      'a',
+      true
+    )
   })
   test('exported memoize', () => {
     let called = 0
@@ -404,8 +427,8 @@ describe('selector', () => {
     )
     const selector = createStructuredSelector(
       {
-        x: state => state.a,
-        y: state => state.b
+        x: (state: StateAB) => state.a,
+        y: (state: StateAB) => state.b
       },
       customSelectorCreator
     )

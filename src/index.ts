@@ -74,45 +74,23 @@ function getDependencies(funcs: unknown[]) {
   return dependencies as SelectorArray
 }
 
-export function createSelectorCreator(
-  memoize: <F extends (...args: any[]) => any>(func: F) => F
-): CreateSelectorFunction
+type DropFirst<T extends unknown[]> = T extends [any, ...infer U] ? U : never
 
-export function createSelectorCreator<O1>(
-  memoize: <F extends (...args: any[]) => any>(func: F, option1: O1) => F,
-  option1: O1
-): CreateSelectorFunction
-
-export function createSelectorCreator<O1, O2>(
-  memoize: <F extends (...args: any[]) => any>(
-    func: F,
-    option1: O1,
-    option2: O2
-  ) => F,
-  option1: O1,
-  option2: O2
-): CreateSelectorFunction
-
-export function createSelectorCreator<O1, O2, O3>(
-  memoize: <F extends (...args: any[]) => any>(
-    func: F,
-    option1: O1,
-    option2: O2,
-    option3: O3,
-    ...rest: any[]
-  ) => F,
-  option1: O1,
-  option2: O2,
-  option3: O3,
-  ...rest: any[]
-): CreateSelectorFunction
-
-export function createSelectorCreator<F extends (...args: any[]) => any>(
-  memoize: (func: F, ...options: any[]) => F,
-  ...memoizeOptions: any[]
-): typeof createSelector {
+export function createSelectorCreator<
+  F extends (...args: any[]) => any,
+  MemoizeFunction extends (func: F, ...options: any[]) => F,
+  MemoizerOptions = DropFirst<Parameters<MemoizeFunction>>
+>(
+  memoize: MemoizeFunction,
+  ...memoizeOptions: DropFirst<Parameters<MemoizeFunction>>
+) {
+  // (memoize: MemoizeFunction, ...memoizeOptions: MemoizerOptions) {
   // @ts-ignore
-  return (...funcs: Function[], options?: CreateSelectorOptions) => {
+  const createSelector = (
+    // @ts-ignore
+    ...funcs: Function[],
+    options?: CreateSelectorOptions<MemoizerOptions>
+  ) => {
     let recomputations = 0
     const resultFunc = funcs.pop()
     const dependencies = getDependencies(funcs)
@@ -147,13 +125,15 @@ export function createSelectorCreator<F extends (...args: any[]) => any>(
     selector.resetRecomputations = () => (recomputations = 0)
     return selector
   }
+  // @ts-ignore
+  return createSelector as CreateSelectorFunction<MemoizerOptions>
 }
 
-interface CreateSelectorOptions {
-  cacheSize?: number
+interface CreateSelectorOptions<MemoizerOptions> {
+  memoizerOptions: MemoizerOptions
 }
 
-interface CreateSelectorFunction {
+interface CreateSelectorFunction<MemoizerOptions = unknown> {
   // Input selectors as separate inline arguments
   <Selectors extends SelectorArray, Result>(
     ...items:
@@ -161,7 +141,7 @@ interface CreateSelectorFunction {
       | [
           ...Selectors,
           (...args: SelectorResultArray<Selectors>) => Result,
-          CreateSelectorOptions
+          CreateSelectorOptions<MemoizerOptions>
         ]
   ): OutputSelector<
     Selectors,
@@ -174,7 +154,7 @@ interface CreateSelectorFunction {
   <Selectors extends SelectorArray, Result>(
     selectors: [...Selectors],
     combiner: (...args: SelectorResultArray<Selectors>) => Result,
-    options?: CreateSelectorOptions
+    options?: CreateSelectorOptions<MemoizerOptions>
   ): OutputSelector<
     Selectors,
     Result,
@@ -183,7 +163,7 @@ interface CreateSelectorFunction {
   >
 }
 
-export const createSelector: CreateSelectorFunction =
+export const createSelector =
   /* #__PURE__ */ createSelectorCreator(defaultMemoize)
 
 type SelectorsObject = { [key: string]: (...args: any[]) => any }
@@ -191,7 +171,7 @@ type SelectorsObject = { [key: string]: (...args: any[]) => any }
 export interface StructuredSelectorCreator {
   <SelectorMap extends SelectorsObject>(
     selectorMap: SelectorMap,
-    selectorCreator?: CreateSelectorFunction
+    selectorCreator?: CreateSelectorFunction<any>
   ): (
     state: SelectorMap[keyof SelectorMap] extends (
       state: infer State
@@ -204,7 +184,7 @@ export interface StructuredSelectorCreator {
 
   <State, Result = State>(
     selectors: { [K in keyof Result]: Selector<State, Result[K], never> },
-    selectorCreator?: CreateSelectorFunction
+    selectorCreator?: CreateSelectorFunction<any>
   ): Selector<State, Result, never>
 }
 
