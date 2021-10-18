@@ -17,7 +17,7 @@ export type {
   ParametricSelector
 } from './types'
 
-export const defaultEqualityCheck: EqualityFn = (a, b) => {
+export const defaultEqualityCheck: EqualityFn = (a, b): boolean => {
   return a === b
 }
 
@@ -25,7 +25,7 @@ function areArgumentsShallowlyEqual(
   equalityCheck: EqualityFn,
   prev: unknown[] | IArguments | null,
   next: unknown[] | IArguments | null
-) {
+): boolean {
   if (prev === null || next === null || prev.length !== next.length) {
     return false
   }
