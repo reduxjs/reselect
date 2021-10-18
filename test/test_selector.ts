@@ -7,6 +7,8 @@ import {
   createStructuredSelector
 } from '../src/index'
 import lodashMemoize from 'lodash/memoize'
+import microMemoize from 'micro-memoize'
+import memoizeOne from 'memoize-one'
 
 // Construct 1E6 states for perf test outside of the perf test so as to not change the execute time of the test function
 const numOfStates = 1000000
@@ -308,6 +310,10 @@ describe('selector', () => {
       'a',
       true
     )
+
+    const customSelectorCreator4 = createSelectorCreator(microMemoize, {})
+
+    const customSelectorCreator5 = createSelectorCreator(memoizeOne)
   })
   test('exported memoize', () => {
     let called = 0
