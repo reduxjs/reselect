@@ -31,7 +31,7 @@ for (let i = 0; i < numOfStates; i++) {
   states.push({ a: 1, b: 2 })
 }
 
-describe('selector', () => {
+describe('Basic selector behavior', () => {
   test('basic selector', () => {
     const selector = createSelector(
       (state: StateA) => state.a,
@@ -206,7 +206,9 @@ describe('selector', () => {
     expect(selector(state1)).toBe(1)
     expect(called).toBe(2)
   })
+})
 
+describe('Combining selectors', () => {
   test('chained selector', () => {
     const selector1 = createSelector(
       (state: StateSub) => state.sub,
@@ -280,7 +282,9 @@ describe('selector', () => {
     expect(selector({ a: 'A' })).toBe('A')
     expect(selector.recomputations()).toBe(2)
   })
+})
 
+describe('Customizing selectors', () => {
   test('custom memoize', () => {
     const hashFn = (...args: any[]) =>
       args.reduce((acc, val) => acc + '-' + JSON.stringify(val))
@@ -362,8 +366,10 @@ describe('selector', () => {
 
     expect(memoizer3Calls).toBeGreaterThan(0)
   })
+})
 
-  test('exported memoize', () => {
+describe('defaultMemoize', () => {
+  test('Basic memoization', () => {
     let called = 0
     const memoized = defaultMemoize(state => {
       called++
@@ -379,7 +385,7 @@ describe('selector', () => {
     expect(called).toBe(2)
   })
 
-  test('exported memoize with multiple arguments', () => {
+  test('Memoizes with multiple arguments', () => {
     const memoized = defaultMemoize((...args) =>
       args.reduce((sum, value) => sum + value, 0)
     )
@@ -387,7 +393,7 @@ describe('selector', () => {
     expect(memoized(1)).toBe(1)
   })
 
-  test('exported memoize with valueEquals override', () => {
+  test('Memoizes with equalityCheck override', () => {
     // a rather absurd equals operation we can verify in tests
     let called = 0
     const valueEquals = (a: any, b: any) => typeof a === typeof b
@@ -402,7 +408,7 @@ describe('selector', () => {
     expect(called).toBe(2)
   })
 
-  test('exported memoize passes correct objects to equalityCheck', () => {
+  test('Passes correct objects to equalityCheck', () => {
     let fallthroughs = 0
     function shallowEqual(newVal: any, oldVal: any) {
       if (newVal === oldVal) return true
@@ -449,7 +455,9 @@ describe('selector', () => {
     // call with same object as previous call does not shallow compare
     expect(fallthroughs).toBe(1)
   })
+})
 
+describe('createStructureSelector', () => {
   test('structured selector', () => {
     const selector = createStructuredSelector({
       x: (state: StateAB) => state.a,
@@ -497,7 +505,9 @@ describe('selector', () => {
     expect(selector({ a: 1, b: 2 })).toBe(firstResult)
     expect(selector({ a: 2, b: 2 })).toEqual({ x: 2, y: 2 })
   })
+})
 
+describe('createSelector exposed utils', () => {
   test('resetRecomputations', () => {
     const selector = createSelector(
       (state: StateA) => state.a,
