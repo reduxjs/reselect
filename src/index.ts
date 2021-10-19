@@ -74,25 +74,52 @@ function getDependencies(funcs: unknown[]) {
   return dependencies as SelectorArray
 }
 
-type DropFirst<T extends unknown[]> = T extends [any, ...infer U] ? U : never
+type DropFirst<T extends unknown[]> = T extends [unknown, ...infer U]
+  ? U
+  : never
 
 export function createSelectorCreator<
-  F extends (...args: any[]) => any,
+  F extends (...args: unknown[]) => unknown,
   MemoizeFunction extends (func: F, ...options: any[]) => F,
-  MemoizerOptions = DropFirst<Parameters<MemoizeFunction>>
+  MemoizerOptions extends unknown[] = DropFirst<Parameters<MemoizeFunction>>
 >(
   memoize: MemoizeFunction,
-  ...memoizeOptions: DropFirst<Parameters<MemoizeFunction>>
+  ...memoizeOptionsFromArgs: DropFirst<Parameters<MemoizeFunction>>
 ) {
   // (memoize: MemoizeFunction, ...memoizeOptions: MemoizerOptions) {
-  // @ts-ignore
-  const createSelector = (
-    // @ts-ignore
-    ...funcs: Function[],
-    options?: CreateSelectorOptions<MemoizerOptions>
-  ) => {
+  const createSelector = (...funcs: Function[]) => {
     let recomputations = 0
-    const resultFunc = funcs.pop()
+
+    // Due to the intricacies of rest params, we can't do an optional arg after `...funcs`.
+    // So, start by declaring the default value here.
+    // (And yes, the words 'memoize' and 'options' appear too many times in this next sequence.)
+    let directlyPassedOptions: CreateSelectorOptions<MemoizerOptions> = {
+      memoizerOptions: undefined
+    }
+
+    // Normally, the result func or "output selector" is the last arg
+    let resultFunc = funcs.pop()
+
+    // If the result func is actually an _object_, assume it's our options object
+    if (typeof resultFunc === 'object') {
+      directlyPassedOptions = resultFunc as any
+      // and pop the real result func off
+      resultFunc = funcs.pop()
+    }
+
+    // Determine which set of options we're using. Prefer options passed directly,
+    // but fall back to options given to createSelectorCreator.
+    const { memoizerOptions = memoizeOptionsFromArgs } = directlyPassedOptions
+
+    // Simplifying assumption: it's unlikely that the first options arg of the provided memoizer
+    // is an array. In most libs I've looked at, it's an equality function or options object.
+    // Based on that, if `memoizerOptions` _is_ an array, we assume it's a full
+    // user-provided array of options. Otherwise, it must be just the _first_ arg, and so
+    // we wrap it in an array so we can apply it.
+    const finalMemoizerOptions = Array.isArray(memoizerOptions)
+      ? memoizerOptions
+      : ([memoizerOptions] as MemoizerOptions)
+
     const dependencies = getDependencies(funcs)
 
     // @ts-ignore
@@ -100,8 +127,7 @@ export function createSelectorCreator<
       recomputations++
       // apply arguments instead of spreading for performance.
       return resultFunc!.apply(null, arguments)
-      // @ts-ignore
-    }, ...memoizeOptions)
+    }, ...finalMemoizerOptions)
 
     // If a selector is called with the exact same arguments we don't need to traverse our dependencies again.
     // @ts-ignore
@@ -129,11 +155,13 @@ export function createSelectorCreator<
   return createSelector as CreateSelectorFunction<MemoizerOptions>
 }
 
-interface CreateSelectorOptions<MemoizerOptions> {
-  memoizerOptions: MemoizerOptions
+interface CreateSelectorOptions<MemoizerOptions extends unknown[]> {
+  memoizerOptions: MemoizerOptions[0] | MemoizerOptions
 }
 
-interface CreateSelectorFunction<MemoizerOptions = unknown> {
+interface CreateSelectorFunction<
+  MemoizerOptions extends unknown[] = unknown[]
+> {
   // Input selectors as separate inline arguments
   <Selectors extends SelectorArray, Result>(
     ...items:

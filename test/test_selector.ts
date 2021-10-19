@@ -7,8 +7,6 @@ import {
   createStructuredSelector
 } from '../src/index'
 import lodashMemoize from 'lodash/memoize'
-import microMemoize from 'micro-memoize'
-import memoizeOne from 'memoize-one'
 
 // Construct 1E6 states for perf test outside of the perf test so as to not change the execute time of the test function
 const numOfStates = 1000000
@@ -51,6 +49,7 @@ describe('selector', () => {
     expect(selector(secondState)).toBe(2)
     expect(selector.recomputations()).toBe(2)
   })
+
   test("don't pass extra parameters to inputSelector when only called with the state", () => {
     const selector = createSelector(
       (...params: any) => params.length,
@@ -58,6 +57,7 @@ describe('selector', () => {
     )
     expect(selector({})).toBe(1)
   })
+
   test('basic selector multiple keys', () => {
     const selector = createSelector(
       (state: StateAB) => state.a,
@@ -73,6 +73,7 @@ describe('selector', () => {
     expect(selector(state2)).toBe(5)
     expect(selector.recomputations()).toBe(2)
   })
+
   test('basic selector invalid input selector', () => {
     expect(() =>
       // @ts-ignore
@@ -83,6 +84,7 @@ describe('selector', () => {
       )
     ).toThrow(/input-selectors to be functions.*function, string/)
   })
+
   test('basic selector cache hit performance', () => {
     if (process.env.COVERAGE) {
       return // don't run performance tests for coverage
@@ -106,6 +108,7 @@ describe('selector', () => {
     // Expected a million calls to a selector with the same arguments to take less than 1 second
     expect(totalTime).toBeLessThan(1000)
   })
+
   test('basic selector cache hit performance for state changes but shallowly equal selector args', () => {
     if (process.env.COVERAGE) {
       return // don't run performance tests for coverage
@@ -129,6 +132,7 @@ describe('selector', () => {
     // Expected a million calls to a selector with the same arguments to take less than 1 second
     expect(totalTime).toBeLessThan(1000)
   })
+
   test('memoized composite arguments', () => {
     const selector = createSelector(
       (state: StateSub) => state.sub,
@@ -142,6 +146,7 @@ describe('selector', () => {
     expect(selector(state2)).toEqual({ a: 2 })
     expect(selector.recomputations()).toBe(2)
   })
+
   test('first argument can be an array', () => {
     const selector = createSelector(
       [state => state.a, state => state.b],
@@ -155,6 +160,7 @@ describe('selector', () => {
     expect(selector({ a: 3, b: 2 })).toBe(5)
     expect(selector.recomputations()).toBe(2)
   })
+
   test('can accept props', () => {
     let called = 0
     const selector = createSelector(
@@ -168,6 +174,7 @@ describe('selector', () => {
     )
     expect(selector({ a: 1, b: 2 }, { c: 100 })).toBe(103)
   })
+
   test('recomputes result after exception', () => {
     let called = 0
     const selector = createSelector(
@@ -181,6 +188,7 @@ describe('selector', () => {
     expect(() => selector({ a: 1 })).toThrow('test error')
     expect(called).toBe(2)
   })
+
   test('memoizes previous result before exception', () => {
     let called = 0
     const selector = createSelector(
@@ -198,6 +206,7 @@ describe('selector', () => {
     expect(selector(state1)).toBe(1)
     expect(called).toBe(2)
   })
+
   test('chained selector', () => {
     const selector1 = createSelector(
       (state: StateSub) => state.sub,
@@ -212,6 +221,7 @@ describe('selector', () => {
     expect(selector2(state2)).toBe(2)
     expect(selector2.recomputations()).toBe(2)
   })
+
   test('chained selector with props', () => {
     const selector1 = createSelector(
       (state: StateSub) => state.sub,
@@ -231,6 +241,7 @@ describe('selector', () => {
     expect(selector2(state2, { x: 100, y: 201 })).toBe(303)
     expect(selector2.recomputations()).toBe(2)
   })
+
   test('chained selector with variadic args', () => {
     const selector1 = createSelector(
       (state: StateSub) => state.sub,
@@ -251,6 +262,7 @@ describe('selector', () => {
     expect(selector2(state2, { x: 100, y: 201 }, 200)).toBe(503)
     expect(selector2.recomputations()).toBe(2)
   })
+
   test('override valueEquals', () => {
     // a rather absurd equals operation we can verify in tests
     const createOverridenSelector = createSelectorCreator(
@@ -268,6 +280,7 @@ describe('selector', () => {
     expect(selector({ a: 'A' })).toBe('A')
     expect(selector.recomputations()).toBe(2)
   })
+
   test('custom memoize', () => {
     const hashFn = (...args: any[]) =>
       args.reduce((acc, val) => acc + '-' + JSON.stringify(val))
@@ -287,34 +300,69 @@ describe('selector', () => {
     expect(selector({ a: 2, b: 3 })).toBe(5)
     expect(selector.recomputations()).toBe(3)
     // TODO: Check correct memoize function was called
-
-    const customMemoize = (
-      f: (...args: any[]) => any,
-      a: string,
-      b: number,
-      c: boolean
-    ) => {
-      return f
-    }
-
-    const customSelectorCreator2 = createSelectorCreator(
-      customMemoize,
-      'a',
-      42,
-      true
-    )
-
-    // @ts-expect-error
-    const customSelectorCreator3 = createSelectorCreator(
-      customMemoize,
-      'a',
-      true
-    )
-
-    const customSelectorCreator4 = createSelectorCreator(microMemoize, {})
-
-    const customSelectorCreator5 = createSelectorCreator(memoizeOne)
   })
+
+  test('createSelector accepts direct memoizer arguments', () => {
+    let memoizer1Calls = 0
+    let memoizer2Calls = 0
+    let memoizer3Calls = 0
+
+    const defaultMemoizeAcceptsFirstArgDirectly = createSelector(
+      (state: StateAB) => state.a,
+      (state: StateAB) => state.b,
+      (a, b) => a + b,
+      {
+        memoizerOptions: (a, b) => {
+          memoizer1Calls++
+          return a === b
+        }
+      }
+    )
+
+    defaultMemoizeAcceptsFirstArgDirectly({ a: 1, b: 2 })
+    defaultMemoizeAcceptsFirstArgDirectly({ a: 1, b: 3 })
+
+    expect(memoizer1Calls).toBeGreaterThan(0)
+
+    const defaultMemoizeAcceptsArgsAsArray = createSelector(
+      (state: StateAB) => state.a,
+      (state: StateAB) => state.b,
+      (a, b) => a + b,
+      {
+        memoizerOptions: [
+          (a, b) => {
+            memoizer2Calls++
+            return a === b
+          }
+        ]
+      }
+    )
+
+    defaultMemoizeAcceptsArgsAsArray({ a: 1, b: 2 })
+    defaultMemoizeAcceptsArgsAsArray({ a: 1, b: 3 })
+
+    expect(memoizer2Calls).toBeGreaterThan(0)
+
+    const createSelectorWithSeparateArg = createSelectorCreator(
+      defaultMemoize,
+      (a, b) => {
+        memoizer3Calls++
+        return a === b
+      }
+    )
+
+    const defaultMemoizeAcceptsArgFromCSC = createSelectorWithSeparateArg(
+      (state: StateAB) => state.a,
+      (state: StateAB) => state.b,
+      (a, b) => a + b
+    )
+
+    defaultMemoizeAcceptsArgFromCSC({ a: 1, b: 2 })
+    defaultMemoizeAcceptsArgFromCSC({ a: 1, b: 3 })
+
+    expect(memoizer3Calls).toBeGreaterThan(0)
+  })
+
   test('exported memoize', () => {
     let called = 0
     const memoized = defaultMemoize(state => {
@@ -330,6 +378,7 @@ describe('selector', () => {
     expect(memoized(o2)).toBe(2)
     expect(called).toBe(2)
   })
+
   test('exported memoize with multiple arguments', () => {
     const memoized = defaultMemoize((...args) =>
       args.reduce((sum, value) => sum + value, 0)
@@ -337,6 +386,7 @@ describe('selector', () => {
     expect(memoized(1, 2)).toBe(3)
     expect(memoized(1)).toBe(1)
   })
+
   test('exported memoize with valueEquals override', () => {
     // a rather absurd equals operation we can verify in tests
     let called = 0
@@ -351,6 +401,7 @@ describe('selector', () => {
     expect(memoized('A')).toBe('A')
     expect(called).toBe(2)
   })
+
   test('exported memoize passes correct objects to equalityCheck', () => {
     let fallthroughs = 0
     function shallowEqual(newVal: any, oldVal: any) {
@@ -398,6 +449,7 @@ describe('selector', () => {
     // call with same object as previous call does not shallow compare
     expect(fallthroughs).toBe(1)
   })
+
   test('structured selector', () => {
     const selector = createStructuredSelector({
       x: (state: StateAB) => state.a,
@@ -410,6 +462,7 @@ describe('selector', () => {
     expect(secondResult).toEqual({ x: 2, y: 2 })
     expect(selector({ a: 2, b: 2 })).toBe(secondResult)
   })
+
   test('structured selector with invalid arguments', () => {
     expect(() =>
       // @ts-expect-error
@@ -426,6 +479,7 @@ describe('selector', () => {
       })
     ).toThrow(/input-selectors to be functions.*function, string/)
   })
+
   test('structured selector with custom selector creator', () => {
     const customSelectorCreator = createSelectorCreator(
       defaultMemoize,
@@ -443,6 +497,7 @@ describe('selector', () => {
     expect(selector({ a: 1, b: 2 })).toBe(firstResult)
     expect(selector({ a: 2, b: 2 })).toEqual({ x: 2, y: 2 })
   })
+
   test('resetRecomputations', () => {
     const selector = createSelector(
       (state: StateA) => state.a,
@@ -463,11 +518,13 @@ describe('selector', () => {
     expect(selector({ a: 2 })).toBe(2)
     expect(selector.recomputations()).toBe(2)
   })
+
   test('export last function as resultFunc', () => {
     const lastFunction = () => {}
     const selector = createSelector((state: StateA) => state.a, lastFunction)
     expect(selector.resultFunc).toBe(lastFunction)
   })
+
   test('export dependencies as dependencies', () => {
     const dependency1 = (state: StateA) => {
       state.a
