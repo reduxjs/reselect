@@ -513,6 +513,82 @@ describe('defaultMemoize', () => {
     expect(funcCalls).toBe(7)
   })
 
+  test('Allows reusing an existing result if they are equivalent', () => {
+    interface Todo {
+      id: number
+      name: string
+    }
+
+    const todos1: Todo[] = [
+      { id: 1, name: 'a' },
+      { id: 2, name: 'b' },
+      { id: 3, name: 'c' }
+    ]
+    const todos2 = todos1.slice()
+    todos2[2] = { id: 3, name: 'd' }
+
+    function is(x: unknown, y: unknown) {
+      if (x === y) {
+        return x !== 0 || y !== 0 || 1 / x === 1 / y
+      } else {
+        return x !== x && y !== y
+      }
+    }
+
+    function shallowEqual(objA: any, objB: any) {
+      if (is(objA, objB)) return true
+
+      if (
+        typeof objA !== 'object' ||
+        objA === null ||
+        typeof objB !== 'object' ||
+        objB === null
+      ) {
+        return false
+      }
+
+      const keysA = Object.keys(objA)
+      const keysB = Object.keys(objB)
+
+      if (keysA.length !== keysB.length) return false
+
+      for (let i = 0; i < keysA.length; i++) {
+        if (
+          !Object.prototype.hasOwnProperty.call(objB, keysA[i]) ||
+          !is(objA[keysA[i]], objB[keysA[i]])
+        ) {
+          return false
+        }
+      }
+
+      return true
+    }
+
+    for (let maxSize of [1, 3]) {
+      let funcCalls = 0
+
+      const memoizer = defaultMemoize(
+        (state: Todo[]) => {
+          funcCalls++
+          return state.map(todo => todo.id)
+        },
+        {
+          maxSize,
+          resultEqualityCheck: shallowEqual
+        }
+      )
+
+      const ids1 = memoizer(todos1)
+      expect(funcCalls).toBe(1)
+
+      const ids2 = memoizer(todos1)
+      expect(funcCalls).toBe(1)
+      expect(ids2).toBe(ids1)
+
+      const ids3 = memoizer(todos2)
+      expect(funcCalls).toBe(2)
+      expect(ids3).toBe(ids1)
+    }
   })
 
   test('Accepts an options object as an arg', () => {

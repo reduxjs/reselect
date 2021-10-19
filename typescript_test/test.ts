@@ -385,6 +385,8 @@ function testArrayArgument() {
       state => state.foo,
       1
     ],
+    // We expect an error here, but the error differs between TS versions
+    // @ts-ignore
     (foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9) => {}
   )
 

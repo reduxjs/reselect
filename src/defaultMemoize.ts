@@ -4,26 +4,31 @@ import type { EqualityFn } from './types'
 // https://github.com/erikras/lru-memoize
 
 interface Entry {
-  key: any
-  value: any
+  key: unknown
+  value: unknown
 }
 
 interface Cache {
-  get(key: any): Entry | undefined
-  put(key: any, value: any): void
+  get(key: unknown): unknown | undefined
+  put(key: unknown, value: unknown): void
+  getValues(): unknown[]
 }
 
 function createSingletonCache(equals: EqualityFn): Cache {
   let entry: Entry
   return {
-    get(key: any) {
+    get(key: unknown) {
       if (entry && equals(entry.key, key)) {
         return entry.value
       }
     },
 
-    put(key: any, value: any) {
+    put(key: unknown, value: unknown) {
       entry = { key, value }
+    },
+
+    getValues() {
+      return entry ? [entry.value] : []
     }
   }
 }
@@ -31,7 +36,7 @@ function createSingletonCache(equals: EqualityFn): Cache {
 function createLruCache(maxSize: number, equals: EqualityFn): Cache {
   const entries: Entry[] = []
 
-  function get(key: any) {
+  function get(key: unknown) {
     const cacheIndex = entries.findIndex(entry => equals(key, entry.key))
 
     // We found a cached entry
@@ -51,7 +56,7 @@ function createLruCache(maxSize: number, equals: EqualityFn): Cache {
     return undefined
   }
 
-  function put(key: any, value: any) {
+  function put(key: unknown, value: unknown) {
     if (!get(key)) {
       // TODO Is unshift slow?
       entries.unshift({ key, value })
@@ -61,14 +66,18 @@ function createLruCache(maxSize: number, equals: EqualityFn): Cache {
     }
   }
 
-  return { get, put }
+  function getValues() {
+    return entries.map(entry => entry.value)
+  }
+
+  return { get, put, getValues }
 }
 
 export const defaultEqualityCheck: EqualityFn = (a, b): boolean => {
   return a === b
 }
 
-function createCacheKeyComparator(equalityCheck: EqualityFn) {
+export function createCacheKeyComparator(equalityCheck: EqualityFn) {
   return function areArgumentsShallowlyEqual(
     prev: unknown[] | IArguments | null,
     next: unknown[] | IArguments | null
@@ -95,8 +104,8 @@ export interface DefaultMemoizeOptions {
   maxSize?: number
 }
 
-// defaultMemoize now supports a configurable cache size and comparison of the result value.
-// Updated behavior based on the `betterMemoize` function from
+// defaultMemoize now supports a configurable cache size with LRU behavior,
+// and optional comparison of the result value with existing values
 export function defaultMemoize<F extends (...args: any[]) => any>(
   func: F,
   equalityCheckOrOptions?: EqualityFn | DefaultMemoizeOptions
@@ -113,9 +122,6 @@ export function defaultMemoize<F extends (...args: any[]) => any>(
   } = providedOptions
 
   const comparator = createCacheKeyComparator(equalityCheck)
-  let resultComparator = resultEqualityCheck
-    ? createCacheKeyComparator(resultEqualityCheck)
-    : undefined
 
   const cache =
     maxSize === 1
@@ -128,6 +134,18 @@ export function defaultMemoize<F extends (...args: any[]) => any>(
     if (value === undefined) {
       // @ts-ignore
       value = func.apply(null, arguments)
+
+      if (resultEqualityCheck) {
+        const existingValues = cache.getValues()
+        const matchingValue = existingValues.find(ev =>
+          resultEqualityCheck(ev, value)
+        )
+
+        if (matchingValue !== undefined) {
+          return matchingValue
+        }
+      }
+
       cache.put(arguments, value)
     }
     return value
