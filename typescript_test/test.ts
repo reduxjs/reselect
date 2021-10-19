@@ -937,6 +937,17 @@ function createSelectorConfigOptions() {
     }
   )
 
+  const defaultMemoizeAcceptsFirstArgAsObject = createSelector(
+    (state: StateAB) => state.a,
+    (state: StateAB) => state.b,
+    (a, b) => a + b,
+    {
+      memoizerOptions: {
+        equalityCheck: (a, b) => a === b
+      }
+    }
+  )
+
   const defaultMemoizeAcceptsArgsAsArray = createSelector(
     (state: StateAB) => state.a,
     (state: StateAB) => state.b,

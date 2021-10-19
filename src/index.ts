@@ -41,12 +41,26 @@ function areArgumentsShallowlyEqual(
   return true
 }
 
+interface DefaultMemoizeOptions {
+  equalityCheck?: EqualityFn
+}
+
+// defaultMemoize now supports a configurable cache size and comparison of the result value.
+// Updated behavior based on the `betterMemoize` function from
 export function defaultMemoize<F extends (...args: any[]) => any>(
   func: F,
-  equalityCheck: EqualityFn = defaultEqualityCheck
+  equalityCheckOrOptions?: EqualityFn | DefaultMemoizeOptions
 ): F {
   let lastArgs: any = null
   let lastResult: any = null
+
+  const providedOptions =
+    typeof equalityCheckOrOptions === 'object'
+      ? equalityCheckOrOptions
+      : { equalityCheck: equalityCheckOrOptions }
+
+  const { equalityCheck = defaultEqualityCheck } = providedOptions
+
   // we reference arguments instead of spreading them for performance reasons
   return function () {
     if (!areArgumentsShallowlyEqual(equalityCheck, lastArgs, arguments)) {

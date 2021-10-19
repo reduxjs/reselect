@@ -455,6 +455,41 @@ describe('defaultMemoize', () => {
     // call with same object as previous call does not shallow compare
     expect(fallthroughs).toBe(1)
   })
+
+  test('Accepts an options object as an arg', () => {
+    let memoizer1Calls = 0
+
+    const acceptsEqualityCheckAsOption = defaultMemoize((a: any) => a, {
+      equalityCheck: (a, b) => {
+        memoizer1Calls++
+        return a === b
+      }
+    })
+
+    acceptsEqualityCheckAsOption(42)
+    acceptsEqualityCheckAsOption(43)
+
+    expect(memoizer1Calls).toBeGreaterThan(0)
+
+    let called = 0
+    const fallsBackToDefaultEqualityIfNoArgGiven = defaultMemoize(
+      state => {
+        called++
+        return state.a
+      },
+      {
+        // no args
+      }
+    )
+
+    const o1 = { a: 1 }
+    const o2 = { a: 2 }
+    expect(fallsBackToDefaultEqualityIfNoArgGiven(o1)).toBe(1)
+    expect(fallsBackToDefaultEqualityIfNoArgGiven(o1)).toBe(1)
+    expect(called).toBe(1)
+    expect(fallsBackToDefaultEqualityIfNoArgGiven(o2)).toBe(2)
+    expect(called).toBe(2)
+  })
 })
 
 describe('createStructureSelector', () => {
