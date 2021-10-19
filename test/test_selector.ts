@@ -447,6 +447,11 @@ describe('defaultMemoize', () => {
     // call with different object does shallow compare
     expect(fallthroughs).toBe(1)
 
+    /*
+    This test was useful when we had a cache size of 1 previously, and always saved `lastArgs`.
+    But, with the new implementation, this doesn't make sense any more.
+
+
     // the third call does not fall through because `defaultMemoize` passes `anotherObject` as
     // both the `newVal` and `oldVal` params. This allows `shallowEqual` to be much more performant
     // than if it had passed `someObject` as `oldVal`, even though `someObject` and `anotherObject`
@@ -454,6 +459,60 @@ describe('defaultMemoize', () => {
     memoized(anotherObject)
     // call with same object as previous call does not shallow compare
     expect(fallthroughs).toBe(1)
+
+    */
+  })
+
+  test('Accepts a max size greater than 1 with LRU cache behavior', () => {
+    let funcCalls = 0
+
+    const memoizer = defaultMemoize(
+      (state: any) => {
+        funcCalls++
+        return state
+      },
+      {
+        maxSize: 3
+      }
+    )
+
+    // Initial call
+    memoizer('a') // ['a']
+    expect(funcCalls).toBe(1)
+
+    // In cache - memoized
+    memoizer('a') // ['a']
+    expect(funcCalls).toBe(1)
+
+    // Added
+    memoizer('b') // ['b', 'a']
+    expect(funcCalls).toBe(2)
+
+    // Added
+    memoizer('c') // ['c', 'b', 'a']
+    expect(funcCalls).toBe(3)
+
+    // Added, removes 'a'
+    memoizer('d') // ['d', 'c', 'b']
+    expect(funcCalls).toBe(4)
+
+    // No longer in cache, re-added, removes 'b'
+    memoizer('a') // ['a', 'd', 'c']
+    expect(funcCalls).toBe(5)
+
+    // In cache, moved to front
+    memoizer('c') // ['c', 'a', 'd']
+    expect(funcCalls).toBe(5)
+
+    // Added, removes 'd'
+    memoizer('e') // ['e', 'c', 'a']
+    expect(funcCalls).toBe(6)
+
+    // No longer in cache, re-added, removes 'a'
+    memoizer('d') // ['d', 'e', 'c']
+    expect(funcCalls).toBe(7)
+  })
+
   })
 
   test('Accepts an options object as an arg', () => {
