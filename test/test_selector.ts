@@ -316,7 +316,7 @@ describe('Customizing selectors', () => {
       (state: StateAB) => state.b,
       (a, b) => a + b,
       {
-        memoizerOptions: (a, b) => {
+        memoizeOptions: (a, b) => {
           memoizer1Calls++
           return a === b
         }
@@ -333,7 +333,7 @@ describe('Customizing selectors', () => {
       (state: StateAB) => state.b,
       (a, b) => a + b,
       {
-        memoizerOptions: [
+        memoizeOptions: [
           (a, b) => {
             memoizer2Calls++
             return a === b

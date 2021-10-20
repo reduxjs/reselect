@@ -935,7 +935,7 @@ function createSelectorConfigOptions() {
     (state: StateAB) => state.b,
     (a, b) => a + b,
     {
-      memoizerOptions: (a, b) => a === b
+      memoizeOptions: (a, b) => a === b
     }
   )
 
@@ -944,7 +944,7 @@ function createSelectorConfigOptions() {
     (state: StateAB) => state.b,
     (a, b) => a + b,
     {
-      memoizerOptions: {
+      memoizeOptions: {
         equalityCheck: (a, b) => a === b
       }
     }
@@ -955,7 +955,7 @@ function createSelectorConfigOptions() {
     (state: StateAB) => state.b,
     (a, b) => a + b,
     {
-      memoizerOptions: [(a, b) => a === b]
+      memoizeOptions: [(a, b) => a === b]
     }
   )
 
@@ -971,7 +971,7 @@ function createSelectorConfigOptions() {
     (state: StateAB) => state.b,
     (a, b) => a + b,
     {
-      memoizerOptions: [
+      memoizeOptions: [
         {
           maxSize: 42
         }
@@ -986,7 +986,7 @@ function createSelectorConfigOptions() {
     (state: StateAB) => state.b,
     (a, b) => a + b,
     {
-      memoizerOptions: (a, b) => a === b
+      memoizeOptions: (a, b) => a === b
     }
   )
 }
