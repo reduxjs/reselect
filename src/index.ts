@@ -31,10 +31,16 @@ function getDependencies(funcs: unknown[]) {
   const dependencies = Array.isArray(funcs[0]) ? funcs[0] : funcs
 
   if (!dependencies.every(dep => typeof dep === 'function')) {
-    const dependencyTypes = dependencies.map(dep => typeof dep).join(', ')
+    const dependencyTypes = dependencies
+      .map(dep =>
+        typeof dep === 'function'
+          ? `function ${dep.name || 'unnamed'}()`
+          : typeof dep
+      )
+      .join(', ')
+
     throw new Error(
-      'Selector creators expect all input-selectors to be functions, ' +
-        `instead received the following types: [${dependencyTypes}]`
+      `createSelector expects all input-selectors to be functions, but received the following types: [${dependencyTypes}]`
     )
   }
 
@@ -76,7 +82,7 @@ export function createSelectorCreator<
 
     if (typeof resultFunc !== 'function') {
       throw new Error(
-        `createSelector expected an output function after the inputs, but received: [${typeof resultFunc}]`
+        `createSelector expects an output function after the inputs, but received: [${typeof resultFunc}]`
       )
     }
 

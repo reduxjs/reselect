@@ -76,19 +76,24 @@ describe('Basic selector behavior', () => {
 
   test('basic selector invalid input selector', () => {
     expect(() =>
-      // @ts-ignore
       createSelector(
+        // @ts-ignore
         (state: StateAB) => state.a,
+        function input2(state: StateAB) {
+          return state.b
+        },
         'not a function',
         (a, b) => a + b
       )
-    ).toThrow(/input-selectors to be functions.*function, string/)
+    ).toThrow(
+      'createSelector expects all input-selectors to be functions, but received the following types: [function unnamed(), function input2(), string]'
+    )
 
     expect(() =>
       // @ts-ignore
       createSelector((state: StateAB) => state.a, 'not a function')
     ).toThrow(
-      'createSelector expected an output function after the inputs, but received: [string]'
+      'createSelector expects an output function after the inputs, but received: [string]'
     )
   })
 
@@ -662,7 +667,9 @@ describe('createStructureSelector', () => {
         // @ts-expect-error
         c: 'd'
       })
-    ).toThrow(/input-selectors to be functions.*function, string/)
+    ).toThrow(
+      'createSelector expects all input-selectors to be functions, but received the following types: [function a(), string]'
+    )
   })
 
   test('structured selector with custom selector creator', () => {
