@@ -62,6 +62,7 @@ export function createSelectorCreator<
   // (memoize: MemoizeFunction, ...memoizeOptions: MemoizerOptions) {
   const createSelector = (...funcs: Function[]) => {
     let recomputations = 0
+    let lastResult: unknown
 
     // Due to the intricacies of rest params, we can't do an optional arg after `...funcs`.
     // So, start by declaring the default value here.
@@ -121,12 +122,14 @@ export function createSelectorCreator<
       }
 
       // apply arguments instead of spreading for performance.
-      return memoizedResultFunc.apply(null, params)
+      lastResult = memoizedResultFunc.apply(null, params)
+      return lastResult
     })
 
     selector.resultFunc = resultFunc
     selector.memoizedResultFunc = memoizedResultFunc
     selector.dependencies = dependencies
+    selector.lastResult = () => lastResult
     selector.recomputations = () => recomputations
     selector.resetRecomputations = () => (recomputations = 0)
     return selector

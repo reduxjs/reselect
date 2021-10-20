@@ -730,4 +730,16 @@ describe('createSelector exposed utils', () => {
     const selector = createSelector(dependency1, dependency2, () => {})
     expect(selector.dependencies).toEqual([dependency1, dependency2])
   })
+
+  test('export lastResult function', () => {
+    const selector = createSelector(
+      (state: StateAB) => state.a,
+      (state: StateAB) => state.b,
+      (a, b) => a + b
+    )
+
+    const result = selector({ a: 1, b: 2 })
+    expect(result).toBe(3)
+    expect(selector.lastResult()).toBe(3)
+  })
 })
