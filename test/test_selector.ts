@@ -76,13 +76,25 @@ describe('Basic selector behavior', () => {
 
   test('basic selector invalid input selector', () => {
     expect(() =>
-      // @ts-ignore
       createSelector(
+        // @ts-ignore
         (state: StateAB) => state.a,
+        function input2(state: StateAB) {
+          return state.b
+        },
         'not a function',
         (a, b) => a + b
       )
-    ).toThrow(/input-selectors to be functions.*function, string/)
+    ).toThrow(
+      'createSelector expects all input-selectors to be functions, but received the following types: [function unnamed(), function input2(), string]'
+    )
+
+    expect(() =>
+      // @ts-ignore
+      createSelector((state: StateAB) => state.a, 'not a function')
+    ).toThrow(
+      'createSelector expects an output function after the inputs, but received: [string]'
+    )
   })
 
   test('basic selector cache hit performance', () => {
@@ -655,7 +667,9 @@ describe('createStructureSelector', () => {
         // @ts-expect-error
         c: 'd'
       })
-    ).toThrow(/input-selectors to be functions.*function, string/)
+    ).toThrow(
+      'createSelector expects all input-selectors to be functions, but received the following types: [function a(), string]'
+    )
   })
 
   test('structured selector with custom selector creator', () => {
@@ -715,5 +729,17 @@ describe('createSelector exposed utils', () => {
 
     const selector = createSelector(dependency1, dependency2, () => {})
     expect(selector.dependencies).toEqual([dependency1, dependency2])
+  })
+
+  test('export lastResult function', () => {
+    const selector = createSelector(
+      (state: StateAB) => state.a,
+      (state: StateAB) => state.b,
+      (a, b) => a + b
+    )
+
+    const result = selector({ a: 1, b: 2 })
+    expect(result).toBe(3)
+    expect(selector.lastResult()).toBe(3)
   })
 })
