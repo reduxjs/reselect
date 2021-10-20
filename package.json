@@ -24,8 +24,8 @@
     "url": "https://github.com/reduxjs/reselect/issues"
   },
   "scripts": {
-    "build:commonjs": "cross-env BABEL_ENV=commonjs babel src/index.ts --extensions .ts --out-dir lib ",
-    "build:es": "babel src/index.ts --extensions .ts --out-dir es",
+    "build:commonjs": "cross-env BABEL_ENV=commonjs babel src/*.ts --ignore src/types.ts --extensions .ts --out-dir lib ",
+    "build:es": "babel src/*.ts --ignore src/types.ts --extensions .ts --out-dir es",
     "build:umd": "cross-env NODE_ENV=development rollup -c -o dist/reselect.js",
     "build:umd:min": "cross-env NODE_ENV=production rollup -c -o dist/reselect.min.js",
     "build:types": "tsc",
@@ -110,5 +110,8 @@
     "ts-jest": "26.5.6",
     "typescript": "^4.4.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "memoize-one": "^6.0.0-beta.1",
+    "micro-memoize": "^4.0.9"
+  }
 }

@@ -17,48 +17,15 @@ export type {
   ParametricSelector
 } from './types'
 
-export const defaultEqualityCheck: EqualityFn = (a, b): boolean => {
-  return a === b
-}
+import {
+  defaultMemoize,
+  defaultEqualityCheck,
+  DefaultMemoizeOptions
+} from './defaultMemoize'
 
-function areArgumentsShallowlyEqual(
-  equalityCheck: EqualityFn,
-  prev: unknown[] | IArguments | null,
-  next: unknown[] | IArguments | null
-): boolean {
-  if (prev === null || next === null || prev.length !== next.length) {
-    return false
-  }
+export { defaultMemoize, defaultEqualityCheck }
 
-  // Do this in a for loop (and not a `forEach` or an `every`) so we can determine equality as fast as possible.
-  const length = prev.length
-  for (let i = 0; i < length; i++) {
-    if (!equalityCheck(prev[i], next[i])) {
-      return false
-    }
-  }
-
-  return true
-}
-
-export function defaultMemoize<F extends (...args: any[]) => any>(
-  func: F,
-  equalityCheck: EqualityFn = defaultEqualityCheck
-): F {
-  let lastArgs: any = null
-  let lastResult: any = null
-  // we reference arguments instead of spreading them for performance reasons
-  return function () {
-    if (!areArgumentsShallowlyEqual(equalityCheck, lastArgs, arguments)) {
-      // apply arguments instead of spreading for performance.
-      // @ts-ignore
-      lastResult = func.apply(null, arguments)
-    }
-
-    lastArgs = arguments
-    return lastResult
-  } as F
-}
+export type { DefaultMemoizeOptions }
 
 function getDependencies(funcs: unknown[]) {
   const dependencies = Array.isArray(funcs[0]) ? funcs[0] : funcs
@@ -74,47 +41,52 @@ function getDependencies(funcs: unknown[]) {
   return dependencies as SelectorArray
 }
 
-export function createSelectorCreator(
-  memoize: <F extends (...args: any[]) => any>(func: F) => F
-): CreateSelectorFunction
+type DropFirst<T extends unknown[]> = T extends [unknown, ...infer U]
+  ? U
+  : never
 
-export function createSelectorCreator<O1>(
-  memoize: <F extends (...args: any[]) => any>(func: F, option1: O1) => F,
-  option1: O1
-): CreateSelectorFunction
-
-export function createSelectorCreator<O1, O2>(
-  memoize: <F extends (...args: any[]) => any>(
-    func: F,
-    option1: O1,
-    option2: O2
-  ) => F,
-  option1: O1,
-  option2: O2
-): CreateSelectorFunction
-
-export function createSelectorCreator<O1, O2, O3>(
-  memoize: <F extends (...args: any[]) => any>(
-    func: F,
-    option1: O1,
-    option2: O2,
-    option3: O3,
-    ...rest: any[]
-  ) => F,
-  option1: O1,
-  option2: O2,
-  option3: O3,
-  ...rest: any[]
-): CreateSelectorFunction
-
-export function createSelectorCreator<F extends (...args: any[]) => any>(
-  memoize: (func: F, ...options: any[]) => F,
-  ...memoizeOptions: any[]
-): typeof createSelector {
-  // @ts-ignore
-  return (...funcs: Function[]) => {
+export function createSelectorCreator<
+  F extends (...args: unknown[]) => unknown,
+  MemoizeFunction extends (func: F, ...options: any[]) => F,
+  MemoizeOptions extends unknown[] = DropFirst<Parameters<MemoizeFunction>>
+>(
+  memoize: MemoizeFunction,
+  ...memoizeOptionsFromArgs: DropFirst<Parameters<MemoizeFunction>>
+) {
+  // (memoize: MemoizeFunction, ...memoizeOptions: MemoizerOptions) {
+  const createSelector = (...funcs: Function[]) => {
     let recomputations = 0
-    const resultFunc = funcs.pop()
+
+    // Due to the intricacies of rest params, we can't do an optional arg after `...funcs`.
+    // So, start by declaring the default value here.
+    // (And yes, the words 'memoize' and 'options' appear too many times in this next sequence.)
+    let directlyPassedOptions: CreateSelectorOptions<MemoizeOptions> = {
+      memoizeOptions: undefined
+    }
+
+    // Normally, the result func or "output selector" is the last arg
+    let resultFunc = funcs.pop()
+
+    // If the result func is actually an _object_, assume it's our options object
+    if (typeof resultFunc === 'object') {
+      directlyPassedOptions = resultFunc as any
+      // and pop the real result func off
+      resultFunc = funcs.pop()
+    }
+
+    // Determine which set of options we're using. Prefer options passed directly,
+    // but fall back to options given to createSelectorCreator.
+    const { memoizeOptions = memoizeOptionsFromArgs } = directlyPassedOptions
+
+    // Simplifying assumption: it's unlikely that the first options arg of the provided memoizer
+    // is an array. In most libs I've looked at, it's an equality function or options object.
+    // Based on that, if `memoizeOptions` _is_ an array, we assume it's a full
+    // user-provided array of options. Otherwise, it must be just the _first_ arg, and so
+    // we wrap it in an array so we can apply it.
+    const finalMemoizeOptions = Array.isArray(memoizeOptions)
+      ? memoizeOptions
+      : ([memoizeOptions] as MemoizeOptions)
+
     const dependencies = getDependencies(funcs)
 
     // @ts-ignore
@@ -122,8 +94,7 @@ export function createSelectorCreator<F extends (...args: any[]) => any>(
       recomputations++
       // apply arguments instead of spreading for performance.
       return resultFunc!.apply(null, arguments)
-      // @ts-ignore
-    }, ...memoizeOptions)
+    }, ...finalMemoizeOptions)
 
     // If a selector is called with the exact same arguments we don't need to traverse our dependencies again.
     // @ts-ignore
@@ -147,14 +118,24 @@ export function createSelectorCreator<F extends (...args: any[]) => any>(
     selector.resetRecomputations = () => (recomputations = 0)
     return selector
   }
+  // @ts-ignore
+  return createSelector as CreateSelectorFunction<MemoizeOptions>
 }
 
-interface CreateSelectorFunction {
+interface CreateSelectorOptions<MemoizeOptions extends unknown[]> {
+  memoizeOptions: MemoizeOptions[0] | MemoizeOptions
+}
+
+interface CreateSelectorFunction<MemoizeOptions extends unknown[] = unknown[]> {
+  // Input selectors as separate inline arguments
   <Selectors extends SelectorArray, Result>(
-    ...items: [
-      ...Selectors,
-      (...args: SelectorResultArray<Selectors>) => Result
-    ]
+    ...items:
+      | [...Selectors, (...args: SelectorResultArray<Selectors>) => Result]
+      | [
+          ...Selectors,
+          (...args: SelectorResultArray<Selectors>) => Result,
+          CreateSelectorOptions<MemoizeOptions>
+        ]
   ): OutputSelector<
     Selectors,
     Result,
@@ -162,9 +143,11 @@ interface CreateSelectorFunction {
     (...args: SelectorResultArray<Selectors>) => Result
   >
 
+  // Input selectors as a separate array
   <Selectors extends SelectorArray, Result>(
     selectors: [...Selectors],
-    combiner: (...args: SelectorResultArray<Selectors>) => Result
+    combiner: (...args: SelectorResultArray<Selectors>) => Result,
+    options?: CreateSelectorOptions<MemoizeOptions>
   ): OutputSelector<
     Selectors,
     Result,
@@ -173,7 +156,7 @@ interface CreateSelectorFunction {
   >
 }
 
-export const createSelector: CreateSelectorFunction =
+export const createSelector =
   /* #__PURE__ */ createSelectorCreator(defaultMemoize)
 
 type SelectorsObject = { [key: string]: (...args: any[]) => any }
@@ -181,7 +164,7 @@ type SelectorsObject = { [key: string]: (...args: any[]) => any }
 export interface StructuredSelectorCreator {
   <SelectorMap extends SelectorsObject>(
     selectorMap: SelectorMap,
-    selectorCreator?: CreateSelectorFunction
+    selectorCreator?: CreateSelectorFunction<any>
   ): (
     state: SelectorMap[keyof SelectorMap] extends (
       state: infer State
@@ -194,7 +177,7 @@ export interface StructuredSelectorCreator {
 
   <State, Result = State>(
     selectors: { [K in keyof Result]: Selector<State, Result[K], never> },
-    selectorCreator?: CreateSelectorFunction
+    selectorCreator?: CreateSelectorFunction<any>
   ): Selector<State, Result, never>
 }
 

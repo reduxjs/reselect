@@ -8,8 +8,26 @@ import {
   OutputSelector
 } from '../src/index'
 
+import microMemoize from 'micro-memoize'
+import memoizeOne from 'memoize-one'
+
 export function expectType<T>(t: T): T {
   return t
+}
+
+interface StateA {
+  a: number
+}
+
+interface StateAB {
+  a: number
+  b: number
+}
+
+interface StateSub {
+  sub: {
+    a: number
+  }
 }
 
 function testSelector() {
@@ -145,6 +163,7 @@ function testInvalidTypeInCombinator() {
   // does not allow heterogeneous parameter type
   // selectors when the combinator function is typed differently
   createSelector(
+    // @ts-expect-error
     (state: { testString: string }) => state.testString,
     (state: { testNumber: number }) => state.testNumber,
     (state: { testBoolean: boolean }) => state.testBoolean,
@@ -154,7 +173,6 @@ function testInvalidTypeInCombinator() {
     (state: { testString: string }) => state.testString,
     (state: { testNumber: string }) => state.testNumber,
     (state: { testStringArray: string[] }) => state.testStringArray,
-    // @ts-expect-error
     (
       foo1: string,
       foo2: number,
@@ -367,6 +385,8 @@ function testArrayArgument() {
       state => state.foo,
       1
     ],
+    // We expect an error here, but the error differs between TS versions
+    // @ts-ignore
     (foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9) => {}
   )
 
@@ -736,7 +756,7 @@ import { isEqual, groupBy } from 'lodash'
 }
 
 // #445
-{
+function issue445() {
   interface TestState {
     someNumber: number | null
     someString: string | null
@@ -855,7 +875,7 @@ import { isEqual, groupBy } from 'lodash'
 }
 
 // #492
-{
+function issue492() {
   const fooPropSelector = (_: {}, ownProps: { foo: string }) => ownProps.foo
   const fooBarPropsSelector = (
     _: {},
@@ -881,4 +901,92 @@ import { isEqual, groupBy } from 'lodash'
     >
   >(combinedSelector)
   */
+}
+
+function customMemoizationOptionTypes() {
+  const customMemoize = (
+    f: (...args: any[]) => any,
+    a: string,
+    b: number,
+    c: boolean
+  ) => {
+    return f
+  }
+
+  const customSelectorCreatorCustomMemoizeWorking = createSelectorCreator(
+    customMemoize,
+    'a',
+    42,
+    true
+  )
+
+  // @ts-expect-error
+  const customSelectorCreatorCustomMemoizeMissingArg = createSelectorCreator(
+    customMemoize,
+    'a',
+    true
+  )
+}
+
+// createSelector config options
+function createSelectorConfigOptions() {
+  const defaultMemoizeAcceptsFirstArgDirectly = createSelector(
+    (state: StateAB) => state.a,
+    (state: StateAB) => state.b,
+    (a, b) => a + b,
+    {
+      memoizeOptions: (a, b) => a === b
+    }
+  )
+
+  const defaultMemoizeAcceptsFirstArgAsObject = createSelector(
+    (state: StateAB) => state.a,
+    (state: StateAB) => state.b,
+    (a, b) => a + b,
+    {
+      memoizeOptions: {
+        equalityCheck: (a, b) => a === b
+      }
+    }
+  )
+
+  const defaultMemoizeAcceptsArgsAsArray = createSelector(
+    (state: StateAB) => state.a,
+    (state: StateAB) => state.b,
+    (a, b) => a + b,
+    {
+      memoizeOptions: [(a, b) => a === b]
+    }
+  )
+
+  const customSelectorCreatorMicroMemoize = createSelectorCreator(
+    microMemoize,
+    {
+      maxSize: 42
+    }
+  )
+
+  customSelectorCreatorMicroMemoize(
+    (state: StateAB) => state.a,
+    (state: StateAB) => state.b,
+    (a, b) => a + b,
+    {
+      memoizeOptions: [
+        {
+          maxSize: 42
+        }
+      ]
+    }
+  )
+
+  const customSelectorCreatorMemoizeOne = createSelectorCreator(memoizeOne)
+
+  customSelectorCreatorMemoizeOne(
+    (state: StateAB) => state.a,
+    (state: StateAB) => state.b,
+    (a, b) => a + b,
+    {
+      memoizeOptions: (a, b) => a === b
+    }
+  )
 }
