@@ -83,6 +83,13 @@ describe('Basic selector behavior', () => {
         (a, b) => a + b
       )
     ).toThrow(/input-selectors to be functions.*function, string/)
+
+    expect(() =>
+      // @ts-ignore
+      createSelector((state: StateAB) => state.a, 'not a function')
+    ).toThrow(
+      'createSelector expected an output function after the inputs, but received: [string]'
+    )
   })
 
   test('basic selector cache hit performance', () => {

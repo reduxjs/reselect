@@ -74,6 +74,12 @@ export function createSelectorCreator<
       resultFunc = funcs.pop()
     }
 
+    if (typeof resultFunc !== 'function') {
+      throw new Error(
+        `createSelector expected an output function after the inputs, but received: [${typeof resultFunc}]`
+      )
+    }
+
     // Determine which set of options we're using. Prefer options passed directly,
     // but fall back to options given to createSelectorCreator.
     const { memoizeOptions = memoizeOptionsFromArgs } = directlyPassedOptions
