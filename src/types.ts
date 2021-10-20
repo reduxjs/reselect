@@ -3,29 +3,27 @@ export type Selector<
   R = unknown,
   P extends never | readonly any[] = any[]
 > = [P] extends [never] ? (state: S) => R : (state: S, ...params: P) => R
-export type OutputSelector<
-  S extends SelectorArray,
-  Result,
-  Params extends readonly any[],
-  Combiner
-> = Selector<GetStateFromSelectors<S>, Result, Params> & {
+
+interface OutputSelectorFields<Combiner> {
   resultFunc: Combiner
+  memoizedResultFunc: Combiner
   dependencies: SelectorArray
   recomputations: () => number
   resetRecomputations: () => number
 }
 
+export type OutputSelector<
+  S extends SelectorArray,
+  Result,
+  Params extends readonly any[],
+  Combiner
+> = Selector<GetStateFromSelectors<S>, Result, Params> &
+  OutputSelectorFields<Combiner>
+
 export type ParametricSelector<S, P, R> = Selector<S, R, [P, ...any]>
 
-export type OutputParametricSelector<S, P, R, C> = ParametricSelector<
-  S,
-  P,
-  R
-> & {
-  resultFunc: C
-  recomputations: () => number
-  resetRecomputations: () => number
-}
+export type OutputParametricSelector<S, P, R, C> = ParametricSelector<S, P, R> &
+  OutputSelectorFields<C>
 
 export type SelectorArray = ReadonlyArray<Selector>
 

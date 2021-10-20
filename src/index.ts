@@ -119,6 +119,7 @@ export function createSelectorCreator<
     })
 
     selector.resultFunc = resultFunc
+    selector.memoizedResultFunc = memoizedResultFunc
     selector.dependencies = dependencies
     selector.recomputations = () => recomputations
     selector.resetRecomputations = () => (recomputations = 0)
