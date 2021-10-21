@@ -102,16 +102,17 @@ export function createSelectorCreator<
 
     const dependencies = getDependencies(funcs)
 
-    // @ts-ignore
-    const memoizedResultFunc = memoize(function () {
-      recomputations++
-      // apply arguments instead of spreading for performance.
-      return resultFunc!.apply(null, arguments)
-    }, ...finalMemoizeOptions)
+    const memoizedResultFunc = memoize(
+      function () {
+        recomputations++
+        // apply arguments instead of spreading for performance.
+        return resultFunc!.apply(null, arguments)
+      } as F,
+      ...finalMemoizeOptions
+    )
 
     // If a selector is called with the exact same arguments we don't need to traverse our dependencies again.
-    // @ts-ignore
-    const selector: OutputSelector<any, any, any, any> = memoize(function () {
+    const selector = memoize(function () {
       const params = []
       const length = dependencies.length
 
@@ -124,26 +125,40 @@ export function createSelectorCreator<
       // apply arguments instead of spreading for performance.
       lastResult = memoizedResultFunc.apply(null, params)
       return lastResult
+    } as F)
+
+    Object.assign(selector, {
+      resultFunc,
+      memoizedResultFunc,
+      dependencies,
+      lastResult: () => lastResult,
+      recomputations: () => recomputations,
+      resetRecomputations: () => (recomputations = 0)
     })
 
-    selector.resultFunc = resultFunc
-    selector.memoizedResultFunc = memoizedResultFunc
-    selector.dependencies = dependencies
-    selector.lastResult = () => lastResult
-    selector.recomputations = () => recomputations
-    selector.resetRecomputations = () => (recomputations = 0)
     return selector
   }
   // @ts-ignore
-  return createSelector as CreateSelectorFunction<MemoizeOptions>
+  return createSelector as CreateSelectorFunction<
+    F,
+    MemoizeFunction,
+    MemoizeOptions
+  >
 }
 
 interface CreateSelectorOptions<MemoizeOptions extends unknown[]> {
   memoizeOptions: MemoizeOptions[0] | MemoizeOptions
 }
 
-interface CreateSelectorFunction<MemoizeOptions extends unknown[] = unknown[]> {
-  // Input selectors as separate inline arguments
+/**
+ * An instance of createSelector, customized with a given memoize implementation
+ */
+interface CreateSelectorFunction<
+  F extends (...args: unknown[]) => unknown,
+  MemoizeFunction extends (func: F, ...options: any[]) => F,
+  MemoizeOptions extends unknown[] = DropFirst<Parameters<MemoizeFunction>>
+> {
+  /** Input selectors as separate inline arguments */
   <Selectors extends SelectorArray, Result>(
     ...items:
       | [...Selectors, (...args: SelectorResultArray<Selectors>) => Result]
@@ -156,10 +171,11 @@ interface CreateSelectorFunction<MemoizeOptions extends unknown[] = unknown[]> {
     Selectors,
     Result,
     GetParamsFromSelectors<Selectors>,
-    (...args: SelectorResultArray<Selectors>) => Result
+    ((...args: SelectorResultArray<Selectors>) => Result) &
+      ReturnType<MemoizeFunction>
   >
 
-  // Input selectors as a separate array
+  /** Input selectors as a separate array */
   <Selectors extends SelectorArray, Result>(
     selectors: [...Selectors],
     combiner: (...args: SelectorResultArray<Selectors>) => Result,
@@ -168,7 +184,8 @@ interface CreateSelectorFunction<MemoizeOptions extends unknown[] = unknown[]> {
     Selectors,
     Result,
     GetParamsFromSelectors<Selectors>,
-    (...args: SelectorResultArray<Selectors>) => Result
+    ((...args: SelectorResultArray<Selectors>) => Result) &
+      ReturnType<MemoizeFunction>
   >
 }
 
@@ -180,7 +197,7 @@ type SelectorsObject = { [key: string]: (...args: any[]) => any }
 export interface StructuredSelectorCreator {
   <SelectorMap extends SelectorsObject>(
     selectorMap: SelectorMap,
-    selectorCreator?: CreateSelectorFunction<any>
+    selectorCreator?: CreateSelectorFunction<any, any, any>
   ): (
     state: SelectorMap[keyof SelectorMap] extends (
       state: infer State
@@ -193,7 +210,7 @@ export interface StructuredSelectorCreator {
 
   <State, Result = State>(
     selectors: { [K in keyof Result]: Selector<State, Result[K], never> },
-    selectorCreator?: CreateSelectorFunction<any>
+    selectorCreator?: CreateSelectorFunction<any, any, any>
   ): Selector<State, Result, never>
 }
 
