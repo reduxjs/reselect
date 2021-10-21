@@ -637,6 +637,75 @@ describe('defaultMemoize', () => {
     expect(fallsBackToDefaultEqualityIfNoArgGiven(o2)).toBe(2)
     expect(called).toBe(2)
   })
+
+  test('Exposes a clearCache method on the memoized function', () => {
+    let funcCalls = 0
+
+    // Cache size of 1
+    const memoizer = defaultMemoize(
+      (state: any) => {
+        funcCalls++
+        return state
+      },
+      {
+        maxSize: 1
+      }
+    )
+
+    // Initial call
+    memoizer('a') // ['a']
+    expect(funcCalls).toBe(1)
+
+    // In cache - memoized
+    memoizer('a') // ['a']
+    expect(funcCalls).toBe(1)
+
+    memoizer.clearCache()
+
+    // Cache was cleared
+    memoizer('a')
+    expect(funcCalls).toBe(2)
+
+    funcCalls = 0
+
+    // Test out maxSize of 3 + exposure via createSelector
+    const selector = createSelector(
+      (state: string) => state,
+      state => {
+        funcCalls++
+        return state
+      },
+      {
+        memoizeOptions: { maxSize: 3 }
+      }
+    )
+
+    // Initial call
+    selector('a') // ['a']
+    expect(funcCalls).toBe(1)
+
+    // In cache - memoized
+    selector('a') // ['a']
+    expect(funcCalls).toBe(1)
+
+    // Added
+    selector('b') // ['b', 'a']
+    expect(funcCalls).toBe(2)
+
+    // Added
+    selector('c') // ['c', 'b', 'a']
+    expect(funcCalls).toBe(3)
+
+    // Already in cache
+    selector('c') // ['c', 'b', 'a']
+    expect(funcCalls).toBe(3)
+
+    selector.memoizedResultFunc.clearCache()
+
+    // Cache was cleared
+    selector('b') // ['c']
+    expect(funcCalls).toBe(4)
+  })
 })
 
 describe('createStructureSelector', () => {
