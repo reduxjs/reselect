@@ -20,6 +20,7 @@
     "dist",
     "es"
   ],
+  "sideEffects": false,
   "bugs": {
     "url": "https://github.com/reduxjs/reselect/issues"
   },
@@ -104,6 +105,8 @@
     "eslint-plugin-typescript": "0.14.0",
     "jest": "^27.3.1",
     "lodash.memoize": "^4.1.2",
+    "memoize-one": "^6.0.0",
+    "micro-memoize": "^4.0.9",
     "mkdirp": "^1.0.4",
     "mocha": "^9.1.3",
     "ncp": "^2.0.0",
@@ -112,11 +115,8 @@
     "rollup": "^2.58.0",
     "rollup-plugin-terser": "^7.0.2",
     "ts-jest": "27.0.7",
+    "tslint": "6.1.3",
     "typescript": "^4.4.0"
   },
-  "dependencies": {
-    "memoize-one": "^6.0.0",
-    "micro-memoize": "^4.0.9",
-    "tslint": "6.1.3"
-  }
+  "dependencies": {}
 }
