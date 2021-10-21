@@ -12,10 +12,11 @@ interface Cache {
   get(key: unknown): unknown | undefined
   put(key: unknown, value: unknown): void
   getValues(): unknown[]
+  clear(): void
 }
 
 function createSingletonCache(equals: EqualityFn): Cache {
-  let entry: Entry
+  let entry: Entry | undefined
   return {
     get(key: unknown) {
       if (entry && equals(entry.key, key)) {
@@ -29,12 +30,16 @@ function createSingletonCache(equals: EqualityFn): Cache {
 
     getValues() {
       return entry ? [entry.value] : []
+    },
+
+    clear() {
+      entry = undefined
     }
   }
 }
 
 function createLruCache(maxSize: number, equals: EqualityFn): Cache {
-  const entries: Entry[] = []
+  let entries: Entry[] = []
 
   function get(key: unknown) {
     const cacheIndex = entries.findIndex(entry => equals(key, entry.key))
@@ -70,7 +75,11 @@ function createLruCache(maxSize: number, equals: EqualityFn): Cache {
     return entries.map(entry => entry.value)
   }
 
-  return { get, put, getValues }
+  function clear() {
+    entries = []
+  }
+
+  return { get, put, getValues, clear }
 }
 
 export const defaultEqualityCheck: EqualityFn = (a, b): boolean => {
@@ -109,7 +118,7 @@ export interface DefaultMemoizeOptions {
 export function defaultMemoize<F extends (...args: any[]) => any>(
   func: F,
   equalityCheckOrOptions?: EqualityFn | DefaultMemoizeOptions
-): F {
+) {
   const providedOptions =
     typeof equalityCheckOrOptions === 'object'
       ? equalityCheckOrOptions
@@ -129,7 +138,7 @@ export function defaultMemoize<F extends (...args: any[]) => any>(
       : createLruCache(maxSize, comparator)
 
   // we reference arguments instead of spreading them for performance reasons
-  return function () {
+  function memoized() {
     let value = cache.get(arguments)
     if (value === undefined) {
       // @ts-ignore
@@ -149,5 +158,9 @@ export function defaultMemoize<F extends (...args: any[]) => any>(
       cache.put(arguments, value)
     }
     return value
-  } as F
+  }
+
+  memoized.clearCache = () => cache.clear()
+
+  return memoized as F & { clearCache: () => void }
 }
