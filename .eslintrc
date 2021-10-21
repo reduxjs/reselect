@@ -10,7 +10,7 @@
     "ecmaVersion": 2015
   },
   "rules": {
-    "array-bracket-spacing": [2, "always"],
+    "array-bracket-spacing": [0],
     "comma-dangle": [2, "never"],
     "eol-last": 2,
     "indent": [2, 2, {
@@ -22,7 +22,7 @@
     "semi": [2, "never"],
     "strict": 0,
     "space-before-blocks": [2, "always"],
-    "space-before-function-paren": [2, {"anonymous":"always","named":"never"}]
+    "space-before-function-paren": [0]
   },
   "overrides": [
     {
