@@ -6,10 +6,11 @@
   },
   "extends": "eslint:recommended",
   "parserOptions": {
-    "sourceType": "module"
+    "sourceType": "module",
+    "ecmaVersion": 2015
   },
   "rules": {
-    "array-bracket-spacing": [2, "always"],
+    "array-bracket-spacing": [0],
     "comma-dangle": [2, "never"],
     "eol-last": 2,
     "indent": [2, 2, {
@@ -21,6 +22,53 @@
     "semi": [2, "never"],
     "strict": 0,
     "space-before-blocks": [2, "always"],
-    "space-before-function-paren": [2, {"anonymous":"always","named":"never"}]
-  }
+    "space-before-function-paren": [0]
+  },
+  "overrides": [
+    {
+      "parser": "@typescript-eslint/parser",
+      "files": ["**/*.ts", "**/*.tsx"],
+      "parserOptions": {
+        "ecmaVersion": 2020,
+        "sourceType": "module"
+      },
+      "env": { "jest": true },
+      "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended"
+      ],
+      "rules": {
+        "@typescript-eslint/ban-ts-comment": "off",
+        "@typescript-eslint/explicit-function-return-type": "off",
+        "@typescript-eslint/explicit-module-boundary-types": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-unused-vars": "off",
+        "@typescript-eslint/no-non-null-assertion": "off",
+        "@typescript-eslint/no-shadow": ["error"],
+        "@typescript-eslint/no-use-before-define": ["error"],
+        "@typescript-eslint/ban-types": "off",
+        "prefer-rest-params": "off",
+        "prefer-rest": "off",
+        "prefer-spread": "off"
+      }
+    },
+    {
+      "files": ["**/test/**/*.ts"],
+      "rules": {
+        "consistent-return": "off",
+        "max-lines": "off",
+        "@typescript-eslint/ban-ts-comment": "off",
+        "@typescript-eslint/explicit-function-return-type": "off",
+        "@typescript-eslint/no-empty-function": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-floating-promises": "off",
+        "@typescript-eslint/no-non-null-assertion": "off",
+        "@typescript-eslint/no-unused-vars": "off",
+        "@typescript-eslint/camelcase": "off",
+        "import/max-dependencies": "off",
+        "sonarjs/no-duplicate-string": "off"
+      }
+    }
+  ]
 }
