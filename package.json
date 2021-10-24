@@ -8,9 +8,9 @@
   "types": "./es/index.d.ts",
   "unpkg": "./dist/reselect.js",
   "typesVersions": {
-    "<4.2.0": {
+    "<4.2": {
       "*": [
-        "src/typesVersions/ts4.1/*"
+        "./src/typesVersions/ts4.1/index.d.ts"
       ]
     }
   },
