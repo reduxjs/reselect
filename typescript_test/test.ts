@@ -992,6 +992,7 @@ function createSelectorConfigOptions() {
   )
 }
 
+// Issue #526
 function testInputSelectorWithUndefinedReturn() {
   type Input = { field: number | undefined }
   type Output = string
