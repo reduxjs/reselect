@@ -14,7 +14,8 @@ export type {
   EqualityFn,
   SelectorArray,
   SelectorResultArray,
-  ParametricSelector
+  ParametricSelector,
+  OutputParametricSelector
 } from './types'
 
 import {
