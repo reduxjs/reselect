@@ -5,7 +5,8 @@ import {
   createSelectorCreator,
   createStructuredSelector,
   ParametricSelector,
-  OutputSelector
+  OutputSelector,
+  SelectorResultArray
 } from '../src/index'
 
 import microMemoize from 'micro-memoize'
@@ -162,8 +163,8 @@ function testInvalidTypeInCombinator() {
 
   // does not allow heterogeneous parameter type
   // selectors when the combinator function is typed differently
+  // @ts-expect-error
   createSelector(
-    // @ts-expect-error
     (state: { testString: string }) => state.testString,
     (state: { testNumber: number }) => state.testNumber,
     (state: { testBoolean: boolean }) => state.testBoolean,
@@ -988,5 +989,24 @@ function createSelectorConfigOptions() {
     {
       memoizeOptions: (a, b) => a === b
     }
+  )
+}
+
+function testInputSelectorWithUndefinedReturn() {
+  type Input = { field: number | undefined }
+  type Output = string
+  type SelectorType = (input: Input) => Output
+
+  // Make sure the selector type is honored
+  const selector: SelectorType = createSelector(
+    (input: Input) => input.field,
+    args => 'test'
+  )
+
+  // even when memoizeOptions are passed
+  const selector2: SelectorType = createSelector(
+    (input: Input) => input.field,
+    input => 'test',
+    { memoizeOptions: { maxSize: 42 } }
   )
 }
