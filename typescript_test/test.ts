@@ -164,8 +164,8 @@ function testInvalidTypeInCombinator() {
 
   // does not allow heterogeneous parameter type
   // selectors when the combinator function is typed differently
+  // @ts-expect-error
   createSelector(
-    // @ts-expect-error
     (state: { testString: string }) => state.testString,
     (state: { testNumber: number }) => state.testNumber,
     (state: { testBoolean: boolean }) => state.testBoolean,
@@ -1060,3 +1060,31 @@ type SelectorArray29 = [
 
 type Results = SelectorResultArray<SelectorArray29>
 type State = GetStateFromSelectors<SelectorArray29>
+// Issue #526
+function testInputSelectorWithUndefinedReturn() {
+  type Input = { field: number | undefined }
+  type Output = string
+  type SelectorType = (input: Input) => Output
+
+  const input = ({ field }: Input) => field
+  const result = (out: number | undefined): Output => 'test'
+
+  // Make sure the selector type is honored
+  const selector: SelectorType = createSelector(
+    ({ field }: Input) => field,
+    args => 'test'
+  )
+
+  // even when memoizeOptions are passed
+  const selector2: SelectorType = createSelector(
+    ({ field }: Input) => field,
+    args => 'test',
+    { memoizeOptions: { maxSize: 42 } }
+  )
+
+  // Make sure inference of functions works...
+  const selector3: SelectorType = createSelector(input, result)
+  const selector4: SelectorType = createSelector(input, result, {
+    memoizeOptions: { maxSize: 42 }
+  })
+}

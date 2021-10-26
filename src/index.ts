@@ -14,7 +14,8 @@ export type {
   EqualityFn,
   SelectorArray,
   SelectorResultArray,
-  ParametricSelector
+  ParametricSelector,
+  OutputParametricSelector
 } from './types'
 
 import {
@@ -52,7 +53,7 @@ type DropFirst<T extends unknown[]> = T extends [unknown, ...infer U]
   : never
 
 export function createSelectorCreator<
-  F extends(...args: unknown[]) => unknown,
+  F extends (...args: unknown[]) => unknown,
   MemoizeFunction extends (func: F, ...options: any[]) => F,
   MemoizeOptions extends unknown[] = DropFirst<Parameters<MemoizeFunction>>
 >(
@@ -98,7 +99,7 @@ export function createSelectorCreator<
     // we wrap it in an array so we can apply it.
     const finalMemoizeOptions = Array.isArray(memoizeOptions)
       ? memoizeOptions
-      : ([ memoizeOptions ] as MemoizeOptions)
+      : ([memoizeOptions] as MemoizeOptions)
 
     const dependencies = getDependencies(funcs)
 
@@ -160,13 +161,25 @@ interface CreateSelectorFunction<
 > {
   /** Input selectors as separate inline arguments */
   <Selectors extends SelectorArray, Result>(
-    ...items:
-      | [...Selectors, (...args: SelectorResultArray<Selectors>) => Result]
-      | [
-          ...Selectors,
-          (...args: SelectorResultArray<Selectors>) => Result,
-          CreateSelectorOptions<MemoizeOptions>
-        ]
+    ...items: [
+      ...Selectors,
+      (...args: SelectorResultArray<Selectors>) => Result
+    ]
+  ): OutputSelector<
+    Selectors,
+    Result,
+    GetParamsFromSelectors<Selectors>,
+    ((...args: SelectorResultArray<Selectors>) => Result) &
+      ReturnType<MemoizeFunction>
+  >
+
+  /** Input selectors as separate inline arguments with memoizeOptions passed */
+  <Selectors extends SelectorArray, Result>(
+    ...items: [
+      ...Selectors,
+      (...args: SelectorResultArray<Selectors>) => Result,
+      CreateSelectorOptions<MemoizeOptions>
+    ]
   ): OutputSelector<
     Selectors,
     Result,
