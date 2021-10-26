@@ -164,8 +164,8 @@ function testInvalidTypeInCombinator() {
 
   // does not allow heterogeneous parameter type
   // selectors when the combinator function is typed differently
+  // @ts-expect-error
   createSelector(
-    // @ts-expect-error
     (state: { testString: string }) => state.testString,
     (state: { testNumber: number }) => state.testNumber,
     (state: { testBoolean: boolean }) => state.testBoolean,
@@ -994,70 +994,73 @@ function createSelectorConfigOptions() {
   )
 }
 
+// Verify more than 12 selectors are accepted
+// Issue #525
 const withLotsOfInputSelectors = createSelector(
-  (_state: any) => 1,
-  (_state: any) => 2,
-  (_state: any) => 3,
-  (_state: any) => 4,
-  (_state: any) => 5,
-  (_state: any) => 6,
-  (_state: any) => 7,
-  (_state: any) => 8,
-  (_state: any) => 9,
-  (_state: any) => 10,
-  (_state: any) => 11,
-  (_state: any) => 12,
-  (_state: any) => 13,
-  (_state: any) => 14,
-  (_state: any) => 15,
-  (_state: any) => 16,
-  (_state: any) => 17,
-  (_state: any) => 18,
-  (_state: any) => 19,
-  (_state: any) => 20,
-  (_state: any) => 21,
-  (_state: any) => 22,
-  (_state: any) => 23,
-  (_state: any) => 24,
-  (_state: any) => 25,
-  (_state: any) => 26,
-  (_state: any) => 27,
-  (_state: any) => 28,
+  (_state: StateA) => 1,
+  (_state: StateA) => 2,
+  (_state: StateA) => 3,
+  (_state: StateA) => 4,
+  (_state: StateA) => 5,
+  (_state: StateA) => 6,
+  (_state: StateA) => 7,
+  (_state: StateA) => 8,
+  (_state: StateA) => 9,
+  (_state: StateA) => 10,
+  (_state: StateA) => 11,
+  (_state: StateA) => 12,
+  (_state: StateA) => 13,
+  (_state: StateA) => 14,
+  (_state: StateA) => 15,
+  (_state: StateA) => 16,
+  (_state: StateA) => 17,
+  (_state: StateA) => 18,
+  (_state: StateA) => 19,
+  (_state: StateA) => 20,
+  (_state: StateA) => 21,
+  (_state: StateA) => 22,
+  (_state: StateA) => 23,
+  (_state: StateA) => 24,
+  (_state: StateA) => 25,
+  (_state: StateA) => 26,
+  (_state: StateA) => 27,
+  (_state: StateA) => 28,
   (...args) => args.length
 )
 
 type SelectorArray29 = [
-  (_state: any) => 1,
-  (_state: any) => 2,
-  (_state: any) => 3,
-  (_state: any) => 4,
-  (_state: any) => 5,
-  (_state: any) => 6,
-  (_state: any) => 7,
-  (_state: any) => 8,
-  (_state: any) => 9,
-  (_state: any) => 10,
-  (_state: any) => 11,
-  (_state: any) => 12,
-  (_state: any) => 13,
-  (_state: any) => 14,
-  (_state: any) => 15,
-  (_state: any) => 16,
-  (_state: any) => 17,
-  (_state: any) => 18,
-  (_state: any) => 19,
-  (_state: any) => 20,
-  (_state: any) => 21,
-  (_state: any) => 22,
-  (_state: any) => 23,
-  (_state: any) => 24,
-  (_state: any) => 25,
-  (_state: any) => 26,
-  (_state: any) => 27,
-  (_state: any) => 28,
-  (_state: any) => 29
+  (_state: StateA) => 1,
+  (_state: StateA) => 2,
+  (_state: StateA) => 3,
+  (_state: StateA) => 4,
+  (_state: StateA) => 5,
+  (_state: StateA) => 6,
+  (_state: StateA) => 7,
+  (_state: StateA) => 8,
+  (_state: StateA) => 9,
+  (_state: StateA) => 10,
+  (_state: StateA) => 11,
+  (_state: StateA) => 12,
+  (_state: StateA) => 13,
+  (_state: StateA) => 14,
+  (_state: StateA) => 15,
+  (_state: StateA) => 16,
+  (_state: StateA) => 17,
+  (_state: StateA) => 18,
+  (_state: StateA) => 19,
+  (_state: StateA) => 20,
+  (_state: StateA) => 21,
+  (_state: StateA) => 22,
+  (_state: StateA) => 23,
+  (_state: StateA) => 24,
+  (_state: StateA) => 25,
+  (_state: StateA) => 26,
+  (_state: StateA) => 27,
+  (_state: StateA) => 28,
+  (_state: StateA) => 29
 ]
 
+// Ensure that input functions with mismatched states raise errors
 type Results = SelectorResultArray<SelectorArray29>
 type State = GetStateFromSelectors<SelectorArray29>
 
@@ -1096,4 +1099,33 @@ type State = GetStateFromSelectors<SelectorArray29>
   selector({ foo: '' })
   // @ts-expect-error
   selector({ bar: '' })
+}
+
+// Issue #526
+function testInputSelectorWithUndefinedReturn() {
+  type Input = { field: number | undefined }
+  type Output = string
+  type SelectorType = (input: Input) => Output
+
+  const input = ({ field }: Input) => field
+  const result = (out: number | undefined): Output => 'test'
+
+  // Make sure the selector type is honored
+  const selector: SelectorType = createSelector(
+    ({ field }: Input) => field,
+    args => 'test'
+  )
+
+  // even when memoizeOptions are passed
+  const selector2: SelectorType = createSelector(
+    ({ field }: Input) => field,
+    args => 'test',
+    { memoizeOptions: { maxSize: 42 } }
+  )
+
+  // Make sure inference of functions works...
+  const selector3: SelectorType = createSelector(input, result)
+  const selector4: SelectorType = createSelector(input, result, {
+    memoizeOptions: { maxSize: 42 }
+  })
 }
