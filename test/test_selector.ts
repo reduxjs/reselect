@@ -161,7 +161,7 @@ describe('Basic selector behavior', () => {
 
   test('first argument can be an array', () => {
     const selector = createSelector(
-      [ state => state.a, state => state.b ],
+      [state => state.a, state => state.b],
       (a, b) => {
         return a + b
       }
@@ -576,7 +576,7 @@ describe('defaultMemoize', () => {
       return true
     }
 
-    for (const maxSize of [ 1, 3 ]) {
+    for (const maxSize of [1, 3]) {
       let funcCalls = 0
 
       const memoizer = defaultMemoize(
@@ -601,6 +601,39 @@ describe('defaultMemoize', () => {
       expect(funcCalls).toBe(2)
       expect(ids3).toBe(ids1)
     }
+  })
+
+  // Issue #527
+  test('Allows caching a value of `undefined`', () => {
+    const state = {
+      foo: { baz: 'baz' },
+      bar: 'qux'
+    }
+
+    const fooChangeSpy = jest.fn()
+
+    const fooChangeHandler = createSelector(state => state.foo, fooChangeSpy)
+
+    fooChangeHandler(state)
+    expect(fooChangeSpy.mock.calls.length).toEqual(1)
+
+    // no change
+    fooChangeHandler(state)
+    // this would fail
+    expect(fooChangeSpy.mock.calls.length).toEqual(1)
+
+    const state2 = { a: 1 }
+    let count = 0
+
+    const selector = createSelector([state => state.a], () => {
+      count++
+      return undefined
+    })
+
+    selector(state)
+    expect(count).toBe(1)
+    selector(state)
+    expect(count).toBe(1)
   })
 
   test('Accepts an options object as an arg', () => {
@@ -799,7 +832,7 @@ describe('createSelector exposed utils', () => {
     }
 
     const selector = createSelector(dependency1, dependency2, () => {})
-    expect(selector.dependencies).toEqual([ dependency1, dependency2 ])
+    expect(selector.dependencies).toEqual([dependency1, dependency2])
   })
 
   test('export lastResult function', () => {
