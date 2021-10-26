@@ -37,15 +37,14 @@ type GetStateFromSelector<S> = S extends Selector<infer State> ? State : never
 export type GetStateFromSelectors<S extends SelectorArray> =
   // handle two elements at once so this type works for up to 30 selectors
   S extends [infer C1, infer C2, ...infer Other]
-    ? Other extends SelectorArray
-      ?
-          | GetStateFromSelector<C1>
-          | GetStateFromSelector<C2>
-          | GetStateFromSelectors<Other>
-      : GetStateFromSelector<C1> | GetStateFromSelector<C2>
+    ? Other extends [any]
+      ? GetStateFromSelector<C1> &
+          GetStateFromSelector<C2> &
+          GetStateFromSelectors<Other>
+      : GetStateFromSelector<C1> & GetStateFromSelector<C2>
     : S extends [infer Current, ...infer Other]
-    ? Other extends SelectorArray
-      ? GetStateFromSelector<Current> | GetStateFromSelectors<Other>
+    ? Other extends [any]
+      ? GetStateFromSelector<Current> & GetStateFromSelectors<Other>
       : GetStateFromSelector<Current>
     : S extends (infer Elem)[]
     ? GetStateFromSelector<Elem>
