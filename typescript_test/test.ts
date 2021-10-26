@@ -5,7 +5,9 @@ import {
   createSelectorCreator,
   createStructuredSelector,
   ParametricSelector,
-  OutputSelector
+  OutputSelector,
+  SelectorResultArray,
+  GetParamsFromSelectors
 } from '../src/index'
 
 import microMemoize from 'micro-memoize'
@@ -717,6 +719,7 @@ function multiArgMemoize<F extends (...args: any[]) => any>(
 
 // #384: check for defaultMemoize
 import { isEqual, groupBy } from 'lodash'
+import { GetStateFromSelectors } from '../src/types'
 
 {
   interface Transaction {
@@ -990,3 +993,70 @@ function createSelectorConfigOptions() {
     }
   )
 }
+
+const withLotsOfInputSelectors = createSelector(
+  (_state: any) => 1,
+  (_state: any) => 2,
+  (_state: any) => 3,
+  (_state: any) => 4,
+  (_state: any) => 5,
+  (_state: any) => 6,
+  (_state: any) => 7,
+  (_state: any) => 8,
+  (_state: any) => 9,
+  (_state: any) => 10,
+  (_state: any) => 11,
+  (_state: any) => 12,
+  (_state: any) => 13,
+  (_state: any) => 14,
+  (_state: any) => 15,
+  (_state: any) => 16,
+  (_state: any) => 17,
+  (_state: any) => 18,
+  (_state: any) => 19,
+  (_state: any) => 20,
+  (_state: any) => 21,
+  (_state: any) => 22,
+  (_state: any) => 23,
+  (_state: any) => 24,
+  (_state: any) => 25,
+  (_state: any) => 26,
+  (_state: any) => 27,
+  (_state: any) => 28,
+  (...args) => args.length
+)
+
+type SelectorArray29 = [
+  (_state: any) => 1,
+  (_state: any) => 2,
+  (_state: any) => 3,
+  (_state: any) => 4,
+  (_state: any) => 5,
+  (_state: any) => 6,
+  (_state: any) => 7,
+  (_state: any) => 8,
+  (_state: any) => 9,
+  (_state: any) => 10,
+  (_state: any) => 11,
+  (_state: any) => 12,
+  (_state: any) => 13,
+  (_state: any) => 14,
+  (_state: any) => 15,
+  (_state: any) => 16,
+  (_state: any) => 17,
+  (_state: any) => 18,
+  (_state: any) => 19,
+  (_state: any) => 20,
+  (_state: any) => 21,
+  (_state: any) => 22,
+  (_state: any) => 23,
+  (_state: any) => 24,
+  (_state: any) => 25,
+  (_state: any) => 26,
+  (_state: any) => 27,
+  (_state: any) => 28,
+  (_state: any) => 29
+]
+
+type Results = SelectorResultArray<SelectorArray29>
+type State = GetStateFromSelectors<SelectorArray29>
