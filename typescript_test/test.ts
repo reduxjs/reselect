@@ -1060,3 +1060,40 @@ type SelectorArray29 = [
 
 type Results = SelectorResultArray<SelectorArray29>
 type State = GetStateFromSelectors<SelectorArray29>
+
+{
+  const selector = createSelector(
+    (state: string) => 1,
+    (state: number) => 2,
+    (...args) => 0
+  )
+  // @ts-expect-error
+  selector('foo')
+  // @ts-expect-error
+  selector(5)
+}
+{
+  const selector = createSelector(
+    (state: { foo: string }) => 1,
+    (state: { bar: string }) => 2,
+    (...args) => 0
+  )
+  selector({ foo: '', bar: '' })
+  // @ts-expect-error
+  selector({ foo: '' })
+  // @ts-expect-error
+  selector({ bar: '' })
+}
+
+{
+  const selector = createSelector(
+    (state: { foo: string }) => 1,
+    (state: { foo: string }) => 2,
+    (...args) => 0
+  )
+  // @ts-expect-error
+  selector({ foo: '', bar: '' })
+  selector({ foo: '' })
+  // @ts-expect-error
+  selector({ bar: '' })
+}
