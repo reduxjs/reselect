@@ -997,16 +997,25 @@ function testInputSelectorWithUndefinedReturn() {
   type Output = string
   type SelectorType = (input: Input) => Output
 
+  const input = ({ field }: Input) => field
+  const result = (out: number | undefined): Output => 'test'
+
   // Make sure the selector type is honored
   const selector: SelectorType = createSelector(
-    (input: Input) => input.field,
+    ({ field }: Input) => field,
     args => 'test'
   )
 
   // even when memoizeOptions are passed
   const selector2: SelectorType = createSelector(
-    (input: Input) => input.field,
-    input => 'test',
+    ({ field }: Input) => field,
+    args => 'test',
     { memoizeOptions: { maxSize: 42 } }
   )
+
+  // Make sure inference of functions works...
+  const selector3: SelectorType = createSelector(input, result)
+  const selector4: SelectorType = createSelector(input, result, {
+    memoizeOptions: { maxSize: 42 }
+  })
 }
