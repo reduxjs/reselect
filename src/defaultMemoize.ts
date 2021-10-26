@@ -3,15 +3,18 @@ import type { EqualityFn } from './types'
 // Cache implementation based on Erik Rasmussen's `lru-memoize`:
 // https://github.com/erikras/lru-memoize
 
+const NOT_FOUND = 'NOT_FOUND'
+type NOT_FOUND_TYPE = typeof NOT_FOUND
+
 interface Entry {
   key: unknown
   value: unknown
 }
 
 interface Cache {
-  get(key: unknown): unknown | undefined
+  get(key: unknown): unknown | NOT_FOUND_TYPE
   put(key: unknown, value: unknown): void
-  getValues(): unknown[]
+  getEntries(): Entry[]
   clear(): void
 }
 
@@ -22,14 +25,16 @@ function createSingletonCache(equals: EqualityFn): Cache {
       if (entry && equals(entry.key, key)) {
         return entry.value
       }
+
+      return NOT_FOUND
     },
 
     put(key: unknown, value: unknown) {
       entry = { key, value }
     },
 
-    getValues() {
-      return entry ? [entry.value] : []
+    getEntries() {
+      return entry ? [entry] : []
     },
 
     clear() {
@@ -57,12 +62,12 @@ function createLruCache(maxSize: number, equals: EqualityFn): Cache {
       return entry.value
     }
 
-    // No entry found in cache, return null
-    return undefined
+    // No entry found in cache, return sentinel
+    return NOT_FOUND
   }
 
   function put(key: unknown, value: unknown) {
-    if (!get(key)) {
+    if (get(key) === NOT_FOUND) {
       // TODO Is unshift slow?
       entries.unshift({ key, value })
       if (entries.length > maxSize) {
@@ -71,15 +76,15 @@ function createLruCache(maxSize: number, equals: EqualityFn): Cache {
     }
   }
 
-  function getValues() {
-    return entries.map(entry => entry.value)
+  function getEntries() {
+    return entries
   }
 
   function clear() {
     entries = []
   }
 
-  return { get, put, getValues, clear }
+  return { get, put, getEntries, clear }
 }
 
 export const defaultEqualityCheck: EqualityFn = (a, b): boolean => {
@@ -140,18 +145,18 @@ export function defaultMemoize<F extends (...args: any[]) => any>(
   // we reference arguments instead of spreading them for performance reasons
   function memoized() {
     let value = cache.get(arguments)
-    if (value === undefined) {
+    if (value === NOT_FOUND) {
       // @ts-ignore
       value = func.apply(null, arguments)
 
       if (resultEqualityCheck) {
-        const existingValues = cache.getValues()
-        const matchingValue = existingValues.find(ev =>
-          resultEqualityCheck(ev, value)
+        const entries = cache.getEntries()
+        const matchingEntry = entries.find(entry =>
+          resultEqualityCheck(entry.value, value)
         )
 
-        if (matchingValue !== undefined) {
-          return matchingValue
+        if (matchingEntry) {
+          return matchingEntry.value
         }
       }
 
