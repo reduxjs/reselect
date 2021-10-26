@@ -6,7 +6,8 @@ import {
   createStructuredSelector,
   ParametricSelector,
   OutputSelector,
-  SelectorResultArray
+  SelectorResultArray,
+  GetParamsFromSelectors
 } from '../src/index'
 
 import microMemoize from 'micro-memoize'
@@ -718,6 +719,7 @@ function multiArgMemoize<F extends (...args: any[]) => any>(
 
 // #384: check for defaultMemoize
 import { isEqual, groupBy } from 'lodash'
+import { GetStateFromSelectors } from '../src/types'
 
 {
   interface Transaction {
@@ -992,6 +994,74 @@ function createSelectorConfigOptions() {
   )
 }
 
+// Verify more than 12 selectors are accepted
+// Issue #525
+const withLotsOfInputSelectors = createSelector(
+  (_state: StateA) => 1,
+  (_state: StateA) => 2,
+  (_state: StateA) => 3,
+  (_state: StateA) => 4,
+  (_state: StateA) => 5,
+  (_state: StateA) => 6,
+  (_state: StateA) => 7,
+  (_state: StateA) => 8,
+  (_state: StateA) => 9,
+  (_state: StateA) => 10,
+  (_state: StateA) => 11,
+  (_state: StateA) => 12,
+  (_state: StateA) => 13,
+  (_state: StateA) => 14,
+  (_state: StateA) => 15,
+  (_state: StateA) => 16,
+  (_state: StateA) => 17,
+  (_state: StateA) => 18,
+  (_state: StateA) => 19,
+  (_state: StateA) => 20,
+  (_state: StateA) => 21,
+  (_state: StateA) => 22,
+  (_state: StateA) => 23,
+  (_state: StateA) => 24,
+  (_state: StateA) => 25,
+  (_state: StateA) => 26,
+  (_state: StateA) => 27,
+  (_state: StateA) => 28,
+  (...args) => args.length
+)
+
+type SelectorArray29 = [
+  (_state: StateA) => 1,
+  (_state: StateA) => 2,
+  (_state: StateA) => 3,
+  (_state: StateA) => 4,
+  (_state: StateA) => 5,
+  (_state: StateA) => 6,
+  (_state: StateA) => 7,
+  (_state: StateA) => 8,
+  (_state: StateA) => 9,
+  (_state: StateA) => 10,
+  (_state: StateA) => 11,
+  (_state: StateA) => 12,
+  (_state: StateA) => 13,
+  (_state: StateA) => 14,
+  (_state: StateA) => 15,
+  (_state: StateA) => 16,
+  (_state: StateA) => 17,
+  (_state: StateA) => 18,
+  (_state: StateA) => 19,
+  (_state: StateA) => 20,
+  (_state: StateA) => 21,
+  (_state: StateA) => 22,
+  (_state: StateA) => 23,
+  (_state: StateA) => 24,
+  (_state: StateA) => 25,
+  (_state: StateA) => 26,
+  (_state: StateA) => 27,
+  (_state: StateA) => 28,
+  (_state: StateA) => 29
+]
+
+type Results = SelectorResultArray<SelectorArray29>
+type State = GetStateFromSelectors<SelectorArray29>
 // Issue #526
 function testInputSelectorWithUndefinedReturn() {
   type Input = { field: number | undefined }
