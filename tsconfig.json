@@ -16,6 +16,6 @@
     "rootDirs": ["./src", "./test"],
     "rootDir": "./src",
   },
-  "include": ["src/**/*", "typescript-test/**/*"],
+  "include": ["src/**/*", "typescript_test/**/*"],
   "exclude": ["node_modules", "dist"]
 }

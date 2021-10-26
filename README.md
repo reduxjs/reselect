@@ -1,18 +1,42 @@
 # Reselect
 
-[![GitHub Workflow Status][build-badge]][build]
-[![npm package][npm-badge]][npm]
-[![Coveralls][coveralls-badge]][coveralls]
-
 A library for creating memoized "selector" functions. Commonly used with Redux, but usable with any plain JS immutable data as well.
 
 - Selectors can compute derived data, allowing Redux to store the minimal possible state.
 - Selectors are efficient. A selector is not recomputed unless one of its arguments changes.
 - Selectors are composable. They can be used as input to other selectors.
 
-Originally inspired by getters in [NuclearJS](https://github.com/optimizely/nuclear-js.git), [subscriptions](https://github.com/Day8/re-frame#just-a-read-only-cursor) in [re-frame](https://github.com/Day8/re-frame) and this [proposal](https://github.com/reduxjs/redux/pull/169) from [speedskater](https://github.com/speedskater).
+The **Redux docs usage page on [Deriving Data with Selectors](https://redux.js.org/usage/deriving-data-selectors)** covers the purpose and motivation for selectors, why memoized selectors are useful, typical Reselect usage patterns, and using selectors with React-Redux.
 
-You can play around with the following **example** in [this codepen](https://codepen.io/Domiii/pen/LzGNWj?editors=0010):
+[![GitHub Workflow Status][build-badge]][build]
+[![npm package][npm-badge]][npm]
+[![Coveralls][coveralls-badge]][coveralls]
+
+## Installation
+
+### Redux Toolkit
+
+While Reselect is not exclusive to Redux, it is already included by default in [the official Redux Toolkit package](https://redux-toolkit.js.org) - no further installation needed.
+
+```js
+import { createSelector } from '@reduxjs/toolkit'
+```
+
+### Standalone
+
+For standalone usage, install the `reselect` package:
+
+```bash
+npm install reselect
+
+yarn add reselect
+```
+
+## Basic Usage
+
+Reselect exports a `createSelector` API, which generates memoized selector functions. `createSelector` accepts one or more "input" selectors, which extra values from arguments, and an "output" selector that receives the extracted values and should return a derived value. If the generated selector is called multiple times, the output will only be recalculated when the extracted values have changed.
+
+You can play around with the following **example** in [this CodeSandbox](https://codesandbox.io/s/objective-waterfall-1z5y8?file=/src/index.js):
 
 ```js
 import { createSelector } from 'reselect'
@@ -32,7 +56,7 @@ const selectTax = createSelector(
 
 const selectTotal = createSelector(
   selectSubtotal,
-  taxSelector,
+  selectTax,
   (subtotal, tax) => ({ total: subtotal + tax })
 )
 
@@ -53,67 +77,43 @@ console.log(selectTotal(exampleState)) // { total: 2.322 }
 
 ## Table of Contents
 
-- [Reselect](#reselect)
-
-  - [Table of Contents](#table-of-contents)
-  - [Installation](#installation)
-  - [Usage Guide](#usage-guide)
-  - [API](#api)
-    - [createSelector(...inputSelectors | [inputSelectors], resultFunc, selectorOptions?)](#createselectorinputselectors--inputselectors-resultfunc-selectoroptions)
-    - [defaultMemoize(func, equalityCheck = defaultEqualityCheck)](#defaultmemoizefunc-equalitycheck--defaultequalitycheck)
-    - [createSelectorCreator(memoize, ...memoizeOptions)](#createselectorcreatormemoize-memoizeoptions)
-      - [Customize `equalityCheck` for `defaultMemoize`](#customize-equalitycheck-for-defaultmemoize)
-      - [Use memoize function from lodash for an unbounded cache](#use-memoize-function-from-lodash-for-an-unbounded-cache)
-    - [createStructuredSelector({inputSelectors}, selectorCreator = createSelector)](#createstructuredselectorinputselectors-selectorcreator--createselector)
-  - [FAQ](#faq)
-    - [Q: Why isn’t my selector recomputing when the input state changes?](#q-why-isnt-my-selector-recomputing-when-the-input-state-changes)
-    - [Q: Why is my selector recomputing when the input state stays the same?](#q-why-is-my-selector-recomputing-when-the-input-state-stays-the-same)
-    - [Q: Can I use Reselect without Redux?](#q-can-i-use-reselect-without-redux)
-    - [Q: How do I create a selector that takes an argument?](#q-how-do-i-create-a-selector-that-takes-an-argument)
-    - [Q: The default memoization function is no good, can I use a different one?](#q-the-default-memoization-function-is-no-good-can-i-use-a-different-one)
-    - [Q: How do I test a selector?](#q-how-do-i-test-a-selector)
-    - [Q: How do I use Reselect with Immutable.js?](#q-how-do-i-use-reselect-with-immutablejs)
-    - [Q: Can I share a selector across multiple component instances?](#q-can-i-share-a-selector-across-multiple-component-instances)
-    - [Q: Are there TypeScript Typings?](#q-are-there-typescript-typings)
-    - [Q: How can I make a curried selector?](#q-how-can-i-make-a-curried-selector)
-  - [Related Projects](#related-projects)
-    - [re-reselect](#re-reselect)
-    - [reselect-tools](#reselect-tools)
-    - [reselect-debugger](#reselect-debugger)
-    - [reselect-map](#reselect-map)
-  - [License](#license)
-
-  - [Why isn't my selector recomputing when the input state changes?](#q-why-isnt-my-selector-recomputing-when-the-input-state-changes)
-  - [Why is my selector recomputing when the input state stays the same?](#q-why-is-my-selector-recomputing-when-the-input-state-stays-the-same)
-  - [Can I use Reselect without Redux?](#q-can-i-use-reselect-without-redux)
-  - [The default memoization function is no good, can I use a different one?](#q-the-default-memoization-function-is-no-good-can-i-use-a-different-one)
-  - [How do I test a selector?](#q-how-do-i-test-a-selector)
-  - [How do I create a selector that takes an argument? ](#q-how-do-i-create-a-selector-that-takes-an-argument)
-  - [How do I use Reselect with Immutable.js?](#q-how-do-i-use-reselect-with-immutablejs)
-  - [Can I share a selector across multiple component instances?](#q-can-i-share-a-selector-across-multiple-component-instances)
-  - [Are there TypeScript typings?](#q-are-there-typescript-typings)
-  - [How can I make a curried selector?](#q-how-can-i-make-a-curried-selector)
-
+- [Installation](#installation)
+  - [Redux Toolkit](#redux-toolkit)
+  - [Standalone](#standalone)
+- [Basic Usage](#basic-usage)
+- [API](#api)
+  - [createSelector(...inputSelectors | [inputSelectors], resultFunc, selectorOptions?)](#createselectorinputselectors--inputselectors-resultfunc-selectoroptions)
+  - [defaultMemoize(func, equalityCheckOrOptions = defaultEqualityCheck)](#defaultmemoizefunc-equalitycheckoroptions--defaultequalitycheck)
+  - [createSelectorCreator(memoize, ...memoizeOptions)](#createselectorcreatormemoize-memoizeoptions)
+    - [Customize `equalityCheck` for `defaultMemoize`](#customize-equalitycheck-for-defaultmemoize)
+    - [Use memoize function from Lodash for an unbounded cache](#use-memoize-function-from-lodash-for-an-unbounded-cache)
+  - [createStructuredSelector({inputSelectors}, selectorCreator = createSelector)](#createstructuredselectorinputselectors-selectorcreator--createselector)
+- [FAQ](#faq)
+  - [Q: Why isn’t my selector recomputing when the input state changes?](#q-why-isnt-my-selector-recomputing-when-the-input-state-changes)
+  - [Q: Why is my selector recomputing when the input state stays the same?](#q-why-is-my-selector-recomputing-when-the-input-state-stays-the-same)
+  - [Q: Can I use Reselect without Redux?](#q-can-i-use-reselect-without-redux)
+  - [Q: How do I create a selector that takes an argument?](#q-how-do-i-create-a-selector-that-takes-an-argument)
+  - [Q: The default memoization function is no good, can I use a different one?](#q-the-default-memoization-function-is-no-good-can-i-use-a-different-one)
+  - [Q: How do I test a selector?](#q-how-do-i-test-a-selector)
+  - [Q: Can I share a selector across multiple component instances?](#q-can-i-share-a-selector-across-multiple-component-instances)
+  - [Q: Are there TypeScript Typings?](#q-are-there-typescript-typings)
+  - [Q: How can I make a curried selector?](#q-how-can-i-make-a-curried-selector)
 - [Related Projects](#related-projects)
+  - [re-reselect](#re-reselect)
+  - [reselect-tools](#reselect-tools)
+  - [reselect-debugger](#reselect-debugger)
 - [License](#license)
-
-## Installation
-
-```bash
-npm install reselect
-
-yarn add reselect
-```
-
-## Usage Guide
-
-The **Redux docs usage page on [Deriving Data with Selectors]()** covers the purpose and motivation for selectors, why memoized selectors are useful, typical Reselect usage patterns, and using selectors with React-Redux.
+- [Prior Art and Inspiration](#prior-art-and-inspiration)
 
 ## API
 
 ### createSelector(...inputSelectors | [inputSelectors], resultFunc, selectorOptions?)
 
-Takes one or more selectors, or an array of selectors, computes their values and passes them as arguments to `resultFunc`.
+Accepts one or more "input selectors" (either as separate arguments or a single array), a single "output selector" / "result function", and an optional options object, and generates a memoized selector function.
+
+When the selector is called, each input selector will be called with all of the provided arguments. The extracted values are then passed as separate arguments to the output selector, which should calculate and return a final result. The inputs and result are cached for later use.
+
+If the selector is called again with the same arguments, the previously cached result is returned instead of recalculating a new result.
 
 `createSelector` determines if the value returned by an input-selector has changed between calls using reference equality (`===`). Inputs to selectors created with `createSelector` should be immutable.
 
@@ -138,7 +138,7 @@ const customizedSelector = createSelector(
   state => state.b,
   (a, b) => a + b,
   {
-    // Pass options through to the built-in `defaultMemoize` function
+    // New in 4.1: Pass options through to the built-in `defaultMemoize` function
     memoizeOptions: {
       equalityCheck: (a, b) => a === b,
       maxSize: 10,
@@ -148,32 +148,26 @@ const customizedSelector = createSelector(
 )
 ```
 
-It can be useful to access the props of a component from within a selector. When a selector is connected to a component with `connect`, the component props are passed as the second argument to the selector:
+Selectors are typically called with a Redux `state` value as the first argument, and the input selectors extract pieces of the `state` object for use in calculations. However, it's also common to want to pass additional arguments, such as a value to filter by. Since input selectors are given all arguments, they can extract the additional arguments and pass them to the output selector:
 
 ```js
-const selectAB = (state, props) => state.a * props.b
-
-// props only (ignoring state argument)
-const selectC = (_, props) => props.c
-
-// state only (props argument omitted as not required)
-const selectD = state => state.d
-
-const totalSelector = createSelector(
-  selectAB,
-  selectC,
-  selectD,
-  (ab, c, d) => ({
-    total: ab + c + d
-  })
+const selectItemsByCategory = createSelector(
+  [
+    // Usual first input - extract value from `state`
+    state => state.items,
+    // Take the second arg, `category`, and forward to the output selector
+    (state, category) => category
+  ],
+  // Output selector gets (`items, category)` as args
+  (items, category) => items.filter(item => item.category === category)
 )
 ```
 
 ### defaultMemoize(func, equalityCheckOrOptions = defaultEqualityCheck)
 
-`defaultMemoize` memoizes the function passed in the func parameter. It is the memoize function used by `createSelector`.
+`defaultMemoize` memoizes the function passed in the func parameter. It is the standard memoize function used by `createSelector`.
 
-`defaultMemoize` has a default cache size of 1. This means it always recalculates when the value of an argument changes. However, this can be customized as needed with a specific max cache size.
+`defaultMemoize` has a default cache size of 1. This means it always recalculates when the value of an argument changes. However, this can be customized as needed with a specific max cache size (new in 4.1).
 
 `defaultMemoize` determines if an argument has changed by calling the `equalityCheck` function. As `defaultMemoize` is designed to be used with immutable data, the default `equalityCheck` function checks for changes using reference equality:
 
@@ -183,7 +177,7 @@ function defaultEqualityCheck(previousVal, currentVal) {
 }
 ```
 
-`defaultMemoize` also accepts an options object as its first argument instead of `equalityCheck`. The options object may contain:
+As of Reselect 4.1, `defaultMemoize` also accepts an options object as its first argument instead of `equalityCheck`. The options object may contain:
 
 ```ts
 interface DefaultMemoizeOptions {
@@ -250,7 +244,7 @@ const selectSum = createDeepEqualSelector(
 )
 ```
 
-#### Use memoize function from lodash for an unbounded cache
+#### Use memoize function from Lodash for an unbounded cache
 
 ```js
 import { createSelectorCreator } from 'reselect'
@@ -469,47 +463,23 @@ Always check that the cost of an alternative `equalityCheck` function or deep eq
 
 ### Q: Can I use Reselect without Redux?
 
-A: Yes. Reselect has no dependencies on any other package, so although it was designed to be used with Redux it can be used independently. It is currently being used successfully in traditional Flux apps.
-
-> If you create selectors using `createSelector` make sure its arguments are immutable.
-> See [here](#createselectorinputselectors--inputselectors-resultfunc)
+A: Yes. Reselect has no dependencies on any other package, so although it was designed to be used with Redux it can be used independently. It can be used with any plain JS data, such as typical React state values, as long as that data is being updated immutably.
 
 ### Q: How do I create a selector that takes an argument?
 
-A: Keep in mind that selectors can access React props, so if your arguments are (or can be made available as) React props, you can use that functionality. [See here](#accessing-react-props-in-selectors) for details.
-
-Otherwise, Reselect doesn't have built-in support for creating selectors that accepts arguments, but here are some suggestions for implementing similar functionality...
-
-If the argument is not dynamic you can use a factory function:
+As shown in the API reference section above, provide input selectors that extract the arguments and forward them to the output selector for calculation:
 
 ```js
-const expensiveItemSelectorFactory = minValue => {
-  return createSelector(shopItemsSelector, items =>
-    items.filter(item => item.value > minValue)
-  )
-}
-
-const selectSubtotal = createSelector(
-  expensiveItemSelectorFactory(200),
-  items => items.reduce((acc, item) => acc + item.value, 0)
+const selectItemsByCategory = createSelector(
+  [
+    // Usual first input - extract value from `state`
+    state => state.items,
+    // Take the second arg, `category`, and forward to the output selector
+    (state, category) => category
+  ],
+  // Output selector gets (`items, category)` as args
+  (items, category) => items.filter(item => item.category === category)
 )
-```
-
-The general consensus [here](https://github.com/reduxjs/reselect/issues/38) and [over at nuclear-js](https://github.com/optimizely/nuclear-js/issues/14) is that if a selector needs a dynamic argument, then that argument should probably be state in the store. If you decide that you do require a selector with a dynamic argument, then a selector that returns a memoized function may be suitable:
-
-```js
-import { createSelector } from 'reselect'
-import memoize from 'lodash.memoize'
-
-const expensiveSelector = createSelector(
-  state => state.items,
-  items => memoize(minValue => items.filter(item => item.value > minValue))
-)
-
-const expensiveFilter = expensiveSelector(state)
-
-const slightlyExpensive = expensiveFilter(100)
-const veryExpensive = expensiveFilter(1000000)
 ```
 
 ### Q: The default memoization function is no good, can I use a different one?
@@ -617,40 +587,16 @@ recomputations back to 0. The intended use is for a complex selector that may
 have many independent tests and you don't want to manually manage the
 computation count or create a "dummy" selector for each test.
 
-### Q: How do I use Reselect with Immutable.js?
-
-A: Selectors created with `createSelector` should work just fine with Immutable.js data structures.
-
-If your selector is recomputing and you don't think the state has changed, make sure you are aware of which Immutable.js update methods **always** return a new object and which update methods only return a new object **when the collection actually changes**.
-
-```js
-import Immutable from 'immutable'
-
-let myMap = Immutable.Map({
-  a: 1,
-  b: 2,
-  c: 3
-})
-
-// set, merge and others only return a new obj when update changes collection
-let newMap = myMap.set('a', 1)
-assert.equal(myMap, newMap)
-newMap = myMap.merge({ a: 1 })
-assert.equal(myMap, newMap)
-// map, reduce, filter and others always return a new obj
-newMap = myMap.map(a => a * 1)
-assert.notEqual(myMap, newMap)
-```
-
-If a selector's input is updated by an operation that always returns a new object, it may be performing unnecessary recomputations. See [here](#q-why-is-my-selector-recomputing-when-the-input-state-stays-the-same) for a discussion on the pros and cons of using a deep equality check like `Immutable.is` to eliminate unnecessary recomputations.
-
 ### Q: Can I share a selector across multiple component instances?
 
-A: Selectors created using `createSelector` only have a cache size of one. This can make them unsuitable for sharing across multiple instances if the arguments to the selector are different for each instance of the component. There are a couple of ways to get around this:
+A: Yes, although it requires some planning.
 
-- Create a factory function which returns a new selector for each instance of the component. There is built-in support for factory functions in React Redux v4.3 or higher. See [here](#sharing-selectors-with-props-across-multiple-component-instances) for an example.
+As of Reselect 4.1, you can create a selector with a cache size greater than one by passing in a `maxSize` option under `memoizeOptions` for use with the built-in `defaultMemoize`.
 
-- Create a custom selector with a cache size greater than one.
+Otherwise, selectors created using `createSelector` only have a cache size of one. This can make them unsuitable for sharing across multiple instances if the arguments to the selector are different for each instance of the component. There are a couple of ways to get around this:
+
+- Create a factory function which returns a new selector for each instance of the component. This can be called in a React component inside the `useMemo` hook to generate a unique selector instance per component.
+- Create a custom selector with a cache size greater than one using `createSelectorCreator`
 
 ### Q: Are there TypeScript Typings?
 
@@ -690,15 +636,13 @@ Inspired by Reselect Tools, so it also has all functionality from this library a
 - Selectors Output (In case if selector not dependent from external arguments)
 - Shows "Not Memoized (NM)" selectors
 
-### [reselect-map](https://github.com/HeyImAlex/reselect-map)
-
-Can be useful when doing **very expensive** computations on elements of a collection because Reselect might not give you the granularity of caching that you need. Check out the reselect-maps README for examples.
-
-**The optimizations in reselect-map only apply in a small number of cases. If you are unsure whether you need it, you don't!**
-
 ## License
 
 MIT
+
+## Prior Art and Inspiration
+
+Originally inspired by getters in [NuclearJS](https://github.com/optimizely/nuclear-js.git), [subscriptions](https://github.com/Day8/re-frame#just-a-read-only-cursor) in [re-frame](https://github.com/Day8/re-frame) and this [proposal](https://github.com/reduxjs/redux/pull/169) from [speedskater](https://github.com/speedskater).
 
 [build-badge]: https://img.shields.io/github/workflow/status/reduxjs/redux-thunk/Tests
 [build]: https://github.com/reduxjs/reselect/actions/workflows/build-and-test-types.yml
