@@ -735,11 +735,22 @@ describe('defaultMemoize', () => {
 
     selector.memoizedResultFunc.clearCache()
 
+    // Added
+    selector('a') // ['c', 'b', 'a']
+    expect(funcCalls).toBe(4)
+
+    // Already in cache
+    selector('a') // ['c', 'b', 'a']
+    expect(funcCalls).toBe(4)
+
+    // make sure clearCache is passed to the selector correctly
+    selector.clearCache()
+
     // Cache was cleared
     // Note: the outer arguments wrapper function still has 'c' in its own size-1 cache, so passing
     // 'c' here would _not_ recalculate
     selector('b') // ['b']
-    expect(funcCalls).toBe(4)
+    expect(funcCalls).toBe(5)
   })
 })
 

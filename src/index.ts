@@ -168,7 +168,8 @@ interface CreateSelectorFunction<
     Selectors,
     Result,
     GetParamsFromSelectors<Selectors>,
-    (...args: SelectorResultArray<Selectors>) => Result
+    ((...args: SelectorResultArray<Selectors>) => Result) &
+      Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
   > &
     Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
 
@@ -183,7 +184,8 @@ interface CreateSelectorFunction<
     Selectors,
     Result,
     GetParamsFromSelectors<Selectors>,
-    (...args: SelectorResultArray<Selectors>) => Result
+    ((...args: SelectorResultArray<Selectors>) => Result) &
+      Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
   > &
     Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
 
@@ -196,7 +198,8 @@ interface CreateSelectorFunction<
     Selectors,
     Result,
     GetParamsFromSelectors<Selectors>,
-    (...args: SelectorResultArray<Selectors>) => Result
+    ((...args: SelectorResultArray<Selectors>) => Result) &
+      Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
   > &
     Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
 }
