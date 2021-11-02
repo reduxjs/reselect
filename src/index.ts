@@ -60,7 +60,6 @@ export function createSelectorCreator<
   memoize: MemoizeFunction,
   ...memoizeOptionsFromArgs: DropFirst<Parameters<MemoizeFunction>>
 ) {
-  // (memoize: MemoizeFunction, ...memoizeOptions: MemoizerOptions) {
   const createSelector = (...funcs: Function[]) => {
     let recomputations = 0
     let lastResult: unknown
@@ -169,9 +168,9 @@ interface CreateSelectorFunction<
     Selectors,
     Result,
     GetParamsFromSelectors<Selectors>,
-    ((...args: SelectorResultArray<Selectors>) => Result) &
-      ReturnType<MemoizeFunction>
-  >
+    (...args: SelectorResultArray<Selectors>) => Result
+  > &
+    Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
 
   /** Input selectors as separate inline arguments with memoizeOptions passed */
   <Selectors extends SelectorArray, Result>(
@@ -184,9 +183,9 @@ interface CreateSelectorFunction<
     Selectors,
     Result,
     GetParamsFromSelectors<Selectors>,
-    ((...args: SelectorResultArray<Selectors>) => Result) &
-      ReturnType<MemoizeFunction>
-  >
+    (...args: SelectorResultArray<Selectors>) => Result
+  > &
+    Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
 
   /** Input selectors as a separate array */
   <Selectors extends SelectorArray, Result>(
@@ -197,9 +196,9 @@ interface CreateSelectorFunction<
     Selectors,
     Result,
     GetParamsFromSelectors<Selectors>,
-    ((...args: SelectorResultArray<Selectors>) => Result) &
-      ReturnType<MemoizeFunction>
-  >
+    (...args: SelectorResultArray<Selectors>) => Result
+  > &
+    Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
 }
 
 export const createSelector =

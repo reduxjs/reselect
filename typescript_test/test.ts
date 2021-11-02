@@ -7,8 +7,8 @@ import {
   ParametricSelector,
   OutputSelector,
   SelectorResultArray,
-  GetParamsFromSelectors
-} from '../src/index'
+  Selector
+} from '../src'
 
 import microMemoize from 'micro-memoize'
 import memoizeOne from 'memoize-one'
@@ -536,9 +536,9 @@ function testDefaultMemoize() {
 }
 
 function testCreateSelectorCreator() {
-  const createSelector = createSelectorCreator(defaultMemoize)
+  const defaultCreateSelector = createSelectorCreator(defaultMemoize)
 
-  const selector = createSelector(
+  const selector = defaultCreateSelector(
     (state: { foo: string }) => state.foo,
     foo => foo
   )
@@ -547,7 +547,10 @@ function testCreateSelectorCreator() {
   // @ts-expect-error
   selector({ foo: 'fizz' }, { bar: 42 })
 
-  const parametric = createSelector(
+  // clearCache should exist because of defaultMemoize
+  selector.clearCache()
+
+  const parametric = defaultCreateSelector(
     (state: { foo: string }) => state.foo,
     (state: { foo: string }, props: { bar: number }) => props.bar,
     (foo, bar) => ({ foo, bar })
@@ -743,6 +746,13 @@ import { GetStateFromSelectors } from '../src/types'
     'abcd',
     defaultEqualityCheck
   )
+
+  const select = createMultiMemoizeArgSelector(
+    (state: { foo: string }) => state.foo,
+    foo => foo + '!'
+  )
+  // @ts-expect-error - not using defaultMemoize, so clearCache shouldn't exist
+  select.clearCache()
 
   const createMultiMemoizeArgSelector2 = createSelectorCreator(
     multiArgMemoize,
@@ -1128,4 +1138,50 @@ function testInputSelectorWithUndefinedReturn() {
   const selector4: SelectorType = createSelector(input, result, {
     memoizeOptions: { maxSize: 42 }
   })
+}
+
+function deepNesting() {
+  type State = { foo: string }
+  const readOne = (state: State) => state.foo
+
+  const selector0 = createSelector(readOne, one => one)
+  const selector1 = createSelector(selector0, s => s)
+  const selector2 = createSelector(selector1, s => s)
+  const selector3 = createSelector(selector2, s => s)
+  const selector4 = createSelector(selector3, s => s)
+  const selector5 = createSelector(selector4, s => s)
+  const selector6 = createSelector(selector5, s => s)
+  const selector7 = createSelector(selector6, s => s)
+  const selector8: Selector<State, string> = createSelector(selector7, s => s)
+  const selector9 = createSelector(selector8, s => s)
+  const selector10 = createSelector(selector9, s => s)
+  const selector11 = createSelector(selector10, s => s)
+  const selector12 = createSelector(selector11, s => s)
+  const selector13 = createSelector(selector12, s => s)
+  const selector14 = createSelector(selector13, s => s)
+  const selector15 = createSelector(selector14, s => s)
+  const selector16 = createSelector(selector15, s => s)
+  const selector17: OutputSelector<
+    [(state: State) => string],
+    ReturnType<typeof selector16>,
+    never,
+    (s: string) => string
+  > = createSelector(selector16, s => s)
+  const selector18 = createSelector(selector17, s => s)
+  const selector19 = createSelector(selector18, s => s)
+  const selector20 = createSelector(selector19, s => s)
+  const selector21 = createSelector(selector20, s => s)
+  const selector22 = createSelector(selector21, s => s)
+  const selector23 = createSelector(selector22, s => s)
+  const selector24 = createSelector(selector23, s => s)
+  const selector25 = createSelector(selector24, s => s)
+  const selector26: Selector<
+    // this can be created as a utility type, or we could expose this from the
+    // library since it already exists...
+    typeof selector25 extends Selector<infer S> ? S : never,
+    ReturnType<typeof selector25>
+  > = createSelector(selector25, s => s)
+  const selector27 = createSelector(selector26, s => s)
+  const selector28 = createSelector(selector27, s => s)
+  const selector29 = createSelector(selector28, s => s)
 }
