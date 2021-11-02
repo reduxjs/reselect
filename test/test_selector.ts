@@ -736,11 +736,11 @@ describe('defaultMemoize', () => {
     selector.memoizedResultFunc.clearCache()
 
     // Added
-    selector('a') // ['c', 'b', 'a']
+    selector('a') // ['a']
     expect(funcCalls).toBe(4)
 
     // Already in cache
-    selector('a') // ['c', 'b', 'a']
+    selector('a') // ['a']
     expect(funcCalls).toBe(4)
 
     // make sure clearCache is passed to the selector correctly
