@@ -156,7 +156,7 @@ export function defaultMemoize<F extends (...args: any[]) => any>(
         )
 
         if (matchingEntry) {
-          return matchingEntry.value
+          value = matchingEntry.value
         }
       }
 
