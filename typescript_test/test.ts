@@ -1176,8 +1176,6 @@ function deepNesting() {
   const selector24 = createSelector(selector23, s => s)
   const selector25 = createSelector(selector24, s => s)
   const selector26: Selector<
-    // this can be created as a utility type, or we could expose this from the
-    // library since it already exists...
     typeof selector25 extends Selector<infer S> ? S : never,
     ReturnType<typeof selector25>
   > = createSelector(selector25, s => s)
