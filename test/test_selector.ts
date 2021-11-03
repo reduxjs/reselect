@@ -603,6 +603,35 @@ describe('defaultMemoize', () => {
     }
   })
 
+  test('updates the cache key even if resultEqualityCheck is a hit', () => {
+    const selector = jest.fn(x => x)
+    const equalityCheck = jest.fn((a, b) => a === b)
+    const resultEqualityCheck = jest.fn((a, b) => typeof a === typeof b)
+
+    const memoizedFn = defaultMemoize(selector, {
+      maxSize: 1,
+      resultEqualityCheck,
+      equalityCheck
+    })
+
+    // initialize the cache
+    memoizedFn('cache this result')
+    expect(selector).toBeCalledTimes(1)
+
+    // resultEqualityCheck hit (with a different cache key)
+    const result = memoizedFn('arg1')
+    expect(equalityCheck).toHaveLastReturnedWith(false)
+    expect(resultEqualityCheck).toHaveLastReturnedWith(true)
+    expect(result).toBe('cache this result')
+    expect(selector).toBeCalledTimes(2)
+
+    // cache key should now be updated
+    const result2 = memoizedFn('arg1')
+    expect(result2).toBe('cache this result')
+    expect(equalityCheck).toHaveLastReturnedWith(true)
+    expect(selector).toBeCalledTimes(2)
+  })
+
   // Issue #527
   test('Allows caching a value of `undefined`', () => {
     const state = {

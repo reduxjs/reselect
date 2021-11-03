@@ -167,9 +167,9 @@ interface CreateSelectorFunction<
   ): OutputSelector<
     Selectors,
     Result,
-    GetParamsFromSelectors<Selectors>,
     ((...args: SelectorResultArray<Selectors>) => Result) &
-      Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
+      Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>,
+    GetParamsFromSelectors<Selectors>
   > &
     Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
 
@@ -183,9 +183,9 @@ interface CreateSelectorFunction<
   ): OutputSelector<
     Selectors,
     Result,
-    GetParamsFromSelectors<Selectors>,
     ((...args: SelectorResultArray<Selectors>) => Result) &
-      Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
+      Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>,
+    GetParamsFromSelectors<Selectors>
   > &
     Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
 
@@ -197,9 +197,9 @@ interface CreateSelectorFunction<
   ): OutputSelector<
     Selectors,
     Result,
-    GetParamsFromSelectors<Selectors>,
     ((...args: SelectorResultArray<Selectors>) => Result) &
-      Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
+      Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>,
+    GetParamsFromSelectors<Selectors>
   > &
     Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
 }
