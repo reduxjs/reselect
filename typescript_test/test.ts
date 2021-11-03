@@ -1164,8 +1164,8 @@ function deepNesting() {
   const selector17: OutputSelector<
     [(state: State) => string],
     ReturnType<typeof selector16>,
-    never,
-    (s: string) => string
+    (s: string) => string,
+    never
   > = createSelector(selector16, s => s)
   const selector18 = createSelector(selector17, s => s)
   const selector19 = createSelector(selector18, s => s)

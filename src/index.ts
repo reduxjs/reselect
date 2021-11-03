@@ -4,7 +4,8 @@ import type {
   OutputSelector,
   EqualityFn,
   SelectorArray,
-  SelectorResultArray
+  SelectorResultArray,
+  DropFirst
 } from './types'
 
 export type {
@@ -48,13 +49,12 @@ function getDependencies(funcs: unknown[]) {
   return dependencies as SelectorArray
 }
 
-type DropFirst<T extends unknown[]> = T extends [unknown, ...infer U]
-  ? U
-  : never
-
 export function createSelectorCreator<
+  /** Selectors will eventually accept some function to be memoized */
   F extends (...args: unknown[]) => unknown,
+  /** A memoizer such as defaultMemoize that accepts a function + some possible options */
   MemoizeFunction extends (func: F, ...options: any[]) => F,
+  /** The additional options arguments to the memoizer */
   MemoizeOptions extends unknown[] = DropFirst<Parameters<MemoizeFunction>>
 >(
   memoize: MemoizeFunction,
