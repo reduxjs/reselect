@@ -16,8 +16,8 @@ interface OutputSelectorFields<Combiner, Result> {
 export type OutputSelector<
   S extends SelectorArray,
   Result,
-  Params extends readonly any[],
-  Combiner
+  Combiner,
+  Params extends readonly any[] = never
 > = Selector<GetStateFromSelectors<S>, Result, Params> &
   OutputSelectorFields<Combiner, Result>
 

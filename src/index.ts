@@ -168,9 +168,9 @@ interface CreateSelectorFunction<
   ): OutputSelector<
     Selectors,
     Result,
-    GetParamsFromSelectors<Selectors>,
     ((...args: SelectorResultArray<Selectors>) => Result) &
-      ReturnType<MemoizeFunction>
+      ReturnType<MemoizeFunction>,
+    GetParamsFromSelectors<Selectors>
   >
 
   /** Input selectors as separate inline arguments with memoizeOptions passed */
@@ -183,9 +183,9 @@ interface CreateSelectorFunction<
   ): OutputSelector<
     Selectors,
     Result,
-    GetParamsFromSelectors<Selectors>,
     ((...args: SelectorResultArray<Selectors>) => Result) &
-      ReturnType<MemoizeFunction>
+      ReturnType<MemoizeFunction>,
+    GetParamsFromSelectors<Selectors>
   >
 
   /** Input selectors as a separate array */
@@ -196,9 +196,9 @@ interface CreateSelectorFunction<
   ): OutputSelector<
     Selectors,
     Result,
-    GetParamsFromSelectors<Selectors>,
     ((...args: SelectorResultArray<Selectors>) => Result) &
-      ReturnType<MemoizeFunction>
+      ReturnType<MemoizeFunction>,
+    GetParamsFromSelectors<Selectors>
   >
 }
 
