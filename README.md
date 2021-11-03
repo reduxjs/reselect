@@ -34,7 +34,7 @@ yarn add reselect
 
 ## Basic Usage
 
-Reselect exports a `createSelector` API, which generates memoized selector functions. `createSelector` accepts one or more "input" selectors, which extra values from arguments, and an "output" selector that receives the extracted values and should return a derived value. If the generated selector is called multiple times, the output will only be recalculated when the extracted values have changed.
+Reselect exports a `createSelector` API, which generates memoized selector functions. `createSelector` accepts one or more "input" selectors, which extract values from arguments, and an "output" selector that receives the extracted values and should return a derived value. If the generated selector is called multiple times, the output will only be recalculated when the extracted values have changed.
 
 You can play around with the following **example** in [this CodeSandbox](https://codesandbox.io/s/objective-waterfall-1z5y8?file=/src/index.js):
 
