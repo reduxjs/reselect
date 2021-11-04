@@ -604,18 +604,15 @@ describe('defaultMemoize', () => {
   })
 
   test('updates the cache key even if resultEqualityCheck is a hit', () => {
-    const selector  = jest.fn(x => x)
+    const selector = jest.fn(x => x)
     const equalityCheck = jest.fn((a, b) => a === b)
     const resultEqualityCheck = jest.fn((a, b) => typeof a === typeof b)
 
-    const memoizedFn = defaultMemoize(
-      selector,
-      {
-        maxSize: 1,
-        resultEqualityCheck,
-        equalityCheck
-      }
-    )
+    const memoizedFn = defaultMemoize(selector, {
+      maxSize: 1,
+      resultEqualityCheck,
+      equalityCheck
+    })
 
     // initialize the cache
     memoizedFn('cache this result')
@@ -767,11 +764,22 @@ describe('defaultMemoize', () => {
 
     selector.memoizedResultFunc.clearCache()
 
-    // Cache was cleared
-    // Note: the outer arguments wrapper function still has 'c' in its own size-1 cache, so passing
-    // 'c' here would _not_ recalculate
-    selector('b') // ['b']
+    // Added
+    selector('a') // ['a']
     expect(funcCalls).toBe(4)
+
+    // Already in cache
+    selector('a') // ['a']
+    expect(funcCalls).toBe(4)
+
+    // make sure clearCache is passed to the selector correctly
+    selector.clearCache()
+
+    // Cache was cleared
+    // Note: the outer arguments wrapper function still has 'a' in its own size-1 cache, so passing
+    // 'a' here would _not_ recalculate
+    selector('b') // ['b']
+    expect(funcCalls).toBe(5)
   })
 })
 

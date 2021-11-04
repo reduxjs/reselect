@@ -4,7 +4,8 @@ import type {
   OutputSelector,
   EqualityFn,
   SelectorArray,
-  SelectorResultArray
+  SelectorResultArray,
+  DropFirst
 } from './types'
 
 export type {
@@ -48,19 +49,17 @@ function getDependencies(funcs: unknown[]) {
   return dependencies as SelectorArray
 }
 
-type DropFirst<T extends unknown[]> = T extends [unknown, ...infer U]
-  ? U
-  : never
-
 export function createSelectorCreator<
+  /** Selectors will eventually accept some function to be memoized */
   F extends (...args: unknown[]) => unknown,
+  /** A memoizer such as defaultMemoize that accepts a function + some possible options */
   MemoizeFunction extends (func: F, ...options: any[]) => F,
+  /** The additional options arguments to the memoizer */
   MemoizeOptions extends unknown[] = DropFirst<Parameters<MemoizeFunction>>
 >(
   memoize: MemoizeFunction,
   ...memoizeOptionsFromArgs: DropFirst<Parameters<MemoizeFunction>>
 ) {
-  // (memoize: MemoizeFunction, ...memoizeOptions: MemoizerOptions) {
   const createSelector = (...funcs: Function[]) => {
     let recomputations = 0
     let lastResult: unknown
@@ -169,9 +168,10 @@ interface CreateSelectorFunction<
     Selectors,
     Result,
     ((...args: SelectorResultArray<Selectors>) => Result) &
-      ReturnType<MemoizeFunction>,
+      Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>,
     GetParamsFromSelectors<Selectors>
-  >
+  > &
+    Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
 
   /** Input selectors as separate inline arguments with memoizeOptions passed */
   <Selectors extends SelectorArray, Result>(
@@ -184,9 +184,10 @@ interface CreateSelectorFunction<
     Selectors,
     Result,
     ((...args: SelectorResultArray<Selectors>) => Result) &
-      ReturnType<MemoizeFunction>,
+      Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>,
     GetParamsFromSelectors<Selectors>
-  >
+  > &
+    Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
 
   /** Input selectors as a separate array */
   <Selectors extends SelectorArray, Result>(
@@ -197,9 +198,10 @@ interface CreateSelectorFunction<
     Selectors,
     Result,
     ((...args: SelectorResultArray<Selectors>) => Result) &
-      ReturnType<MemoizeFunction>,
+      Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>,
     GetParamsFromSelectors<Selectors>
-  >
+  > &
+    Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
 }
 
 export const createSelector =

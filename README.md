@@ -602,6 +602,12 @@ Otherwise, selectors created using `createSelector` only have a cache size of on
 
 A: Yes! Reselect is now written in TS itself, so they should Just Work™.
 
+### Q: I am seeing a TypeScript error: `Type instantiation is excessively deep and possibly infinite`
+
+A: This can often occur with deeply recursive types, which occur in this library. Please see [this
+comment](https://github.com/reduxjs/reselect/issues/534#issuecomment-956708953) for a discussion of the problem, as
+relating to nested selectors.
+
 ### Q: How can I make a [curried](https://github.com/hemanth/functional-programming-jargon#currying) selector?
 
 A: Try these [helper functions](https://github.com/reduxjs/reselect/issues/159#issuecomment-238724788) courtesy of [MattSPalmer](https://github.com/MattSPalmer)
