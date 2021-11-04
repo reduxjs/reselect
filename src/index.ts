@@ -2,6 +2,7 @@ import type {
   Selector,
   GetParamsFromSelectors,
   OutputSelector,
+  OutputSelectorFields,
   EqualityFn,
   SelectorArray,
   SelectorResultArray,
@@ -213,7 +214,7 @@ export interface StructuredSelectorCreator {
   <SelectorMap extends SelectorsObject>(
     selectorMap: SelectorMap,
     selectorCreator?: CreateSelectorFunction<any, any, any>
-  ): (
+  ): ((
     state: SelectorMap[keyof SelectorMap] extends (
       state: infer State
     ) => unknown
@@ -221,12 +222,19 @@ export interface StructuredSelectorCreator {
       : never
   ) => {
     [Key in keyof SelectorMap]: ReturnType<SelectorMap[Key]>
-  }
+  }) &
+    OutputSelectorFields<
+      typeof selectorCreator,
+      {
+        [Key in keyof SelectorMap]: ReturnType<SelectorMap[Key]>
+      }
+    >
 
   <State, Result = State>(
     selectors: { [K in keyof Result]: Selector<State, Result[K], never> },
     selectorCreator?: CreateSelectorFunction<any, any, any>
-  ): Selector<State, Result, never>
+  ): Selector<State, Result, never> &
+    OutputSelectorFields<typeof selectorCreator, Result>
 }
 
 // Manual definition of state and output arguments
