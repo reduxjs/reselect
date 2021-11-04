@@ -587,6 +587,8 @@ function testCreateStructuredSelector() {
   const foo: string = res.foo
   const bar: number = res.bar
 
+  const recomputations: number = selector.recomputations()
+
   // @ts-expect-error
   selector({ bar: '42' })
 

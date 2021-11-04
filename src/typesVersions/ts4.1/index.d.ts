@@ -3317,9 +3317,14 @@ export function createSelectorCreator<O1, O2, O3>(
 export function createStructuredSelector<S, T = S>(
   selectors: { [K in keyof T]: Selector<S, T[K]> },
   selectorCreator?: typeof createSelector
-): Selector<S, T>
+): OutputSelector<S, T, (...args: any[]) => { [K in keyof T]: T[K] }>
 
 export function createStructuredSelector<S, P, T>(
   selectors: { [K in keyof T]: ParametricSelector<S, P, T[K]> },
   selectorCreator?: typeof createSelector
-): ParametricSelector<S, P, T>
+): OutputParametricSelector<
+  S,
+  P,
+  T,
+  (...args: any[]) => { [K in keyof T]: T[K] }
+>
