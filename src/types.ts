@@ -1,3 +1,5 @@
+import type { List } from 'ts-toolbelt'
+
 /** A standard selector function, which takes three generic type arguments:
  * @param State The first value, often a Redux root state object
  * @param Result The final result returned by the selector
@@ -62,6 +64,130 @@ export type OutputParametricSelector<State, Props, Result, Combiner> =
 /** An array of input selectors */
 export type SelectorArray = ReadonlyArray<Selector>
 
+/**
+ * Convert a Union type `(A|B)` to an intersection type `(A&B)`
+ */
+export type UnionToIntersection<U> = (
+  U extends any ? (k: U) => void : never
+) extends (k: infer I) => void
+  ? I
+  : never
+
+export type ArrayIntersect<T1, T2> = T1 extends Record<infer UKey1, unknown>
+  ? T2 extends Record<infer UKey2, infer UVal2>
+    ? UKey2 extends UKey1
+      ? [T1[UKey2], UVal2] extends [(infer UT1)[], (infer UT2)[]]
+        ? Omit<T1, UKey2> &
+            Omit<T2, UKey2> &
+            Record<UKey2, ArrayIntersect<UT1, UT2>[]>
+        : Omit<T1, UKey2> &
+            Omit<T2, UKey2> &
+            Record<UKey2, ArrayIntersect<T1[UKey2], UVal2>>
+      : T1 & T2
+    : T1 & T2
+  : T1 & T2
+
+export type LoopIntersect<T> = T extends [infer U1, infer U2, ...infer Us]
+  ? LoopIntersect<[ArrayIntersect<U1, U2>, ...Us]>
+  : T extends [infer Us]
+  ? Us
+  : never
+
+type Intersection<A, B> = A & B
+
+export type LoopIntersect2<T> = T extends [infer U1, infer U2, ...infer Us]
+  ? LoopIntersect<[List.Merge<U1, U2>, ...Us]>
+  : T extends [infer Us]
+  ? Us
+  : never
+
+type UnknownFunction = (...args: any[]) => any
+
+type GetParametersFromFunction<S> = S extends UnknownFunction
+  ? Parameters<S>
+  : never
+
+export type IntersectParameters<T extends UnknownFunction[]> = T extends [
+  infer C1,
+  infer C2,
+  ...infer Other
+]
+  ? Other extends [any]
+    ? List.Merge<
+        List.Merge<
+          GetParametersFromFunction<C1>,
+          GetParametersFromFunction<C2>,
+          'deep'
+        >,
+        IntersectParameters<Other>,
+        'deep'
+      >
+    : List.Merge<
+        GetParametersFromFunction<C1>,
+        GetParametersFromFunction<C2>,
+        'deep'
+      >
+  : T extends [infer Current, ...infer Other]
+  ? Other extends [any]
+    ? List.Merge<
+        GetParametersFromFunction<Current>,
+        GetParametersFromFunction<Other>,
+        'deep'
+      >
+    : GetParametersFromFunction<Current>
+  : never
+
+type TupleHead<Tuple extends readonly unknown[]> = Tuple extends [
+  infer HeadElement,
+  ...(readonly unknown[])
+]
+  ? HeadElement
+  : never
+
+type TupleTail<Tuple extends readonly unknown[]> = Tuple extends [
+  unknown,
+  ...infer TailElements
+]
+  ? TailElements
+  : never
+
+type TuplePrepend<Tuple extends readonly unknown[], NewElement> = [
+  NewElement,
+  ...Tuple
+]
+
+type Consumer<Value> = (value: Value) => void
+
+export type IntersectionFromUnion<Union> = (
+  Union extends unknown ? Consumer<Union> : never
+) extends Consumer<infer ResultIntersection>
+  ? ResultIntersection
+  : never
+
+type OverloadedConsumerFromUnion<Union> = IntersectionFromUnion<
+  Union extends unknown ? Consumer<Union> : never
+>
+
+type UnionLast<Union> = OverloadedConsumerFromUnion<Union> extends (
+  a: infer A
+) => void
+  ? A
+  : never
+
+type UnionExcludingLast<Union> = Exclude<Union, UnionLast<Union>>
+
+type TupleFromUnionRec<
+  RemainingUnion,
+  CurrentTuple extends readonly unknown[]
+> = [RemainingUnion] extends [never]
+  ? CurrentTuple
+  : TupleFromUnionRec<
+      UnionExcludingLast<RemainingUnion>,
+      TuplePrepend<CurrentTuple, UnionLast<RemainingUnion>>
+    >
+
+export type TupleFromUnion<Union> = TupleFromUnionRec<Union, []>
+
 /** Utility type to extract the State generic from a selector */
 type GetStateFromSelector<S> = S extends Selector<infer State> ? State : never
 
@@ -85,6 +211,30 @@ export type GetStateFromSelectors<S extends SelectorArray> =
     ? GetStateFromSelector<Elem>
     : never
 
+export type LongestCompat<A extends any[], B extends any[]> = A extends [
+  ...B,
+  ...any[]
+]
+  ? A
+  : B extends [...A, ...any[]]
+  ? B
+  : never
+
+export type LongestParams<S extends SelectorArray> = S extends [
+  (state: any, ...params: infer P1) => any,
+  (state: any, ...params: infer P2) => any
+]
+  ? LongestCompat<P1, P2>
+  : S extends [
+      (state: any, ...params: infer P1) => any,
+      (state: any, ...params: infer P2) => any,
+      ...infer Rest
+    ]
+  ? LongestCompat<LongestCompat<P1, P2>, LongestParams<Rest & SelectorArray>>
+  : S extends [(state: any, ...params: infer P) => any]
+  ? P
+  : never
+
 /** Utility type to extract the Params generic from a selector */
 export type GetParamsFromSelector<S> = S extends Selector<any, any, infer P>
   ? P extends []
@@ -96,15 +246,35 @@ export type GetParamsFromSelector<S> = S extends Selector<any, any, infer P>
  * to help ensure that all selectors correctly share the same params and
  * avoid mismatched input selectors being provided.
  */
-export type GetParamsFromSelectors<S, Found = never> = S extends SelectorArray
+
+export type GetParamsFromSelectors<S, Found = never> = _GetParamsFromSelectors<
+  S,
+  Found
+>
+
+export type _GetParamsFromSelectors<S, Found = never> = S extends SelectorArray
   ? S extends (infer s)[]
     ? GetParamsFromSelector<s>
     : S extends [infer Current, ...infer Rest]
     ? GetParamsFromSelector<Current> extends []
-      ? GetParamsFromSelectors<Rest, Found>
+      ? _GetParamsFromSelectors<Rest, Found>
       : GetParamsFromSelector<Current>
     : S
   : Found
+
+/*
+export type GetParamsFromSelectors<S, Found = never> = IntersectionFromUnion<
+  S extends SelectorArray
+    ? S extends (infer s)[]
+      ? GetParamsFromSelector<s>
+      : S extends [infer Current, ...infer Rest]
+      ? GetParamsFromSelector<Current> extends []
+        ? GetParamsFromSelectors<Rest, Found>
+        : GetParamsFromSelector<Current>
+      : S
+    : Found
+>
+*/
 
 /** Utility type to extract the return type from a selector */
 type SelectorReturnType<S> = S extends Selector ? ReturnType<S> : never

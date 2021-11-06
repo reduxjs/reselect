@@ -10,6 +10,21 @@ import {
   Selector
 } from '../src'
 
+import type {
+  GetParamsFromSelectors,
+  LongestParams,
+  UnionToIntersection,
+  IntersectionFromUnion,
+  ArrayIntersect,
+  LoopIntersect,
+  TupleFromUnion,
+  LoopIntersect2,
+  LongestCompat,
+  IntersectParameters
+} from '../src/types'
+
+import type { List } from 'ts-toolbelt'
+
 import microMemoize from 'micro-memoize'
 import memoizeOne from 'memoize-one'
 
@@ -1182,4 +1197,74 @@ function deepNesting() {
   const selector27 = createSelector(selector26, s => s)
   const selector28 = createSelector(selector27, s => s)
   const selector29 = createSelector(selector28, s => s)
+}
+
+function issue540() {
+  const input1 = (
+    _: StateA,
+    { testNumber }: { testNumber: number },
+    c: number,
+    d: string
+  ) => testNumber
+
+  const input2 = (
+    _: StateA,
+    { testString }: { testString: string },
+    c: number
+  ) => testString
+
+  const input3 = (
+    _: StateA,
+    { testBoolean }: { testBoolean: boolean },
+    c: number,
+    d: string
+  ) => testBoolean
+
+  const testSelector = createSelector(
+    input1,
+    input2,
+    input3,
+    (testNumber, testString, testBoolean) => testNumber + testString
+  )
+
+  type P1 = Parameters<typeof input1>
+  type P2 = Parameters<typeof input2>
+  type P3 = Parameters<typeof input3>
+  type P = Parameters<typeof input1 | typeof input2 | typeof input3>
+
+  type P1L = P1['length']
+  type K1 = Length<P1>
+
+  type I1 = List.Merge<P1, P2, 'deep'>
+  type I2 = List.Merge<I1, P3, 'deep'>
+
+  type I20 = I2[0]
+  type I21 = I2[1]
+  type I22 = I2[2]
+  type I23 = I2[3]
+
+  type IP1 = IntersectParameters<[typeof input2, typeof input2, typeof input3]>
+
+  type IP10 = IP1[0]
+  type IP11 = IP1[1]
+  type IP12 = IP1[2]
+  type IP13 = IP1[3]
+
+  type L1 = LongestCompat<P1, P3>
+
+  const state: StateA = { a: 42 }
+  const test = testSelector(
+    state,
+    { testNumber: 1, testString: '10', testBoolean: true },
+    42,
+    'blah'
+  )
+
+  type Test = LongestParams<[typeof input1, typeof input2, typeof input3]>
+
+  const x: Test = [
+    { testNumber: 123, testBoolean: true, testString: 'blah' },
+    42,
+    'test'
+  ]
 }
