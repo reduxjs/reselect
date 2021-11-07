@@ -164,11 +164,14 @@ interface CreateSelectorFunction<
 > {
   /** Input selectors as separate inline arguments */
   <Selectors extends SelectorArray, Result>(
-    ...items: [...Selectors, (...args: ExtractReturnType<Selectors>) => Result]
+    ...items: [
+      ...Selectors,
+      (...args: SelectorResultArray<Selectors>) => Result
+    ]
   ): OutputSelector<
     Selectors,
     Result,
-    ((...args: ExtractReturnType<Selectors>) => Result) &
+    ((...args: SelectorResultArray<Selectors>) => Result) &
       Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
     // MergeParameters<Selectors>
   > &
@@ -178,7 +181,7 @@ interface CreateSelectorFunction<
   <Selectors extends SelectorArray, Result>(
     ...items: [
       ...Selectors,
-      (...args: ExtractReturnType<Selectors>) => Result,
+      (...args: SelectorResultArray<Selectors>) => Result,
       CreateSelectorOptions<MemoizeOptions>
     ]
   ): OutputSelector<

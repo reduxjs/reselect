@@ -16,7 +16,9 @@ import type {
   LongestCompat,
   ExtractParams,
   MergeParameters,
-  IntersectArrays
+  IntersectArrays,
+  Head,
+  Tail
 } from '../src/types'
 
 import type { List, Any } from 'ts-toolbelt'
@@ -27,6 +29,16 @@ import memoizeOne from 'memoize-one'
 export function expectType<T>(t: T): T {
   return t
 }
+
+type Exact<A, B> = (<T>() => T extends A ? 1 : 0) extends <T>() => T extends B
+  ? 1
+  : 0
+  ? A extends B
+    ? B extends A
+      ? unknown
+      : never
+    : never
+  : never
 
 interface StateA {
   a: number
@@ -148,6 +160,7 @@ function testConnect() {
     const foo: string = props.foo
     const bar: number = props.bar
     const baz: number = props.baz
+    // @ts-expect-error
     props.fizz
   })
 
@@ -874,7 +887,6 @@ function issue445() {
   )
 
   // Errors correctly
-  // @ts-expect-error
   const getVerboseComplexObjectTest2 = createSelector(
     [getNumber, getObject1],
     // @ts-expect-error
@@ -883,15 +895,15 @@ function issue445() {
 
   // Errors correctly
   const getVerboseComplexObjectTest3 = createSelector(
-    // @ts-expect-error
     [getNumber, getObject1, getObject2],
+    // @ts-expect-error
     (num, obj1, obj2) => generateComplexObject(num, obj1, obj2)
   )
 
   // Errors correctly
   const getVerboseComplexObjectTest4 = createSelector(
-    // @ts-expect-error
     [getObject1, getNumber, getObject2],
+    // @ts-expect-error
     (num, obj1, obj2) => generateComplexObject(num, obj1, obj2)
   )
 }
@@ -1270,13 +1282,7 @@ function issue540() {
 
  
 
-  type Head<T extends any[]> = T extends [any, ...any[]] ? T[0] : never
-  type Tail<T extends any[]> = ((...t: T) => any) extends (
-    _: any,
-    ...tail: infer U
-  ) => any
-    ? U
-    : []
+
 
   type L42 = Head<ExtractedParams>
   type L43 = Tail<ExtractedParams>
@@ -1298,23 +1304,12 @@ function issue540() {
   type NT1 = IntersectArrays<U1>
 
   type MP1 = MergeParameters<[typeof input1, typeof input2, typeof input3]>
-
-  type IP10 = IP1[0]
-  type IP11 = IP1[1]
-  type IP12 = IP1[2]
-  type IP13 = IP1[3]
-
-  type IP20 = IP2[0]
-  type IP21 = IP2[1]
-  type IP22 = IP2[2]
-  type IP23 = IP2[3]
+  type MP1H = Head<MP1>
 
   type MP10 = MP1[0]
   type MP11 = MP1[1]
   type MP12 = MP1[2]
   type MP13 = MP1[3]
-
-  type L1 = LongestCompat<P1, P3>
 
   const state: StateA = { a: 42 }
   const test = testSelector(
@@ -1323,12 +1318,4 @@ function issue540() {
     42,
     'blah'
   )
-
-  type Test = LongestParams<[typeof input1, typeof input2, typeof input3]>
-
-  const x: Test = [
-    { testNumber: 123, testBoolean: true, testString: 'blah' },
-    42,
-    'test'
-  ]
 }
