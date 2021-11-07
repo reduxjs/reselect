@@ -45,7 +45,7 @@ export type OutputSelector<
   Result,
   Combiner,
   Params extends readonly any[] = never // MergeParameters<S>
-> = Selector<Head<MergeParameters<S>>, Result, Tail<MergeParameters<S>>> &
+> = Selector<Head<MergeParameters<S>>, Result, Params> &
   OutputSelectorFields<Combiner, Result>
 
 /** A selector that is assumed to have one additional argument, such as
@@ -65,79 +65,83 @@ export type OutputParametricSelector<State, Props, Result, Combiner> =
 /** An array of input selectors */
 export type SelectorArray = ReadonlyArray<Selector>
 
-/** Utility type to extract the State generic from a selector */
-type GetStateFromSelector<S> = S extends Selector<infer State> ? State : never
-
-/** Utility type to extract the State generic from multiple selectors at once,
- * to help ensure that all selectors correctly share the same State type and
- * avoid mismatched input selectors being provided.
- */
-export type GetStateFromSelectors<S extends SelectorArray> =
-  // handle two elements at once so this type works for up to 30 selectors
-  S extends [infer C1, infer C2, ...infer Other]
-    ? Other extends [any]
-      ? GetStateFromSelector<C1> &
-          GetStateFromSelector<C2> &
-          GetStateFromSelectors<Other>
-      : GetStateFromSelector<C1> & GetStateFromSelector<C2>
-    : S extends [infer Current, ...infer Other]
-    ? Other extends [any]
-      ? GetStateFromSelector<Current> & GetStateFromSelectors<Other>
-      : GetStateFromSelector<Current>
-    : S extends (infer Elem)[]
-    ? GetStateFromSelector<Elem>
-    : never
-
-export type LongestCompat<A extends any[], B extends any[]> = A extends [
-  ...B,
-  ...any[]
-]
-  ? A
-  : B extends [...A, ...any[]]
-  ? B
-  : never
-
-export type LongestParams<S extends SelectorArray> = S extends [
-  (state: any, ...params: infer P1) => any,
-  (state: any, ...params: infer P2) => any
-]
-  ? LongestCompat<P1, P2>
-  : S extends [
-      (state: any, ...params: infer P1) => any,
-      (state: any, ...params: infer P2) => any,
-      ...infer Rest
-    ]
-  ? LongestCompat<LongestCompat<P1, P2>, LongestParams<Rest & SelectorArray>>
-  : S extends [(state: any, ...params: infer P) => any]
-  ? P
-  : never
-
-/** Utility type to extract the Params generic from a selector */
-export type GetParamsFromSelector<S> = S extends Selector<any, any, infer P>
-  ? P extends []
-    ? never
-    : P
-  : never
-
-/** Utility type to extract the Params generic from multiple selectors at once,
- * to help ensure that all selectors correctly share the same params and
- * avoid mismatched input selectors being provided.
- */
-
-export type GetParamsFromSelectors<S, Found = never> = _GetParamsFromSelectors<
-  S,
-  Found
+export type GetStateFromSelectors<S extends SelectorArray> = Head<
+  MergeParameters<S>
 >
 
-export type _GetParamsFromSelectors<S, Found = never> = S extends SelectorArray
-  ? S extends (infer s)[]
-    ? GetParamsFromSelector<s>
-    : S extends [infer Current, ...infer Rest]
-    ? GetParamsFromSelector<Current> extends []
-      ? _GetParamsFromSelectors<Rest, Found>
-      : GetParamsFromSelector<Current>
-    : S
-  : Found
+// /** Utility type to extract the State generic from a selector */
+// type GetStateFromSelector<S> = S extends Selector<infer State> ? State : never
+
+// /** Utility type to extract the State generic from multiple selectors at once,
+//  * to help ensure that all selectors correctly share the same State type and
+//  * avoid mismatched input selectors being provided.
+//  */
+// export type GetStateFromSelectors<S extends SelectorArray> =
+//   // handle two elements at once so this type works for up to 30 selectors
+//   S extends [infer C1, infer C2, ...infer Other]
+//     ? Other extends [any]
+//       ? GetStateFromSelector<C1> &
+//           GetStateFromSelector<C2> &
+//           GetStateFromSelectors<Other>
+//       : GetStateFromSelector<C1> & GetStateFromSelector<C2>
+//     : S extends [infer Current, ...infer Other]
+//     ? Other extends [any]
+//       ? GetStateFromSelector<Current> & GetStateFromSelectors<Other>
+//       : GetStateFromSelector<Current>
+//     : S extends (infer Elem)[]
+//     ? GetStateFromSelector<Elem>
+//     : never
+
+// export type LongestCompat<A extends any[], B extends any[]> = A extends [
+//   ...B,
+//   ...any[]
+// ]
+//   ? A
+//   : B extends [...A, ...any[]]
+//   ? B
+//   : never
+
+// export type LongestParams<S extends SelectorArray> = S extends [
+//   (state: any, ...params: infer P1) => any,
+//   (state: any, ...params: infer P2) => any
+// ]
+//   ? LongestCompat<P1, P2>
+//   : S extends [
+//       (state: any, ...params: infer P1) => any,
+//       (state: any, ...params: infer P2) => any,
+//       ...infer Rest
+//     ]
+//   ? LongestCompat<LongestCompat<P1, P2>, LongestParams<Rest & SelectorArray>>
+//   : S extends [(state: any, ...params: infer P) => any]
+//   ? P
+//   : never
+
+// /** Utility type to extract the Params generic from a selector */
+// export type GetParamsFromSelector<S> = S extends Selector<any, any, infer P>
+//   ? P extends []
+//     ? never
+//     : P
+//   : never
+
+// /** Utility type to extract the Params generic from multiple selectors at once,
+//  * to help ensure that all selectors correctly share the same params and
+//  * avoid mismatched input selectors being provided.
+//  */
+
+// export type GetParamsFromSelectors<S, Found = never> = _GetParamsFromSelectors<
+//   S,
+//   Found
+// >
+
+// export type _GetParamsFromSelectors<S, Found = never> = S extends SelectorArray
+//   ? S extends (infer s)[]
+//     ? GetParamsFromSelector<s>
+//     : S extends [infer Current, ...infer Rest]
+//     ? GetParamsFromSelector<Current> extends []
+//       ? _GetParamsFromSelectors<Rest, Found>
+//       : GetParamsFromSelector<Current>
+//     : S
+//   : Found
 
 /*
 export type GetParamsFromSelectors<S, Found = never> = IntersectionFromUnion<
@@ -152,6 +156,10 @@ export type GetParamsFromSelectors<S, Found = never> = IntersectionFromUnion<
     : Found
 >
 */
+
+export type GetParamsFromSelectors<S extends SelectorArray> = Tail<
+  MergeParameters<S>
+>
 
 export type UnknownFunction = (...args: any[]) => any
 
@@ -212,32 +220,35 @@ export type MergeParameters<T extends readonly UnknownFunction[]> = ExpandItems<
 //   List.MergeAll<[], ExtractParams<T>, 'deep', Misc.BuiltIn>
 // >
 
-/** Utility type to extract the return type from a selector */
-type SelectorReturnType<S> = S extends Selector ? ReturnType<S> : never
+export type SelectorResultArray<Selectors extends SelectorArray> =
+  ExtractReturnType<Selectors>
 
-/** Utility type to extract the Result generic from multiple selectors at once,
- * for use in calculating the arguments to the "result/combiner" function.
- */
-export type SelectorResultArray<
-  Selectors extends SelectorArray,
-  Rest extends SelectorArray = Selectors
-> =
-  // handle two elements at once so this type works for up to 29 selectors, not only up to 15
-  Rest extends [infer S1, infer S2, ...infer Remaining]
-    ? Remaining extends SelectorArray
-      ? [
-          SelectorReturnType<S1>,
-          SelectorReturnType<S2>,
-          ...SelectorResultArray<Selectors, Remaining>
-        ]
-      : [SelectorReturnType<S1>, SelectorReturnType<S2>]
-    : Rest extends [infer S, ...infer Remaining]
-    ? Remaining extends SelectorArray
-      ? [SelectorReturnType<S>, ...SelectorResultArray<Selectors, Remaining>]
-      : [SelectorReturnType<S>]
-    : Rest extends ((...args: any) => infer S)[]
-    ? S[]
-    : []
+// /** Utility type to extract the return type from a selector */
+// type SelectorReturnType<S> = S extends Selector ? ReturnType<S> : never
+
+// /** Utility type to extract the Result generic from multiple selectors at once,
+//  * for use in calculating the arguments to the "result/combiner" function.
+//  */
+// export type SelectorResultArray<
+//   Selectors extends SelectorArray,
+//   Rest extends SelectorArray = Selectors
+// > =
+//   // handle two elements at once so this type works for up to 29 selectors, not only up to 15
+//   Rest extends [infer S1, infer S2, ...infer Remaining]
+//     ? Remaining extends SelectorArray
+//       ? [
+//           SelectorReturnType<S1>,
+//           SelectorReturnType<S2>,
+//           ...SelectorResultArray<Selectors, Remaining>
+//         ]
+//       : [SelectorReturnType<S1>, SelectorReturnType<S2>]
+//     : Rest extends [infer S, ...infer Remaining]
+//     ? Remaining extends SelectorArray
+//       ? [SelectorReturnType<S>, ...SelectorResultArray<Selectors, Remaining>]
+//       : [SelectorReturnType<S>]
+//     : Rest extends ((...args: any) => infer S)[]
+//     ? S[]
+//     : []
 
 /** A standard function returning true if two values are considered equal */
 export type EqualityFn = (a: any, b: any) => boolean

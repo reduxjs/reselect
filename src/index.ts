@@ -172,7 +172,8 @@ interface CreateSelectorFunction<
     Selectors,
     Result,
     ((...args: SelectorResultArray<Selectors>) => Result) &
-      Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
+      Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>,
+    GetParamsFromSelectors<Selectors>
     // MergeParameters<Selectors>
   > &
     Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
@@ -188,7 +189,8 @@ interface CreateSelectorFunction<
     Selectors,
     Result,
     ((...args: SelectorResultArray<Selectors>) => Result) &
-      Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
+      Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>,
+    GetParamsFromSelectors<Selectors>
     // MergeParameters<Selectors>
   > &
     Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
@@ -202,7 +204,8 @@ interface CreateSelectorFunction<
     Selectors,
     Result,
     ((...args: SelectorResultArray<Selectors>) => Result) &
-      Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
+      Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>,
+    GetParamsFromSelectors<Selectors>
     // MergeParameters<Selectors>
   > &
     Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>

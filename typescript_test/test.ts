@@ -12,8 +12,6 @@ import {
 
 import type {
   GetParamsFromSelectors,
-  LongestParams,
-  LongestCompat,
   ExtractParams,
   MergeParameters,
   IntersectArrays,
@@ -1280,11 +1278,7 @@ function issue540() {
       : never
   } // & {length: T['length']};
 
- 
-
-
-
-  type L42 = Head<ExtractedParams>
+   type L42 = Head<ExtractedParams>
   type L43 = Tail<ExtractedParams>
 
   type L44 = List.MergeAll<[L42], L43, 'deep'>
@@ -1303,7 +1297,13 @@ function issue540() {
   type U1 = List.UnionOf<ExtractedParams>
   type NT1 = IntersectArrays<U1>
 
-  type MP1 = MergeParameters<[typeof input1, typeof input2, typeof input3]>
+  type Selectors = [typeof input1, typeof input2, typeof input3]
+
+  type MP1 = MergeParameters<Selectors>
+  type InputResult = SelectorResultArray<Selectors>
+  type Result = ReturnType<typeof testSelector>
+  type State = GetStateFromSelectors<Selectors>
+  type Params = GetParamsFromSelectors<Selectors>
   type MP1H = Head<MP1>
 
   type MP10 = MP1[0]
