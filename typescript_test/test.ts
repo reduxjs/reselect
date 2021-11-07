@@ -13,17 +13,12 @@ import {
 import type {
   GetParamsFromSelectors,
   LongestParams,
-  UnionToIntersection,
-  IntersectionFromUnion,
-  ArrayIntersect,
-  LoopIntersect,
-  TupleFromUnion,
-  LoopIntersect2,
   LongestCompat,
-  IntersectParameters
+  ExtractParams,
+  MergeParameters
 } from '../src/types'
 
-import type { List } from 'ts-toolbelt'
+import type { List, Any } from 'ts-toolbelt'
 
 import microMemoize from 'micro-memoize'
 import memoizeOne from 'memoize-one'
@@ -845,15 +840,15 @@ function issue445() {
   )
 
   // Should error because number can't be null
+  // @ts-expect-error
   const getComplexObjectTest3 = createSelector(
-    // @ts-expect-error
     [getNumber, getObject1, getObject2],
     generateComplexObject
   )
 
   // Does error, but error is really weird and talks about "Object1 is not assignable to type number"
+  // @ts-expect-error
   const getComplexObjectTest4 = createSelector(
-    // @ts-expect-error
     [getObject1, getNumber, getObject2],
     generateComplexObject
   )
@@ -873,7 +868,6 @@ function issue445() {
   )
 
   // Errors correctly
-  // @ts-expect-error
   const getVerboseComplexObjectTest1 = createSelector([getObject1], obj1 =>
     // @ts-expect-error
     generateComplexObject(obj1)
@@ -1090,11 +1084,16 @@ type Results = SelectorResultArray<SelectorArray29>
 type State = GetStateFromSelectors<SelectorArray29>
 
 {
-  const selector = createSelector(
-    (state: string) => 1,
-    (state: number) => 2,
-    (...args) => 0
-  )
+  const input1 = (state: string) => 1
+  const input2 = (state: number) => 2
+
+  type I1 = typeof input1
+  type I2 = typeof input2
+
+  type EP1 = ExtractParams<[I1, I2]>
+  type MP1 = MergeParameters<[I1, I2]>
+
+  const selector = createSelector(input1, input2, (...args) => 0)
   // @ts-expect-error
   selector('foo')
   // @ts-expect-error
@@ -1227,6 +1226,7 @@ function issue540() {
     (testNumber, testString, testBoolean) => testNumber + testString
   )
 
+  /*
   type P1 = Parameters<typeof input1>
   type P2 = Parameters<typeof input2>
   type P3 = Parameters<typeof input3>
@@ -1245,12 +1245,71 @@ function issue540() {
 
   type IP1 = IntersectParameters<[typeof input2, typeof input2, typeof input3]>
 
+  type IP2 = List.MergeAll<P1, [P2, P3], 'deep'>
+
+  type H1 = List.Head<P1>
+  type T1 = List.Tail<P1>
+
+  type UnknownFunction = (...args: any[]) => any
+
+  type Box<T = unknown> = { value: T }
+  type BoxElements<Tuple extends readonly unknown[]> = {
+    [K in keyof Tuple]: K extends `${number}` ? Box<Tuple[K]> : Tuple[K]
+  }
+
+  type IsTuple<T> = T extends unknown[] ? true : false // I found no way to tell apart an array from a tuple. This line must be improved as you will see later why.
+  type TupleFixedKeyof<T> = IsTuple<T> extends true
+    ? Exclude<keyof T, keyof []>
+    : keyof T // THE fix
+
+  type ExtractParams<T extends UnknownFunction[]> = {
+    [index in keyof T]: T[index] extends T[number]
+      ? Parameters<T[index]>
+      : never
+  } // & {length: T['length']};
+
+  type ExtractedParams = ExtractParams<
+    [typeof input1, typeof input2, typeof input3]
+  >
+
+  type Head<T extends any[]> = T extends [any, ...any[]] ? T[0] : never
+  type Tail<T extends any[]> = ((...t: T) => any) extends (
+    _: any,
+    ...tail: infer U
+  ) => any
+    ? U
+    : []
+
+  type L42 = Head<ExtractedParams>
+  type L43 = Tail<ExtractedParams>
+
+  type L44 = List.MergeAll<[L42], L43, 'deep'>
+
+  type MergeParameters<T extends UnknownFunction[]> = List.MergeAll<
+    [],
+    ExtractParams<T>,
+    'deep'
+  >
+
+  type MP1 = MergeParameters<[typeof input1, typeof input2, typeof input3]>
+
   type IP10 = IP1[0]
   type IP11 = IP1[1]
   type IP12 = IP1[2]
   type IP13 = IP1[3]
 
+  type IP20 = IP2[0]
+  type IP21 = IP2[1]
+  type IP22 = IP2[2]
+  type IP23 = IP2[3]
+
+  type MP10 = MP1[0]
+  type MP11 = MP1[1]
+  type MP12 = MP1[2]
+  type MP13 = MP1[3]
+
   type L1 = LongestCompat<P1, P3>
+  */
 
   const state: StateA = { a: 42 }
   const test = testSelector(

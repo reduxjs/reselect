@@ -5,8 +5,12 @@ import type {
   EqualityFn,
   SelectorArray,
   SelectorResultArray,
-  DropFirst
+  DropFirst,
+  MergeParameters,
+  ExtractReturnType
 } from './types'
+
+import type { List, Any } from 'ts-toolbelt'
 
 export type {
   Selector,
@@ -160,16 +164,13 @@ interface CreateSelectorFunction<
 > {
   /** Input selectors as separate inline arguments */
   <Selectors extends SelectorArray, Result>(
-    ...items: [
-      ...Selectors,
-      (...args: SelectorResultArray<Selectors>) => Result
-    ]
+    ...items: [...Selectors, (...args: ExtractReturnType<Selectors>) => Result]
   ): OutputSelector<
     Selectors,
     Result,
-    ((...args: SelectorResultArray<Selectors>) => Result) &
-      Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>,
-    GetParamsFromSelectors<Selectors>
+    ((...args: ExtractReturnType<Selectors>) => Result) &
+      Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
+    // MergeParameters<Selectors>
   > &
     Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
 
@@ -177,15 +178,15 @@ interface CreateSelectorFunction<
   <Selectors extends SelectorArray, Result>(
     ...items: [
       ...Selectors,
-      (...args: SelectorResultArray<Selectors>) => Result,
+      (...args: ExtractReturnType<Selectors>) => Result,
       CreateSelectorOptions<MemoizeOptions>
     ]
   ): OutputSelector<
     Selectors,
     Result,
     ((...args: SelectorResultArray<Selectors>) => Result) &
-      Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>,
-    GetParamsFromSelectors<Selectors>
+      Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
+    // MergeParameters<Selectors>
   > &
     Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
 
@@ -198,8 +199,8 @@ interface CreateSelectorFunction<
     Selectors,
     Result,
     ((...args: SelectorResultArray<Selectors>) => Result) &
-      Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>,
-    GetParamsFromSelectors<Selectors>
+      Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
+    // MergeParameters<Selectors>
   > &
     Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
 }
