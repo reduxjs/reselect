@@ -176,10 +176,10 @@ function testInvalidTypeInCombinator() {
   )
 
   createSelector(
-    // @ts-expect-error
     (state: { foo: string; bar: number; baz: boolean }) => state.foo,
-    state => state.bar,
-    state => state.baz,
+    (state: any) => state.bar,
+    (state: any) => state.baz,
+    // @ts-expect-error
     (foo: string, bar: number, baz: boolean, fizz: string) => {}
   )
 
@@ -1089,10 +1089,10 @@ type SelectorArray29 = [
   (_state: StateA) => 29
 ]
 
-// Ensure that input functions with mismatched states raise errors
 type Results = SelectorResultArray<SelectorArray29>
 type State = GetStateFromSelectors<SelectorArray29>
 
+// Ensure that input functions with mismatched states raise errors
 {
   const input1 = (state: string) => 1
   const input2 = (state: number) => 2

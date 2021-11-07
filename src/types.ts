@@ -45,7 +45,7 @@ export type OutputSelector<
   Result,
   Combiner,
   Params extends readonly any[] = never // MergeParameters<S>
-> = Selector<Head<MergeParameters<S>>, Result, Params> &
+> = Selector<GetStateFromSelectors<S>, Result, Params> &
   OutputSelectorFields<Combiner, Result>
 
 /** A selector that is assumed to have one additional argument, such as
@@ -214,10 +214,11 @@ export type IntersectArrays<T extends readonly any[]> = Id<
 >
 
 export type MergeParameters<T extends readonly UnknownFunction[]> = ExpandItems<
+  //   List.MergeAll<[], ExtractParams<T>, 'deep', Misc.BuiltIn>
   Object.ListOf<IntersectArrays<List.UnionOf<ExtractParams<T>>>>
 >
 // ExpandItems<
-//   List.MergeAll<[], ExtractParams<T>, 'deep', Misc.BuiltIn>
+
 // >
 
 export type SelectorResultArray<Selectors extends SelectorArray> =
