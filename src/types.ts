@@ -194,8 +194,9 @@ type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
 export type IntersectArrays<T extends any[]> = unknown[] &
   Id<UnionToIntersection<Mapped<T>>>
 
-export type MergeParameters<T extends readonly UnknownFunction[]> =
-  List.MergeAll<[], ExtractParams<T>, 'deep'>
+export type MergeParameters<T extends readonly UnknownFunction[]> = ExpandItems<
+  List.MergeAll<[], ExtractParams<T>, 'deep', Misc.BuiltIn>
+>
 
 /** Utility type to extract the return type from a selector */
 type SelectorReturnType<S> = S extends Selector ? ReturnType<S> : never

@@ -15,7 +15,8 @@ import type {
   LongestParams,
   LongestCompat,
   ExtractParams,
-  MergeParameters
+  MergeParameters,
+  IntersectArrays
 } from '../src/types'
 
 import type { List, Any } from 'ts-toolbelt'
@@ -137,17 +138,16 @@ function testConnect() {
     const foo: string = props.foo
   })
 
-  const connected = connect(
-    createSelector(
-      (state: { foo: string }) => state.foo,
-      (state: any, props: { bar: number }) => props.bar,
-      (foo, bar) => ({ foo, baz: bar })
-    )
-  )(props => {
+  const selector2 = createSelector(
+    (state: { foo: string }) => state.foo,
+    (state: { baz: number }, props: { bar: number }) => props.bar,
+    (foo, bar) => ({ foo, baz: bar })
+  )
+
+  const connected = connect(selector2)(props => {
     const foo: string = props.foo
     const bar: number = props.bar
     const baz: number = props.baz
-    // @ts-expect-error
     props.fizz
   })
 
@@ -1268,9 +1268,7 @@ function issue540() {
       : never
   } // & {length: T['length']};
 
-  type ExtractedParams = ExtractParams<
-    [typeof input1, typeof input2, typeof input3]
-  >
+ 
 
   type Head<T extends any[]> = T extends [any, ...any[]] ? T[0] : never
   type Tail<T extends any[]> = ((...t: T) => any) extends (
@@ -1290,6 +1288,14 @@ function issue540() {
     ExtractParams<T>,
     'deep'
   >
+  */
+
+  type ExtractedParams = ExtractParams<
+    [typeof input1, typeof input2, typeof input3]
+  >
+
+  type U1 = List.UnionOf<ExtractedParams>
+  type NT1 = IntersectArrays<U1>
 
   type MP1 = MergeParameters<[typeof input1, typeof input2, typeof input3]>
 
@@ -1309,7 +1315,6 @@ function issue540() {
   type MP13 = MP1[3]
 
   type L1 = LongestCompat<P1, P3>
-  */
 
   const state: StateA = { a: 42 }
   const test = testSelector(
