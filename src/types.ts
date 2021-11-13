@@ -157,9 +157,17 @@ export type GetParamsFromSelectors<S, Found = never> = IntersectionFromUnion<
 >
 */
 
-export type GetParamsFromSelectors<S extends SelectorArray> = Tail<
-  MergeParameters<S>
->
+type EmptyObject = {
+  [K in any]: never
+}
+
+export type GetParamsFromSelectors<
+  S extends SelectorArray,
+  RemainingItems = Tail<MergeParameters<S>>
+  // This seems to default to an array containing an empty object, which is
+  // not meaningful and causes problems with the `Selector/OutputSelector` types.
+  // Force it to have a meaningful value, or cancel it out.
+> = RemainingItems extends [EmptyObject] ? never : RemainingItems
 
 export type UnknownFunction = (...args: any[]) => any
 
