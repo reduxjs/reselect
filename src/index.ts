@@ -5,12 +5,8 @@ import type {
   EqualityFn,
   SelectorArray,
   SelectorResultArray,
-  DropFirst,
-  MergeParameters,
-  ExtractReturnType
+  DropFirst
 } from './types'
-
-import type { List, Any } from 'ts-toolbelt'
 
 export type {
   Selector,
@@ -174,7 +170,6 @@ interface CreateSelectorFunction<
     ((...args: SelectorResultArray<Selectors>) => Result) &
       Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>,
     GetParamsFromSelectors<Selectors>
-    // MergeParameters<Selectors>
   > &
     Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
 
@@ -191,7 +186,6 @@ interface CreateSelectorFunction<
     ((...args: SelectorResultArray<Selectors>) => Result) &
       Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>,
     GetParamsFromSelectors<Selectors>
-    // MergeParameters<Selectors>
   > &
     Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
 
@@ -206,7 +200,6 @@ interface CreateSelectorFunction<
     ((...args: SelectorResultArray<Selectors>) => Result) &
       Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>,
     GetParamsFromSelectors<Selectors>
-    // MergeParameters<Selectors>
   > &
     Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
 }
@@ -237,7 +230,7 @@ export interface StructuredSelectorCreator {
 }
 
 // Manual definition of state and output arguments
-export const createStructuredSelector: StructuredSelectorCreator = (
+export const createStructuredSelector = ((
   selectors: SelectorsObject,
   selectorCreator = createSelector
 ) => {
@@ -248,7 +241,7 @@ export const createStructuredSelector: StructuredSelectorCreator = (
     )
   }
   const objectKeys = Object.keys(selectors)
-  return selectorCreator(
+  const resultSelector = selectorCreator(
     // @ts-ignore
     objectKeys.map(key => selectors[key]),
     (...values: any[]) => {
@@ -258,4 +251,5 @@ export const createStructuredSelector: StructuredSelectorCreator = (
       }, {})
     }
   )
-}
+  return resultSelector
+}) as unknown as StructuredSelectorCreator
