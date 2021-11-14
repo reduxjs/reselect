@@ -16,7 +16,7 @@ import type {
   MergeParameters,
   IntersectArrays,
   Head,
-  Tail
+  Tail42
 } from '../src/types'
 
 import type { List, Any } from 'ts-toolbelt'
@@ -247,7 +247,7 @@ function testParametricSelector() {
   type Props = { bar: number }
 
   // allows heterogeneous parameter type selectors
-  createSelector(
+  const selector1 = createSelector(
     (state: { testString: string }) => state.testString,
     (state: { testNumber: number }) => state.testNumber,
     (state: { testBoolean: boolean }) => state.testBoolean,
@@ -278,7 +278,6 @@ function testParametricSelector() {
     (foo, bar) => ({ foo, bar })
   )
 
-  // @ts-expect-error
   selector({ foo: 'fizz' })
   // @ts-expect-error
   selector({ foo: 'fizz' }, { bar: 'baz' })
@@ -1229,10 +1228,14 @@ function issue540() {
     d: string
   ) => testBoolean
 
+  const input4 = (_: StateA, { testString2 }: { testString2: string }) =>
+    testString2
+
   const testSelector = createSelector(
     input1,
     input2,
     input3,
+    input4,
     (testNumber, testString, testBoolean) => testNumber + testString
   )
 
@@ -1291,15 +1294,52 @@ function issue540() {
   */
 
   type ExtractedParams = ExtractParams<
-    [typeof input1, typeof input2, typeof input3]
+    [typeof input1, typeof input2, typeof input3, typeof input4]
   >
 
   type U1 = List.UnionOf<ExtractedParams>
   type NT1 = IntersectArrays<U1>
 
-  type Selectors = [typeof input1, typeof input2, typeof input3]
+  type Selectors = [typeof input1, typeof input2, typeof input3, typeof input4]
+  type ExtractArray<A extends unknown[], T extends { [key: number]: any }> = {
+    [index in keyof T & keyof A]: T[index] extends T[number] ? A[index] : never
+  }
+
+  type Override<T1, T2> = Omit<T1, keyof T2> & T2
+
+  type Params1 = ExtractParams<Selectors>
+  type Zip<A extends ReadonlyArray<any>> = {
+    [K in keyof A]: A[K] extends ReadonlyArray<infer T> ? T : never
+  }
+
+  type AllArrayKeys<A extends readonly any[]> = A extends any
+    ? {
+        [K in keyof A]: K
+      }[number]
+    : never
+
+  type Mapped<A extends readonly any[]> = AllArrayKeys<A> extends infer Keys
+    ? A extends any
+      ? {
+          [K in Keys & (string | number)]: K extends keyof A ? A[K] : unknown
+        }
+      : never
+    : never
+
+  // type Zip2<A extends ReadonlyArray<any>> = {
+  //   [K in keyof A]: {
+  //     []
+  //   }// A[K] extends ReadonlyArray<infer T> ? T : never
+  // }
+  type TupleLengths<T extends number extends T['length'] ? [] : any[]> =
+    T['length']
+
+  type zp1 = TupleLengths<Params1[number]>
 
   type MP1 = MergeParameters<Selectors>
+
+  // type NumObjToTuple<T extends { [key : number] : any} =
+
   type InputResult = SelectorResultArray<Selectors>
   type Result = ReturnType<typeof testSelector>
   type State = GetStateFromSelectors<Selectors>
@@ -1314,7 +1354,7 @@ function issue540() {
   const state: StateA = { a: 42 }
   const test = testSelector(
     state,
-    { testNumber: 1, testString: '10', testBoolean: true },
+    { testNumber: 1, testString: '10', testBoolean: true, testString2: 'blah' },
     42,
     'blah'
   )

@@ -167,11 +167,9 @@ interface CreateSelectorFunction<
   ): OutputSelector<
     Selectors,
     Result,
-    ((...args: SelectorResultArray<Selectors>) => Result) &
-      Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>,
+    (...args: SelectorResultArray<Selectors>) => Result, // & Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>,
     GetParamsFromSelectors<Selectors>
-  > &
-    Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
+  > // &  Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
 
   /** Input selectors as separate inline arguments with memoizeOptions passed */
   <Selectors extends SelectorArray, Result>(

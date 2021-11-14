@@ -65,17 +65,20 @@ export type OutputParametricSelector<State, Props, Result, Combiner> =
 /** An array of input selectors */
 export type SelectorArray = ReadonlyArray<Selector>
 
-export type GetStateFromSelectors<S extends SelectorArray> = Head<
-  MergeParameters<S>
->
+export type GetStateFromSelectors<S extends SelectorArray> = // Head<
+  MergeParameters<S>[0]
+// >
 
 type EmptyObject = {
   [K in any]: never
 }
 
+export type Tail42<A> = A extends [any, ...infer Rest] ? Rest : never
+
 export type GetParamsFromSelectors<
   S extends SelectorArray,
-  RemainingItems = Tail<MergeParameters<S>>
+  RemainingItems extends readonly unknown[] = Tail42<MergeParameters<S>>
+  // >
   // This seems to default to an array containing an empty object, which is
   // not meaningful and causes problems with the `Selector/OutputSelector` types.
   // Force it to have a meaningful value, or cancel it out.
@@ -91,16 +94,18 @@ export type ExtractReturnType<T extends readonly UnknownFunction[]> = {
   [index in keyof T]: T[index] extends T[number] ? ReturnType<T[index]> : never
 }
 
+type ExtractArray<A extends unknown[], T extends { [key: number]: any }> = {
+  [index in keyof T & keyof A]: T[index] extends T[number] ? T[index] : never
+}
+
 export type ExpandItems<T extends readonly unknown[]> = {
   [index in keyof T]: T[index] extends T[number]
     ? Any.Compute<T[index], 'deep'>
     : never
 }
 
-export type Head<T extends readonly any[]> = T extends [any, ...any[]]
-  ? T[0]
-  : never
-export type Tail<T extends readonly any[]> = ((...t: T) => any) extends (
+export type Head<T extends any[]> = T extends [any, ...any[]] ? T[0] : never
+export type Tail<T extends any[]> = ((...t: T) => any) extends (
   _: any,
   ...tail: infer U
 ) => any
@@ -123,10 +128,27 @@ type Mapped<A extends readonly any[]> = AllArrayKeys<A> extends infer Keys
 
 type Id<T> = { [K in keyof T]: T[K] } & {}
 
-type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
-  k: infer I
-) => void
+/*
+export type UnionToIntersection<U> = (
+  U extends any ? (k: U) => void : never
+) extends (k: infer I) => void
   ? I
+  : never
+*/
+export type UnionToIntersection<Union> = (
+  // `extends unknown` is always going to be the case and is used to convert the
+  // `Union` into a [distributive conditional
+  // type](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-8.html#distributive-conditional-types).
+  Union extends unknown
+    ? // The union type is used as the only argument to a function since the union
+      // of function arguments is an intersection.
+      (distributedUnion: Union) => void
+    : // This won't happen.
+      never
+      // Infer the `Intersection` type since TypeScript represents the positional
+      // arguments of unions of functions as an intersection of the union.
+) extends (mergedIntersection: infer Intersection) => void
+  ? Intersection
   : never
 
 export type IntersectArrays<T extends readonly any[]> = Id<
@@ -158,22 +180,38 @@ export type LongestArray<S> = S extends [any[], any[]]
   ? S[0]
   : never
 
+type Props = { bar: number }
+
+type Intersectioned<T extends unknown[]> = {
+  [index in keyof T]: T[index] extends T[number]
+    ? UnionToIntersection<T[index]>
+    : never
+}
+
+export type Cast<T, P, D extends P = P> = T extends P ? T : D
+
+type IndexedLookup<A extends readonly any[], K extends AllArrayKeys<A>> = A[K]
+
 export type MergeParameters<
   T extends readonly UnknownFunction[],
-  ParamsArrays = ExtractParams<T>,
-  LongestParamsArray extends any[][] = LongestArray<ParamsArrays>
-> = {
-  [index in keyof LongestParamsArray]: UnionToIntersection<
-    // @ts-ignore
-    ParamsArrays[number][index]
-  >
-}
+  ParamsArrays extends readonly any[][] = ExtractParams<T>,
+  LongestParamsArray extends readonly any[] = LongestArray<ParamsArrays>,
+  PAN extends readonly any[] = ParamsArrays[number]
+> = ExpandItems<
+  RemoveNames<{
+    [index in keyof LongestParamsArray]: LongestParamsArray[index] extends LongestParamsArray[number]
+      ? PAN[index & AllArrayKeys<PAN>] // index extends keyof PAN
+      : // ? PAN[index]
+        // : 42
+        never
+  }>
+>
+
 // export type MergeParameters<T extends readonly UnknownFunction[]> = ExpandItems<
-//   RemoveNames<List.MergeAll<[], ExtractParams<T>, 'deep', Misc.BuiltIn>>
-// Object.ListOf<IntersectArrays<List.UnionOf<ExtractParams<T>>>>
+//   // RemoveNames<List.MergeAll<[], ExtractParams<T>, 'deep', Misc.BuiltIn>>
+//   Object.ListOf<IntersectArrays<List.UnionOf<ExtractParams<T>>>>
 
-// ExpandItems<
-
+//   // ExpandItems<
 // >
 
 export type SelectorResultArray<Selectors extends SelectorArray> =

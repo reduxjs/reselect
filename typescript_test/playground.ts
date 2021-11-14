@@ -3,46 +3,54 @@ import { createSelector } from '../src'
 // import type { List, Any } from 'ts-toolbelt'
 
 import type {
+  OutputSelector,
+  Selector,
   GetParamsFromSelectors,
+  GetStateFromSelectors,
+  SelectorResultArray,
   ExtractParams,
   UnionToIntersection,
   ExpandItems,
   UnknownFunction,
   MergeParameters,
+  LongestArray,
   IntersectArrays,
   Head,
-  Tail
+  Tail42
 } from '../src/types'
 
 interface StateA {
   a: number
 }
 
-const input1 = (
+const input1a = (
   _: StateA,
   { testNumber }: { testNumber: number },
   c: number,
   d: string
 ) => testNumber
 
-const input2 = (_: StateA, { testString }: { testString: string }, c: number) =>
-  testString
+const input1b = (
+  _: StateA,
+  { testString }: { testString: string },
+  c: number
+) => testString
 
-const input3 = (
+const input1c = (
   _: StateA,
   { testBoolean }: { testBoolean: boolean },
   c: number,
   d: string
 ) => testBoolean
 
-const input4 = (_: StateA, { testString2 }: { testString2: string }) =>
+const input1d = (_: StateA, { testString2 }: { testString2: string }) =>
   testString2
 
 const testSelector = createSelector(
-  input1,
-  input2,
-  input3,
-  input4,
+  input1a,
+  input1b,
+  input1c,
+  input1d,
   (testNumber, testString, testBoolean) => testNumber + testString
 )
 
@@ -62,7 +70,12 @@ type Exact<A, B> = (<T>() => T extends A ? 1 : 0) extends <T>() => T extends B
     : never
   : never
 
-type Selectors = [typeof input1, typeof input2, typeof input3, typeof input4]
+type Selectors = [
+  typeof input1a,
+  typeof input1b,
+  typeof input1c,
+  typeof input1d
+]
 
 type Params1 = ExtractParams<Selectors>
 
@@ -135,16 +148,23 @@ type l3 = LongestArray<Params1>
 
 export type MergeParameters3<
   T extends readonly UnknownFunction[],
-  ParamsArrays = ExtractParams<T>,
-  LongestParamsArray extends any[][] = LongestArray<ParamsArrays>
+  ParamsArrays extends readonly any[][] = ExtractParams<T>,
+  LongestParamsArray extends readonly any[] = LongestArray<ParamsArrays>,
+  PAN extends readonly any[] = ParamsArrays[number]
+  // > = PAN
 > = {
-  // @ts-ignore
-  [index in keyof LongestParamsArray]: UnionToIntersection<
-    ParamsArrays[number][index]
-  >
+  [index in keyof LongestParamsArray]: LongestParamsArray[index] extends LongestParamsArray[number]
+    ? // @ts-ignore
+      UnionToIntersection<PAN[index]>
+    : never
 }
 
 type mp3 = MergeParameters3<Selectors>
+type mp4 = MergeParameters<Selectors>
+
+type hmp3 = Head<mp3>
+
+type h1 = Has<Params1[number], '3'>
 
 type i0 = Params1[number][0]
 type i1 = Params1[number][1]
@@ -172,27 +192,54 @@ type RemoveNames<T extends readonly any[]> = [any, ...T] extends [
   ? U
   : never
 
-export type MergeParameters2<T extends readonly UnknownFunction[]> =
-  ExpandItems<RemoveNames<List.MergeAll<[], ExtractParams<T>, 'deep'>>>
+// export type MergeParameters2<T extends readonly UnknownFunction[]> =
+//   ExpandItems<RemoveNames<List.MergeAll<[], ExtractParams<T>, 'deep'>>>
 // type Zipped<A extends any[][],
 
 type mp1a = MergeParameters<Selectors>
 
-type mp1b = MergeParameters2<Selectors>
+const input2a = (state: StateSub) => state.sub
+const input2b = (state: StateSub, props: { x: number; y: number }) => props.x
 
-const input5 = (state: StateSub) => state.sub
-const input6 = (state: StateSub, props: { x: number; y: number }) => props.x
-
-type Selectors2 = [typeof input5, typeof input6]
+type Selectors2 = [typeof input2a, typeof input2b]
 
 type mp2a = MergeParameters<Selectors2>
-type mp2b = MergeParameters2<Selectors2>
+type mp2b = MergeParameters3<Selectors2>
 
-const selector2 = createSelector(
-  selector1,
-  (state: StateSub, props: { x: number; y: number }) => props.y,
-  (param, y) => param.sub.a + param.x + y
-)
+const input3a = (state: { foo: string }) => state.foo
+const input3b = (state: { baz: number }, props: { bar: number }) => props.bar
+
+type Selectors3 = [typeof input3a, typeof input3b]
+type s3r = SelectorResultArray<Selectors3>
+const combiner3 = (foo: string, bar: number) => ({ foo, baz: bar })
+
+type mp3a = MergeParameters<Selectors3>
+type mp3aa = Tail42<mp3a>
+type mp3s = GetStateFromSelectors<Selectors3>
+type mp3p = GetParamsFromSelectors<Selectors3>
+
+const newSelector = ((state, props) => {
+  return combiner3(state.foo, props.bar)
+}) as Selector<
+  GetStateFromSelectors<Selectors3>,
+  ReturnType<typeof combiner3>,
+  mp3p
+>
+
+// OutputSelector<
+//   Selectors3,
+//   ReturnType<typeof combiner3>,
+//   typeof combiner3,
+//   mp3p
+// >
+
+newSelector()
+
+// const selector2 = createSelector(
+//   selector1,
+//   (state: StateSub, props: { x: number; y: number }) => props.y,
+//   (param, y) => param.sub.a + param.x + y
+// )
 
 /*
 export type Head<T extends any[], D = never> = T extends [infer X, ...any[]]
@@ -235,3 +282,73 @@ type flattened = {
   [key in keyof zp2] : 
 }
 */
+
+function testParametricSelector() {
+  /*
+    const selector: OutputSelector<[(state: State) => string, (state: State, props: Props) => number], {
+    foo: string;
+    bar: number;
+}, (args_0: string, args_1: number) => {
+    foo: string;
+    bar: number;
+}, never>
+
+
+const selector: OutputSelector<[(state: State) => string, (state: State, props: Props) => number], {
+    foo: string;
+    bar: number;
+}, (args_0: string, args_1: number) => {
+    foo: string;
+    bar: number;
+}, GetParamsFromSelectors<[(state: State) => string, (state: State, props: Props) => number]>>
+*/
+  type State = { foo: string }
+  type Props = { bar: number }
+
+  // allows heterogeneous parameter type selectors
+
+  const i1 = (state: State) => state.foo
+  const i2 = (state: State, props: Props) => props.bar
+  const c1 = (foo: string, bar: number) => ({ foo, bar })
+
+  type Selectors = [typeof i1, typeof i2]
+
+  type extracted = ExtractParams<Selectors>
+  type params = MergeParameters<Selectors>
+  type s = GetStateFromSelectors<Selectors>
+  type p = GetParamsFromSelectors<Selectors>
+  type ParamsArrays = ExtractParams<Selectors>
+  type LongestParamsArray = LongestArray<ParamsArrays>
+  type PAN = ParamsArrays[number]
+  type pan1 = PAN[1]
+  type mapped = {
+    [index in keyof LongestParamsArray]: LongestParamsArray[index] extends LongestParamsArray[number]
+      ? UnionToIntersection<PAN[1]>
+      : never
+  }
+  type mp3p = MergeParameters3<Selectors>
+  type c = typeof c1
+
+  type u1 = UnionToIntersection<
+    [
+      | {
+          bar: number
+        }
+      | undefined
+    ]
+  >
+  type u2 = UnionToIntersection<
+    [
+      | {
+          bar: number
+        }
+      | undefined
+    ]
+  >
+
+  const newSelector = ((state, props) => {
+    return c1(state.foo, props.bar)
+  }) as OutputSelector<Selectors, ReturnType<c>, c, p>
+
+  newSelector({ foo: 'fizz' }, { bar: 42 })
+}
