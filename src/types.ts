@@ -112,7 +112,7 @@ export type Tail<T extends any[]> = ((...t: T) => any) extends (
   ? U
   : []
 
-type AllArrayKeys<A extends readonly any[]> = A extends any
+export type AllArrayKeys<A extends readonly any[]> = A extends any
   ? {
       [K in keyof A]: K
     }[number]
@@ -210,6 +210,8 @@ export type Cast<T, P, D extends P = P> = T extends P ? T : D
 
 type IndexedLookup<A extends readonly any[], K extends AllArrayKeys<A>> = A[K]
 
+// type UnionLength<T> = (keyof T)['length']
+
 export type MergeParameters<
   T extends readonly UnknownFunction[],
   ParamsArrays extends readonly any[][] = ExtractParams<T>,
@@ -218,7 +220,12 @@ export type MergeParameters<
 > = ExpandItems<
   RemoveNames<{
     [index in keyof LongestParamsArray]: LongestParamsArray[index] extends LongestParamsArray[number]
-      ? UnionToIntersection<NonNullable<PAN[index & AllArrayKeys<PAN>]>>
+      ? UnionToIntersection<
+          NonNullable<PAN[index & AllArrayKeys<PAN>]>
+          // {
+          //   [i2 in keyof PAN[index & AllArrayKeys<PAN>]]: PAN[i2]
+          // }
+        >
       : never
   }>
 >

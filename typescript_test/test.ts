@@ -79,6 +79,12 @@ function testSelector() {
     (state: { bar: number }) => state.bar,
     (foo, bar) => 1
   )
+
+  const selectorWithUnions = createSelector(
+    (state: State, val: string | number) => state.foo,
+    (state: State, val: string | number) => val,
+    (foo, val) => val
+  )
 }
 
 function testNestedSelector() {
@@ -313,6 +319,17 @@ function testParametricSelector() {
     (s: State, y: number) => y,
     (v, x) => {
       return x + v
+    }
+  )
+
+  // @ts-expect-error
+  selector3({ foo: 'fizz' }, 42)
+
+  const selector4 = createSelector(
+    (s: State, val: number) => s.foo,
+    (s: State, val: string | number) => val,
+    (foo, val) => {
+      return val
     }
   )
 }
@@ -1046,14 +1063,14 @@ const withLotsOfInputSelectors = createSelector(
   (_state: StateA) => 18,
   (_state: StateA) => 19,
   (_state: StateA) => 20,
-  (_state: StateA) => 21,
-  (_state: StateA) => 22,
-  (_state: StateA) => 23,
-  (_state: StateA) => 24,
-  (_state: StateA) => 25,
-  (_state: StateA) => 26,
-  (_state: StateA) => 27,
-  (_state: StateA) => 28,
+  // (_state: StateA) => 21,
+  // (_state: StateA) => 22,
+  // (_state: StateA) => 23,
+  // (_state: StateA) => 24,
+  // (_state: StateA) => 25,
+  // (_state: StateA) => 26,
+  // (_state: StateA) => 27,
+  // (_state: StateA) => 28,
   (...args) => args.length
 )
 
@@ -1077,16 +1094,16 @@ type SelectorArray29 = [
   (_state: StateA) => 17,
   (_state: StateA) => 18,
   (_state: StateA) => 19,
-  (_state: StateA) => 20,
-  (_state: StateA) => 21,
-  (_state: StateA) => 22,
-  (_state: StateA) => 23,
-  (_state: StateA) => 24,
-  (_state: StateA) => 25,
-  (_state: StateA) => 26,
-  (_state: StateA) => 27,
-  (_state: StateA) => 28,
-  (_state: StateA) => 29
+  (_state: StateA) => 20
+  // (_state: StateA) => 21,
+  // (_state: StateA) => 22,
+  // (_state: StateA) => 23,
+  // (_state: StateA) => 24,
+  // (_state: StateA) => 25,
+  // (_state: StateA) => 26,
+  // (_state: StateA) => 27,
+  // (_state: StateA) => 28,
+  // (_state: StateA) => 29
 ]
 
 type Results = SelectorResultArray<SelectorArray29>
@@ -1102,6 +1119,7 @@ type State = GetStateFromSelectors<SelectorArray29>
 
   type EP1 = ExtractParams<[I1, I2]>
   type MP1 = MergeParameters<[I1, I2]>
+  type S1 = GetStateFromSelectors<[I1, I2]>
 
   const selector = createSelector(input1, input2, (...args) => 0)
   // @ts-expect-error
@@ -1359,4 +1377,46 @@ function issue540() {
     42,
     'blah'
   )
+
+  // #541
+  const selectProp1 = createSelector(
+    [
+      (state: StateA) => state,
+      (state: StateA, props: { prop1: number }) => props
+    ],
+    (state, { prop1 }) => [state, prop1]
+  )
+
+  const selectProp2 = createSelector(
+    [selectProp1, (state, props: { prop2: number }) => props],
+    (state, { prop2 }) => [state, prop2]
+  )
+
+  selectProp1({ a: 42 }, { prop1: 1 })
+  // @ts-expect-error
+  selectProp2({ a: 42 }, { prop2: 2 })
+}
+
+function issue548() {
+  interface State {
+    value: Record<string, any> | null
+    loading: boolean
+  }
+
+  interface Props {
+    currency: string
+  }
+
+  const isLoading = createSelector(
+    (state: State) => state,
+    (_: State, props: Props) => props.currency,
+    ({ loading }, currency) => loading
+  )
+
+  const mapData = createStructuredSelector({
+    isLoading,
+    test2: (state: State) => 42
+  })
+
+  const result = mapData({ value: null, loading: false }, { currency: 'EUR' })
 }

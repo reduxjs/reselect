@@ -5,7 +5,10 @@ import type {
   EqualityFn,
   SelectorArray,
   SelectorResultArray,
-  DropFirst
+  DropFirst,
+  GetStateFromSelectors,
+  UnionToIntersection,
+  MergeParameters
 } from './types'
 
 export type {
@@ -24,6 +27,8 @@ import {
   defaultEqualityCheck,
   DefaultMemoizeOptions
 } from './defaultMemoize'
+
+import { Any } from 'ts-toolbelt'
 
 export { defaultMemoize, defaultEqualityCheck }
 
@@ -205,16 +210,47 @@ export const createSelector =
 
 type SelectorsObject = { [key: string]: (...args: any[]) => any }
 
+type GetSelectorsFromSelectorsObject<S extends SelectorsObject> = {
+  [key in keyof S]: S[key]
+}
+
+export type IsPositive<
+  N extends number,
+  Then = true,
+  Else = false
+> = number extends N ? Else : `${N}` extends `-${number}` ? Else : Then
+
+// TS4.0+
+type Push<T extends any[], V> = [...T, V]
+
+type LastOf<T> = UnionToIntersection<
+  T extends any ? () => T : never
+> extends () => infer R
+  ? R
+  : never
+
+// TS4.1+
+type TuplifyUnion<
+  T,
+  L = LastOf<T>,
+  N = [T] extends [never] ? true : false
+> = true extends N ? [] : Push<TuplifyUnion<Exclude<T, L>>, L>
+
+type ObjValueTuple<
+  T,
+  KS extends any[] = TuplifyUnion<keyof T>,
+  R extends any[] = []
+> = KS extends [infer K, ...infer KT]
+  ? ObjValueTuple<T, KT, [...R, T[K & keyof T]]>
+  : R
+
 export interface StructuredSelectorCreator {
   <SelectorMap extends SelectorsObject>(
     selectorMap: SelectorMap,
     selectorCreator?: CreateSelectorFunction<any, any, any>
   ): (
-    state: SelectorMap[keyof SelectorMap] extends (
-      state: infer State
-    ) => unknown
-      ? State
-      : never
+    // Accept an arbitrary number of parameters for all selectors
+    ...params: [...MergeParameters<ObjValueTuple<SelectorMap>>]
   ) => {
     [Key in keyof SelectorMap]: ReturnType<SelectorMap[Key]>
   }

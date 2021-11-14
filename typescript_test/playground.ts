@@ -10,9 +10,11 @@ import type {
   SelectorResultArray,
   ExtractParams,
   UnionToIntersection,
+  AllArrayKeys,
   ExpandItems,
   UnknownFunction,
   MergeParameters,
+  Longest,
   LongestArray,
   IntersectArrays,
   Head,
@@ -433,5 +435,51 @@ export type IsTuple<T extends { length: number }> = And<
 
   type isT1 = IsTuple<ParamsArrays>
   type PAN = ParamsArrays[number]
-  type pan1 = PAN[1]
+  type pan1 = NonNullable<PAN[1]> // PAN[1]
+
+  type u1 = UnionToIntersection<pan1>
+}
+
+export type Inc = {
+  [i: number]: number
+  0: 1
+  1: 2
+  2: 3
+  3: 4
+  4: 5
+  5: 6
+  6: 7
+  7: 8
+  8: 9
+  9: 10
+}
+
+export type TupleHasIndex<Arr extends List<any>, I extends number> = ({
+  [K in keyof Arr]: '1'
+} & Array<'0'>)[I]
+
+type TupleToUnion<T extends unknown[]> = T[number]
+
+{
+  type State = { foo: string }
+  const i1 = (state: State, val: string | number) => state.foo
+  const i2 = (state: State, val: string | number) => val
+  const c = (foo: string, val: string | number) => val
+
+  type Selectors = [typeof i1, typeof i2]
+
+  type extracted = ExtractParams<Selectors>
+  type params = MergeParameters<Selectors>
+  type s = GetStateFromSelectors<Selectors>
+  type p = GetParamsFromSelectors<Selectors>
+  type ParamsArrays = ExtractParams<Selectors>
+  type length1 = ParamsArrays['length']
+  type l1 = Longest<ParamsArrays[0], ParamsArrays[1]>
+  type LongestParamsArray = LongestArray<ParamsArrays>
+
+  type PAN = ParamsArrays[number]
+  type pan1 = NonNullable<PAN[1]> // PAN[1]
+
+  type tu1 = TupleToUnion<[string | number, number]>
+  type u1 = UnionToIntersection<tu1>
 }
