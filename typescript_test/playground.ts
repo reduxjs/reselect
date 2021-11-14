@@ -126,38 +126,23 @@ type tuple1 = CreateTuple<tl5>
 
 export type Has<U, U1> = [U1] extends [U] ? 1 : 0
 
-export type List<A = any> = Array<A>
+export type List<A = any> = ReadonlyArray<A>
 
-export type Longest<L extends List, L1 extends List> = L extends unknown
-  ? L1 extends unknown
-    ? { 0: L1; 1: L }[Has<keyof L, keyof L1>]
-    : 99
-  : 123
+// export type Longest<L extends List, L1 extends List> = L extends unknown
+//   ? L1 extends unknown
+//     ? { 0: L1; 1: L }[Has<keyof L, keyof L1>]
+//     : never
+//   : never
 
-type l2 = Longest<Params1[0], Params1[1]>
-
-// export type LongestArray<S extends any[][]> = S extends [any[], any[]]
+// export type LongestArray<S extends readonly any[][]> = IsTuple<S> extends '0'
+//   ? S[0]
+//   : S extends [any[], any[]]
 //   ? Longest<S[0], S[1]>
 //   : S extends [any[], any[], ...infer Rest]
-//   ? Longest<Longest<S[0], S[1]>, LongestArray<Rest>>
+//   ? Longest<Longest<S[0], S[1]>, LongestArray<Rest & ReadonlyArray<any[]>>>
 //   : S extends [any[]]
 //   ? S[0]
-//   : 42
-export type LongestArray<S extends any[][]> = S extends [
-  any[],
-  any[],
-  ...infer Rest
-]
-  ? Rest extends [readonly any[]]
-    ? Longest<S[0], Longest<S[1], Rest>>
-    : Longest<S[0], S[1]>
-  : S extends [any, ...infer Rest]
-  ? Rest extends [any[]]
-    ? Longest<S[0], Rest>
-    : S[0]
-  : S extends []
-  ? 42
-  : 99
+//   : never
 
 type l3 = LongestArray<Params1>
 
@@ -395,6 +380,7 @@ const selector: OutputSelector<[(state: State) => string, (state: State, props: 
   type s = GetStateFromSelectors<Selectors>
   type p = GetParamsFromSelectors<Selectors>
   type ParamsArrays = ExtractParams<Selectors>
+  type isT1 = IsTuple<ParamsArrays>
   type LongestParamsArray = LongestArray<ParamsArrays>
   type PAN = ParamsArrays[number]
   type pan1 = PAN[1]
@@ -404,4 +390,48 @@ const selector: OutputSelector<[(state: State) => string, (state: State, props: 
       : never
   }
   type mp3p = MergeParameters3<Selectors>
+}
+
+export type Bool = '0' | '1'
+export type Obj<T> = { [k: string]: T }
+export type And<A extends Bool, B extends Bool> = ({
+  1: { 1: '1' } & Obj<'0'>
+} & Obj<Obj<'0'>>)[A][B]
+
+export type Matches<V, T> = V extends T ? '1' : '0'
+export type IsArrayType<T> = Matches<T, any[]>
+
+export type Not<T extends Bool> = { '1': '0'; '0': '1' }[T]
+export type InstanceOf<V, T> = And<Matches<V, T>, Not<Matches<T, V>>>
+
+export type IsTuple<T extends { length: number }> = And<
+  IsArrayType<T>,
+  InstanceOf<T['length'], number>
+>
+
+{
+  interface Elem {
+    val1: string
+    val2: string
+  }
+  const data: ReadonlyArray<Elem> = [
+    { val1: 'a', val2: 'aa' },
+    { val1: 'b', val2: 'bb' }
+  ]
+
+  const selectors = data.map(obj => (state: {}, fld: keyof Elem) => obj[fld])
+
+  type Selectors = typeof selectors
+  type extracted = ExtractParams<Selectors>
+  type params = MergeParameters<Selectors>
+  type s = GetStateFromSelectors<Selectors>
+  type p = GetParamsFromSelectors<Selectors>
+  type ParamsArrays = ExtractParams<Selectors>
+  type length1 = ParamsArrays['length']
+  type l1 = Longest<ParamsArrays[0], ParamsArrays[1]>
+  type LongestParamsArray = LongestArray<ParamsArrays>
+
+  type isT1 = IsTuple<ParamsArrays>
+  type PAN = ParamsArrays[number]
+  type pan1 = PAN[1]
 }

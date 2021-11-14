@@ -162,6 +162,22 @@ type RemoveNames<T extends readonly any[]> = [any, ...T] extends [
   ? U
   : never
 
+export type Bool = '0' | '1'
+export type Obj<T> = { [k: string]: T }
+export type And<A extends Bool, B extends Bool> = ({
+  1: { 1: '1' } & Obj<'0'>
+} & Obj<Obj<'0'>>)[A][B]
+
+export type Matches<V, T> = V extends T ? '1' : '0'
+export type IsArrayType<T> = Matches<T, any[]>
+
+export type Not<T extends Bool> = { '1': '0'; '0': '1' }[T]
+export type InstanceOf<V, T> = And<Matches<V, T>, Not<Matches<T, V>>>
+export type IsTuple<T extends { length: number }> = And<
+  IsArrayType<T>,
+  InstanceOf<T['length'], number>
+>
+
 export type Has<U, U1> = [U1] extends [U] ? 1 : 0
 
 export type List<A = any> = ReadonlyArray<A>
@@ -172,10 +188,12 @@ export type Longest<L extends List, L1 extends List> = L extends unknown
     : never
   : never
 
-export type LongestArray<S> = S extends [any[], any[]]
+export type LongestArray<S extends readonly any[][]> = IsTuple<S> extends '0'
+  ? S[0]
+  : S extends [any[], any[]]
   ? Longest<S[0], S[1]>
   : S extends [any[], any[], ...infer Rest]
-  ? Longest<Longest<S[0], S[1]>, LongestArray<Rest>>
+  ? Longest<Longest<S[0], S[1]>, Rest extends any[][] ? LongestArray<Rest> : []>
   : S extends [any[]]
   ? S[0]
   : never
