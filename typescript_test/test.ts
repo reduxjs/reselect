@@ -278,6 +278,7 @@ function testParametricSelector() {
     (foo, bar) => ({ foo, bar })
   )
 
+  // @ts-expect-error
   selector({ foo: 'fizz' })
   // @ts-expect-error
   selector({ foo: 'fizz' }, { bar: 'baz' })
@@ -287,11 +288,11 @@ function testParametricSelector() {
   const bar: number = ret.bar
 
   const selector2 = createSelector(
-    (state: any) => state.foo,
-    (state: any) => state.foo,
-    (state: any) => state.foo,
-    (state: any) => state.foo,
-    (state: any) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
     (state: State, props: Props) => props.bar,
     (foo1, foo2, foo3, foo4, foo5, bar) => ({
       foo1,

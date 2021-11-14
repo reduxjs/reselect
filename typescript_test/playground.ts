@@ -126,23 +126,38 @@ type tuple1 = CreateTuple<tl5>
 
 export type Has<U, U1> = [U1] extends [U] ? 1 : 0
 
-export type List<A = any> = ReadonlyArray<A>
+export type List<A = any> = Array<A>
 
 export type Longest<L extends List, L1 extends List> = L extends unknown
   ? L1 extends unknown
     ? { 0: L1; 1: L }[Has<keyof L, keyof L1>]
-    : never
-  : never
+    : 99
+  : 123
 
 type l2 = Longest<Params1[0], Params1[1]>
 
-export type LongestArray<S> = S extends [any[], any[]]
-  ? Longest<S[0], S[1]>
-  : S extends [any[], any[], ...infer Rest]
-  ? Longest<Longest<S[0], S[1]>, LongestArray<Rest & any[][]>>
-  : S extends [any[]]
-  ? S[0]
-  : never
+// export type LongestArray<S extends any[][]> = S extends [any[], any[]]
+//   ? Longest<S[0], S[1]>
+//   : S extends [any[], any[], ...infer Rest]
+//   ? Longest<Longest<S[0], S[1]>, LongestArray<Rest>>
+//   : S extends [any[]]
+//   ? S[0]
+//   : 42
+export type LongestArray<S extends any[][]> = S extends [
+  any[],
+  any[],
+  ...infer Rest
+]
+  ? Rest extends [readonly any[]]
+    ? Longest<S[0], Longest<S[1], Rest>>
+    : Longest<S[0], S[1]>
+  : S extends [any, ...infer Rest]
+  ? Rest extends [any[]]
+    ? Longest<S[0], Rest>
+    : S[0]
+  : S extends []
+  ? 42
+  : 99
 
 type l3 = LongestArray<Params1>
 
@@ -339,10 +354,11 @@ const selector: OutputSelector<[(state: State) => string, (state: State, props: 
   >
   type u2 = UnionToIntersection<
     [
-      | {
-          bar: number
-        }
-      | undefined
+      props:
+        | {
+            bar: number
+          }
+        | undefined
     ]
   >
 
@@ -351,4 +367,41 @@ const selector: OutputSelector<[(state: State) => string, (state: State, props: 
   }) as OutputSelector<Selectors, ReturnType<c>, c, p>
 
   newSelector({ foo: 'fizz' }, { bar: 42 })
+}
+
+{
+  type State = { foo: string }
+  type Props = { bar: number }
+
+  // allows heterogeneous parameter type selectors
+
+  const i1 = (state: State) => state.foo
+  const i2 = (state: State, props: Props) => props.bar
+  const c1 = (foo: string, bar: number) => ({ foo, bar })
+
+  type Selectors = [
+    typeof i1,
+    typeof i1,
+    typeof i1,
+    typeof i1,
+    typeof i1,
+    typeof i1,
+    typeof i1,
+    typeof i2
+  ]
+
+  type extracted = ExtractParams<Selectors>
+  type params = MergeParameters<Selectors>
+  type s = GetStateFromSelectors<Selectors>
+  type p = GetParamsFromSelectors<Selectors>
+  type ParamsArrays = ExtractParams<Selectors>
+  type LongestParamsArray = LongestArray<ParamsArrays>
+  type PAN = ParamsArrays[number]
+  type pan1 = PAN[1]
+  type mapped = {
+    [index in keyof LongestParamsArray]: LongestParamsArray[index] extends LongestParamsArray[number]
+      ? UnionToIntersection<PAN[1]>
+      : never
+  }
+  type mp3p = MergeParameters3<Selectors>
 }

@@ -175,7 +175,7 @@ export type Longest<L extends List, L1 extends List> = L extends unknown
 export type LongestArray<S> = S extends [any[], any[]]
   ? Longest<S[0], S[1]>
   : S extends [any[], any[], ...infer Rest]
-  ? Longest<Longest<S[0], S[1]>, LongestArray<Rest & any[][]>>
+  ? Longest<Longest<S[0], S[1]>, LongestArray<Rest>>
   : S extends [any[]]
   ? S[0]
   : never
@@ -184,7 +184,7 @@ type Props = { bar: number }
 
 type Intersectioned<T extends unknown[]> = {
   [index in keyof T]: T[index] extends T[number]
-    ? UnionToIntersection<T[index]>
+    ? UnionToIntersection<[T[index]]>
     : never
 }
 
@@ -200,10 +200,8 @@ export type MergeParameters<
 > = ExpandItems<
   RemoveNames<{
     [index in keyof LongestParamsArray]: LongestParamsArray[index] extends LongestParamsArray[number]
-      ? PAN[index & AllArrayKeys<PAN>] // index extends keyof PAN
-      : // ? PAN[index]
-        // : 42
-        never
+      ? UnionToIntersection<NonNullable<PAN[index & AllArrayKeys<PAN>]>>
+      : never
   }>
 >
 
