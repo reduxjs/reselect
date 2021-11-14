@@ -133,10 +133,45 @@ export type IntersectArrays<T extends readonly any[]> = Id<
   UnionToIntersection<Mapped<T>>
 >
 
-export type MergeParameters<T extends readonly UnknownFunction[]> = ExpandItems<
-  //   List.MergeAll<[], ExtractParams<T>, 'deep', Misc.BuiltIn>
-  Object.ListOf<IntersectArrays<List.UnionOf<ExtractParams<T>>>>
->
+type RemoveNames<T extends readonly any[]> = [any, ...T] extends [
+  any,
+  ...infer U
+]
+  ? U
+  : never
+
+export type Has<U, U1> = [U1] extends [U] ? 1 : 0
+
+export type List<A = any> = ReadonlyArray<A>
+
+export type Longest<L extends List, L1 extends List> = L extends unknown
+  ? L1 extends unknown
+    ? { 0: L1; 1: L }[Has<keyof L, keyof L1>]
+    : never
+  : never
+
+export type LongestArray<S> = S extends [any[], any[]]
+  ? Longest<S[0], S[1]>
+  : S extends [any[], any[], ...infer Rest]
+  ? Longest<Longest<S[0], S[1]>, LongestArray<Rest & any[][]>>
+  : S extends [any[]]
+  ? S[0]
+  : never
+
+export type MergeParameters<
+  T extends readonly UnknownFunction[],
+  ParamsArrays = ExtractParams<T>,
+  LongestParamsArray extends any[][] = LongestArray<ParamsArrays>
+> = {
+  [index in keyof LongestParamsArray]: UnionToIntersection<
+    // @ts-ignore
+    ParamsArrays[number][index]
+  >
+}
+// export type MergeParameters<T extends readonly UnknownFunction[]> = ExpandItems<
+//   RemoveNames<List.MergeAll<[], ExtractParams<T>, 'deep', Misc.BuiltIn>>
+// Object.ListOf<IntersectArrays<List.UnionOf<ExtractParams<T>>>>
+
 // ExpandItems<
 
 // >
