@@ -1,4 +1,4 @@
-import type { List, Any, Misc, Object } from 'ts-toolbelt'
+import type { Any } from 'ts-toolbelt'
 
 /** A standard selector function, which takes three generic type arguments:
  * @param State The first value, often a Redux root state object
@@ -65,6 +65,52 @@ export type OutputParametricSelector<State, Props, Result, Combiner> =
 /** An array of input selectors */
 export type SelectorArray = ReadonlyArray<Selector>
 
+// TODO Uncomment these original Get*FromSelectors versions and comment out the ones below to see how the system behaved prior to these changes
+
+// /** Utility type to extract the State generic from a selector */
+// type GetStateFromSelector<S> = S extends Selector<infer State> ? State : never
+
+// /** Utility type to extract the State generic from multiple selectors at once,
+//  * to help ensure that all selectors correctly share the same State type and
+//  * avoid mismatched input selectors being provided.
+//  */
+// export type GetStateFromSelectors<S extends SelectorArray> =
+//   // handle two elements at once so this type works for up to 30 selectors
+//   S extends [infer C1, infer C2, ...infer Other]
+//     ? Other extends [any]
+//       ? GetStateFromSelector<C1> &
+//           GetStateFromSelector<C2> &
+//           GetStateFromSelectors<Other>
+//       : GetStateFromSelector<C1> & GetStateFromSelector<C2>
+//     : S extends [infer Current, ...infer Other]
+//     ? Other extends [any]
+//       ? GetStateFromSelector<Current> & GetStateFromSelectors<Other>
+//       : GetStateFromSelector<Current>
+//     : S extends (infer Elem)[]
+//     ? GetStateFromSelector<Elem>
+//     : never
+
+// /** Utility type to extract the Params generic from a selector */
+// export type GetParamsFromSelector<S> = S extends Selector<any, any, infer P>
+//   ? P extends []
+//     ? never
+//     : P
+//   : never
+
+// /** Utility type to extract the Params generic from multiple selectors at once,
+//  * to help ensure that all selectors correctly share the same params and
+//  * avoid mismatched input selectors being provided.
+//  */
+// export type GetParamsFromSelectors<S, Found = never> = S extends SelectorArray
+//   ? S extends (infer s)[]
+//     ? GetParamsFromSelector<s>
+//     : S extends [infer Current, ...infer Rest]
+//     ? GetParamsFromSelector<Current> extends []
+//       ? GetParamsFromSelectors<Rest, Found>
+//       : GetParamsFromSelector<Current>
+//     : S
+//   : Found
+
 export type GetStateFromSelectors<S extends SelectorArray> = // Head<
   MergeParameters<S>[0]
 // >
@@ -82,6 +128,7 @@ export type GetParamsFromSelectors<
   // This seems to default to an array containing an empty object, which is
   // not meaningful and causes problems with the `Selector/OutputSelector` types.
   // Force it to have a meaningful value, or cancel it out.
+  // TODO Use `MergeParameters<S>` instead and hover a selector to see all params being extracted by MergeParameters
 > = RemainingItems extends [EmptyObject] ? never : RemainingItems
 
 export type UnknownFunction = (...args: any[]) => any
@@ -212,6 +259,20 @@ type IndexedLookup<A extends readonly any[], K extends AllArrayKeys<A>> = A[K]
 
 // type UnionLength<T> = (keyof T)['length']
 
+type Merge<T extends any[]> = NonNullable<
+  T[number] extends infer U
+    ? U extends any
+      ? UnionToIntersection<U>
+      : never
+    : never
+>
+
+type IntersectAll<T extends any[]> = _IntersectAll<T>
+
+type _IntersectAll<T, R = unknown> = T extends [infer First, ...infer Rest]
+  ? _IntersectAll<Rest, undefined extends First ? R : R & First>
+  : R
+
 export type MergeParameters<
   T extends readonly UnknownFunction[],
   ParamsArrays extends readonly any[][] = ExtractParams<T>,
@@ -220,12 +281,8 @@ export type MergeParameters<
 > = ExpandItems<
   RemoveNames<{
     [index in keyof LongestParamsArray]: LongestParamsArray[index] extends LongestParamsArray[number]
-      ? UnionToIntersection<
-          NonNullable<PAN[index & AllArrayKeys<PAN>]>
-          // {
-          //   [i2 in keyof PAN[index & AllArrayKeys<PAN>]]: PAN[i2]
-          // }
-        >
+      ? // TODO Use IntersectAll here instead of UnionToIntersection
+        UnionToIntersection<NonNullable<PAN[index & AllArrayKeys<PAN>]>>
       : never
   }>
 >
