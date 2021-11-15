@@ -1487,6 +1487,13 @@ type _IntersectAll<T, R = unknown> = T extends [infer Head, ...infer Rest]
   ]
   type a8 = []
   type a9 = [state: State]
+  type a10 =
+    | []
+    | [
+        props: {
+          bar: number
+        }
+      ]
 
   type ia1a = IntersectArray<a1>
   type ia1b = IntersectArray<a2>
@@ -1504,6 +1511,7 @@ type _IntersectAll<T, R = unknown> = T extends [infer Head, ...infer Rest]
   type ia2g = IntersectAll<a7>
   type ia2h = IntersectAll<a8>
   type ia2i = IntersectAll<a9>
+  type ia2j = IntersectAll<a10>
 
   type nn1 = NonNullable<[string | number, string | number, undefined]>
 }

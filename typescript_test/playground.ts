@@ -585,5 +585,56 @@ export type If<Cond extends Bool, Then, Else> = { '1': Then; '0': Else }[Cond]
   // [number, string] -> never // incompat
   //[number, number, string | number, undefined] -> string | number // strip undefined, has a valid union, compat
   // [ {a: number}, {b: string}] -> {a: number, b: string} // compat, intersected
-  type t1a = If<And<>>
+}
+
+type Transpose<T> = T[Extract<
+  keyof T,
+  T extends readonly any[] ? number : unknown
+>] extends infer V
+  ? {
+      [K in keyof V]: {
+        [L in keyof T]: K extends keyof T[L] ? T[L][K] : undefined
+      }
+    }
+  : never
+
+{
+  type State = { foo: string }
+  type Props = { bar: number }
+
+  type Params1 = [[state: State], [state: State, props: Props]]
+  type Params2 = [
+    [
+      StateA,
+      {
+        testNumber: number
+      },
+      number,
+      string
+    ],
+    [
+      StateA,
+      {
+        testString: string
+      },
+      number
+    ],
+    [
+      StateA,
+      {
+        testBoolean: boolean
+      },
+      string | number,
+      string
+    ],
+    [
+      StateA,
+      {
+        testString2: string
+      }
+    ]
+  ]
+
+  type t1 = Transpose<Params1>
+  type t2 = Transpose<Params2>
 }

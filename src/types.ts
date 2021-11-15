@@ -267,25 +267,92 @@ type Merge<T extends any[]> = NonNullable<
     : never
 >
 
-type IntersectAll<T extends any[]> = _IntersectAll<T>
+type IntersectAll<T extends any[]> = IsTuple<T> extends '0'
+  ? T[0]
+  : _IntersectAll<T>
 
 type _IntersectAll<T, R = unknown> = T extends [infer First, ...infer Rest]
   ? _IntersectAll<Rest, undefined extends First ? R : R & First>
   : R
+export type Inc = {
+  [i: number]: number
+  0: 1
+  1: 2
+  2: 3
+  3: 4
+  4: 5
+  5: 6
+  6: 7
+  7: 8
+  8: 9
+  9: 10
+}
+
+export type TupleHasIndex<Arr extends List<any>, I extends number> = ({
+  [K in keyof Arr]: '1'
+} & Array<'0'>)[I]
+export type TupleFrom<
+  T extends List<any>,
+  I extends number,
+  Acc extends List<any> = []
+> = { 0: Acc; 1: TupleFrom<T, Inc[I], [...Acc, T[I]]> }[TupleHasIndex<T, I>]
+
+type Push<T extends any[], V> = [...T, V]
+
+type LastOf<T> = UnionToIntersection<
+  T extends any ? () => T : never
+> extends () => infer R
+  ? R
+  : never
+
+// TS4.1+
+type TuplifyUnion<
+  T,
+  L = LastOf<T>,
+  N = [T] extends [never] ? true : false
+> = true extends N ? [] : Push<TuplifyUnion<Exclude<T, L>>, L>
+
+type Transpose<T> = T[Extract<
+  keyof T,
+  T extends readonly any[] ? number : unknown
+>] extends infer V
+  ? {
+      [K in keyof V]: {
+        [L in keyof T]: K extends keyof T[L] ? T[L][K] : undefined
+      }
+    }
+  : never
 
 export type MergeParameters<
   T extends readonly UnknownFunction[],
   ParamsArrays extends readonly any[][] = ExtractParams<T>,
-  LongestParamsArray extends readonly any[] = LongestArray<ParamsArrays>,
+  TransposedArrays = Transpose<ParamsArrays>,
+  TuplifiedArrays extends any[] = TuplifyUnion<TransposedArrays>,
+  LongestParamsArray extends readonly any[] = LongestArray<TuplifiedArrays>,
   PAN extends readonly any[] = ParamsArrays[number]
 > = ExpandItems<
+  // LongestParamsArray
   RemoveNames<{
     [index in keyof LongestParamsArray]: LongestParamsArray[index] extends LongestParamsArray[number]
-      ? // TODO Use IntersectAll here instead of UnionToIntersection
-        UnionToIntersection<NonNullable<PAN[index & AllArrayKeys<PAN>]>>
-      : never
+      ? IntersectAll<LongestParamsArray[index]>
+      : // TODO Use IntersectAll here instead of UnionToIntersection
+        // IntersectAll<
+        // TupleFrom<NonNullable<PAN[index & AllArrayKeys<PAN>]>, LongestParamsArray['length']>
+        // >
+        never
   }>
 >
+
+// ExpandItems<
+//   RemoveNames<{
+//     [index in keyof LongestParamsArray]: LongestParamsArray[index] extends LongestParamsArray[number]
+//       ? // TODO Use IntersectAll here instead of UnionToIntersection
+//       // IntersectAll<
+//         TupleFrom<NonNullable<PAN[index & AllArrayKeys<PAN>]>, LongestParamsArray['length']>
+//        // >
+//        : never
+//   }>
+// >
 
 // export type MergeParameters<T extends readonly UnknownFunction[]> = ExpandItems<
 //   // RemoveNames<List.MergeAll<[], ExtractParams<T>, 'deep', Misc.BuiltIn>>
