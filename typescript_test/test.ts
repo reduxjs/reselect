@@ -16,7 +16,8 @@ import type {
   MergeParameters,
   IntersectArrays,
   Head,
-  Tail42
+  Tail42,
+  UnionToIntersection
 } from '../src/types'
 
 import type { List, Any } from 'ts-toolbelt'
@@ -332,6 +333,10 @@ function testParametricSelector() {
       return val
     }
   )
+
+  // TODO Union params are broken
+  // @ts-ignore
+  selector4({ foo: 'fizz' }, 42)
 }
 
 function testArrayArgument() {
@@ -1311,6 +1316,12 @@ function issue540() {
     'deep'
   >
   */
+  type i1 = typeof input1
+  type i2 = typeof input2
+  type i3 = typeof input3
+  type i4 = typeof input4
+
+  type i5 = i1 & i2 & i3 & i4
 
   type ExtractedParams = ExtractParams<
     [typeof input1, typeof input2, typeof input3, typeof input4]
@@ -1419,4 +1430,80 @@ function issue548() {
   })
 
   const result = mapData({ value: null, loading: false }, { currency: 'EUR' })
+}
+
+export type Intersection<A, B> = A & B
+
+export type Bool = '0' | '1'
+export type Obj<T> = { [k: string]: T }
+export type And<A extends Bool, B extends Bool> = ({
+  1: { 1: '1' } & Obj<'0'>
+} & Obj<Obj<'0'>>)[A][B]
+
+export type Matches<V, T> = V extends T ? '1' : '0'
+export type IsArrayType<T> = Matches<T, any[]>
+
+export type Not<T extends Bool> = { '1': '0'; '0': '1' }[T]
+export type InstanceOf<V, T> = And<Matches<V, T>, Not<Matches<T, V>>>
+export type IsTuple<T extends { length: number }> = And<
+  IsArrayType<T>,
+  InstanceOf<T['length'], number>
+>
+
+export type IntersectArray<S extends readonly any[]> = IsTuple<S> extends '0'
+  ? UnionToIntersection<S[0]>
+  : S extends [any, any]
+  ? Intersection<S[0], S[1]>
+  : S extends [any, any, ...infer Rest]
+  ? Intersection<
+      Intersection<S[0], S[1]>,
+      Rest extends any[] ? IntersectArray<Rest> : []
+    >
+  : S extends [any]
+  ? UnionToIntersection<S[0]>
+  : never
+
+type IntersectAll<T extends any[]> = _IntersectAll<T>
+
+type _IntersectAll<T, R = unknown> = T extends [infer Head, ...infer Rest]
+  ? _IntersectAll<Rest, undefined extends Head ? R : R & Head>
+  : R
+{
+  type SubState = { foo: string }
+  type State = { bar: SubState }
+
+  type a1 = [StateA, StateA]
+  type a2 = [string | number, string]
+  type a3 = [string | number, string | number]
+  type a4 = [string | number, string | number, undefined]
+  type a5 = [{ a: number }, { b: string }]
+  type a6 = [{ a: number }, { b: string }, undefined]
+  type a7 = [
+    {
+      bar: {
+        foo: string
+      }
+    }
+  ]
+  type a8 = []
+  type a9 = [state: State]
+
+  type ia1a = IntersectArray<a1>
+  type ia1b = IntersectArray<a2>
+  type ia1c = IntersectArray<a3>
+  type ia1d = IntersectArray<a4>
+  type ia1e = IntersectArray<a5>
+  type ia1f = IntersectArray<a6>
+
+  type ia2a = IntersectAll<a1>
+  type ia2b = IntersectAll<a2>
+  type ia2c = IntersectAll<a3>
+  type ia2d = IntersectAll<a4>
+  type ia2e = IntersectAll<a5>
+  type ia2f = IntersectAll<a6>
+  type ia2g = IntersectAll<a7>
+  type ia2h = IntersectAll<a8>
+  type ia2i = IntersectAll<a9>
+
+  type nn1 = NonNullable<[string | number, string | number, undefined]>
 }

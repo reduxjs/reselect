@@ -41,7 +41,7 @@ const input1b = (
 const input1c = (
   _: StateA,
   { testBoolean }: { testBoolean: boolean },
-  c: number,
+  c: number | string,
   d: string
 ) => testBoolean
 
@@ -167,6 +167,12 @@ type mp4 = MergeParameters<Selectors>
 type hmp3 = Head<mp3>
 
 type h1 = Has<Params1[number], '3'>
+
+type o1 = {
+  [index in AllArrayKeys<Params1>]: Params1[index] extends Params1[number]
+    ? Params1[index][2]
+    : never
+}
 
 type i0 = Params1[number][0]
 type i1 = Params1[number][1]
@@ -315,6 +321,9 @@ const selector: OutputSelector<[(state: State) => string, (state: State, props: 
 
   type Selectors = [typeof i1, typeof i2]
 
+  type p1 = Parameters<Selectors[0]>
+  type p2 = Parameters<Selectors[1]>
+
   type extracted = ExtractParams<Selectors>
   type params = MergeParameters<Selectors>
   type s = GetStateFromSelectors<Selectors>
@@ -460,6 +469,16 @@ export type TupleHasIndex<Arr extends List<any>, I extends number> = ({
 
 type TupleToUnion<T extends unknown[]> = T[number]
 
+export type Indeterminate<T extends string> = And<
+  Matches<'0', T>,
+  Matches<'1', T>
+>
+export type Determinate<T extends Bool> = Not<Indeterminate<T>>
+export type DefinitelyYes<T extends Bool> = And<T, Determinate<T>>
+export type UnionContained<T extends string, U extends string> = DefinitelyYes<
+  ({ [P in U]: '1' } & Obj<'0'>)[T | U]
+>
+
 {
   type State = { foo: string }
   const i1 = (state: State, val: string | number) => state.foo
@@ -482,4 +501,89 @@ type TupleToUnion<T extends unknown[]> = T[number]
 
   type tu1 = TupleToUnion<[string | number, number]>
   type u1 = UnionToIntersection<tu1>
+
+  type u2 = UnionToIntersection<[x: string] | [y: number]>
+  type u3 = UnionToIntersection<[number, number, string | number, undefined]>
+
+  type a1 = [number, number, string | number, undefined]
+  type a2 = NonNullable<a1[number]>
+
+  type u4 = number & number & (string | number) & undefined
+
+  type t1 = Matches<boolean, string | number>
+}
+
+/*
+type PrependTuple<A, T extends Array<any>> = A extends undefined
+  ? T
+  : ((a: A, ...b: T) => void) extends (...a: infer I) => void
+  ? I
+  : []
+
+type RemoveFirstFromTuple<T extends any[]> = T['length'] extends 0
+  ? undefined
+  : ((...b: T) => void) extends (a, ...b: infer I) => void
+  ? I
+  : []
+
+type FirstFromTuple<T extends any[]> = T['length'] extends 0 ? undefined : T[0]
+
+type NumberToTuple<N extends number, L extends Array<any> = []> = {
+  true: L
+  false: NumberToTuple<N, PrependTuple<1, L>>
+}[L['length'] extends N ? 'true' : 'false']
+
+type Decrease<I extends number> = RemoveFirstFromTuple<
+  NumberToTuple<I>
+>['length']
+type H = Decrease<4>
+
+type Iter<N extends number, Items extends any[], L extends Array<any> = []> = {
+  true: L
+  false: Iter<
+    FirstFromTuple<Items> extends undefined ? Decrease<N> : N,
+    RemoveFirstFromTuple<Items>,
+    PrependTuple<FirstFromTuple<Items>, L>
+  >
+}[L['length'] extends N ? 'true' : 'false']
+
+type FilterUndefined<T extends any[]> = Iter<T['length'], T>
+*/
+
+// type ReduceArray<T, S extends readonly T[], Check> =
+//   S extends [T, T]
+//   ? Check<S[0], S[1]>
+//   : S extends [any[], any[], ...infer Rest]
+//   ? Longest<Longest<S[0], S[1]>, Rest extends any[][] ? LongestArray<Rest> : []>
+//   : S extends [any[]]
+//   ? S[0]
+//   : never
+export type IsEmptyObject<T> = T extends {}
+  ? {} extends T
+    ? true
+    : false
+  : false
+export type CanAssign<
+  A,
+  B,
+  Then = true,
+  Else = false
+> = IsEmptyObject<A> extends true
+  ? Record<string, unknown> extends B
+    ? Then
+    : Else
+  : boolean extends A
+  ? boolean extends B
+    ? Then
+    : Else
+  : A extends B
+  ? Then
+  : Else
+
+export type If<Cond extends Bool, Then, Else> = { '1': Then; '0': Else }[Cond]
+{
+  // [number, string] -> never // incompat
+  //[number, number, string | number, undefined] -> string | number // strip undefined, has a valid union, compat
+  // [ {a: number}, {b: string}] -> {a: number, b: string} // compat, intersected
+  type t1a = If<And<>>
 }
