@@ -328,18 +328,12 @@ export type MergeParameters<
   ParamsArrays extends readonly any[][] = ExtractParams<T>,
   TransposedArrays = Transpose<ParamsArrays>,
   TuplifiedArrays extends any[] = TuplifyUnion<TransposedArrays>,
-  LongestParamsArray extends readonly any[] = LongestArray<TuplifiedArrays>,
-  PAN extends readonly any[] = ParamsArrays[number]
+  LongestParamsArray extends readonly any[] = LongestArray<TuplifiedArrays>
 > = ExpandItems<
-  // LongestParamsArray
   RemoveNames<{
     [index in keyof LongestParamsArray]: LongestParamsArray[index] extends LongestParamsArray[number]
       ? IntersectAll<LongestParamsArray[index]>
-      : // TODO Use IntersectAll here instead of UnionToIntersection
-        // IntersectAll<
-        // TupleFrom<NonNullable<PAN[index & AllArrayKeys<PAN>]>, LongestParamsArray['length']>
-        // >
-        never
+      : never
   }>
 >
 
