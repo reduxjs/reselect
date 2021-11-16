@@ -5,7 +5,9 @@ import type {
   SelectorArray,
   SelectorResultArray,
   DropFirst,
+  MergeParameters,
   Expand,
+  ObjValueTuple
 } from './types'
 
 export type {
@@ -214,11 +216,9 @@ export interface StructuredSelectorCreator {
     selectorMap: SelectorMap,
     selectorCreator?: CreateSelectorFunction<any, any, any>
   ): (
-    state: SelectorMap[keyof SelectorMap] extends (
-      state: infer State
-    ) => unknown
-      ? State
-      : never
+    // Accept an arbitrary number of parameters for all selectors
+    // @ts-ignore
+    ...params: [...MergeParameters<ObjValueTuple<SelectorMap>>]
   ) => {
     [Key in keyof SelectorMap]: ReturnType<SelectorMap[Key]>
   }
@@ -230,7 +230,7 @@ export interface StructuredSelectorCreator {
 }
 
 // Manual definition of state and output arguments
-export const createStructuredSelector: StructuredSelectorCreator = (
+export const createStructuredSelector = ((
   selectors: SelectorsObject,
   selectorCreator = createSelector
 ) => {
@@ -241,7 +241,7 @@ export const createStructuredSelector: StructuredSelectorCreator = (
     )
   }
   const objectKeys = Object.keys(selectors)
-  return selectorCreator(
+  const resultSelector = selectorCreator(
     // @ts-ignore
     objectKeys.map(key => selectors[key]),
     (...values: any[]) => {
@@ -251,4 +251,5 @@ export const createStructuredSelector: StructuredSelectorCreator = (
       }, {})
     }
   )
-}
+  return resultSelector
+}) as unknown as StructuredSelectorCreator
