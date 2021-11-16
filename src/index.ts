@@ -18,7 +18,8 @@ export type {
   SelectorArray,
   SelectorResultArray,
   ParametricSelector,
-  OutputParametricSelector
+  OutputParametricSelector,
+  OutputSelectorFields
 } from './types'
 
 import {
