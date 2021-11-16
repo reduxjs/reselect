@@ -165,7 +165,7 @@ export type ExtractReturnType<T extends readonly UnknownFunction[]> = {
 
 /** Recursively expand all fields in an object for easier reading */
 export type ExpandItems<T extends readonly unknown[]> = {
-  [index in keyof T]: T[index] extends T[number] ? Expand<T[index]> : never
+  [index in keyof T]: T[index] extends T[number] ? ComputeDeep<T[index]> : never
 }
 
 /** First item in an array */
@@ -355,3 +355,48 @@ type Identity<T> = T
  * Source: https://github.com/microsoft/TypeScript/issues/35247
  */
 export type Mapped<T> = Identity<{ [k in keyof T]: T[k] }>
+
+/**
+ * Fully expand a type, deeply
+ * Source: https://github.com/millsp/ts-toolbelt (`Any.Compute`)
+ */
+
+type ComputeDeep<A, Seen = never> = A extends BuiltIn
+  ? A
+  : If2<
+      Has<Seen, A>,
+      A,
+      A extends Array<any>
+        ? A extends Array<Record<Key, any>>
+          ? Array<
+              {
+                [K in keyof A[number]]: ComputeDeep<A[number][K], A | Seen>
+              } & unknown
+            >
+          : A
+        : A extends ReadonlyArray<any>
+        ? A extends ReadonlyArray<Record<Key, any>>
+          ? ReadonlyArray<
+              {
+                [K in keyof A[number]]: ComputeDeep<A[number][K], A | Seen>
+              } & unknown
+            >
+          : A
+        : { [K in keyof A]: ComputeDeep<A[K], A | Seen> } & unknown
+    >
+
+export type If2<B extends Boolean2, Then, Else = never> = B extends 1
+  ? Then
+  : Else
+
+export type Boolean2 = 0 | 1
+
+export type Key = string | number | symbol
+
+export type BuiltIn =
+  | Function
+  | Error
+  | Date
+  | { readonly [Symbol.toStringTag]: string }
+  | RegExp
+  | Generator
