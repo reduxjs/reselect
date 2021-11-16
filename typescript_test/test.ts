@@ -10,12 +10,24 @@ import {
   Selector
 } from '../src'
 
+import type { ExtractParams, MergeParameters } from '../src/types'
+
 import microMemoize from 'micro-memoize'
 import memoizeOne from 'memoize-one'
 
 export function expectType<T>(t: T): T {
   return t
 }
+
+type Exact<A, B> = (<T>() => T extends A ? 1 : 0) extends <T>() => T extends B
+  ? 1
+  : 0
+  ? A extends B
+    ? B extends A
+      ? unknown
+      : never
+    : never
+  : never
 
 interface StateA {
   a: number
@@ -57,6 +69,12 @@ function testSelector() {
     (state: { foo: string }) => state.foo,
     (state: { bar: number }) => state.bar,
     (foo, bar) => 1
+  )
+
+  const selectorWithUnions = createSelector(
+    (state: State, val: string | number) => state.foo,
+    (state: State, val: string | number) => val,
+    (foo, val) => val
   )
 }
 
@@ -127,13 +145,13 @@ function testConnect() {
     const foo: string = props.foo
   })
 
-  const connected = connect(
-    createSelector(
-      (state: { foo: string }) => state.foo,
-      (state: any, props: { bar: number }) => props.bar,
-      (foo, bar) => ({ foo, baz: bar })
-    )
-  )(props => {
+  const selector2 = createSelector(
+    (state: { foo: string }) => state.foo,
+    (state: { baz: number }, props: { bar: number }) => props.bar,
+    (foo, bar) => ({ foo, baz: bar })
+  )
+
+  const connected = connect(selector2)(props => {
     const foo: string = props.foo
     const bar: number = props.bar
     const baz: number = props.baz
@@ -155,10 +173,10 @@ function testInvalidTypeInCombinator() {
   )
 
   createSelector(
-    // @ts-expect-error
     (state: { foo: string; bar: number; baz: boolean }) => state.foo,
-    state => state.bar,
-    state => state.baz,
+    (state: any) => state.bar,
+    (state: any) => state.baz,
+    // @ts-expect-error
     (foo: string, bar: number, baz: boolean, fizz: string) => {}
   )
 
@@ -226,7 +244,7 @@ function testParametricSelector() {
   type Props = { bar: number }
 
   // allows heterogeneous parameter type selectors
-  createSelector(
+  const selector1 = createSelector(
     (state: { testString: string }) => state.testString,
     (state: { testNumber: number }) => state.testNumber,
     (state: { testBoolean: boolean }) => state.testBoolean,
@@ -267,11 +285,11 @@ function testParametricSelector() {
   const bar: number = ret.bar
 
   const selector2 = createSelector(
-    (state: any) => state.foo,
-    (state: any) => state.foo,
-    (state: any) => state.foo,
-    (state: any) => state.foo,
-    (state: any) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
+    (state: State) => state.foo,
     (state: State, props: Props) => props.bar,
     (foo1, foo2, foo3, foo4, foo5, bar) => ({
       foo1,
@@ -294,6 +312,21 @@ function testParametricSelector() {
       return x + v
     }
   )
+
+  // @ts-expect-error
+  selector3({ foo: 'fizz' }, 42)
+
+  const selector4 = createSelector(
+    (s: State, val: number) => s.foo,
+    (s: State, val: string | number) => val,
+    (foo, val) => {
+      return val
+    }
+  )
+
+  // TODO Union params are broken
+  // @ts-ignore
+  selector4({ foo: 'fizz' }, 42)
 }
 
 function testArrayArgument() {
@@ -830,15 +863,15 @@ function issue445() {
   )
 
   // Should error because number can't be null
+  // @ts-expect-error
   const getComplexObjectTest3 = createSelector(
-    // @ts-expect-error
     [getNumber, getObject1, getObject2],
     generateComplexObject
   )
 
   // Does error, but error is really weird and talks about "Object1 is not assignable to type number"
+  // @ts-expect-error
   const getComplexObjectTest4 = createSelector(
-    // @ts-expect-error
     [getObject1, getNumber, getObject2],
     generateComplexObject
   )
@@ -858,14 +891,12 @@ function issue445() {
   )
 
   // Errors correctly
-  // @ts-expect-error
   const getVerboseComplexObjectTest1 = createSelector([getObject1], obj1 =>
     // @ts-expect-error
     generateComplexObject(obj1)
   )
 
   // Errors correctly
-  // @ts-expect-error
   const getVerboseComplexObjectTest2 = createSelector(
     [getNumber, getObject1],
     // @ts-expect-error
@@ -874,15 +905,15 @@ function issue445() {
 
   // Errors correctly
   const getVerboseComplexObjectTest3 = createSelector(
-    // @ts-expect-error
     [getNumber, getObject1, getObject2],
+    // @ts-expect-error
     (num, obj1, obj2) => generateComplexObject(num, obj1, obj2)
   )
 
   // Errors correctly
   const getVerboseComplexObjectTest4 = createSelector(
-    // @ts-expect-error
     [getObject1, getNumber, getObject2],
+    // @ts-expect-error
     (num, obj1, obj2) => generateComplexObject(num, obj1, obj2)
   )
 }
@@ -1070,16 +1101,22 @@ type SelectorArray29 = [
   (_state: StateA) => 29
 ]
 
-// Ensure that input functions with mismatched states raise errors
 type Results = SelectorResultArray<SelectorArray29>
 type State = GetStateFromSelectors<SelectorArray29>
 
+// Ensure that input functions with mismatched states raise errors
 {
-  const selector = createSelector(
-    (state: string) => 1,
-    (state: number) => 2,
-    (...args) => 0
-  )
+  const input1 = (state: string) => 1
+  const input2 = (state: number) => 2
+
+  type I1 = typeof input1
+  type I2 = typeof input2
+
+  type EP1 = ExtractParams<[I1, I2]>
+  type MP1 = MergeParameters<[I1, I2]>
+  type S1 = GetStateFromSelectors<[I1, I2]>
+
+  const selector = createSelector(input1, input2, (...args) => 0)
   // @ts-expect-error
   selector('foo')
   // @ts-expect-error
@@ -1182,4 +1219,87 @@ function deepNesting() {
   const selector27 = createSelector(selector26, s => s)
   const selector28 = createSelector(selector27, s => s)
   const selector29 = createSelector(selector28, s => s)
+}
+
+function issue540() {
+  const input1 = (
+    _: StateA,
+    { testNumber }: { testNumber: number },
+    c: number,
+    d: string
+  ) => testNumber
+
+  const input2 = (
+    _: StateA,
+    { testString }: { testString: string },
+    c: number
+  ) => testString
+
+  const input3 = (
+    _: StateA,
+    { testBoolean }: { testBoolean: boolean },
+    c: number,
+    d: string
+  ) => testBoolean
+
+  const input4 = (_: StateA, { testString2 }: { testString2: string }) =>
+    testString2
+
+  const testSelector = createSelector(
+    input1,
+    input2,
+    input3,
+    input4,
+    (testNumber, testString, testBoolean) => testNumber + testString
+  )
+
+  const state: StateA = { a: 42 }
+  const test = testSelector(
+    state,
+    { testNumber: 1, testString: '10', testBoolean: true, testString2: 'blah' },
+    42,
+    'blah'
+  )
+
+  // #541
+  const selectProp1 = createSelector(
+    [
+      (state: StateA) => state,
+      (state: StateA, props: { prop1: number }) => props
+    ],
+    (state, { prop1 }) => [state, prop1]
+  )
+
+  const selectProp2 = createSelector(
+    [selectProp1, (state, props: { prop2: number }) => props],
+    (state, { prop2 }) => [state, prop2]
+  )
+
+  selectProp1({ a: 42 }, { prop1: 1 })
+  // @ts-expect-error
+  selectProp2({ a: 42 }, { prop2: 2 })
+}
+
+function issue548() {
+  interface State {
+    value: Record<string, any> | null
+    loading: boolean
+  }
+
+  interface Props {
+    currency: string
+  }
+
+  const isLoading = createSelector(
+    (state: State) => state,
+    (_: State, props: Props) => props.currency,
+    ({ loading }, currency) => loading
+  )
+
+  const mapData = createStructuredSelector({
+    isLoading,
+    test2: (state: State) => 42
+  })
+
+  const result = mapData({ value: null, loading: false }, { currency: 'EUR' })
 }
