@@ -52,7 +52,7 @@ describe('Basic selector behavior', () => {
 
   test("don't pass extra parameters to inputSelector when only called with the state", () => {
     const selector = createSelector(
-      (...params: any) => params.length,
+      (...params: any[]) => params.length,
       a => a
     )
     expect(selector({})).toBe(1)
@@ -83,7 +83,7 @@ describe('Basic selector behavior', () => {
           return state.b
         },
         'not a function',
-        (a, b) => a + b
+        (a: any, b: any) => a + b
       )
     ).toThrow(
       'createSelector expects all input-selectors to be functions, but received the following types: [function unnamed(), function input2(), string]'
@@ -641,7 +641,10 @@ describe('defaultMemoize', () => {
 
     const fooChangeSpy = jest.fn()
 
-    const fooChangeHandler = createSelector(state => state.foo, fooChangeSpy)
+    const fooChangeHandler = createSelector(
+      (state: any) => state.foo,
+      fooChangeSpy
+    )
 
     fooChangeHandler(state)
     expect(fooChangeSpy.mock.calls.length).toEqual(1)
@@ -654,7 +657,7 @@ describe('defaultMemoize', () => {
     const state2 = { a: 1 }
     let count = 0
 
-    const selector = createSelector([state => state.a], () => {
+    const selector = createSelector([(state: any) => state.a], () => {
       count++
       return undefined
     })

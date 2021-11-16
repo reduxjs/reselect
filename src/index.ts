@@ -2,10 +2,12 @@ import type {
   Selector,
   GetParamsFromSelectors,
   OutputSelector,
-  EqualityFn,
   SelectorArray,
   SelectorResultArray,
-  DropFirst
+  DropFirst,
+  MergeParameters,
+  Expand,
+  ObjValueTuple
 } from './types'
 
 export type {
@@ -16,7 +18,8 @@ export type {
   SelectorArray,
   SelectorResultArray,
   ParametricSelector,
-  OutputParametricSelector
+  OutputParametricSelector,
+  OutputSelectorFields
 } from './types'
 
 import {
@@ -156,7 +159,10 @@ interface CreateSelectorOptions<MemoizeOptions extends unknown[]> {
 interface CreateSelectorFunction<
   F extends (...args: unknown[]) => unknown,
   MemoizeFunction extends (func: F, ...options: any[]) => F,
-  MemoizeOptions extends unknown[] = DropFirst<Parameters<MemoizeFunction>>
+  MemoizeOptions extends unknown[] = DropFirst<Parameters<MemoizeFunction>>,
+  Keys = Expand<
+    Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
+  >
 > {
   /** Input selectors as separate inline arguments */
   <Selectors extends SelectorArray, Result>(
@@ -167,11 +173,10 @@ interface CreateSelectorFunction<
   ): OutputSelector<
     Selectors,
     Result,
-    ((...args: SelectorResultArray<Selectors>) => Result) &
-      Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>,
+    (...args: SelectorResultArray<Selectors>) => Result & Keys,
     GetParamsFromSelectors<Selectors>
   > &
-    Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
+    Keys
 
   /** Input selectors as separate inline arguments with memoizeOptions passed */
   <Selectors extends SelectorArray, Result>(
@@ -183,11 +188,10 @@ interface CreateSelectorFunction<
   ): OutputSelector<
     Selectors,
     Result,
-    ((...args: SelectorResultArray<Selectors>) => Result) &
-      Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>,
+    ((...args: SelectorResultArray<Selectors>) => Result) & Keys,
     GetParamsFromSelectors<Selectors>
   > &
-    Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
+    Keys
 
   /** Input selectors as a separate array */
   <Selectors extends SelectorArray, Result>(
@@ -197,11 +201,10 @@ interface CreateSelectorFunction<
   ): OutputSelector<
     Selectors,
     Result,
-    ((...args: SelectorResultArray<Selectors>) => Result) &
-      Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>,
+    (...args: SelectorResultArray<Selectors>) => Result & Keys,
     GetParamsFromSelectors<Selectors>
   > &
-    Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
+    Keys
 }
 
 export const createSelector =
@@ -214,11 +217,9 @@ export interface StructuredSelectorCreator {
     selectorMap: SelectorMap,
     selectorCreator?: CreateSelectorFunction<any, any, any>
   ): (
-    state: SelectorMap[keyof SelectorMap] extends (
-      state: infer State
-    ) => unknown
-      ? State
-      : never
+    // Accept an arbitrary number of parameters for all selectors
+    // @ts-ignore
+    ...params: [...MergeParameters<ObjValueTuple<SelectorMap>>]
   ) => {
     [Key in keyof SelectorMap]: ReturnType<SelectorMap[Key]>
   }
@@ -230,7 +231,7 @@ export interface StructuredSelectorCreator {
 }
 
 // Manual definition of state and output arguments
-export const createStructuredSelector: StructuredSelectorCreator = (
+export const createStructuredSelector = ((
   selectors: SelectorsObject,
   selectorCreator = createSelector
 ) => {
@@ -241,7 +242,7 @@ export const createStructuredSelector: StructuredSelectorCreator = (
     )
   }
   const objectKeys = Object.keys(selectors)
-  return selectorCreator(
+  const resultSelector = selectorCreator(
     // @ts-ignore
     objectKeys.map(key => selectors[key]),
     (...values: any[]) => {
@@ -251,4 +252,5 @@ export const createStructuredSelector: StructuredSelectorCreator = (
       }, {})
     }
   )
-}
+  return resultSelector
+}) as unknown as StructuredSelectorCreator
