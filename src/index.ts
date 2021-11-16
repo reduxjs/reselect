@@ -161,7 +161,8 @@ interface CreateSelectorOptions<MemoizeOptions extends unknown[]> {
 interface CreateSelectorFunction<
   F extends (...args: unknown[]) => unknown,
   MemoizeFunction extends (func: F, ...options: any[]) => F,
-  MemoizeOptions extends unknown[] = DropFirst<Parameters<MemoizeFunction>>
+  MemoizeOptions extends unknown[] = DropFirst<Parameters<MemoizeFunction>>,
+  Keys = Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
 > {
   /** Input selectors as separate inline arguments */
   <Selectors extends SelectorArray, Result>(
@@ -172,9 +173,10 @@ interface CreateSelectorFunction<
   ): OutputSelector<
     Selectors,
     Result,
-    (...args: SelectorResultArray<Selectors>) => Result, // & Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>,
+    (...args: SelectorResultArray<Selectors>) => Result & Keys,
     GetParamsFromSelectors<Selectors>
-  > // &  Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
+  > &
+    Keys // &  Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
 
   /** Input selectors as separate inline arguments with memoizeOptions passed */
   <Selectors extends SelectorArray, Result>(
@@ -186,11 +188,10 @@ interface CreateSelectorFunction<
   ): OutputSelector<
     Selectors,
     Result,
-    ((...args: SelectorResultArray<Selectors>) => Result) &
-      Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>,
+    ((...args: SelectorResultArray<Selectors>) => Result) & Keys,
     GetParamsFromSelectors<Selectors>
   > &
-    Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
+    Keys
 
   /** Input selectors as a separate array */
   <Selectors extends SelectorArray, Result>(
@@ -200,9 +201,10 @@ interface CreateSelectorFunction<
   ): OutputSelector<
     Selectors,
     Result,
-    (...args: SelectorResultArray<Selectors>) => Result, // & Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>,
+    (...args: SelectorResultArray<Selectors>) => Result & Keys,
     GetParamsFromSelectors<Selectors>
-  > // & Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
+  > &
+    Keys
 }
 
 export const createSelector =
