@@ -218,6 +218,7 @@ export interface StructuredSelectorCreator {
     selectorCreator?: CreateSelectorFunction<any, any, any>
   ): (
     // Accept an arbitrary number of parameters for all selectors
+    // @ts-ignore
     ...params: [...MergeParameters<ObjValueTuple<SelectorMap>>]
   ) => {
     [Key in keyof SelectorMap]: ReturnType<SelectorMap[Key]>
