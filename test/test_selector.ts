@@ -55,7 +55,6 @@ describe('Basic selector behavior', () => {
       (...params: any[]) => params.length,
       a => a
     )
-    // @ts-expect-error doesn't like passing an object to `never`
     expect(selector({})).toBe(1)
   })
 
