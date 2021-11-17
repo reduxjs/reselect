@@ -14,6 +14,9 @@ import type { ExtractParams, MergeParameters } from '../src/types'
 
 import microMemoize from 'micro-memoize'
 import memoizeOne from 'memoize-one'
+import { createSlice, configureStore } from '@reduxjs/toolkit'
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux'
 
 export function expectType<T>(t: T): T {
   return t
@@ -1232,13 +1235,13 @@ function issue540() {
   const input2 = (
     _: StateA,
     { testString }: { testString: string },
-    c: number
+    c: number | string
   ) => testString
 
   const input3 = (
     _: StateA,
     { testBoolean }: { testBoolean: boolean },
-    c: number,
+    c: number | string,
     d: string
   ) => testBoolean
 
@@ -1302,4 +1305,63 @@ function issue548() {
   })
 
   const result = mapData({ value: null, loading: false }, { currency: 'EUR' })
+}
+
+function issue550() {
+  const some = createSelector(
+    (a: number) => a,
+    (_a: number, b: number) => b,
+    (a, b) => a + b
+  )
+
+  const test = some(1, 2)
+}
+
+function rtkIssue1750() {
+  const slice = createSlice({
+    name: 'test',
+    initialState: 0,
+    reducers: {}
+  })
+
+  interface Pokemon {
+    name: string
+  }
+
+  // Define a service using a base URL and expected endpoints
+  const pokemonApi = createApi({
+    reducerPath: 'pokemonApi',
+    baseQuery: fetchBaseQuery({ baseUrl: 'https://pokeapi.co/api/v2/' }),
+    endpoints: builder => ({
+      getPokemonByName: builder.query<Pokemon, string>({
+        query: name => `pokemon/${name}`
+      })
+    })
+  })
+
+  const store = configureStore({
+    reducer: {
+      test: slice.reducer,
+      [pokemonApi.reducerPath]: pokemonApi.reducer
+    },
+    middleware: getDefaultMiddleware =>
+      getDefaultMiddleware().concat(pokemonApi.middleware)
+  })
+
+  type RootState = ReturnType<typeof store.getState>
+
+  const selectTest = createSelector(
+    (state: RootState) => state.test,
+    test => test
+  )
+
+  const useAppSelector: TypedUseSelectorHook<RootState> = useSelector
+
+  // Selector usage should compile correctly
+  const testItem = selectTest(store.getState())
+
+  function App() {
+    const test = useAppSelector(selectTest)
+    return null
+  }
 }
