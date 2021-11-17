@@ -14,6 +14,9 @@ import type { ExtractParams, MergeParameters } from '../src/types'
 
 import microMemoize from 'micro-memoize'
 import memoizeOne from 'memoize-one'
+import { createSlice, configureStore } from '@reduxjs/toolkit'
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux'
 
 export function expectType<T>(t: T): T {
   return t
@@ -605,6 +608,16 @@ function testCreateSelectorCreator() {
 }
 
 function testCreateStructuredSelector() {
+  const oneParamSelector = createStructuredSelector({
+    foo: (state: StateAB) => state.a,
+    bar: (state: StateAB) => state.b
+  })
+
+  const threeParamSelector = createStructuredSelector({
+    foo: (state: StateAB, c: number, d: string) => state.a,
+    bar: (state: StateAB, c: number, d: string) => state.b
+  })
+
   const selector = createStructuredSelector<
     { foo: string },
     {
@@ -616,9 +629,9 @@ function testCreateStructuredSelector() {
     bar: state => +state.foo
   })
 
-  const res = selector({ foo: '42' })
-  const foo: string = res.foo
-  const bar: number = res.bar
+  const res1 = selector({ foo: '42' })
+  const foo: string = res1.foo
+  const bar: number = res1.bar
 
   // @ts-expect-error
   selector({ bar: '42' })
@@ -643,8 +656,8 @@ function testCreateStructuredSelector() {
 
   // Test automatic inference of types for createStructuredSelector via overload
   type State = { foo: string }
-  const FooSelector = (state: State) => state.foo
-  const BarSelector = (state: State) => +state.foo
+  const FooSelector = (state: State, a: number, b: string) => state.foo
+  const BarSelector = (state: State, a: number, b: string) => +state.foo
 
   const selector2 = createStructuredSelector({
     foo: FooSelector,
@@ -664,8 +677,15 @@ function testCreateStructuredSelector() {
     bar: number
   }
 
+  const resOneParam = oneParamSelector({ a: 1, b: 2 })
+  const resThreeParams = threeParamSelector({ a: 1, b: 2 }, 99, 'blah')
   const res2: ExpectedResult = selector({ foo: '42' })
-  const resGenerics: ExpectedResult = selectorGenerics({ foo: '42' })
+  const res3: ExpectedResult = selector2({ foo: '42' }, 99, 'test')
+  const resGenerics: ExpectedResult = selectorGenerics(
+    { foo: '42' },
+    99,
+    'test'
+  )
 
   //@ts-expect-error
   selector2({ bar: '42' })
@@ -705,13 +725,13 @@ function testDynamicArrayArgument() {
   )
 
   const s = createSelector(
-    data.map(obj => (state: {}, fld: keyof Elem) => obj[fld]),
+    data.map(obj => (state: StateA, fld: keyof Elem) => obj[fld]),
     (...vals) => vals.join(',')
   )
-  s({}, 'val1')
-  s({}, 'val2')
+  s({ a: 42 }, 'val1')
+  s({ a: 42 }, 'val2')
   // @ts-expect-error
-  s({}, 'val3')
+  s({ a: 42 }, 'val3')
 }
 
 function testStructuredSelectorTypeParams() {
@@ -1232,13 +1252,13 @@ function issue540() {
   const input2 = (
     _: StateA,
     { testString }: { testString: string },
-    c: number
+    c: number | string
   ) => testString
 
   const input3 = (
     _: StateA,
     { testBoolean }: { testBoolean: boolean },
-    c: number,
+    c: number | string,
     d: string
   ) => testBoolean
 
@@ -1302,4 +1322,87 @@ function issue548() {
   })
 
   const result = mapData({ value: null, loading: false }, { currency: 'EUR' })
+}
+
+function issue550() {
+  const some = createSelector(
+    (a: number) => a,
+    (_a: number, b: number) => b,
+    (a, b) => a + b
+  )
+
+  const test = some(1, 2)
+}
+
+function rtkIssue1750() {
+  const slice = createSlice({
+    name: 'test',
+    initialState: 0,
+    reducers: {}
+  })
+
+  interface Pokemon {
+    name: string
+  }
+
+  // Define a service using a base URL and expected endpoints
+  const pokemonApi = createApi({
+    reducerPath: 'pokemonApi',
+    baseQuery: fetchBaseQuery({ baseUrl: 'https://pokeapi.co/api/v2/' }),
+    endpoints: builder => ({
+      getPokemonByName: builder.query<Pokemon, string>({
+        query: name => `pokemon/${name}`
+      })
+    })
+  })
+
+  const store = configureStore({
+    reducer: {
+      test: slice.reducer,
+      [pokemonApi.reducerPath]: pokemonApi.reducer
+    },
+    middleware: getDefaultMiddleware =>
+      getDefaultMiddleware().concat(pokemonApi.middleware)
+  })
+
+  type RootState = ReturnType<typeof store.getState>
+
+  const selectTest = createSelector(
+    (state: RootState) => state.test,
+    test => test
+  )
+
+  const useAppSelector: TypedUseSelectorHook<RootState> = useSelector
+
+  // Selector usage should compile correctly
+  const testItem = selectTest(store.getState())
+
+  function App() {
+    const test = useAppSelector(selectTest)
+    return null
+  }
+}
+
+function handleNestedIncompatTypes() {
+  // Incompatible parameters should force errors even for nested fields.
+  // One-level-deep fields get stripped to empty objects, so they
+  // should be replaced with `never`.
+  // Deeper fields should get caught by TS.
+  // Playground: https://tsplay.dev/wg6X0W
+  const input1a = (_: StateA, param: { b: number }) => param.b
+
+  const input1b = (_: StateA, param: { b: string }) => param.b
+
+  const testSelector1 = createSelector(input1a, input1b, () => ({}))
+
+  // @ts-expect-error
+  testSelector1({ a: 42 }, { b: 99 }) // should not compile
+
+  const input2a = (_: StateA, param: { b: { c: number } }) => param.b.c
+  const input2b = (_: StateA, param: { b: { c: string } }) => param.b.c
+
+  const testSelector2 = createSelector(input2a, input2b, (c1, c2) => {})
+
+  // @ts-expect-error
+  testSelector2({ a: 42 }, { b: { c: 99 } })
 }

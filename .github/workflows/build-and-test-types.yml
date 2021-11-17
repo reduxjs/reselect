@@ -65,6 +65,12 @@ jobs:
       - name: Install TypeScript ${{ matrix.ts }}
         run: yarn add typescript@${{ matrix.ts }}
 
+      - name: Pack
+        run: yarn build && yarn pack
+
+      - name: Install build artifact
+        run: yarn add ./package.tgz
+
       - name: Test types
         run: |
           ./node_modules/.bin/tsc --version
