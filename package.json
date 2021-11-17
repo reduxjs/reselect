@@ -71,7 +71,6 @@
     "@typescript-eslint/eslint-plugin": "5.1.0",
     "@typescript-eslint/eslint-plugin-tslint": "5.1.0",
     "@typescript-eslint/parser": "5.1.0",
-    "better-npm-run": "0.1.1",
     "chai": "^4.3.4",
     "codecov.io": "^0.1.6",
     "coveralls": "^3.1.1",
@@ -88,11 +87,11 @@
     "ncp": "^2.0.0",
     "nyc": "^15.1.0",
     "prettier": "^2.4.1",
+    "rimraf": "^3.0.2",
     "rollup": "^2.58.0",
     "rollup-plugin-terser": "^7.0.2",
     "ts-jest": "27.0.7",
     "tslint": "6.1.3",
     "typescript": "^4.4.0"
-  },
-  "dependencies": {}
+  }
 }

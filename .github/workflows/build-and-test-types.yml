@@ -68,4 +68,4 @@ jobs:
       - name: Test types
         run: |
           ./node_modules/.bin/tsc --version
-          yan test:typescript
+          yarn test:typescript
