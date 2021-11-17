@@ -30,7 +30,7 @@ const states: StateAB[] = []
 for (let i = 0; i < numOfStates; i++) {
   states.push({ a: 1, b: 2 })
 }
-// Test for re-exporting createdSelector
+// Test for exporting declaration of created selector creator
 export const testExport = createSelectorCreator(
   defaultMemoize,
   (a, b) => typeof a === typeof b
