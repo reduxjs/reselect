@@ -608,6 +608,16 @@ function testCreateSelectorCreator() {
 }
 
 function testCreateStructuredSelector() {
+  const oneParamSelector = createStructuredSelector({
+    foo: (state: StateAB) => state.a,
+    bar: (state: StateAB) => state.b
+  })
+
+  const threeParamSelector = createStructuredSelector({
+    foo: (state: StateAB, c: number, d: string) => state.a,
+    bar: (state: StateAB, c: number, d: string) => state.b
+  })
+
   const selector = createStructuredSelector<
     { foo: string },
     {
@@ -619,9 +629,9 @@ function testCreateStructuredSelector() {
     bar: state => +state.foo
   })
 
-  const res = selector({ foo: '42' })
-  const foo: string = res.foo
-  const bar: number = res.bar
+  const res1 = selector({ foo: '42' })
+  const foo: string = res1.foo
+  const bar: number = res1.bar
 
   // @ts-expect-error
   selector({ bar: '42' })
@@ -646,8 +656,8 @@ function testCreateStructuredSelector() {
 
   // Test automatic inference of types for createStructuredSelector via overload
   type State = { foo: string }
-  const FooSelector = (state: State) => state.foo
-  const BarSelector = (state: State) => +state.foo
+  const FooSelector = (state: State, a: number, b: string) => state.foo
+  const BarSelector = (state: State, a: number, b: string) => +state.foo
 
   const selector2 = createStructuredSelector({
     foo: FooSelector,
@@ -667,8 +677,15 @@ function testCreateStructuredSelector() {
     bar: number
   }
 
+  const resOneParam = oneParamSelector({ a: 1, b: 2 })
+  const resThreeParams = threeParamSelector({ a: 1, b: 2 }, 99, 'blah')
   const res2: ExpectedResult = selector({ foo: '42' })
-  const resGenerics: ExpectedResult = selectorGenerics({ foo: '42' })
+  const res3: ExpectedResult = selector2({ foo: '42' }, 99, 'test')
+  const resGenerics: ExpectedResult = selectorGenerics(
+    { foo: '42' },
+    99,
+    'test'
+  )
 
   //@ts-expect-error
   selector2({ bar: '42' })

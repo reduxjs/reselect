@@ -179,7 +179,7 @@ export type ExpandItems<T extends readonly unknown[]> = {
 }
 
 /** First item in an array */
-export type Head<T extends any[]> = T extends [any, ...any[]] ? T[0] : never
+export type Head<T> = T extends [any, ...any[]] ? T[0] : never
 /** All other items in an array */
 export type Tail<A> = A extends [any, ...infer Rest] ? Rest : never
 

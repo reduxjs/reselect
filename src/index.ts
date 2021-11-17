@@ -7,7 +7,9 @@ import type {
   DropFirst,
   MergeParameters,
   Expand,
-  ObjValueTuple
+  ObjValueTuple,
+  Head,
+  Tail
 } from './types'
 
 export type {
@@ -213,13 +215,19 @@ export const createSelector =
 type SelectorsObject = { [key: string]: (...args: any[]) => any }
 
 export interface StructuredSelectorCreator {
-  <SelectorMap extends SelectorsObject>(
+  <
+    SelectorMap extends SelectorsObject,
+    SelectorParams = MergeParameters<ObjValueTuple<SelectorMap>>
+  >(
     selectorMap: SelectorMap,
     selectorCreator?: CreateSelectorFunction<any, any, any>
   ): (
     // Accept an arbitrary number of parameters for all selectors
-    // @ts-ignore
-    ...params: [...MergeParameters<ObjValueTuple<SelectorMap>>]
+    // The annoying head/tail bit here is because TS isn't convinced that
+    // the `SelectorParams` type is really an array, so we launder things.
+    // Plus it matches common usage anyway.
+    state: Head<SelectorParams>,
+    ...params: Tail<SelectorParams>
   ) => {
     [Key in keyof SelectorMap]: ReturnType<SelectorMap[Key]>
   }
