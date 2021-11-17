@@ -129,7 +129,9 @@ export type MergeParameters<
     // 9) Tuples can have field names attached, and it seems to work better to remove those
     RemoveNames<{
       // 5) We know the longest params array has N args. Loop over the indices of that array.
-      [index in keyof LongestParamsArray]: LongestParamsArray[index] extends LongestParamsArray[number] // field names for array functions like `slice()` // 6) Do a check to ensure that we're _only_ checking numeric indices, not any
+      // 6) For each index, do a check to ensure that we're _only_ checking numeric indices,
+      //    not any field names for array functions like `slice()`
+      [index in keyof LongestParamsArray]: LongestParamsArray[index] extends LongestParamsArray[number]
         ? // 8) Then, intersect all of the parameters for this arg together.
           IntersectAll<
             // 7) Since this is a _nested_ array, extract the right sub-array for this index
@@ -165,7 +167,7 @@ export type ExtractReturnType<T extends readonly UnknownFunction[]> = {
 
 /** Recursively expand all fields in an object for easier reading */
 export type ExpandItems<T extends readonly unknown[]> = {
-  [index in keyof T]: T[index] extends T[number] ? ComputeDeep<T[index]> : never
+  [index in keyof T]: T[index] extends T[number] ? Expand<T[index]> : never
 }
 
 /** First item in an array */
