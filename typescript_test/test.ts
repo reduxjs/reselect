@@ -708,13 +708,13 @@ function testDynamicArrayArgument() {
   )
 
   const s = createSelector(
-    data.map(obj => (state: {}, fld: keyof Elem) => obj[fld]),
+    data.map(obj => (state: StateA, fld: keyof Elem) => obj[fld]),
     (...vals) => vals.join(',')
   )
-  s({}, 'val1')
-  s({}, 'val2')
+  s({ a: 42 }, 'val1')
+  s({ a: 42 }, 'val2')
   // @ts-expect-error
-  s({}, 'val3')
+  s({ a: 42 }, 'val3')
 }
 
 function testStructuredSelectorTypeParams() {
@@ -1364,4 +1364,28 @@ function rtkIssue1750() {
     const test = useAppSelector(selectTest)
     return null
   }
+}
+
+function handleNestedIncompatTypes() {
+  // Incompatible parameters should force errors even for nested fields.
+  // One-level-deep fields get stripped to empty objects, so they
+  // should be replaced with `never`.
+  // Deeper fields should get caught by TS.
+  // Playground: https://tsplay.dev/wg6X0W
+  const input1a = (_: StateA, param: { b: number }) => param.b
+
+  const input1b = (_: StateA, param: { b: string }) => param.b
+
+  const testSelector1 = createSelector(input1a, input1b, () => ({}))
+
+  // @ts-expect-error
+  testSelector1({ a: 42 }, { b: 99 }) // should not compile
+
+  const input2a = (_: StateA, param: { b: { c: number } }) => param.b.c
+  const input2b = (_: StateA, param: { b: { c: string } }) => param.b.c
+
+  const testSelector2 = createSelector(input2a, input2b, (c1, c2) => {})
+
+  // @ts-expect-error
+  testSelector2({ a: 42 }, { b: { c: 99 } })
 }

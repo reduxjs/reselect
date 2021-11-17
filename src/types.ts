@@ -125,20 +125,23 @@ export type MergeParameters<
   LongestParamsArray extends readonly any[] = LongestArray<TuplifiedArrays>
 > =
   // After all that preparation work, we can actually do parameter extraction.
-  // These steps work somewhat inside out:
-  // 10) Finally, after all that, run a recursive expansion on the values to make the user-visible
+  // These steps work somewhat inside out (jump ahead to the middle):
+  // 11) Finally, after all that, run a shallow expansion on the values to make the user-visible
   //     field details more readable when viewing the selector's type in a hover box.
   ExpandItems<
-    // 9) Tuples can have field names attached, and it seems to work better to remove those
+    // 10) Tuples can have field names attached, and it seems to work better to remove those
     RemoveNames<{
       // 5) We know the longest params array has N args. Loop over the indices of that array.
       // 6) For each index, do a check to ensure that we're _only_ checking numeric indices,
       //    not any field names for array functions like `slice()`
       [index in keyof LongestParamsArray]: LongestParamsArray[index] extends LongestParamsArray[number]
-        ? // 8) Then, intersect all of the parameters for this arg together.
-          IntersectAll<
-            // 7) Since this is a _nested_ array, extract the right sub-array for this index
-            LongestParamsArray[index]
+        ? // 9) Any object types that were intersected may have had
+          IgnoreInvalidIntersections<
+            // 8) Then, intersect all of the parameters for this arg together.
+            IntersectAll<
+              // 7) Since this is a _nested_ array, extract the right sub-array for this index
+              LongestParamsArray[index]
+            >
           >
         : never
     }>
@@ -157,6 +160,8 @@ export type UnknownFunction = (...args: any[]) => any
 type EmptyObject = {
   [K in any]: never
 }
+
+type IgnoreInvalidIntersections<T> = T extends EmptyObject ? never : T
 
 /** Extract the parameters from all functions as a tuple */
 export type ExtractParams<T extends readonly UnknownFunction[]> = {
