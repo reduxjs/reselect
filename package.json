@@ -30,39 +30,15 @@
     "build:umd": "cross-env NODE_ENV=development rollup -c -o dist/reselect.js",
     "build:umd:min": "cross-env NODE_ENV=production rollup -c -o dist/reselect.min.js",
     "build:types": "tsc",
-    "build": "rimraf dist lib es && npm run build:types && npm run build:commonjs && npm run build:es && npm run build:umd && npm run build:umd:min",
+    "build": "rimraf dist lib es && yarn build:types && yarn build:commonjs && yarn build:es && yarn build:umd && yarn build:umd:min",
     "clean": "rimraf lib dist es coverage",
     "api-types": "api-extractor run --local",
     "format": "prettier --write \"{src,test}/**/*.{js,ts}\" \"docs/**/*.md\"",
     "lint": "eslint src test",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "yarn build",
     "test": "jest",
     "test:cov": "jest --coverage",
-    "test:typescript": "better-npm-run test:typescript"
-  },
-  "betterScripts": {
-    "test": {
-      "command": "mocha --compilers js:@babel/register --ui tdd --recursive",
-      "env": {
-        "NODE_ENV": "test"
-      }
-    },
-    "test:cov": {
-      "command": "nyc --reporter=lcov --reporter=text mocha --compilers js:@babel/register --ui tdd",
-      "env": {
-        "NODE_ENV": "test",
-        "COVERAGE": "true"
-      }
-    },
-    "test:typescript": {
-      "command": "tsc --noEmit -p typescript_test/tsconfig.json"
-    },
-    "compile:commonjs": {
-      "command": "babel -d lib/ src/",
-      "env": {
-        "BABEL_ENV": "cjs"
-      }
-    }
+    "test:typescript": "tsc --noEmit -p typescript_test/tsconfig.json"
   },
   "keywords": [
     "react",
