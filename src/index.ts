@@ -151,14 +151,14 @@ export function createSelectorCreator<
   >
 }
 
-interface CreateSelectorOptions<MemoizeOptions extends unknown[]> {
+export interface CreateSelectorOptions<MemoizeOptions extends unknown[]> {
   memoizeOptions: MemoizeOptions[0] | MemoizeOptions
 }
 
 /**
  * An instance of createSelector, customized with a given memoize implementation
  */
-interface CreateSelectorFunction<
+export interface CreateSelectorFunction<
   F extends (...args: unknown[]) => unknown,
   MemoizeFunction extends (func: F, ...options: any[]) => F,
   MemoizeOptions extends unknown[] = DropFirst<Parameters<MemoizeFunction>>,

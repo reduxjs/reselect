@@ -66,6 +66,18 @@ interface StateSub {
   }
 }
 
+// Test exporting
+export const testExportBasic = createSelector(
+  (state: StateA) => state.a,
+  a => a
+)
+
+// Test for exporting declaration of created selector creator
+export const testExportStructured = createSelectorCreator(
+  defaultMemoize,
+  (a, b) => typeof a === typeof b
+)
+
 function testSelector() {
   type State = { foo: string }
 
