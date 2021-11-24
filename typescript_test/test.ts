@@ -148,8 +148,6 @@ function testSelectorAsCombiner() {
 
 type Component<P> = (props: P) => any
 
-// TODO Figure out why this is failing
-// @ts-ignore
 declare function connect<S, P, R>(
   selector: ParametricSelector<S, P, R>
 ): (component: Component<P & R>) => Component<P>
@@ -291,6 +289,13 @@ function testParametricSelector() {
     }
   )
 
+  const res1 = selector1({
+    testString: 'a',
+    testNumber: 42,
+    testBoolean: true,
+    testStringArray: ['b', 'c']
+  })
+
   const selector = createSelector(
     (state: State) => state.foo,
     (state: State, props: Props) => props.bar,
@@ -325,7 +330,6 @@ function testParametricSelector() {
 
   selector2({ foo: 'fizz' }, { bar: 42 })
 
-  // TODO Should should error because two of the inputs have conflicting types for arg 2
   const selector3 = createSelector(
     (s: State) => s.foo,
     (s: State, x: string) => x,
@@ -346,8 +350,6 @@ function testParametricSelector() {
     }
   )
 
-  // TODO Union params are broken
-  // @ts-ignore
   selector4({ foo: 'fizz' }, 42)
 }
 
@@ -1207,7 +1209,10 @@ function deepNesting() {
   const selector5 = createSelector(selector4, s => s)
   const selector6 = createSelector(selector5, s => s)
   const selector7 = createSelector(selector6, s => s)
-  const selector8: Selector<State, string> = createSelector(selector7, s => s)
+  const selector8: Selector<State, string, never> = createSelector(
+    selector7,
+    s => s
+  )
   const selector9 = createSelector(selector8, s => s)
   const selector10 = createSelector(selector9, s => s)
   const selector11 = createSelector(selector10, s => s)
@@ -1232,7 +1237,8 @@ function deepNesting() {
   const selector25 = createSelector(selector24, s => s)
   const selector26: Selector<
     typeof selector25 extends Selector<infer S> ? S : never,
-    ReturnType<typeof selector25>
+    ReturnType<typeof selector25>,
+    never
   > = createSelector(selector25, s => s)
   const selector27 = createSelector(selector26, s => s)
   const selector28 = createSelector(selector27, s => s)
@@ -1485,25 +1491,21 @@ function issue554c() {
     counter2: number
   }
 
-  // This generates incorrect typings
   const selectTest = createSelector(
     (state: State, numberA?: number) => numberA, // `numberA` is optional
     (state: State) => state.counter2,
     (numberA, counter2) => (numberA ? numberA + counter2 : counter2)
   )
 
-  // This should generate a compilation error due to type mismatch, but it doesn't
   // @ts-expect-error
   const value = selectTest({ counter1: 0, counter2: 0 }, 'what?')
 
-  // This generates correct typings
   const selectTest2 = createSelector(
     (state: State, numberA: number) => numberA, // `numberA` is not optional anymore
     (state: State) => state.counter2,
     (numberA, counter2) => (numberA ? numberA + counter2 : counter2)
   )
 
-  // This generates a compilation error
   // @ts-expect-error
   const value2 = selectTest2({ counter1: 0, counter2: 0 }, 'what?')
 }
