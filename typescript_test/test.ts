@@ -1,3 +1,5 @@
+/* eslint-disable no-use-before-define */
+
 import {
   createSelector,
   defaultMemoize,
@@ -9,8 +11,6 @@ import {
   SelectorResultArray,
   Selector
 } from '../src'
-
-import type { ExtractParams, MergeParameters } from '../src/types'
 
 import microMemoize from 'micro-memoize'
 import memoizeOne from 'memoize-one'
@@ -31,6 +31,25 @@ type Exact<A, B> = (<T>() => T extends A ? 1 : 0) extends <T>() => T extends B
       : never
     : never
   : never
+
+export declare type IsAny<T, True, False = never> = true | false extends (
+  T extends never ? true : false
+)
+  ? True
+  : False
+
+export declare type IsUnknown<T, True, False = never> = unknown extends T
+  ? IsAny<T, False, True>
+  : False
+
+type Equals<T, U> = IsAny<
+  T,
+  never,
+  IsAny<U, never, [T] extends [U] ? ([U] extends [T] ? any : never) : never>
+>
+export function expectExactType<T>(t: T) {
+  return <U extends Equals<T, U>>(u: U) => {}
+}
 
 interface StateA {
   a: number
@@ -129,8 +148,6 @@ function testSelectorAsCombiner() {
 
 type Component<P> = (props: P) => any
 
-// TODO Figure out why this is failing
-// @ts-ignore
 declare function connect<S, P, R>(
   selector: ParametricSelector<S, P, R>
 ): (component: Component<P & R>) => Component<P>
@@ -272,6 +289,13 @@ function testParametricSelector() {
     }
   )
 
+  const res1 = selector1({
+    testString: 'a',
+    testNumber: 42,
+    testBoolean: true,
+    testStringArray: ['b', 'c']
+  })
+
   const selector = createSelector(
     (state: State) => state.foo,
     (state: State, props: Props) => props.bar,
@@ -306,7 +330,6 @@ function testParametricSelector() {
 
   selector2({ foo: 'fizz' }, { bar: 42 })
 
-  // TODO Should should error because two of the inputs have conflicting types for arg 2
   const selector3 = createSelector(
     (s: State) => s.foo,
     (s: State, x: string) => x,
@@ -327,8 +350,6 @@ function testParametricSelector() {
     }
   )
 
-  // TODO Union params are broken
-  // @ts-ignore
   selector4({ foo: 'fizz' }, 42)
 }
 
@@ -951,20 +972,6 @@ function issue492() {
     fooBarPropsSelector,
     (foo, fooBar) => fooBar
   )
-
-  /*
-  expectType<
-    OutputSelector<
-      {},
-      {
-        foo: string
-        bar: string
-      },
-      string[],
-      (res1: string, res2: string[]) => string[]
-    >
-  >(combinedSelector)
-  */
 }
 
 function customMemoizationOptionTypes() {
@@ -1129,13 +1136,6 @@ type State = GetStateFromSelectors<SelectorArray29>
   const input1 = (state: string) => 1
   const input2 = (state: number) => 2
 
-  type I1 = typeof input1
-  type I2 = typeof input2
-
-  type EP1 = ExtractParams<[I1, I2]>
-  type MP1 = MergeParameters<[I1, I2]>
-  type S1 = GetStateFromSelectors<[I1, I2]>
-
   const selector = createSelector(input1, input2, (...args) => 0)
   // @ts-expect-error
   selector('foo')
@@ -1209,7 +1209,10 @@ function deepNesting() {
   const selector5 = createSelector(selector4, s => s)
   const selector6 = createSelector(selector5, s => s)
   const selector7 = createSelector(selector6, s => s)
-  const selector8: Selector<State, string> = createSelector(selector7, s => s)
+  const selector8: Selector<State, string, never> = createSelector(
+    selector7,
+    s => s
+  )
   const selector9 = createSelector(selector8, s => s)
   const selector10 = createSelector(selector9, s => s)
   const selector11 = createSelector(selector10, s => s)
@@ -1234,7 +1237,8 @@ function deepNesting() {
   const selector25 = createSelector(selector24, s => s)
   const selector26: Selector<
     typeof selector25 extends Selector<infer S> ? S : never,
-    ReturnType<typeof selector25>
+    ReturnType<typeof selector25>,
+    never
   > = createSelector(selector25, s => s)
   const selector27 = createSelector(selector26, s => s)
   const selector28 = createSelector(selector27, s => s)
@@ -1405,4 +1409,136 @@ function handleNestedIncompatTypes() {
 
   // @ts-expect-error
   testSelector2({ a: 42 }, { b: { c: 99 } })
+}
+
+function issue554a() {
+  interface State {
+    foo: string
+    bar: number
+  }
+
+  const initialState: State = {
+    foo: 'This is Foo',
+    bar: 1
+  }
+
+  const getFoo = (state: State) => {
+    return state.foo
+  }
+  getFoo(initialState)
+
+  const getBar = (state: State) => {
+    return state.bar
+  }
+  getBar(initialState)
+
+  const simple = createSelector(getFoo, getBar, (foo, bar) => {
+    return `${foo} => ${bar}`
+  })
+  simple(initialState)
+
+  // Input selectors with positional args
+  const firstInput = (_: State, first: string) => first
+  // Skip the first arg and return only the second.
+  const secondInput = (_: State, _first: string, second: number) => second
+
+  const complexOne = createSelector(
+    getFoo,
+    getBar,
+    firstInput,
+    (foo, bar, first) => {
+      return `${foo} => ${bar} || ${first}`
+    }
+  )
+  complexOne(initialState, 'first')
+
+  const complexTwo = createSelector(
+    getFoo,
+    getBar,
+    firstInput,
+    secondInput,
+    (foo, bar, first, second) => {
+      return `${foo} => ${bar} || ${first} and ${second}`
+    }
+  )
+  // TS should complain since 'second' should be `number`
+  // @ts-expect-error
+  complexTwo(initialState, 'first', 'second')
+}
+
+function issue554b() {
+  interface State {
+    counter1: number
+    counter2: number
+  }
+
+  const selectTest = createSelector(
+    (state: State, numberA?: number) => numberA,
+    (state: State) => state.counter2,
+    (numberA, counter2) => (numberA ? numberA + counter2 : counter2)
+  )
+
+  type selectTestParams = Parameters<typeof selectTest>
+  const p1: selectTestParams = [{ counter1: 1, counter2: 2 }, 42]
+  expectExactType<[State, number?]>(p1)
+
+  const result = selectTest({ counter1: 1, counter2: 2 }, 42)
+}
+
+function issue554c() {
+  interface State {
+    counter1: number
+    counter2: number
+  }
+
+  const selectTest = createSelector(
+    (state: State, numberA?: number) => numberA, // `numberA` is optional
+    (state: State) => state.counter2,
+    (numberA, counter2) => (numberA ? numberA + counter2 : counter2)
+  )
+
+  // @ts-expect-error
+  const value = selectTest({ counter1: 0, counter2: 0 }, 'what?')
+
+  const selectTest2 = createSelector(
+    (state: State, numberA: number) => numberA, // `numberA` is not optional anymore
+    (state: State) => state.counter2,
+    (numberA, counter2) => (numberA ? numberA + counter2 : counter2)
+  )
+
+  // @ts-expect-error
+  const value2 = selectTest2({ counter1: 0, counter2: 0 }, 'what?')
+}
+
+function issue555() {
+  type IReduxState = {
+    ui: {
+      x: string
+      y: string
+    }
+  }
+
+  const someSelector1 = createSelector(
+    (state: IReduxState, param: 'x' | 'y' | undefined) =>
+      param !== undefined ? state.ui[param] : null,
+    (a: string | null) => a
+  )
+
+  const someSelector2 = createSelector(
+    (state: IReduxState, param?: 'x' | 'y') =>
+      param !== undefined ? state.ui[param] : null,
+    (a: string | null) => a
+  )
+
+  const someSelector3 = createSelector(
+    (state: IReduxState, param: 'x' | 'y' | null) =>
+      param !== null ? state.ui[param] : null,
+    (a: string | null) => a
+  )
+
+  const state = { ui: { x: '1', y: '2' } }
+
+  const selectorResult1 = someSelector1(state, undefined)
+  const selectorResult2 = someSelector2(state, undefined)
+  const selectorResult3 = someSelector3(state, null)
 }
