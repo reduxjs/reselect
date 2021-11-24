@@ -1,3 +1,5 @@
+/* eslint-disable no-use-before-define */
+
 import {
   createSelector,
   defaultMemoize,
@@ -9,8 +11,6 @@ import {
   SelectorResultArray,
   Selector
 } from '../src'
-
-import type { ExtractParams, MergeParameters } from '../src/types'
 
 import microMemoize from 'micro-memoize'
 import memoizeOne from 'memoize-one'
@@ -31,6 +31,25 @@ type Exact<A, B> = (<T>() => T extends A ? 1 : 0) extends <T>() => T extends B
       : never
     : never
   : never
+
+export declare type IsAny<T, True, False = never> = true | false extends (
+  T extends never ? true : false
+)
+  ? True
+  : False
+
+export declare type IsUnknown<T, True, False = never> = unknown extends T
+  ? IsAny<T, False, True>
+  : False
+
+type Equals<T, U> = IsAny<
+  T,
+  never,
+  IsAny<U, never, [T] extends [U] ? ([U] extends [T] ? any : never) : never>
+>
+export function expectExactType<T>(t: T) {
+  return <U extends Equals<T, U>>(u: U) => {}
+}
 
 interface StateA {
   a: number
@@ -951,20 +970,6 @@ function issue492() {
     fooBarPropsSelector,
     (foo, fooBar) => fooBar
   )
-
-  /*
-  expectType<
-    OutputSelector<
-      {},
-      {
-        foo: string
-        bar: string
-      },
-      string[],
-      (res1: string, res2: string[]) => string[]
-    >
-  >(combinedSelector)
-  */
 }
 
 function customMemoizationOptionTypes() {
@@ -1128,13 +1133,6 @@ type State = GetStateFromSelectors<SelectorArray29>
 {
   const input1 = (state: string) => 1
   const input2 = (state: number) => 2
-
-  type I1 = typeof input1
-  type I2 = typeof input2
-
-  type EP1 = ExtractParams<[I1, I2]>
-  type MP1 = MergeParameters<[I1, I2]>
-  type S1 = GetStateFromSelectors<[I1, I2]>
 
   const selector = createSelector(input1, input2, (...args) => 0)
   // @ts-expect-error
@@ -1405,4 +1403,140 @@ function handleNestedIncompatTypes() {
 
   // @ts-expect-error
   testSelector2({ a: 42 }, { b: { c: 99 } })
+}
+
+function issue554a() {
+  interface State {
+    foo: string
+    bar: number
+  }
+
+  const initialState: State = {
+    foo: 'This is Foo',
+    bar: 1
+  }
+
+  const getFoo = (state: State) => {
+    return state.foo
+  }
+  getFoo(initialState)
+
+  const getBar = (state: State) => {
+    return state.bar
+  }
+  getBar(initialState)
+
+  const simple = createSelector(getFoo, getBar, (foo, bar) => {
+    return `${foo} => ${bar}`
+  })
+  simple(initialState)
+
+  // Input selectors with positional args
+  const firstInput = (_: State, first: string) => first
+  // Skip the first arg and return only the second.
+  const secondInput = (_: State, _first: string, second: number) => second
+
+  const complexOne = createSelector(
+    getFoo,
+    getBar,
+    firstInput,
+    (foo, bar, first) => {
+      return `${foo} => ${bar} || ${first}`
+    }
+  )
+  complexOne(initialState, 'first')
+
+  const complexTwo = createSelector(
+    getFoo,
+    getBar,
+    firstInput,
+    secondInput,
+    (foo, bar, first, second) => {
+      return `${foo} => ${bar} || ${first} and ${second}`
+    }
+  )
+  // TS should complain since 'second' should be `number`
+  // @ts-expect-error
+  complexTwo(initialState, 'first', 'second')
+}
+
+function issue554b() {
+  interface State {
+    counter1: number
+    counter2: number
+  }
+
+  const selectTest = createSelector(
+    (state: State, numberA?: number) => numberA,
+    (state: State) => state.counter2,
+    (numberA, counter2) => (numberA ? numberA + counter2 : counter2)
+  )
+
+  type selectTestParams = Parameters<typeof selectTest>
+  const p1: selectTestParams = [{ counter1: 1, counter2: 2 }, 42]
+  expectExactType<[State, number?]>(p1)
+
+  const result = selectTest({ counter1: 1, counter2: 2 }, 42)
+}
+
+function issue554c() {
+  interface State {
+    counter1: number
+    counter2: number
+  }
+
+  // This generates incorrect typings
+  const selectTest = createSelector(
+    (state: State, numberA?: number) => numberA, // `numberA` is optional
+    (state: State) => state.counter2,
+    (numberA, counter2) => (numberA ? numberA + counter2 : counter2)
+  )
+
+  // This should generate a compilation error due to type mismatch, but it doesn't
+  // @ts-expect-error
+  const value = selectTest({ counter1: 0, counter2: 0 }, 'what?')
+
+  // This generates correct typings
+  const selectTest2 = createSelector(
+    (state: State, numberA: number) => numberA, // `numberA` is not optional anymore
+    (state: State) => state.counter2,
+    (numberA, counter2) => (numberA ? numberA + counter2 : counter2)
+  )
+
+  // This generates a compilation error
+  // @ts-expect-error
+  const value2 = selectTest2({ counter1: 0, counter2: 0 }, 'what?')
+}
+
+function issue555() {
+  type IReduxState = {
+    ui: {
+      x: string
+      y: string
+    }
+  }
+
+  const someSelector1 = createSelector(
+    (state: IReduxState, param: 'x' | 'y' | undefined) =>
+      param !== undefined ? state.ui[param] : null,
+    (a: string | null) => a
+  )
+
+  const someSelector2 = createSelector(
+    (state: IReduxState, param?: 'x' | 'y') =>
+      param !== undefined ? state.ui[param] : null,
+    (a: string | null) => a
+  )
+
+  const someSelector3 = createSelector(
+    (state: IReduxState, param: 'x' | 'y' | null) =>
+      param !== null ? state.ui[param] : null,
+    (a: string | null) => a
+  )
+
+  const state = { ui: { x: '1', y: '2' } }
+
+  const selectorResult1 = someSelector1(state, undefined)
+  const selectorResult2 = someSelector2(state, undefined)
+  const selectorResult3 = someSelector3(state, null)
 }

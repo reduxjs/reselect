@@ -224,13 +224,26 @@ export type LongestArray<S extends readonly any[][]> =
     ? S[0]
     : never
 
-/** Recursive type for intersecting together all items in a tuple */
-type IntersectAll<T extends any[]> = IsTuple<T> extends '0'
+/** Recursive type for intersecting together all items in a tuple, to determine
+ *  the final parameter type at a given argument index in the generated selector. */
+export type IntersectAll<T extends any[]> = IsTuple<T> extends '0'
   ? T[0]
   : _IntersectAll<T>
 
+type IfJustNullish<T, True, False> = [T] extends [undefined | null]
+  ? True
+  : False
+
+/** Intersect a pair of types together, for use in parameter type calculation.
+ * This is made much more complex because we need to correctly handle cases
+ * where a function has fewer parameters and the type is `undefined`, as well as
+ * optional params or params that have `null` or `undefined` as part of a union.
+ *
+ * If the next type by itself is `null` or `undefined`, we exclude it and return
+ * the other type. Otherwise, intersect them together.
+ */
 type _IntersectAll<T, R = unknown> = T extends [infer First, ...infer Rest]
-  ? _IntersectAll<Rest, undefined extends First ? R : R & First>
+  ? _IntersectAll<Rest, IfJustNullish<First, R, R & First>>
   : R
 
 /*
