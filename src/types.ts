@@ -92,10 +92,7 @@ export type GetStateFromSelectors<S extends SelectorArray> =
 export type GetParamsFromSelectors<
   S extends SelectorArray,
   RemainingItems extends readonly unknown[] = Tail<MergeParameters<S>>
-  // This seems to default to an array containing an empty object, which is
-  // not meaningful and causes problems with the `Selector/OutputSelector` types.
-  // Force it to have a meaningful value, or cancel it out.
-> = RemainingItems extends [EmptyObject] ? never : RemainingItems
+> = RemainingItems
 
 /** Given a set of input selectors, extracts the intersected parameters to determine
  * what values can actually be passed to all of the input selectors at once

@@ -610,9 +610,8 @@ function testOptionalArgumentsConflicting() {
     (str) => str
   )
 
-  // @ts-expect-error This should be an error because prefix is required, although it is any
+  // @ts-expect-error
   selector2({} as State)
-  // @ts-expect-error Ideally this is not an error, so this expect-error is a bug
   selector2({} as State, 'blach')
 
   const selector3 = createSelector(
