@@ -164,8 +164,12 @@ declare function connect<S, P, R>(
   selector: ParametricSelector<S, P, R>
 ): (component: Component<P & R>) => Component<P>
 
+declare function connect2<S, P, R>(
+  selector: Selector<S, P>
+): (component: Component<P & R>) => Component<P>
+
 function testConnect() {
-  connect(
+  connect2(
     createSelector(
       (state: { foo: string }) => state.foo,
       foo => ({ foo })
@@ -578,6 +582,46 @@ function testArrayArgument() {
     // @ts-expect-error
     ret.foo9
   }
+}
+
+function testOptionalArgumentsConflicting() {
+  type State = { foo: string; bar: number; baz: boolean }
+
+  const selector = createSelector(
+    (state: State) => state.baz,
+    (state: State, arg: string) => arg,
+    (state: State, arg: number) => arg,
+    (baz) => {
+      const baz1: boolean = baz
+      // @ts-expect-error
+      const baz2: number = baz
+    }
+  )
+
+  // @ts-expect-error
+  selector({} as State)
+  // @ts-expect-error
+  selector({} as State, 'string')
+  // @ts-expect-error
+  selector({} as State, 1)
+
+  const selector2 = createSelector(
+    (state: State, prefix: any) => prefix + state.foo,
+    (str) => str
+  )
+
+  // @ts-expect-error This should be an error because prefix is required, although it is any
+  selector2({} as State)
+  // @ts-expect-error Ideally this is not an error, so this expect-error is a bug
+  selector2({} as State, 'blach')
+
+  const selector3 = createSelector(
+    (state: State, prefix?: any) => prefix + state.foo,
+    (str) => str
+  )
+
+  selector3({} as State)
+  selector3({} as State, 'blach')
 }
 
 function testDefaultMemoize() {

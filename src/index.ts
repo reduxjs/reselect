@@ -167,16 +167,16 @@ export interface CreateSelectorFunction<
   >
 > {
   /** Input selectors as separate inline arguments */
-  <Selectors extends SelectorArray, Result>(
+  <Selectors extends SelectorArray, Result, Params extends readonly any[] = GetParamsFromSelectors<Selectors>>(
     ...items: [
       ...Selectors,
       (...args: SelectorResultArray<Selectors>) => Result
     ]
-  ): OutputSelector<
+  ): Params extends [never] ? never : OutputSelector<
     Selectors,
     Result,
     (...args: SelectorResultArray<Selectors>) => Result & Keys,
-    GetParamsFromSelectors<Selectors>
+    Params
   > &
     Keys
 
