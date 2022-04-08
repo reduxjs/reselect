@@ -676,6 +676,17 @@ function testOptionalArgumentsConflicting() {
   selector7({} as State, 'blach')
   // @ts-expect-error wrong type
   selector7({} as State, 1)
+
+  const selector8 = createSelector(
+    (state: State, prefix: unknown) => prefix,
+    (str) => str
+  )
+
+  // @ts-expect-error needs a argument
+  selector8({} as State)
+  // allowed to pass anything as the type is unknown
+  selector8({} as State, 'blach')
+  selector8({} as State, 2)
 }
 
 function testDefaultMemoize() {
