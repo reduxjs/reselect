@@ -1554,3 +1554,9 @@ function issue555() {
   const selectorResult2 = someSelector2(state, undefined)
   const selectorResult3 = someSelector3(state, null)
 }
+
+function issue571() {
+  const createBarSelector = <S>(
+    getFoo: Selector<S, number, never>
+  ): Selector<S, string, never> => createSelector(getFoo, (_foo) => 'bar')
+}
