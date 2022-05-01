@@ -123,29 +123,30 @@ export type MergeParameters<
   //    Note that this is actually the _nested_ data we wanted out of the transpose step,
   //    so it has all the right pieces we need.
   LongestParamsArray extends readonly any[] = LongestArray<TuplifiedArrays>
-> =
-  // After all that preparation work, we can actually do parameter extraction.
-  // These steps work somewhat inside out (jump ahead to the middle):
-  // 11) Finally, after all that, run a shallow expansion on the values to make the user-visible
-  //     field details more readable when viewing the selector's type in a hover box.
-  ExpandItems<
-    // 10) Tuples can have field names attached, and it seems to work better to remove those
-    RemoveNames<{
-      // 5) We know the longest params array has N args. Loop over the indices of that array.
-      // 6) For each index, do a check to ensure that we're _only_ checking numeric indices,
-      //    not any field names for array functions like `slice()`
-      [index in keyof LongestParamsArray]: LongestParamsArray[index] extends LongestParamsArray[number]
-        ? // 9) Any object types that were intersected may have had
-          IgnoreInvalidIntersections<
-            // 8) Then, intersect all of the parameters for this arg together.
-            IntersectAll<
-              // 7) Since this is a _nested_ array, extract the right sub-array for this index
-              LongestParamsArray[index]
+> = T extends [any]
+  ? Parameters<T[0]>
+  : // After all that preparation work, we can actually do parameter extraction.
+    // These steps work somewhat inside out (jump ahead to the middle):
+    // 11) Finally, after all that, run a shallow expansion on the values to make the user-visible
+    //     field details more readable when viewing the selector's type in a hover box.
+    ExpandItems<
+      // 10) Tuples can have field names attached, and it seems to work better to remove those
+      RemoveNames<{
+        // 5) We know the longest params array has N args. Loop over the indices of that array.
+        // 6) For each index, do a check to ensure that we're _only_ checking numeric indices,
+        //    not any field names for array functions like `slice()`
+        [index in keyof LongestParamsArray]: LongestParamsArray[index] extends LongestParamsArray[number]
+          ? // 9) Any object types that were intersected may have had
+            IgnoreInvalidIntersections<
+              // 8) Then, intersect all of the parameters for this arg together.
+              IntersectAll<
+                // 7) Since this is a _nested_ array, extract the right sub-array for this index
+                LongestParamsArray[index]
+              >
             >
-          >
-        : never
-    }>
-  >
+          : never
+      }>
+    >
 
 /*
  *
