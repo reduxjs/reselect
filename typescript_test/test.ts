@@ -580,6 +580,115 @@ function testArrayArgument() {
   }
 }
 
+function testOptionalArgumentsConflicting() {
+  type State = { foo: string; bar: number; baz: boolean }
+
+  const selector = createSelector(
+    (state: State) => state.baz,
+    (state: State, arg: string) => arg,
+    (state: State, arg: number) => arg,
+    (baz) => {
+      const baz1: boolean = baz
+      // @ts-expect-error
+      const baz2: number = baz
+    }
+  )
+
+  // @ts-expect-error the selector above has inconsistent conflicting arguments so usage should error
+  selector({} as State)
+  // @ts-expect-error
+  selector({} as State, 'string')
+  // @ts-expect-error
+  selector({} as State, 1)
+
+  const selector2 = createSelector(
+    (state: State, prefix: any) => prefix + state.foo,
+    (str) => str
+  )
+
+  // @ts-expect-error here we require one argument which can be anything so error if there are no arguments
+  selector2({} as State)
+  // no error passing anything in
+  selector2({} as State, 'blach')
+  selector2({} as State, 1)
+
+  // here the argument is optional so it should be possible to omit the argument or pass anything
+  const selector3 = createSelector(
+    (state: State, prefix?: any) => prefix + state.foo,
+    (str) => str
+  )
+
+  selector3({} as State)
+  selector3({} as State, 1)
+  selector3({} as State, 'blach')
+
+  // https://github.com/reduxjs/reselect/issues/563
+  const selector4 = createSelector(
+    (state: State, prefix: string, suffix: any) => prefix + state.foo + String(suffix),
+    (str) => str
+  )
+
+  // @ts-expect-error
+  selector4({} as State)
+  // @ts-expect-error
+  selector4({} as State, 'blach')
+  selector4({} as State, 'blach', 4)
+
+  // as above but a unknown 2nd argument
+  const selector5 = createSelector(
+    (state: State, prefix: string, suffix: unknown) => prefix + state.foo + String(suffix),
+    (str) => str
+  )
+
+  // @ts-expect-error
+  selector5({} as State)
+  // @ts-expect-error
+  selector5({} as State, 'blach')
+  selector5({} as State, 'blach', 4)
+
+  // @ts-expect-error It would be great to delete this, it is not correct.
+  // Due to what must be a TS bug? if the default parameter is used, we lose the type for prefix
+  // and it is impossible to type the selector without typing prefix
+  const selector6 = createSelector(
+    (state: State, prefix = '') => prefix + state.foo,
+    (str: string) => str
+  )
+
+  // because the suppressed error above, selector6 has broken typings and doesn't allow a passed parameter
+  selector6({} as State)
+  // @ts-expect-error would be great if we can delete this, it should not error
+  selector6({} as State, 'blach')
+  // @ts-expect-error wrong type
+  selector6({} as State, 1)
+
+
+  // this is an example fixing selector6. We have to add a un-necessary typing in and magically the types are correct
+  const selector7 = createSelector(
+    (
+      state: State,
+      // eslint-disable-next-line @typescript-eslint/no-inferrable-types
+      prefix: string = 'a'
+    ) => prefix + state.foo,
+    (str: string) => str
+  )
+
+  selector7({} as State)
+  selector7({} as State, 'blach')
+  // @ts-expect-error wrong type
+  selector7({} as State, 1)
+
+  const selector8 = createSelector(
+    (state: State, prefix: unknown) => prefix,
+    (str) => str
+  )
+
+  // @ts-expect-error needs a argument
+  selector8({} as State)
+  // allowed to pass anything as the type is unknown
+  selector8({} as State, 'blach')
+  selector8({} as State, 2)
+}
+
 function testDefaultMemoize() {
   const func = (a: string) => +a
 
