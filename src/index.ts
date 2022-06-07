@@ -108,7 +108,7 @@ export function createSelectorCreator<
     const dependencies = getDependencies(funcs)
 
     const memoizedResultFunc = memoize(
-      function () {
+      function recomputationWrapper() {
         recomputations++
         // apply arguments instead of spreading for performance.
         return resultFunc!.apply(null, arguments)
@@ -117,7 +117,7 @@ export function createSelectorCreator<
     )
 
     // If a selector is called with the exact same arguments we don't need to traverse our dependencies again.
-    const selector = memoize(function () {
+    const selector = memoize(function dependenciesChecker() {
       const params = []
       const length = dependencies.length
 
