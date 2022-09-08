@@ -46,9 +46,13 @@ function getDependencies(funcs: unknown[]) {
       )
       .join(', ')
 
-    throw new Error(
-      `createSelector expects all input-selectors to be functions, but received the following types: [${dependencyTypes}]`
-    )
+    let error = `createSelector expects all input-selectors to be functions, but received the following types: [${dependencyTypes}].`
+    if (dependencyTypes.includes('undefined')) {
+      error +=
+        'This is likely the result of a circulate dependency in your selector files.'
+    }
+
+    throw new Error(error)
   }
 
   return dependencies as SelectorArray
