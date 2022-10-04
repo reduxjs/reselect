@@ -88,6 +88,7 @@ console.log(selectTotal(exampleState)) // { total: 2.322 }
     - [Customize `equalityCheck` for `defaultMemoize`](#customize-equalitycheck-for-defaultmemoize)
     - [Use memoize function from Lodash for an unbounded cache](#use-memoize-function-from-lodash-for-an-unbounded-cache)
   - [createStructuredSelector({inputSelectors}, selectorCreator = createSelector)](#createstructuredselectorinputselectors-selectorcreator--createselector)
+  - [`subscribeToErrors`](#subscribetoerrorsonerror)
 - [FAQ](#faq)
   - [Q: Why isn’t my selector recomputing when the input state changes?](#q-why-isnt-my-selector-recomputing-when-the-input-state-changes)
   - [Q: Why is my selector recomputing when the input state stays the same?](#q-why-is-my-selector-recomputing-when-the-input-state-stays-the-same)
@@ -597,6 +598,35 @@ Otherwise, selectors created using `createSelector` only have a cache size of on
 
 - Create a factory function which returns a new selector for each instance of the component. This can be called in a React component inside the `useMemo` hook to generate a unique selector instance per component.
 - Create a custom selector with a cache size greater than one using `createSelectorCreator`
+
+### subscribeToErrors(onError)
+
+`subscribeToErrors` is a convenience function to make it easiser to find issues
+with your result-functions (combinators).
+
+`onError` is a callback method that will be invoked whenever one of the
+result-functions throws an error. It takes the following parameters:
+
+- `error`: The Error that was thrown.
+- `result-function`: The result-function that crashed.
+- `parameters`: An array with the parameters that were passed to the function that crashed.
+- `dependencies`: An array with the dependecy functions of the crashed combinator.
+
+`subscribeToErrors` returns an unsubscribe function that can be invoked if
+you want your 'listener' function to stop receiving 'onError' notifications.
+
+```js
+import { subscribeToErrors } from 'reselect';
+if (DEV) {
+  subscribeToErrors((error, combinator, arguments, dependencies) => {
+    console.log('A combinator just crashed.');
+    console.log('The error message is', error.message);
+    console.log('The code of the combinator function that crashed is', combinator.toString());
+    console.log('The arguments that the combinator received were', arguments);
+    console.log('The code of its dependencies is:', dependencies.map(fn => fn.toString()).join('\n\n'));
+  });
+}
+```
 
 ### Q: Are there TypeScript Typings?
 

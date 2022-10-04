@@ -30,6 +30,8 @@ import {
   DefaultMemoizeOptions
 } from './defaultMemoize'
 
+import * as errorSubscriptions from './error_subscriptions'
+
 export { defaultMemoize, defaultEqualityCheck }
 
 export type { DefaultMemoizeOptions }
@@ -110,8 +112,13 @@ export function createSelectorCreator<
     const memoizedResultFunc = memoize(
       function recomputationWrapper() {
         recomputations++
-        // apply arguments instead of spreading for performance.
-        return resultFunc!.apply(null, arguments)
+        try {
+          // apply arguments instead of spreading for performance.
+          return resultFunc!.apply(null, arguments)
+        } catch (e: any) {
+          errorSubscriptions.emitError(e, resultFunc, arguments, dependencies)
+          throw e
+        }
       } as F,
       ...finalMemoizeOptions
     )
@@ -229,8 +236,8 @@ export interface StructuredSelectorCreator {
     state: Head<SelectorParams>,
     ...params: Tail<SelectorParams>
   ) => {
-    [Key in keyof SelectorMap]: ReturnType<SelectorMap[Key]>
-  }
+        [Key in keyof SelectorMap]: ReturnType<SelectorMap[Key]>
+      }
 
   <State, Result = State>(
     selectors: { [K in keyof Result]: Selector<State, Result[K], never> },
@@ -246,7 +253,7 @@ export const createStructuredSelector = ((
   if (typeof selectors !== 'object') {
     throw new Error(
       'createStructuredSelector expects first argument to be an object ' +
-        `where each property is a selector, instead received a ${typeof selectors}`
+      `where each property is a selector, instead received a ${typeof selectors}`
     )
   }
   const objectKeys = Object.keys(selectors)
@@ -262,3 +269,5 @@ export const createStructuredSelector = ((
   )
   return resultSelector
 }) as unknown as StructuredSelectorCreator
+
+export const subscribeToErrors = errorSubscriptions.subscribe

@@ -1901,6 +1901,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/chai@npm:^4.3.3":
+  version: 4.3.3
+  resolution: "@types/chai@npm:4.3.3"
+  checksum: 20cd094753e137cfc35939cae7f0ed78ecda7861e5c94704efab6979b9121a63807e9b631bdcf3a2792d6c6dba44050b13387262f9e63ebb040741c01c345f0a
+  languageName: node
+  linkType: hard
+
 "@types/estree@npm:*":
   version: 0.0.50
   resolution: "@types/estree@npm:0.0.50"
@@ -1980,6 +1987,13 @@ __metadata:
   version: 4.14.177
   resolution: "@types/lodash@npm:4.14.177"
   checksum: 00f9eb300ed5219cfbabb3448d4a71744895edad60dcfda9f028c0808a50eb6ad1ca9f673b56a85f85668a4ea54b9870643625468a747039c435643e52253a75
+  languageName: node
+  linkType: hard
+
+"@types/mocha@npm:^10.0.0":
+  version: 10.0.0
+  resolution: "@types/mocha@npm:10.0.0"
+  checksum: 69e3896a63ec93374e22afd03fdea4c2f31d609d6ea111c8403508ede90da9dc0140c7bb2edff8404114d9d980308e104e4236324bf6afac1410b2cfe35f98c6
   languageName: node
   linkType: hard
 
@@ -7068,8 +7082,10 @@ __metadata:
     "@rollup/plugin-commonjs": ^21.0.1
     "@rollup/plugin-node-resolve": ^13.0.6
     "@rollup/plugin-replace": ^3.0.0
+    "@types/chai": ^4.3.3
     "@types/jest": ^27.0.2
     "@types/lodash": ^4.14.175
+    "@types/mocha": ^10.0.0
     "@typescript-eslint/eslint-plugin": 5.1.0
     "@typescript-eslint/eslint-plugin-tslint": 5.1.0
     "@typescript-eslint/parser": 5.1.0
