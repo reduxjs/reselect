@@ -646,21 +646,20 @@ function testOptionalArgumentsConflicting() {
   selector5({} as State, 'blach')
   selector5({} as State, 'blach', 4)
 
-  // @ts-expect-error It would be great to delete this, it is not correct.
-  // Due to what must be a TS bug? if the default parameter is used, we lose the type for prefix
-  // and it is impossible to type the selector without typing prefix
-  const selector6 = createSelector(
-    (state: State, prefix = '') => prefix + state.foo,
-    (str: string) => str
-  )
+  // // @ts-expect-error It would be great to delete this, it is not correct.
+  // // Due to what must be a TS bug? if the default parameter is used, we lose the type for prefix
+  // // and it is impossible to type the selector without typing prefix
+  // const selector6 = createSelector(
+  //   (state: State, prefix = '') => prefix + state.foo,
+  //   (str: string) => str
+  // )
 
-  // because the suppressed error above, selector6 has broken typings and doesn't allow a passed parameter
-  selector6({} as State)
-  // @ts-expect-error would be great if we can delete this, it should not error
-  selector6({} as State, 'blach')
-  // @ts-expect-error wrong type
-  selector6({} as State, 1)
-
+  // // because the suppressed error above, selector6 has broken typings and doesn't allow a passed parameter
+  // selector6({} as State)
+  // // @ts-expect-error would be great if we can delete this, it should not error
+  // selector6({} as State, 'blach')
+  // // @ts-expect-error wrong type
+  // selector6({} as State, 1)
 
   // this is an example fixing selector6. We have to add a un-necessary typing in and magically the types are correct
   const selector7 = createSelector(
