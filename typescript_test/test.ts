@@ -10,7 +10,7 @@ import {
   OutputSelector,
   SelectorResultArray,
   Selector
-} from '../src'
+} from 'reselect'
 
 import microMemoize from 'micro-memoize'
 import memoizeOne from 'memoize-one'
