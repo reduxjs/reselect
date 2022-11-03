@@ -15,6 +15,7 @@ import type {
 export type {
   Selector,
   GetParamsFromSelectors,
+  GetStateFromSelectors,
   OutputSelector,
   EqualityFn,
   SelectorArray,
