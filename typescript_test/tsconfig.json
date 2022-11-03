@@ -7,7 +7,7 @@
     "noEmit": true,
     "skipLibCheck": true,
     // "explainFiles": true,
-    // "traceResolution": true,
+    "traceResolution": true,
     "paths": {
       "reselect": ["../src/index"]
     }
