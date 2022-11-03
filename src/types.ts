@@ -1,5 +1,5 @@
-import type { MergeParameters } from './versionedTypes/index'
-export type { MergeParameters } from './versionedTypes/index'
+import type { MergeParameters } from './versionedTypes'
+export type { MergeParameters } from './versionedTypes'
 
 /*
  *

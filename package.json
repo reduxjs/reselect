@@ -26,7 +26,7 @@
   },
   "scripts": {
     "build:commonjs": "cross-env BABEL_ENV=commonjs babel src/*.ts --ignore src/types.ts --extensions .ts --out-dir lib ",
-    "build:es": "babel src/*.ts --ignore src/types.ts --extensions .ts --out-dir es",
+    "build:es": "babel src/*.ts --ignore src/types.ts --extensions .ts --out-dir es && cp src/versionedTypes/package.dist.json es/versionedTypes/package.json",
     "build:umd": "cross-env NODE_ENV=development rollup -c -o dist/reselect.js",
     "build:umd:min": "cross-env NODE_ENV=production rollup -c -o dist/reselect.min.js",
     "build:types": "tsc",
