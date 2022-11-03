@@ -10,7 +10,7 @@
   "typesVersions": {
     "<4.2": {
       "*": [
-        "./src/typesVersions/ts4.1/index.d.ts"
+        "./src/legacyTypes/ts4.1/index.d.ts"
       ]
     }
   },
