@@ -65,6 +65,10 @@ jobs:
       - name: Install TypeScript ${{ matrix.ts }}
         run: yarn add typescript@${{ matrix.ts }}
 
+      - name: 'Remove file that only builds with TS 4.7+'
+        if: ${{ matrix.ts < 4.7 }}
+        run: rm src/versionedTypes/ts47-mergeParameters.ts
+
       - name: Pack
         run: yarn build && yarn pack
 
