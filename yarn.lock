@@ -7104,7 +7104,7 @@ __metadata:
     rollup-plugin-terser: ^7.0.2
     ts-jest: 27.0.7
     tslint: 6.1.3
-    typescript: ^4.4.0
+    typescript: rc
   languageName: unknown
   linkType: soft
 
@@ -8093,7 +8093,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^4.4.0, typescript@npm:~4.4.2":
+"typescript@npm:rc":
+  version: 4.9.2-rc
+  resolution: "typescript@npm:4.9.2-rc"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 0652e08b396d597a021d53c40f0827f4877e05cf5766670884967589bddc35b85a1be24c5d244e65f68bfca9a625615148ae81975791d99f368fde91bf7a653b
+  languageName: node
+  linkType: hard
+
+"typescript@npm:~4.4.2":
   version: 4.4.4
   resolution: "typescript@npm:4.4.4"
   bin:
@@ -8103,7 +8113,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@^4.4.0#~builtin<compat/typescript>, typescript@patch:typescript@~4.4.2#~builtin<compat/typescript>":
+"typescript@patch:typescript@rc#~builtin<compat/typescript>":
+  version: 4.9.2-rc
+  resolution: "typescript@patch:typescript@npm%3A4.9.2-rc#~builtin<compat/typescript>::version=4.9.2-rc&hash=ddd1e8"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 820dee5c194dbee466b59e3a80505ea3039d591d3f5031b847ac29760bfd24b193841d47747499454af1ca44287480ad3b7a5fa285fe31c5030112c689d45063
+  languageName: node
+  linkType: hard
+
+"typescript@patch:typescript@~4.4.2#~builtin<compat/typescript>":
   version: 4.4.4
   resolution: "typescript@patch:typescript@npm%3A4.4.4#~builtin<compat/typescript>::version=4.4.4&hash=ddd1e8"
   bin:
