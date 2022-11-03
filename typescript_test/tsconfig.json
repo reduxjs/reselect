@@ -4,7 +4,14 @@
     "strict": true,
     "target": "ES2015",
     "declaration": true,
-    "noEmit": true
+    "noEmit": true,
+    "skipLibCheck": true,
+    // "explainFiles": true,
+    // "traceResolution": true,
+    "paths": {
+      "reselect": ["../src/index"]
+    }
   },
-  "include": ["test.ts"]
+  "include": ["test.ts"],
+  
 }

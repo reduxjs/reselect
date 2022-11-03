@@ -1,4 +1,5 @@
 import type { MergeParameters } from './versionedTypes/index'
+export type { MergeParameters } from './versionedTypes/index'
 
 /*
  *
@@ -114,3 +115,70 @@ export type Tail<A> = A extends [any, ...infer Rest] ? Rest : never
 export type ExtractReturnType<T extends readonly UnknownFunction[]> = {
   [index in keyof T]: T[index] extends T[number] ? ReturnType<T[index]> : never
 }
+
+/** Utility type to infer the type of "all params of a function except the first", so we can determine what arguments a memoize function accepts */
+export type DropFirst<T extends unknown[]> = T extends [unknown, ...infer U]
+  ? U
+  : never
+
+/**
+ * Expand an item a single level, or recursively.
+ * Source: https://stackoverflow.com/a/69288824/62937
+ */
+export type Expand<T> = T extends (...args: infer A) => infer R
+  ? (...args: Expand<A>) => Expand<R>
+  : T extends infer O
+  ? { [K in keyof O]: O[K] }
+  : never
+
+/**
+ * Code to convert a union of values into a tuple.
+ * Source: https://stackoverflow.com/a/55128956/62937
+ */
+type Push<T extends any[], V> = [...T, V]
+
+type LastOf<T> = UnionToIntersection<
+  T extends any ? () => T : never
+> extends () => infer R
+  ? R
+  : never
+
+// TS4.1+
+export type TuplifyUnion<
+  T,
+  L = LastOf<T>,
+  N = [T] extends [never] ? true : false
+> = true extends N ? [] : Push<TuplifyUnion<Exclude<T, L>>, L>
+
+/**
+ * Converts "the values of an object" into a tuple, like a type-level `Object.values()`
+ * Source: https://stackoverflow.com/a/68695508/62937
+ */
+export type ObjValueTuple<
+  T,
+  KS extends any[] = TuplifyUnion<keyof T>,
+  R extends any[] = []
+> = KS extends [infer K, ...infer KT]
+  ? ObjValueTuple<T, KT, [...R, T[K & keyof T]]>
+  : R
+
+/** The infamous "convert a union type to an intersection type" hack
+ * Source: https://github.com/sindresorhus/type-fest/blob/main/source/union-to-intersection.d.ts
+ * Reference: https://github.com/microsoft/TypeScript/issues/29594
+ */
+export type UnionToIntersection<Union> =
+  // `extends unknown` is always going to be the case and is used to convert the
+  // `Union` into a [distributive conditional
+  // type](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-8.html#distributive-conditional-types).
+  (
+    Union extends unknown
+      ? // The union type is used as the only argument to a function since the union
+        // of function arguments is an intersection.
+        (distributedUnion: Union) => void
+      : // This won't happen.
+        never
+  ) extends // Infer the `Intersection` type since TypeScript represents the positional
+  // arguments of unions of functions as an intersection of the union.
+  (mergedIntersection: infer Intersection) => void
+    ? Intersection
+    : never
