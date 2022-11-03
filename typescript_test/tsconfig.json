@@ -9,7 +9,7 @@
     // "explainFiles": true,
     "traceResolution": true,
     "paths": {
-      "reselect": ["../src/index"]
+      "reselect": ["../src/index"]  // @remap-prod-remove-line
     }
   },
   "include": ["test.ts"],
