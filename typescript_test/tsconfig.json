@@ -4,7 +4,12 @@
     "strict": true,
     "target": "ES2015",
     "declaration": true,
-    "noEmit": true
+    "noEmit": true,
+    "skipLibCheck": true,
+    "paths": {
+      "reselect": ["../src/index"]  // @remap-prod-remove-line
+    }
   },
-  "include": ["test.ts"]
+  "include": ["test.ts"],
+  
 }

@@ -9,8 +9,10 @@ import {
   ParametricSelector,
   OutputSelector,
   SelectorResultArray,
-  Selector
-} from '../src'
+  Selector,
+  GetStateFromSelectors
+} from 'reselect'
+import { isEqual, groupBy } from 'lodash'
 
 import microMemoize from 'micro-memoize'
 import memoizeOne from 'memoize-one'
@@ -587,7 +589,7 @@ function testOptionalArgumentsConflicting() {
     (state: State) => state.baz,
     (state: State, arg: string) => arg,
     (state: State, arg: number) => arg,
-    (baz) => {
+    baz => {
       const baz1: boolean = baz
       // @ts-expect-error
       const baz2: number = baz
@@ -603,7 +605,7 @@ function testOptionalArgumentsConflicting() {
 
   const selector2 = createSelector(
     (state: State, prefix: any) => prefix + state.foo,
-    (str) => str
+    str => str
   )
 
   // @ts-expect-error here we require one argument which can be anything so error if there are no arguments
@@ -615,7 +617,7 @@ function testOptionalArgumentsConflicting() {
   // here the argument is optional so it should be possible to omit the argument or pass anything
   const selector3 = createSelector(
     (state: State, prefix?: any) => prefix + state.foo,
-    (str) => str
+    str => str
   )
 
   selector3({} as State)
@@ -624,8 +626,9 @@ function testOptionalArgumentsConflicting() {
 
   // https://github.com/reduxjs/reselect/issues/563
   const selector4 = createSelector(
-    (state: State, prefix: string, suffix: any) => prefix + state.foo + String(suffix),
-    (str) => str
+    (state: State, prefix: string, suffix: any) =>
+      prefix + state.foo + String(suffix),
+    str => str
   )
 
   // @ts-expect-error
@@ -636,8 +639,9 @@ function testOptionalArgumentsConflicting() {
 
   // as above but a unknown 2nd argument
   const selector5 = createSelector(
-    (state: State, prefix: string, suffix: unknown) => prefix + state.foo + String(suffix),
-    (str) => str
+    (state: State, prefix: string, suffix: unknown) =>
+      prefix + state.foo + String(suffix),
+    str => str
   )
 
   // @ts-expect-error
@@ -646,21 +650,21 @@ function testOptionalArgumentsConflicting() {
   selector5({} as State, 'blach')
   selector5({} as State, 'blach', 4)
 
-  // @ts-expect-error It would be great to delete this, it is not correct.
-  // Due to what must be a TS bug? if the default parameter is used, we lose the type for prefix
-  // and it is impossible to type the selector without typing prefix
-  const selector6 = createSelector(
-    (state: State, prefix = '') => prefix + state.foo,
-    (str: string) => str
-  )
+  // This next section is now obsolete with the changes in TS 4.9
+  // // @ts-expect-error It would be great to delete this, it is not correct.
+  // // Due to what must be a TS bug? if the default parameter is used, we lose the type for prefix
+  // // and it is impossible to type the selector without typing prefix
+  // const selector6 = createSelector(
+  //   (state: State, prefix = '') => prefix + state.foo,
+  //   (str: string) => str
+  // )
 
-  // because the suppressed error above, selector6 has broken typings and doesn't allow a passed parameter
-  selector6({} as State)
-  // @ts-expect-error would be great if we can delete this, it should not error
-  selector6({} as State, 'blach')
-  // @ts-expect-error wrong type
-  selector6({} as State, 1)
-
+  // // because the suppressed error above, selector6 has broken typings and doesn't allow a passed parameter
+  // selector6({} as State)
+  // // @ts-expect-error would be great if we can delete this, it should not error
+  // selector6({} as State, 'blach')
+  // // @ts-expect-error wrong type
+  // selector6({} as State, 1)
 
   // this is an example fixing selector6. We have to add a un-necessary typing in and magically the types are correct
   const selector7 = createSelector(
@@ -679,7 +683,7 @@ function testOptionalArgumentsConflicting() {
 
   const selector8 = createSelector(
     (state: State, prefix: unknown) => prefix,
-    (str) => str
+    str => str
   )
 
   // @ts-expect-error needs a argument
@@ -916,8 +920,6 @@ function multiArgMemoize<F extends (...args: any[]) => any>(
 }
 
 // #384: check for defaultMemoize
-import { isEqual, groupBy } from 'lodash'
-import { GetStateFromSelectors } from '../src/types'
 
 {
   interface Transaction {
