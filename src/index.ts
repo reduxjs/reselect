@@ -176,8 +176,9 @@ export interface CreateSelectorFunction<
   ): OutputSelector<
     Selectors,
     Result,
-    (...args: SelectorResultArray<Selectors>) => Result & Keys,
-    GetParamsFromSelectors<Selectors>
+    (...args: SelectorResultArray<Selectors>) => Result,
+    GetParamsFromSelectors<Selectors>,
+    Keys
   > &
     Keys
 
@@ -191,8 +192,9 @@ export interface CreateSelectorFunction<
   ): OutputSelector<
     Selectors,
     Result,
-    ((...args: SelectorResultArray<Selectors>) => Result) & Keys,
-    GetParamsFromSelectors<Selectors>
+    ((...args: SelectorResultArray<Selectors>) => Result),
+    GetParamsFromSelectors<Selectors>,
+    Keys
   > &
     Keys
 
@@ -204,8 +206,9 @@ export interface CreateSelectorFunction<
   ): OutputSelector<
     Selectors,
     Result,
-    (...args: SelectorResultArray<Selectors>) => Result & Keys,
-    GetParamsFromSelectors<Selectors>
+    (...args: SelectorResultArray<Selectors>) => Result,
+    GetParamsFromSelectors<Selectors>,
+    Keys
   > &
     Keys
 }

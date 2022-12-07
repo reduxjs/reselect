@@ -783,6 +783,15 @@ describe('defaultMemoize', () => {
     // 'a' here would _not_ recalculate
     selector('b') // ['b']
     expect(funcCalls).toBe(5)
+
+    try{
+      //@ts-expect-error issue 591
+      selector.resultFunc.clearCache()
+      fail('should have thrown for issue 591')
+    }
+    catch(err) {
+      //expected catch
+    }
   })
 })
 
