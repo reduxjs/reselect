@@ -1665,3 +1665,42 @@ function issue555() {
   const selectorResult2 = someSelector2(state, undefined)
   const selectorResult3 = someSelector3(state, null)
 }
+
+function issue601() {
+  interface IState {
+    foo: number
+    bar: string
+  }
+
+  interface IState2 {
+    bar: string
+    baz: number
+  }
+
+  const selectFoo = (state: IState) => state.foo
+  // Includes params in selector to be sure that this does not ruin inference
+  const selectBar = (state: IState2, params: { a: number }) => state.bar
+
+  const selectors = [selectFoo, selectBar]
+
+  const selectFooBar = createSelector(
+    [selectBar, selectFoo, ...selectors],
+    (foo, bar, ...rest) => {
+      rest.push('a')
+      rest.push(1)
+      // @ts-expect-error
+      rest.push(true)
+      // @ts-expect-error
+      const nFoo: number = foo
+      // @ts-expect-error
+      const nBar: string = bar
+      return 'foobar'
+    }
+  )
+
+  selectFooBar({ bar: 'bar', baz: 2, foo: 3 })
+  // @ts-expect-error
+  const res: number = selectFooBar({ bar: 'bar', baz: 2, foo: 3 })
+  // @ts-expect-error
+  selectFooBar({ bar: 'bar', foo: 3 })
+}

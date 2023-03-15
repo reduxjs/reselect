@@ -1,4 +1,4 @@
-import type { MergeParameters } from './versionedTypes'
+import type { MergeParameters, ExtractParams } from './versionedTypes'
 export type { MergeParameters } from './versionedTypes'
 
 /*
@@ -89,9 +89,13 @@ export type EqualityFn = (a: any, b: any) => boolean
 export type SelectorResultArray<Selectors extends SelectorArray> =
   ExtractReturnType<Selectors>
 
+/** Finds union of the first parameter from an array of functions and turns it into an intersection */
+type GetIntersectedFirstParam<T extends readonly UnknownFunction[]> =
+  UnionToIntersection<ExtractParams<T>[number][0]>
+
 /** Determines the combined single "State" type (first arg) from all input selectors */
 export type GetStateFromSelectors<S extends SelectorArray> =
-  MergeParameters<S>[0]
+  GetIntersectedFirstParam<S>
 
 /** Determines the combined  "Params" type (all remaining args) from all input selectors */
 export type GetParamsFromSelectors<

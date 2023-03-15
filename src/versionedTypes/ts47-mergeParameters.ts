@@ -34,11 +34,9 @@ type MergeTuples<
   [K in keyof L]: Intersect<ElementsAt<T, K>>
 }
 
-type ExtractParameters<T extends readonly UnknownFunction[]> = {
+export type ExtractParams<T extends readonly UnknownFunction[]> = {
   [K in keyof T]: Parameters<T[K]>
 }
 
 export type MergeParameters<T extends readonly UnknownFunction[]> =
-  '0' extends keyof T
-    ? MergeTuples<ExtractParameters<T>>
-    : Parameters<T[number]>
+  '0' extends keyof T ? MergeTuples<ExtractParams<T>> : Parameters<T[number]>
