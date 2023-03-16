@@ -1672,14 +1672,9 @@ function issue601() {
     bar: string
   }
 
-  interface IState2 {
-    bar: string
-    baz: number
-  }
-
   const selectFoo = (state: IState) => state.foo
   // Includes params in selector to be sure that this does not ruin inference
-  const selectBar = (state: IState2, params: { a: number }) => state.bar
+  const selectBar = (state: IState, params: { a: number }) => state.bar
 
   const selectors = [selectFoo, selectBar]
 
@@ -1698,9 +1693,9 @@ function issue601() {
     }
   )
 
-  selectFooBar({ bar: 'bar', baz: 2, foo: 3 })
+  selectFooBar({ foo: 3, bar: 'bar' }, { a: 3 })
   // @ts-expect-error
-  const res: number = selectFooBar({ bar: 'bar', baz: 2, foo: 3 })
+  const res: number = selectFooBar({ foo: 3, bar: 'bar' })
   // @ts-expect-error
-  selectFooBar({ bar: 'bar', foo: 3 })
+  selectFooBar({ foo: 3, bar: 'bar' })
 }
