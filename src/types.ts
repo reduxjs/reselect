@@ -1,4 +1,4 @@
-import type { MergeParameters, ExtractParams } from './versionedTypes'
+import type { MergeParameters } from './versionedTypes'
 export type { MergeParameters } from './versionedTypes'
 
 /*
@@ -71,7 +71,8 @@ export type OutputParametricSelector<
   Result,
   Combiner extends UnknownFunction,
   Keys = {}
-> = ParametricSelector<State, Props, Result> & OutputSelectorFields<Combiner, Keys>
+> = ParametricSelector<State, Props, Result> &
+  OutputSelectorFields<Combiner, Keys>
 
 /** An array of input selectors */
 export type SelectorArray = ReadonlyArray<Selector>
@@ -89,13 +90,9 @@ export type EqualityFn = (a: any, b: any) => boolean
 export type SelectorResultArray<Selectors extends SelectorArray> =
   ExtractReturnType<Selectors>
 
-/** Finds union of the first parameter from an array of functions and turns it into an intersection */
-type GetIntersectedFirstParam<T extends readonly UnknownFunction[]> =
-  UnionToIntersection<ExtractParams<T>[number][0]>
-
 /** Determines the combined single "State" type (first arg) from all input selectors */
 export type GetStateFromSelectors<S extends SelectorArray> =
-  GetIntersectedFirstParam<S>
+  MergeParameters<S>[0]
 
 /** Determines the combined  "Params" type (all remaining args) from all input selectors */
 export type GetParamsFromSelectors<
@@ -121,6 +118,27 @@ export type ExtractReturnType<T extends readonly UnknownFunction[]> = {
 export type Head<T> = T extends [any, ...any[]] ? T[0] : never
 /** All other items in an array */
 export type Tail<A> = A extends [any, ...infer Rest] ? Rest : never
+
+/** Last item in an array. Recursion also enables this to work with rest syntax - where the type of rest is extracted */
+export type ReverseHead<S extends readonly unknown[][]> = Tail<S> extends [
+  unknown
+]
+  ? S
+  : Tail<S> extends readonly unknown[][]
+  ? ReverseHead<Tail<S>>
+  : never
+
+/** All elements in array except last
+ *
+ * Recursion makes this work also when rest syntax has been used
+ * Runs _ReverseTail twice, because first pass turns last element into "never", and second pass removes it.
+ **/
+export type ReverseTail<S> = _ReverseTail<_ReverseTail<S>>
+type _ReverseTail<S> = Tail<S> extends [unknown]
+  ? [Head<S>]
+  : Tail<S> extends unknown[]
+  ? [Head<S>, ..._ReverseTail<Tail<S>>]
+  : never
 
 /** Extract only numeric keys from an array type */
 export type AllArrayKeys<A extends readonly any[]> = A extends any

@@ -1,1 +1,1 @@
-export { MergeParameters, ExtractParams } from './ts47-mergeParameters'
+export { MergeParameters } from './ts47-mergeParameters'
