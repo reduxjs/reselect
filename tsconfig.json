@@ -15,6 +15,13 @@
     "experimentalDecorators": true,
     "rootDirs": ["./src"],
     "rootDir": "./src",
+    "types": ["vitest/globals"],    
+    "baseUrl": ".",
+    "paths": {
+      "reselect": ["src/index.ts"], // @remap-prod-remove-line
+      "@internal/*": ["src/*"],
+      "./ts47-mergeParameters": ["./src/versionedTypes/ts46-mergeParameters.ts"]
+    }
   },
   "include": ["./src/**/*"],
   "exclude": ["node_modules", "dist"]
