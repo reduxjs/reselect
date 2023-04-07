@@ -1,9 +1,14 @@
 name: CI
-on: [pull_request]
+
+on:
+  push:
+    branches: [master, 4.x]
+  pull_request:
+    branches: [master, 4.x]
+
 jobs:
   build:
     name: Lint, Test, Report Coverage on Node ${{ matrix.node }}
-
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -22,22 +27,26 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
+      # Read existing version, reuse that, add a Git short hash
+      - name: Set build version to Git commit
+        run: node scripts/writeGitVersion.mjs $(git rev-parse --short HEAD)
+
+      - name: Check updated version
+        run: jq .version package.json
+
       - name: Run linter
         run: yarn lint
 
       - name: Run tests
         run: yarn test
 
-      - name: Generate test coverage
-        run: yarn test:cov
+      - name: Pack
+        run: yarn pack
 
-      - name: Compile
-        run: yarn build
-
-      - name: Report to Codecov.io
-        uses: codecov/codecov-action@v1
+      - uses: actions/upload-artifact@v2
         with:
-          files: ./coverage/lcov.info
+          name: package
+          path: ./package.tgz
 
   test-types:
     name: Test Types with TypeScript ${{ matrix.ts }}
@@ -48,7 +57,7 @@ jobs:
       fail-fast: false
       matrix:
         node: ['16.x']
-        ts: ['4.2', '4.3', '4.4', '4.5', '4.6', '4.7', '4.8', '4.9.2-rc']
+        ts: ['4.2', '4.3', '4.4', '4.5', '4.6', '4.7', '4.8', '4.9', '5.0']
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
@@ -78,9 +87,80 @@ jobs:
 
         # Remove config line that points "reselect" to the `src` folder,
         # so that the typetest will use the installed version instead
-      - run: sed -i -e /@remap-prod-remove-line/d ./typescript_test/tsconfig.json
+      - run: sed -i -e /@remap-prod-remove-line/d ./typescript_test/tsconfig.json vitest.config.ts
 
       - name: Test types
         run: |
           ./node_modules/.bin/tsc --version
           yarn test:typescript
+
+  test-published-artifact:
+    name: Test Published Artifact ${{ matrix.example }}
+
+    needs: [build]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['16.x']
+        example:
+          [
+            'cra4',
+            'cra5',
+            'next',
+            'vite',
+            'node-standard',
+            'node-esm',
+            'are-the-types-wrong'
+          ]
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Use node ${{ matrix.node }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'yarn'
+
+      - name: Clone RTK repo
+        run: git clone https://github.com/reduxjs/redux-toolkit.git ./redux-toolkit
+
+      - name: Check folder contents
+        run: ls -l .
+
+      - name: Install deps
+        working-directory: ./redux-toolkit/examples/publish-ci/${{ matrix.example }}
+        run: yarn install
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: package
+          path: ./redux-toolkit/examples/publish-ci/${{ matrix.example }}
+
+      - name: Check folder contents
+        working-directory: ./redux-toolkit/examples/publish-ci/${{ matrix.example }}
+        run: ls -l .
+
+      - name: Install build artifact
+        working-directory: ./redux-toolkit/examples/publish-ci/${{ matrix.example }}
+        run: yarn add ./package.tgz
+
+      - name: Show installed package versions
+        working-directory: ./redux-toolkit/examples/publish-ci/${{ matrix.example }}
+        run: yarn info reselect && yarn why reselect
+
+      - name: Build example
+        working-directory: ./redux-toolkit/examples/publish-ci/${{ matrix.example }}
+        run: yarn build
+
+      - name: Run test step
+        working-directory: ./redux-toolkit/examples/publish-ci/${{ matrix.example }}
+        run: yarn test
+        if: matrix.example != 'are-the-types-wrong'
+
+      - name: Run test step (attw)
+        working-directory: ./redux-toolkit/examples/publish-ci/${{ matrix.example }}
+        # Ignore "FalseCJS" errors in the `attw` job
+        run: yarn test -n FalseCJS
+        if: matrix.example == 'are-the-types-wrong'
