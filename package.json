@@ -2,35 +2,35 @@
   "name": "reselect",
   "version": "4.1.7",
   "description": "Selectors for Redux.",
-  "main": "./lib/index.js",
-  "jsnext:main": "./es/index.js",
-  "module": "./es/index.js",
-  "types": "./es/index.d.ts",
-  "unpkg": "./dist/reselect.js",
+  "main": "./dist/cjs/reselect.cjs",
+  "module": "./dist/reselect.mjs",
+  "types": "./dist/reselect.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/reselect.d.ts",
+      "import": "./dist/reselect.mjs",
+      "default": "./dist/cjs/reselect.cjs"
+    }
+  },
   "typesVersions": {
+    "<=4.6": {
       "*": [
+        "./dist/versionedTypes/ts46/index.d.ts"
       ]
     }
   },
   "files": [
-    "lib",
     "src",
-    "dist",
-    "es"
+    "dist"
   ],
   "sideEffects": false,
   "bugs": {
     "url": "https://github.com/reduxjs/reselect/issues"
   },
   "scripts": {
-    "build:commonjs": "cross-env BABEL_ENV=commonjs babel src/*.ts --ignore src/types.ts --extensions .ts --out-dir lib ",
-    "build:es": "babel src/*.ts --ignore src/types.ts --extensions .ts --out-dir es && cp src/versionedTypes/package.dist.json es/versionedTypes/package.json",
-    "build:umd": "cross-env NODE_ENV=development rollup -c -o dist/reselect.js",
-    "build:umd:min": "cross-env NODE_ENV=production rollup -c -o dist/reselect.min.js",
-    "build:types": "tsc",
-    "build": "rimraf dist lib es && yarn build:types && yarn build:commonjs && yarn build:es && yarn build:umd && yarn build:umd:min",
-    "clean": "rimraf lib dist es coverage",
-    "api-types": "api-extractor run --local",
+    "build": "tsup",
+    "clean": "rimraf dist",
     "format": "prettier --write \"{src,test}/**/*.{js,ts}\" \"docs/**/*.md\"",
     "lint": "eslint src test",
     "prepublishOnly": "yarn build",
