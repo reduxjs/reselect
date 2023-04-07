@@ -5,8 +5,9 @@ import {
   createSelectorCreator,
   defaultMemoize,
   createStructuredSelector
-} from '../src/index'
+} from 'reselect'
 import lodashMemoize from 'lodash/memoize'
+import { vi } from 'vitest'
 
 // Construct 1E6 states for perf test outside of the perf test so as to not change the execute time of the test function
 const numOfStates = 1000000
@@ -604,9 +605,9 @@ describe('defaultMemoize', () => {
   })
 
   test('updates the cache key even if resultEqualityCheck is a hit', () => {
-    const selector = jest.fn(x => x)
-    const equalityCheck = jest.fn((a, b) => a === b)
-    const resultEqualityCheck = jest.fn((a, b) => typeof a === typeof b)
+    const selector = vi.fn(x => x)
+    const equalityCheck = vi.fn((a, b) => a === b)
+    const resultEqualityCheck = vi.fn((a, b) => typeof a === typeof b)
 
     const memoizedFn = defaultMemoize(selector, {
       maxSize: 1,
@@ -639,7 +640,7 @@ describe('defaultMemoize', () => {
       bar: 'qux'
     }
 
-    const fooChangeSpy = jest.fn()
+    const fooChangeSpy = vi.fn()
 
     const fooChangeHandler = createSelector(
       (state: any) => state.foo,
@@ -784,12 +785,11 @@ describe('defaultMemoize', () => {
     selector('b') // ['b']
     expect(funcCalls).toBe(5)
 
-    try{
+    try {
       //@ts-expect-error issue 591
       selector.resultFunc.clearCache()
       fail('should have thrown for issue 591')
-    }
-    catch(err) {
+    } catch (err) {
       //expected catch
     }
   })
