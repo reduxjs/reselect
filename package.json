@@ -33,7 +33,7 @@
     "clean": "rimraf dist",
     "format": "prettier --write \"{src,test}/**/*.{js,ts}\" \"docs/**/*.md\"",
     "lint": "eslint src test",
-    "prepublishOnly": "yarn build",
+    "prepack": "yarn build",
     "test": "vitest run",
     "test:cov": "vitest run --coverage",
     "test:typescript": "tsc --noEmit -p typescript_test/tsconfig.json"
