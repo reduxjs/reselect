@@ -118,7 +118,15 @@ export function createSelectorCreator<
     )
 
     // If a selector is called with the exact same arguments we don't need to traverse our dependencies again.
-    const selector = memoize(function dependenciesChecker() {
+    // TODO This was changed to `memoize` in 4.0.0 ( #297 ), but I changed it back.
+    // The original intent was to allow customizing things like skortchmark's
+    // selector debugging setup.
+    // But, there's multiple issues:
+    // - We don't pass in `memoizeOptions`
+    // Arguments change all the time, but input values change less often.
+    // Most of the time shallow equality _is_ what we really want here.
+    // TODO Rethink this change, or find a way to expose more options?
+    const selector = defaultMemoize(function dependenciesChecker() {
       const params = []
       const length = dependencies.length
 
