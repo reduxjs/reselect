@@ -31,6 +31,9 @@ import {
   DefaultMemoizeOptions
 } from './defaultMemoize'
 
+export { autotrackMemoize } from './autotrackMemoize/autotrackMemoize'
+export { weakMapMemoize } from './weakMapMemoize'
+
 export { defaultMemoize, defaultEqualityCheck }
 
 export type { DefaultMemoizeOptions }
@@ -200,7 +203,7 @@ export interface CreateSelectorFunction<
   ): OutputSelector<
     Selectors,
     Result,
-    ((...args: SelectorResultArray<Selectors>) => Result),
+    (...args: SelectorResultArray<Selectors>) => Result,
     GetParamsFromSelectors<Selectors>,
     Keys
   > &
