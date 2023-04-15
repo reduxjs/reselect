@@ -2,7 +2,6 @@
   "env": {
     "browser": true,
     "node": true,
-    "mocha": true
   },
   "extends": "eslint:recommended",
   "parserOptions": {
