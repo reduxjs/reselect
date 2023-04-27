@@ -379,6 +379,27 @@ describe('Customizing selectors', () => {
 
     expect(memoizer3Calls).toBeGreaterThan(0)
   })
+
+  test('createSelector accepts both memoize and argsMemoize', () => {
+    const selector = createSelector(
+      (state: StateAB) => state.a,
+      (state: StateAB) => state.b,
+      (a, b) => a + b,
+      {
+        memoize: lodashMemoize
+      }
+    )
+
+    expect(selector({ a: 1, b: 2 })).toBe(3)
+    expect(selector({ a: 1, b: 2 })).toBe(3)
+    expect(selector.recomputations()).toBe(1)
+    expect(selector({ a: 1, b: 3 })).toBe(4)
+    expect(selector.recomputations()).toBe(2)
+    expect(selector({ a: 1, b: 3 })).toBe(4)
+    expect(selector.recomputations()).toBe(2)
+    expect(selector({ a: 2, b: 3 })).toBe(5)
+    expect(selector.recomputations()).toBe(3)
+  })
 })
 
 describe('defaultMemoize', () => {

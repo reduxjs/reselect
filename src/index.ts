@@ -55,6 +55,27 @@ function getDependencies(funcs: unknown[]) {
   return dependencies as SelectorArray
 }
 
+export interface CreateSelectorOptions2<
+  /** Selectors will eventually accept some function to be memoized */
+  F extends (...args: unknown[]) => unknown,
+  MemoizeFunction extends (func: F, ...options: any[]) => F,
+  ArgsMemoizeFunction extends (
+    func: F,
+    ...options: any[]
+  ) => F = typeof defaultMemoize,
+  /** The additional options arguments to the memoizer */
+  MemoizeOptions extends unknown[] = DropFirst<Parameters<MemoizeFunction>>,
+  ArgsMemoizeOptions extends unknown[] = DropFirst<
+    Parameters<ArgsMemoizeFunction>
+  >
+> {
+  memoize?: MemoizeFunction
+  memoizeOptions?: MemoizeOptions[0] | MemoizeOptions
+  argsMemoize?: ArgsMemoizeFunction
+  argsMemoizeOptions?: ArgsMemoizeOptions[0] | ArgsMemoizeOptions
+}
+
+// Legacy overload: `memoizeFunction` first
 export function createSelectorCreator<
   /** Selectors will eventually accept some function to be memoized */
   F extends (...args: unknown[]) => unknown,
@@ -65,7 +86,63 @@ export function createSelectorCreator<
 >(
   memoize: MemoizeFunction,
   ...memoizeOptionsFromArgs: DropFirst<Parameters<MemoizeFunction>>
+): CreateSelectorFunction<F, MemoizeFunction, typeof defaultMemoize>
+
+export function createSelectorCreator<
+  /** Selectors will eventually accept some function to be memoized */
+  F extends (...args: unknown[]) => unknown,
+  MemoizeFunction extends (func: F, ...options: any[]) => F,
+  ArgsMemoizeFunction extends (
+    func: F,
+    ...options: any[]
+  ) => F = typeof defaultMemoize,
+  /** The additional options arguments to the memoizer */
+  MemoizeOptions extends unknown[] = DropFirst<Parameters<MemoizeFunction>>,
+  ArgsMemoizeOptions extends unknown[] = DropFirst<
+    Parameters<ArgsMemoizeFunction>
+  >
+>(
+  creatorOptions: CreateSelectorOptions2<
+    F,
+    MemoizeFunction,
+    ArgsMemoizeFunction
+  >
+): CreateSelectorFunction<F, MemoizeFunction, ArgsMemoizeFunction>
+
+export function createSelectorCreator<
+  F extends (...args: unknown[]) => unknown,
+  MemoizeFunction extends (func: F, ...options: any[]) => F,
+  ArgsMemoizeFunction extends (func: F, ...options: any[]) => F,
+  /** The additional options arguments to the memoizer */
+  MemoizeOptions extends unknown[] = DropFirst<Parameters<MemoizeFunction>>,
+  ArgsMemoizeOptions extends unknown[] = DropFirst<
+    Parameters<ArgsMemoizeFunction>
+  >
+>(
+  memoizeOrOptions: MemoizeFunction | CreateSelectorOptions2<any, any, any>,
+  ...memoizeOptionsFromArgs: unknown[]
 ) {
+  let createSelectorCreatorOptions: CreateSelectorOptions2<
+    F,
+    MemoizeFunction,
+    any
+  > = {
+    memoize: defaultMemoize as MemoizeFunction,
+    argsMemoize: defaultMemoize
+  }
+  if (typeof memoizeOrOptions === 'function') {
+    createSelectorCreatorOptions = {
+      ...createSelectorCreatorOptions,
+      memoize: memoizeOrOptions,
+      memoizeOptions: memoizeOptionsFromArgs
+    }
+  } else {
+    createSelectorCreatorOptions = {
+      ...createSelectorCreatorOptions,
+      ...memoizeOrOptions
+    }
+  }
+
   const createSelector = (...funcs: Function[]) => {
     let recomputations = 0
     let lastResult: unknown
@@ -73,9 +150,8 @@ export function createSelectorCreator<
     // Due to the intricacies of rest params, we can't do an optional arg after `...funcs`.
     // So, start by declaring the default value here.
     // (And yes, the words 'memoize' and 'options' appear too many times in this next sequence.)
-    let directlyPassedOptions: CreateSelectorOptions<MemoizeOptions> = {
-      memoizeOptions: undefined
-    }
+    let directlyPassedOptions: Partial<CreateSelectorOptions2<any, any, any>> =
+      {}
 
     // Normally, the result func or "output selector" is the last arg
     let resultFunc = funcs.pop()
@@ -95,22 +171,45 @@ export function createSelectorCreator<
 
     // Determine which set of options we're using. Prefer options passed directly,
     // but fall back to options given to createSelectorCreator.
-    const { memoizeOptions = memoizeOptionsFromArgs } = directlyPassedOptions
+    const combinedOptions = {
+      ...createSelectorCreatorOptions,
+      ...directlyPassedOptions
+    }
+
+    const {
+      memoize,
+      memoizeOptions = [],
+      argsMemoize,
+      argsMemoizeOptions = []
+    } = combinedOptions
+
+    // console.log('Options: ', { directlyPassedOptions, memoizeOptionsFromArgs })
+
+    // console.log('Selector options: ', createSelectorOptions)
+    const finalMemoizeOptions = ([] as unknown as MemoizeOptions).concat(
+      memoizeOptions
+    )
+
+    const finalArgsMemoizeOptions = (
+      [] as unknown as ArgsMemoizeOptions
+    ).concat(argsMemoizeOptions)
 
     // Simplifying assumption: it's unlikely that the first options arg of the provided memoizer
     // is an array. In most libs I've looked at, it's an equality function or options object.
     // Based on that, if `memoizeOptions` _is_ an array, we assume it's a full
     // user-provided array of options. Otherwise, it must be just the _first_ arg, and so
     // we wrap it in an array so we can apply it.
-    const finalMemoizeOptions = Array.isArray(memoizeOptions)
-      ? memoizeOptions
-      : ([memoizeOptions] as MemoizeOptions)
+    // const finalMemoizeOptions = Array.isArray(memoizeOptions)
+    //   ? memoizeOptions
+    //   : ([memoizeOptions] as MemoizeOptions)
 
     const dependencies = getDependencies(funcs)
 
     const memoizedResultFunc = memoize(
       function recomputationWrapper() {
         recomputations++
+
+        // console.log('Recalculating results', { recomputations }, [...arguments])
         // apply arguments instead of spreading for performance.
         return resultFunc!.apply(null, arguments)
       } as F,
@@ -118,20 +217,24 @@ export function createSelectorCreator<
     )
 
     // If a selector is called with the exact same arguments we don't need to traverse our dependencies again.
-    const selector = memoize(function dependenciesChecker() {
-      const params = []
-      const length = dependencies.length
+    const selector = argsMemoize(
+      function dependenciesChecker() {
+        // console.log('Recalculating inputs', [...arguments])
+        const params = []
+        const length = dependencies.length
 
-      for (let i = 0; i < length; i++) {
-        // apply arguments instead of spreading and mutate a local list of params for performance.
-        // @ts-ignore
-        params.push(dependencies[i].apply(null, arguments))
-      }
+        for (let i = 0; i < length; i++) {
+          // apply arguments instead of spreading and mutate a local list of params for performance.
+          // @ts-ignore
+          params.push(dependencies[i].apply(null, arguments))
+        }
 
-      // apply arguments instead of spreading for performance.
-      lastResult = memoizedResultFunc.apply(null, params)
-      return lastResult
-    } as F)
+        // apply arguments instead of spreading for performance.
+        lastResult = memoizedResultFunc.apply(null, params)
+        return lastResult
+      } as F,
+      ...finalArgsMemoizeOptions
+    )
 
     Object.assign(selector, {
       resultFunc,
@@ -148,7 +251,7 @@ export function createSelectorCreator<
   return createSelector as CreateSelectorFunction<
     F,
     MemoizeFunction,
-    MemoizeOptions
+    ArgsMemoizeFunction
   >
 }
 
@@ -162,6 +265,7 @@ export interface CreateSelectorOptions<MemoizeOptions extends unknown[]> {
 export interface CreateSelectorFunction<
   F extends (...args: unknown[]) => unknown,
   MemoizeFunction extends (func: F, ...options: any[]) => F,
+  ArgsMemoizeFunction extends (func: F, ...options: any[]) => F,
   MemoizeOptions extends unknown[] = DropFirst<Parameters<MemoizeFunction>>,
   Keys = Expand<
     Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
@@ -187,12 +291,12 @@ export interface CreateSelectorFunction<
     ...items: [
       ...Selectors,
       (...args: SelectorResultArray<Selectors>) => Result,
-      CreateSelectorOptions<MemoizeOptions>
+      CreateSelectorOptions2<F, MemoizeFunction, ArgsMemoizeFunction>
     ]
   ): OutputSelector<
     Selectors,
     Result,
-    ((...args: SelectorResultArray<Selectors>) => Result),
+    (...args: SelectorResultArray<Selectors>) => Result,
     GetParamsFromSelectors<Selectors>,
     Keys
   > &
