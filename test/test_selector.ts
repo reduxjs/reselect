@@ -1357,4 +1357,87 @@ describe('More perf comparisons', () => {
 
     console.log('cwCounters2.recomputations()', cwCounters2.recomputations())
   })
+
+  test.only('Does something?', async () => {
+    const fn = vi.fn()
+
+    let resolve: () => void
+    const promise = new Promise<void>(r => (resolve = r))
+
+    const registry = new FinalizationRegistry(heldValue => {
+      resolve()
+      console.log('Garbage-collected value for ID: ', heldValue)
+      fn(heldValue)
+    })
+
+    const createSelectorWeakmap = createSelectorCreator(weakMapMemoize)
+
+    const store = configureStore({
+      reducer: {
+        counter: counterSlice.reducer,
+        todos: todosSlice.reducer
+      },
+      middleware: gDM =>
+        gDM({
+          serializableCheck: false,
+          immutableCheck: false
+        })
+    })
+
+    const reduxStates: RootState[] = []
+
+    const NUM_ITEMS = 10
+
+    for (let i = 0; i < NUM_ITEMS; i++) {
+      store.dispatch(todosSlice.actions.toggleCompleted(1))
+      const state = store.getState()
+      reduxStates.push(state)
+      registry.register(state, i)
+    }
+
+    const cdTodoIdsAndNames = createSelectorWeakmap(
+      (state: RootState) => state.todos,
+      todos => {
+        // console.log('Recalculating todo IDs')
+        return todos.map(todo => ({ id: todo.id, name: todo.name }))
+      }
+    )
+
+    for (const state of reduxStates) {
+      cdTodoIdsAndNames(state)
+    }
+
+    expect(cdTodoIdsAndNames.recomputations()).toBe(NUM_ITEMS)
+
+    for (const state of reduxStates) {
+      cdTodoIdsAndNames(state)
+    }
+
+    expect(cdTodoIdsAndNames.recomputations()).toBe(NUM_ITEMS)
+
+    console.log('clearCache: ', cdTodoIdsAndNames.clearCache)
+    cdTodoIdsAndNames.memoizedResultFunc.clearCache()
+
+    cdTodoIdsAndNames(reduxStates[0])
+
+    expect(cdTodoIdsAndNames.recomputations()).toBe(NUM_ITEMS + 1)
+
+    cdTodoIdsAndNames(reduxStates[1])
+
+    expect(cdTodoIdsAndNames.recomputations()).toBe(NUM_ITEMS + 2)
+
+    console.log('Before nulling out')
+    // @ts-ignore
+    reduxStates[0] = null
+    console.log('After nulling out')
+    if (global.gc) {
+      global.gc()
+    }
+    console.log('After GC')
+
+    await promise
+    expect(fn).toHaveBeenCalledWith(0)
+
+    // garbage-collected for ID: 3
+  })
 })
