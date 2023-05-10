@@ -1,3 +1,8 @@
+// Original autotracking implementation source:
+// - https://gist.github.com/pzuraq/79bf862e0f8cd9521b79c4b6eccdc4f9
+// Additional references:
+// - https://www.pzuraq.com/blog/how-autotracking-works
+// - https://v5.chriskrycho.com/journal/autotracking-elegant-dx-via-cutting-edge-cs/
 import { assert } from './utils'
 
 // The global revision clock. Every time state changes, the clock increments.

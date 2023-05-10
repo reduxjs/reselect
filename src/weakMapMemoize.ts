@@ -1,3 +1,6 @@
+// Original source:
+// - https://github.com/facebook/react/blob/0b974418c9a56f6c560298560265dcf4b65784bc/packages/react/src/ReactCache.js
+
 const UNTERMINATED = 0
 const TERMINATED = 1
 
@@ -31,7 +34,6 @@ export function weakMapMemoize<F extends (...args: any[]) => any>(func: F) {
 
   let fnNode = createCacheNode()
 
-  // console.log('Creating memoized function')
   function memoized() {
     let cacheNode = fnNode
 

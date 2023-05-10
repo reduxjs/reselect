@@ -1,3 +1,6 @@
+// Original source:
+// - https://github.com/simonihmig/tracked-redux/blob/master/packages/tracked-redux/src/-private/proxy.ts
+
 import {
   consumeCollection,
   dirtyCollection,
