@@ -1,6 +1,5 @@
 const UNTERMINATED = 0
 const TERMINATED = 1
-const ERRORED = 2
 
 type UnterminatedCacheNode<T> = {
   s: 0
@@ -16,21 +15,7 @@ type TerminatedCacheNode<T> = {
   p: null | Map<string | number | null | void | symbol | boolean, CacheNode<T>>
 }
 
-type ErroredCacheNode<T> = {
-  s: 2
-  v: any
-  o: null | WeakMap<Function | Object, CacheNode<T>>
-  p: null | Map<string | number | null | void | symbol | boolean, CacheNode<T>>
-}
-
-type CacheNode<T> =
-  | TerminatedCacheNode<T>
-  | UnterminatedCacheNode<T>
-  | ErroredCacheNode<T>
-
-function createCacheRoot<T>(): WeakMap<Function | Object, CacheNode<T>> {
-  return new WeakMap()
-}
+type CacheNode<T> = TerminatedCacheNode<T> | UnterminatedCacheNode<T>
 
 function createCacheNode<T>(): CacheNode<T> {
   return {
@@ -86,22 +71,12 @@ export function weakMapMemoize<F extends (...args: any[]) => any>(func: F) {
     if (cacheNode.s === TERMINATED) {
       return cacheNode.v
     }
-    if (cacheNode.s === ERRORED) {
-      throw cacheNode.v
-    }
-    //try {
+    // Allow errors to propagate
     const result = func.apply(null, arguments as unknown as any[])
     const terminatedNode = cacheNode as unknown as TerminatedCacheNode<any>
     terminatedNode.s = TERMINATED
     terminatedNode.v = result
     return result
-    // } catch (error) {
-    //   // We store the first error that's thrown and rethrow it.
-    //   const erroredNode = cacheNode as unknown as ErroredCacheNode<any>
-    //   erroredNode.s = ERRORED
-    //   erroredNode.v = error
-    //   throw error
-    // }
   }
 
   memoized.clearCache = () => {
@@ -110,78 +85,3 @@ export function weakMapMemoize<F extends (...args: any[]) => any>(func: F) {
 
   return memoized as F & { clearCache: () => void }
 }
-
-/*
-function cache<A: Iterable<mixed>, T>(fn: (...A) => T): (...A) => T {
-  return function() {
-    const dispatcher = ReactCurrentCache.current;
-    if (!dispatcher) {
-      // If there is no dispatcher, then we treat this as not being cached.
-      // $FlowFixMe: We don't want to use rest arguments since we transpile the code.
-      return fn.apply(null, arguments);
-    }
-    const fnMap = dispatcher.getCacheForType(createCacheRoot);
-    const fnNode = fnMap.get(fn);
-    let cacheNode: CacheNode<T>;
-    if (fnNode === undefined) {
-      cacheNode = createCacheNode();
-      fnMap.set(fn, cacheNode);
-    } else {
-      cacheNode = fnNode;
-    }
-    for (let i = 0, l = arguments.length; i < l; i++) {
-      const arg = arguments[i];
-      if (
-        typeof arg === 'function' ||
-        (typeof arg === 'object' && arg !== null)
-      ) {
-        // Objects go into a WeakMap
-        let objectCache = cacheNode.o;
-        if (objectCache === null) {
-          cacheNode.o = objectCache = new WeakMap();
-        }
-        const objectNode = objectCache.get(arg);
-        if (objectNode === undefined) {
-          cacheNode = createCacheNode();
-          objectCache.set(arg, cacheNode);
-        } else {
-          cacheNode = objectNode;
-        }
-      } else {
-        // Primitives go into a regular Map
-        let primitiveCache = cacheNode.p;
-        if (primitiveCache === null) {
-          cacheNode.p = primitiveCache = new Map();
-        }
-        const primitiveNode = primitiveCache.get(arg);
-        if (primitiveNode === undefined) {
-          cacheNode = createCacheNode();
-          primitiveCache.set(arg, cacheNode);
-        } else {
-          cacheNode = primitiveNode;
-        }
-      }
-    }
-    if (cacheNode.s === TERMINATED) {
-      return cacheNode.v;
-    }
-    if (cacheNode.s === ERRORED) {
-      throw cacheNode.v;
-    }
-    try {
-      // $FlowFixMe: We don't want to use rest arguments since we transpile the code.
-      const result = fn.apply(null, arguments);
-      const terminatedNode: TerminatedCacheNode<T> = (cacheNode: any);
-      terminatedNode.s = TERMINATED;
-      terminatedNode.v = result;
-      return result;
-    } catch (error) {
-      // We store the first error that's thrown and rethrow it.
-      const erroredNode: ErroredCacheNode<T> = (cacheNode: any);
-      erroredNode.s = ERRORED;
-      erroredNode.v = error;
-      throw error;
-    }
-  };
-}
-*/
