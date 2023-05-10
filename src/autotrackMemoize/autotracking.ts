@@ -19,7 +19,6 @@ export class Cell<T> {
   _isEqual: EqualityFn = tripleEq
 
   constructor(initialValue: T, isEqual: EqualityFn = tripleEq) {
-    // console.log('Constructing cell: ', initialValue)
     this._value = this._lastValue = initialValue
     this._isEqual = isEqual
   }
@@ -27,7 +26,6 @@ export class Cell<T> {
   // Whenever a storage value is read, it'll add itself to the current tracker if
   // one exists, entangling its state with that cache.
   get value() {
-    // console.log('Getting cell value: ', this._value)
     CURRENT_TRACKER?.add(this)
 
     return this._value
@@ -39,12 +37,10 @@ export class Cell<T> {
   // based. We don't actively tell the caches which depend on the storage that
   // anything has happened. Instead, we recompute the caches when needed.
   set value(newValue) {
-    // console.log('Setting value: ', this.value, newValue)
-    // if (this.value === newValue) return
+    if (this.value === newValue) return
 
     this._value = newValue
     this.revision = ++$REVISION
-    // scheduleRerender()
   }
 }
 
@@ -138,16 +134,7 @@ export function setValue<T extends Cell<unknown>>(
     'setValue must be passed a tracked store created with `createStorage`.'
   )
 
-  // console.log('setValue: ', storage, value)
-
-  // console.log('Setting value: ', storage.value, value)
-  // storage.value = value
-
-  const { _isEqual: isEqual, _lastValue: lastValue } = storage
-
-  // if (!isEqual(value, lastValue)) {
   storage.value = storage._lastValue = value
-  // }
 }
 
 export function createCell<T = unknown>(

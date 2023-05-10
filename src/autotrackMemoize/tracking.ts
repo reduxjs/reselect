@@ -1,19 +1,9 @@
-// import {
-//   createStorage,
-//   getValue as consumeTag,
-//   setValue,
-// } from '../tracked-storage'
-
 import {
   createCell as createStorage,
   getValue as consumeTag,
   setValue,
   Cell
 } from './autotracking'
-
-// import { consumeTag, createTag, dirtyTag, Tag } from '@glimmer/validator'
-
-// export { consumeTag, createTag, dirtyTag, Tag } from '@glimmer/validator'
 
 export type Tag = Cell<unknown>
 
@@ -26,8 +16,6 @@ export { consumeTag }
 export function dirtyTag(tag: Tag, value: any): void {
   setValue(tag, value)
 }
-
-////////////
 
 export interface Node<
   T extends Array<unknown> | Record<string, unknown> =

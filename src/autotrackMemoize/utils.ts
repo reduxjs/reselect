@@ -7,13 +7,3 @@ export function assert(
     throw new Error(msg)
   }
 }
-
-export function formatMs(n: number) {
-  return n.toFixed(4) + 'ms'
-}
-
-export const loggedValues: any[] = []
-
-export const logLater: typeof console.log = (...args: any[]) => {
-  loggedValues.push([new Date(), ...args])
-}
