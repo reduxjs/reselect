@@ -101,54 +101,64 @@ describe('Basic selector behavior', () => {
     )
   })
 
-  test('basic selector cache hit performance', () => {
-    if (process.env.COVERAGE) {
-      return // don't run performance tests for coverage
-    }
+  describe('performance checks', () => {
+    const originalEnv = process.env.NODE_ENV
 
-    const selector = createSelector(
-      (state: StateAB) => state.a,
-      (state: StateAB) => state.b,
-      (a, b) => a + b
-    )
-    const state1 = { a: 1, b: 2 }
+    beforeAll(() => {
+      process.env.NODE_ENV = 'production'
+    })
+    afterAll(() => {
+      process.env.NODE_NV = originalEnv
+    })
 
-    const start = performance.now()
-    for (let i = 0; i < 1000000; i++) {
-      selector(state1)
-    }
-    const totalTime = performance.now() - start
+    test('basic selector cache hit performance', () => {
+      if (process.env.COVERAGE) {
+        return // don't run performance tests for coverage
+      }
 
-    expect(selector(state1)).toBe(3)
-    expect(selector.recomputations()).toBe(1)
-    // Expected a million calls to a selector with the same arguments to take less than 1 second
-    expect(totalTime).toBeLessThan(1000)
+      const selector = createSelector(
+        (state: StateAB) => state.a,
+        (state: StateAB) => state.b,
+        (a, b) => a + b
+      )
+      const state1 = { a: 1, b: 2 }
+
+      const start = performance.now()
+      for (let i = 0; i < 1000000; i++) {
+        selector(state1)
+      }
+      const totalTime = performance.now() - start
+
+      expect(selector(state1)).toBe(3)
+      expect(selector.recomputations()).toBe(1)
+      // Expected a million calls to a selector with the same arguments to take less than 1 second
+      expect(totalTime).toBeLessThan(1000)
+    })
+
+    test('basic selector cache hit performance for state changes but shallowly equal selector args', () => {
+      if (process.env.COVERAGE) {
+        return // don't run performance tests for coverage
+      }
+
+      const selector = createSelector(
+        (state: StateAB) => state.a,
+        (state: StateAB) => state.b,
+        (a, b) => a + b
+      )
+
+      const start = new Date()
+      for (let i = 0; i < numOfStates; i++) {
+        selector(states[i])
+      }
+      const totalTime = new Date().getTime() - start.getTime()
+
+      expect(selector(states[0])).toBe(3)
+      expect(selector.recomputations()).toBe(1)
+
+      // Expected a million calls to a selector with the same arguments to take less than 1 second
+      expect(totalTime).toBeLessThan(1000)
+    })
   })
-
-  test('basic selector cache hit performance for state changes but shallowly equal selector args', () => {
-    if (process.env.COVERAGE) {
-      return // don't run performance tests for coverage
-    }
-
-    const selector = createSelector(
-      (state: StateAB) => state.a,
-      (state: StateAB) => state.b,
-      (a, b) => a + b
-    )
-
-    const start = new Date()
-    for (let i = 0; i < numOfStates; i++) {
-      selector(states[i])
-    }
-    const totalTime = new Date().getTime() - start.getTime()
-
-    expect(selector(states[0])).toBe(3)
-    expect(selector.recomputations()).toBe(1)
-
-    // Expected a million calls to a selector with the same arguments to take less than 1 second
-    expect(totalTime).toBeLessThan(1000)
-  })
-
   test('memoized composite arguments', () => {
     const selector = createSelector(
       (state: StateSub) => state.sub,
