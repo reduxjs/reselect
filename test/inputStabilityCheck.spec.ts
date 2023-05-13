@@ -1,4 +1,5 @@
 import { createSelector, setInputStabilityCheckEnabled } from 'reselect'
+import { shallowEqual } from 'react-redux'
 
 describe('inputStabilityCheck', () => {
   const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
@@ -59,5 +60,23 @@ describe('inputStabilityCheck', () => {
     expect(consoleSpy).not.toHaveBeenCalled()
 
     process.env.NODE_ENV = originalEnv
+  })
+
+  it('uses the memoize provided', () => {
+    const addNumsShallow = createSelector(
+      [unstableInput],
+      ({ a, b }) => a + b,
+      {
+        memoizeOptions: {
+          equalityCheck: shallowEqual
+        }
+      }
+    )
+
+    expect(addNumsShallow(1, 2)).toBe(3)
+
+    expect(unstableInput).toHaveBeenCalledTimes(2)
+
+    expect(consoleSpy).not.toHaveBeenCalled()
   })
 })

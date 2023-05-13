@@ -26,7 +26,6 @@ export type {
 } from './types'
 
 import {
-  createCacheKeyComparator,
   defaultMemoize,
   defaultEqualityCheck,
   DefaultMemoizeOptions
@@ -118,8 +117,7 @@ export function createSelectorCreator<
 
     const dependencies = getDependencies(funcs)
 
-    // do we want to try and use the equality fn from options? how do we account for other memoizers?
-    const cacheKeyComparator = createCacheKeyComparator(defaultEqualityCheck)
+    console.log(process.env.NODE_ENV, !inputStabilityCheckEnabled)
 
     const memoizedResultFunc = memoize(
       function recomputationWrapper() {
@@ -127,6 +125,13 @@ export function createSelectorCreator<
         // apply arguments instead of spreading for performance.
         return resultFunc!.apply(null, arguments)
       } as F,
+      ...finalMemoizeOptions
+    )
+
+    // @ts-ignore
+    const makeAnObject: (...args: unknown[]) => object = memoize(
+      // @ts-ignore
+      () => ({}),
       ...finalMemoizeOptions
     )
 
@@ -149,10 +154,7 @@ export function createSelectorCreator<
         params.push(dependencies[i].apply(null, arguments))
       }
 
-      if (
-        process.env.NODE_ENV !== 'production' &&
-        !inputStabilityCheckEnabled
-      ) {
+      if (process.env.NODE_ENV !== 'production' && inputStabilityCheckEnabled) {
         const paramsCopy = []
 
         for (let i = 0; i < length; i++) {
@@ -160,7 +162,9 @@ export function createSelectorCreator<
           // @ts-ignore
           paramsCopy.push(dependencies[i].apply(null, arguments))
         }
-        const equal = cacheKeyComparator(params, paramsCopy)
+        const equal =
+          makeAnObject.apply(null, params) ===
+          makeAnObject.apply(null, paramsCopy)
         if (!equal) {
           // do we want to log more information about the selector?
           console.warn(
