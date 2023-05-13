@@ -138,23 +138,22 @@ export function createSelectorCreator<
     // TODO Rethink this change, or find a way to expose more options?
     const selector = defaultMemoize(function dependenciesChecker() {
       const params = []
-      const length = dependencies.length
-
-      const paramsCopy = []
+      const { length } = dependencies
 
       for (let i = 0; i < length; i++) {
         // apply arguments instead of spreading and mutate a local list of params for performance.
         // @ts-ignore
         params.push(dependencies[i].apply(null, arguments))
+      }
 
-        if (process.env.NODE_ENV !== 'production' && inputStabilityCheck) {
+      if (process.env.NODE_ENV !== 'production' && inputStabilityCheck) {
+        const paramsCopy = []
+
+        for (let i = 0; i < length; i++) {
           // make a second copy of the params, to check if we got the same results
           // @ts-ignore
           paramsCopy.push(dependencies[i].apply(null, arguments))
         }
-      }
-
-      if (process.env.NODE_ENV !== 'production' && inputStabilityCheck) {
         const equal = cacheKeyComparator(params, paramsCopy)
         if (!equal) {
           // do we want to log more information about the selector?
