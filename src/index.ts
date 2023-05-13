@@ -77,9 +77,7 @@ export function createSelectorCreator<
     // Due to the intricacies of rest params, we can't do an optional arg after `...funcs`.
     // So, start by declaring the default value here.
     // (And yes, the words 'memoize' and 'options' appear too many times in this next sequence.)
-    let directlyPassedOptions: CreateSelectorOptions<MemoizeOptions> = {
-      memoizeOptions: undefined
-    }
+    let directlyPassedOptions: CreateSelectorOptions<MemoizeOptions> = {}
 
     // Normally, the result func or "output selector" is the last arg
     let resultFunc = funcs.pop()
