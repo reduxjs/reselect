@@ -39,6 +39,12 @@ export { defaultMemoize, defaultEqualityCheck }
 
 export type { DefaultMemoizeOptions }
 
+let inputStabilityCheckDisabled = false
+
+export function disableInputStabilityCheck(disable = true) {
+  inputStabilityCheckDisabled = disable
+}
+
 function getDependencies(funcs: unknown[]) {
   const dependencies = Array.isArray(funcs[0]) ? funcs[0] : funcs
 
@@ -77,7 +83,9 @@ export function createSelectorCreator<
     // Due to the intricacies of rest params, we can't do an optional arg after `...funcs`.
     // So, start by declaring the default value here.
     // (And yes, the words 'memoize' and 'options' appear too many times in this next sequence.)
-    let directlyPassedOptions: CreateSelectorOptions<MemoizeOptions> = {}
+    let directlyPassedOptions: CreateSelectorOptions<MemoizeOptions> = {
+      memoizeOptions: undefined
+    }
 
     // Normally, the result func or "output selector" is the last arg
     let resultFunc = funcs.pop()
@@ -97,10 +105,7 @@ export function createSelectorCreator<
 
     // Determine which set of options we're using. Prefer options passed directly,
     // but fall back to options given to createSelectorCreator.
-    const {
-      memoizeOptions = memoizeOptionsFromArgs,
-      inputStabilityCheck = true
-    } = directlyPassedOptions
+    const { memoizeOptions = memoizeOptionsFromArgs } = directlyPassedOptions
 
     // Simplifying assumption: it's unlikely that the first options arg of the provided memoizer
     // is an array. In most libs I've looked at, it's an equality function or options object.
@@ -144,7 +149,10 @@ export function createSelectorCreator<
         params.push(dependencies[i].apply(null, arguments))
       }
 
-      if (process.env.NODE_ENV !== 'production' && inputStabilityCheck) {
+      if (
+        process.env.NODE_ENV !== 'production' &&
+        !inputStabilityCheckDisabled
+      ) {
         const paramsCopy = []
 
         for (let i = 0; i < length; i++) {
@@ -190,8 +198,7 @@ export function createSelectorCreator<
 }
 
 export interface CreateSelectorOptions<MemoizeOptions extends unknown[]> {
-  memoizeOptions?: MemoizeOptions[0] | MemoizeOptions
-  inputStabilityCheck?: boolean
+  memoizeOptions: MemoizeOptions[0] | MemoizeOptions
 }
 
 /**
