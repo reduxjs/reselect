@@ -26,6 +26,7 @@ export type {
 } from './types'
 
 import {
+  createCacheKeyComparator,
   defaultMemoize,
   defaultEqualityCheck,
   DefaultMemoizeOptions
@@ -98,7 +99,10 @@ export function createSelectorCreator<
 
     // Determine which set of options we're using. Prefer options passed directly,
     // but fall back to options given to createSelectorCreator.
-    const { memoizeOptions = memoizeOptionsFromArgs } = directlyPassedOptions
+    const {
+      memoizeOptions = memoizeOptionsFromArgs,
+      inputStabilityCheck = true
+    } = directlyPassedOptions
 
     // Simplifying assumption: it's unlikely that the first options arg of the provided memoizer
     // is an array. In most libs I've looked at, it's an equality function or options object.
@@ -110,6 +114,9 @@ export function createSelectorCreator<
       : ([memoizeOptions] as MemoizeOptions)
 
     const dependencies = getDependencies(funcs)
+
+    // do we want to try and use the equality fn from options? how do we account for other memoizers?
+    const cacheKeyComparator = createCacheKeyComparator(defaultEqualityCheck)
 
     const memoizedResultFunc = memoize(
       function recomputationWrapper() {
@@ -133,10 +140,32 @@ export function createSelectorCreator<
       const params = []
       const length = dependencies.length
 
+      const paramsCopy = []
+
       for (let i = 0; i < length; i++) {
         // apply arguments instead of spreading and mutate a local list of params for performance.
         // @ts-ignore
         params.push(dependencies[i].apply(null, arguments))
+
+        if (process.env.NODE_ENV !== 'production' && inputStabilityCheck) {
+          // make a second copy of the params, to check if we got the same results
+          // @ts-ignore
+          paramsCopy.push(dependencies[i].apply(null, arguments))
+        }
+      }
+
+      if (process.env.NODE_ENV !== 'production' && inputStabilityCheck) {
+        const equal = cacheKeyComparator(params, paramsCopy)
+        if (!equal) {
+          // do we want to log more information about the selector?
+          console.warn(
+            `An input selector returned a different result when passed same arguments.
+              This means your output selector will likely run more frequently than intended.
+              Avoid returning a new reference inside your input selector, e.g. 
+              \`createSelector([(arg1, arg2) => ({ arg1, arg2 })],(arg1, arg2) => {})\`
+              `
+          )
+        }
       }
 
       // apply arguments instead of spreading for performance.
@@ -164,7 +193,8 @@ export function createSelectorCreator<
 }
 
 export interface CreateSelectorOptions<MemoizeOptions extends unknown[]> {
-  memoizeOptions: MemoizeOptions[0] | MemoizeOptions
+  memoizeOptions?: MemoizeOptions[0] | MemoizeOptions
+  inputStabilityCheck?: boolean
 }
 
 /**
