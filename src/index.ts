@@ -39,10 +39,10 @@ export { defaultMemoize, defaultEqualityCheck }
 
 export type { DefaultMemoizeOptions }
 
-let inputStabilityCheckDisabled = false
+let inputStabilityCheckEnabled = true
 
-export function disableInputStabilityCheck(disable = true) {
-  inputStabilityCheckDisabled = disable
+export function setInputStabilityCheckEnabled(enabled: boolean) {
+  inputStabilityCheckEnabled = enabled
 }
 
 function getDependencies(funcs: unknown[]) {
@@ -151,7 +151,7 @@ export function createSelectorCreator<
 
       if (
         process.env.NODE_ENV !== 'production' &&
-        !inputStabilityCheckDisabled
+        !inputStabilityCheckEnabled
       ) {
         const paramsCopy = []
 

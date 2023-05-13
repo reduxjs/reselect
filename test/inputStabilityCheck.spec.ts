@@ -1,4 +1,4 @@
-import { createSelector, disableInputStabilityCheck } from 'reselect'
+import { createSelector, setInputStabilityCheckEnabled } from 'reselect'
 
 describe('inputStabilityCheck', () => {
   const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
@@ -36,7 +36,7 @@ describe('inputStabilityCheck', () => {
   })
 
   it('disables check if specified', () => {
-    disableInputStabilityCheck()
+    setInputStabilityCheckEnabled(false)
 
     expect(addNums(1, 2)).toBe(3)
 
@@ -44,7 +44,7 @@ describe('inputStabilityCheck', () => {
 
     expect(consoleSpy).not.toHaveBeenCalled()
 
-    disableInputStabilityCheck(false)
+    setInputStabilityCheckEnabled(true)
   })
 
   it('disables check in production', () => {
