@@ -40,7 +40,7 @@ export type { DefaultMemoizeOptions }
 
 type StabilityCheck = boolean | 'once'
 
-let globalStabilityCheck: StabilityCheck = true
+let globalStabilityCheck: StabilityCheck = 'once'
 
 export function setInputStabilityCheckEnabled(enabled: StabilityCheck) {
   globalStabilityCheck = enabled
