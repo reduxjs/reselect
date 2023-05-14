@@ -38,10 +38,12 @@ export { defaultMemoize, defaultEqualityCheck }
 
 export type { DefaultMemoizeOptions }
 
-let inputStabilityCheckEnabled = true
+type StabilityCheck = boolean | 'once'
 
-export function setInputStabilityCheckEnabled(enabled: boolean) {
-  inputStabilityCheckEnabled = enabled
+let globalStabilityCheck: StabilityCheck = true
+
+export function setInputStabilityCheckEnabled(enabled: StabilityCheck) {
+  globalStabilityCheck = enabled
 }
 
 function getDependencies(funcs: unknown[]) {
@@ -82,9 +84,7 @@ export function createSelectorCreator<
     // Due to the intricacies of rest params, we can't do an optional arg after `...funcs`.
     // So, start by declaring the default value here.
     // (And yes, the words 'memoize' and 'options' appear too many times in this next sequence.)
-    let directlyPassedOptions: CreateSelectorOptions<MemoizeOptions> = {
-      memoizeOptions: undefined
-    }
+    let directlyPassedOptions: CreateSelectorOptions<MemoizeOptions> = {}
 
     // Normally, the result func or "output selector" is the last arg
     let resultFunc = funcs.pop()
@@ -104,7 +104,8 @@ export function createSelectorCreator<
 
     // Determine which set of options we're using. Prefer options passed directly,
     // but fall back to options given to createSelectorCreator.
-    const { memoizeOptions = memoizeOptionsFromArgs } = directlyPassedOptions
+    const { memoizeOptions = memoizeOptionsFromArgs, inputStabilityCheck } =
+      directlyPassedOptions
 
     // Simplifying assumption: it's unlikely that the first options arg of the provided memoizer
     // is an array. In most libs I've looked at, it's an equality function or options object.
@@ -116,8 +117,6 @@ export function createSelectorCreator<
       : ([memoizeOptions] as MemoizeOptions)
 
     const dependencies = getDependencies(funcs)
-
-    console.log(process.env.NODE_ENV, !inputStabilityCheckEnabled)
 
     const memoizedResultFunc = memoize(
       function recomputationWrapper() {
@@ -134,6 +133,8 @@ export function createSelectorCreator<
       () => ({}),
       ...finalMemoizeOptions
     )
+
+    let firstRun = true
 
     // If a selector is called with the exact same arguments we don't need to traverse our dependencies again.
     // TODO This was changed to `memoize` in 4.0.0 ( #297 ), but I changed it back.
@@ -154,7 +155,13 @@ export function createSelectorCreator<
         params.push(dependencies[i].apply(null, arguments))
       }
 
-      if (process.env.NODE_ENV !== 'production' && inputStabilityCheckEnabled) {
+      const finalStabilityCheck = inputStabilityCheck ?? globalStabilityCheck
+
+      if (
+        process.env.NODE_ENV !== 'production' &&
+        (finalStabilityCheck === true ||
+          (finalStabilityCheck === 'once' && firstRun))
+      ) {
         const paramsCopy = []
 
         for (let i = 0; i < length; i++) {
@@ -162,23 +169,27 @@ export function createSelectorCreator<
           // @ts-ignore
           paramsCopy.push(dependencies[i].apply(null, arguments))
         }
+
+        // if the memoize method thinks the parameters are equal, these *should* be the same reference
         const equal =
           makeAnObject.apply(null, params) ===
           makeAnObject.apply(null, paramsCopy)
         if (!equal) {
           // do we want to log more information about the selector?
           console.warn(
-            `An input selector returned a different result when passed same arguments.
-              This means your output selector will likely run more frequently than intended.
-              Avoid returning a new reference inside your input selector, e.g. 
-              \`createSelector([(arg1, arg2) => ({ arg1, arg2 })],(arg1, arg2) => {})\`
-              `
+            'An input selector returned a different result when passed same arguments.' +
+              '\nThis means your output selector will likely run more frequently than intended.' +
+              '\nAvoid returning a new reference inside your input selector, e.g.' +
+              '\n`createSelector([(arg1, arg2) => ({ arg1, arg2 })],(arg1, arg2) => {})`'
           )
         }
+
+        if (firstRun) firstRun = false
       }
 
       // apply arguments instead of spreading for performance.
       lastResult = memoizedResultFunc.apply(null, params)
+
       return lastResult
     } as F)
 
@@ -202,7 +213,8 @@ export function createSelectorCreator<
 }
 
 export interface CreateSelectorOptions<MemoizeOptions extends unknown[]> {
-  memoizeOptions: MemoizeOptions[0] | MemoizeOptions
+  memoizeOptions?: MemoizeOptions[0] | MemoizeOptions
+  inputStabilityCheck?: StabilityCheck
 }
 
 /**

@@ -36,7 +36,7 @@ describe('inputStabilityCheck', () => {
     )
   })
 
-  it('disables check if specified', () => {
+  it('disables check if global setting is changed', () => {
     setInputStabilityCheckEnabled(false)
 
     expect(addNums(1, 2)).toBe(3)
@@ -46,6 +46,18 @@ describe('inputStabilityCheck', () => {
     expect(consoleSpy).not.toHaveBeenCalled()
 
     setInputStabilityCheckEnabled(true)
+  })
+
+  it('disables check if specified in the selector options', () => {
+    const addNums = createSelector([unstableInput], ({ a, b }) => a + b, {
+      inputStabilityCheck: false
+    })
+
+    expect(addNums(1, 2)).toBe(3)
+
+    expect(unstableInput).toHaveBeenCalledTimes(1)
+
+    expect(consoleSpy).not.toHaveBeenCalled()
   })
 
   it('disables check in production', () => {
@@ -60,6 +72,24 @@ describe('inputStabilityCheck', () => {
     expect(consoleSpy).not.toHaveBeenCalled()
 
     process.env.NODE_ENV = originalEnv
+  })
+
+  it('allows running the check only once', () => {
+    const addNums = createSelector([unstableInput], ({ a, b }) => a + b, {
+      inputStabilityCheck: 'once'
+    })
+
+    expect(addNums(1, 2)).toBe(3)
+
+    expect(unstableInput).toHaveBeenCalledTimes(2)
+
+    expect(consoleSpy).toHaveBeenCalledOnce()
+
+    expect(addNums(2, 2)).toBe(4)
+
+    expect(unstableInput).toHaveBeenCalledTimes(3)
+
+    expect(consoleSpy).toHaveBeenCalledOnce()
   })
 
   it('uses the memoize provided', () => {
