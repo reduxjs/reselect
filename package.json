@@ -3,7 +3,7 @@
   "version": "5.0.0-alpha.1",
   "description": "Selectors for Redux.",
   "main": "./dist/cjs/reselect.cjs",
-  "module": "./dist/reselect.mjs",
+  "module": "./dist/reselect.legacy-esm.js",
   "types": "./dist/reselect.d.ts",
   "exports": {
     "./package.json": "./package.json",
