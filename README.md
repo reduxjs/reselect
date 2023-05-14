@@ -88,6 +88,10 @@ console.log(selectTotal(exampleState)) // { total: 2.322 }
     - [Customize `equalityCheck` for `defaultMemoize`](#customize-equalitycheck-for-defaultmemoize)
     - [Use memoize function from Lodash for an unbounded cache](#use-memoize-function-from-lodash-for-an-unbounded-cache)
   - [createStructuredSelector({inputSelectors}, selectorCreator = createSelector)](#createstructuredselectorinputselectors-selectorcreator--createselector)
+- [Development-only checks](#development-only-checks)
+  - [`inputStabilityCheck`](#inputstabilitycheck)
+    - [Global configuration](#global-configuration)
+    - [Per-selector configuration](#per-selector-configuration)
 - [FAQ](#faq)
   - [Q: Why isn’t my selector recomputing when the input state changes?](#q-why-isnt-my-selector-recomputing-when-the-input-state-changes)
   - [Q: Why is my selector recomputing when the input state stays the same?](#q-why-is-my-selector-recomputing-when-the-input-state-stays-the-same)
@@ -307,6 +311,66 @@ const nestedSelector = createStructuredSelector({
     selectorD
   })
 })
+```
+
+## Development-only checks
+
+### `inputStabilityCheck`
+
+In development, an extra check is conducted on your input selectors. It runs your input selectors an extra time with the same parameters, and warns in console if they return a different result (based on your `memoize` method).
+
+This is important, as an input selector returning a materially different result with the same parameters means that the output selector will be run unnecessarily, thus (potentially) creating a new result and causing rerenders.
+
+```js
+const addNumbers = createSelector(
+  // this input selector will always return a new reference when run
+  // so cache will never be used
+  (a, b) => ({ a, b }),
+  ({ a, b }) => ({ total: a + b })
+)
+// instead, you should have an input selector for each stable piece of data
+const addNumbersStable = createSelector(
+  (a, b) => a,
+  (a, b) => b,
+  (a, b) => ({
+    total: a + b
+  })
+)
+```
+
+By default, this will only happen when the selector is first called. You can configure the check globally or per selector, to change it to always run when the selector is called, or to never run.
+
+_This check is disabled for production environments._
+
+#### Global configuration
+
+A `setInputStabilityCheckEnabled` function is exported from `reselect`, which should be called with the desired setting.
+
+```js
+import { setInputStabilityCheckEnabled } from 'reselect'
+
+// run when selector is first called (default)
+setInputStabilityCheckEnabled('once')
+
+// always run
+setInputStabilityCheckEnabled(true)
+
+// never run
+setInputStabilityCheckEnabled(false)
+```
+
+#### Per-selector configuration
+
+A value can be passed as part of the selector options object, which will override the global setting for the given selector.
+
+```ts
+const selectPersonName = createSelector(
+  selectPerson,
+  person => person.firstName + ' ' + person.lastName,
+  // `inputStabilityCheck` accepts the same settings
+  // as `setInputStabilityCheckEnabled`
+  { inputStabilityCheck: false }
+)
 ```
 
 ## FAQ

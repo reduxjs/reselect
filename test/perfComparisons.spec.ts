@@ -8,6 +8,15 @@ import { vi } from 'vitest'
 import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 describe('More perf comparisons', () => {
+  const originalEnv = process.env.NODE_ENV
+
+  beforeAll(() => {
+    process.env.NODE_ENV = 'production'
+  })
+  afterAll(() => {
+    process.env.NODE_NV = originalEnv
+  })
+
   const csDefault = createSelectorCreator(defaultMemoize)
   const csAutotrack = createSelectorCreator(autotrackMemoize)
 
