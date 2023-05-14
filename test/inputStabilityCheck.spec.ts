@@ -32,12 +32,22 @@ describe('inputStabilityCheck', () => {
     expect(unstableInput).toHaveBeenCalledTimes(2)
 
     expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining('An input selector returned a different result')
+      expect.stringContaining('An input selector returned a different result'),
+      expect.objectContaining({
+        // IArguments isn't an array :(
+        arguments: expect.anything(),
+        firstInputs: expect.arrayContaining([
+          expect.objectContaining({ a: 1, b: 2 })
+        ]),
+        secondInputs: expect.arrayContaining([
+          expect.objectContaining({ a: 1, b: 2 })
+        ])
+      })
     )
   })
 
   it('disables check if global setting is changed', () => {
-    setInputStabilityCheckEnabled(false)
+    setInputStabilityCheckEnabled('never')
 
     expect(addNums(1, 2)).toBe(3)
 
@@ -45,12 +55,12 @@ describe('inputStabilityCheck', () => {
 
     expect(consoleSpy).not.toHaveBeenCalled()
 
-    setInputStabilityCheckEnabled(true)
+    setInputStabilityCheckEnabled('once')
   })
 
   it('disables check if specified in the selector options', () => {
     const addNums = createSelector([unstableInput], ({ a, b }) => a + b, {
-      inputStabilityCheck: false
+      inputStabilityCheck: 'never'
     })
 
     expect(addNums(1, 2)).toBe(3)

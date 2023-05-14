@@ -38,7 +38,7 @@ export { defaultMemoize, defaultEqualityCheck }
 
 export type { DefaultMemoizeOptions }
 
-type StabilityCheck = boolean | 'once'
+type StabilityCheck = 'always' | 'once' | 'never'
 
 let globalStabilityCheck: StabilityCheck = 'once'
 
@@ -159,7 +159,7 @@ export function createSelectorCreator<
 
       if (
         process.env.NODE_ENV !== 'production' &&
-        (finalStabilityCheck === true ||
+        (finalStabilityCheck === 'always' ||
           (finalStabilityCheck === 'once' && firstRun))
       ) {
         const paramsCopy = []
@@ -180,7 +180,12 @@ export function createSelectorCreator<
             'An input selector returned a different result when passed same arguments.' +
               '\nThis means your output selector will likely run more frequently than intended.' +
               '\nAvoid returning a new reference inside your input selector, e.g.' +
-              '\n`createSelector([(arg1, arg2) => ({ arg1, arg2 })],(arg1, arg2) => {})`'
+              '\n`createSelector([(arg1, arg2) => ({ arg1, arg2 })],(arg1, arg2) => {})`',
+            {
+              arguments,
+              firstInputs: params,
+              secondInputs: paramsCopy
+            }
           )
         }
 
