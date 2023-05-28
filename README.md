@@ -353,10 +353,10 @@ import { setInputStabilityCheckEnabled } from 'reselect'
 setInputStabilityCheckEnabled('once')
 
 // always run
-setInputStabilityCheckEnabled(true)
+setInputStabilityCheckEnabled('always')
 
 // never run
-setInputStabilityCheckEnabled(false)
+setInputStabilityCheckEnabled('never')
 ```
 
 #### Per-selector configuration
@@ -369,7 +369,7 @@ const selectPersonName = createSelector(
   person => person.firstName + ' ' + person.lastName,
   // `inputStabilityCheck` accepts the same settings
   // as `setInputStabilityCheckEnabled`
-  { inputStabilityCheck: false }
+  { inputStabilityCheck: 'never' }
 )
 ```
 
