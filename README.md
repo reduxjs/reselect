@@ -102,7 +102,6 @@ console.log(selectTotal(exampleState)) // { total: 2.322 }
   - [Q: How do I test a selector?](#q-how-do-i-test-a-selector)
   - [Q: Can I share a selector across multiple component instances?](#q-can-i-share-a-selector-across-multiple-component-instances)
   - [Q: Are there TypeScript Typings?](#q-are-there-typescript-typings)
-  - [Q: I am seeing a TypeScript error: `Type instantiation is excessively deep and possibly infinite`](#q-i-am-seeing-a-typescript-error-type-instantiation-is-excessively-deep-and-possibly-infinite)
   - [Q: How can I make a curried selector?](#q-how-can-i-make-a-curried-selector)
 - [Related Projects](#related-projects)
   - [re-reselect](#re-reselect)
