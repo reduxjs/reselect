@@ -27,10 +27,10 @@ import { createSelector } from '@reduxjs/toolkit'
 For standalone usage, install the `reselect` package:
 
 ```bash
-npm install reselect      # with npm
-yarn add reselect         # with Yarn
-bun add reselect          # with Bun
-pnpm add reselect         # with pnpm
+npm install reselect
+yarn add reselect
+bun add reselect
+pnpm add reselect
 ```
 
 ## Basic Usage
