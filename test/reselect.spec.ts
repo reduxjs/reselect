@@ -9,7 +9,7 @@ import {
   weakMapMemoize
 } from 'reselect'
 import lodashMemoize from 'lodash/memoize'
-import { vi } from 'vitest'
+import { afterAll, afterEach, beforeEach, describe, vi } from 'vitest'
 import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 // Construct 1E6 states for perf test outside of the perf test so as to not change the execute time of the test function
@@ -99,6 +99,49 @@ describe('Basic selector behavior', () => {
     ).toThrow(
       'createSelector expects an output function after the inputs, but received: [string]'
     )
+  })
+
+  describe('computation time', () => {
+    const performanceSpy = vi.spyOn(performance, 'now')
+
+    beforeEach(() => {
+      performanceSpy
+        .mockReturnValueOnce(1500)
+        .mockReturnValueOnce(3000)
+        .mockReturnValueOnce(4500)
+        .mockReturnValueOnce(6000)
+    })
+
+    it('should records computation time for every re-computation', () => {
+      const selector = createSelector(
+        (state: StateAB) => state.a,
+        (state: StateAB) => state.b,
+        (a, b) => a + b
+      )
+      const state1 = { a: 1, b: 2 }
+      selector(state1)
+      expect(selector.computationTime()).toBe(1500)
+      const state2 = { a: 3, b: 2 }
+      selector(state2)
+      expect(selector.computationTime()).toBe(3000)
+    })
+
+    it('should reset computation time when calling resetRecomputations', () => {
+      const selector = createSelector(
+        (state: StateAB) => state.a,
+        (state: StateAB) => state.b,
+        (a, b) => a + b
+      )
+      const state1 = { a: 1, b: 2 }
+      selector(state1)
+      expect(selector.computationTime()).toBe(1500)
+      selector.resetRecomputations()
+      expect(selector.computationTime()).toBe(0)
+    })
+
+    afterEach(() => {
+      performanceSpy.mockClear()
+    })
   })
 
   describe('performance checks', () => {

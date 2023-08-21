@@ -37,7 +37,9 @@ export interface OutputSelectorFields<Combiner extends UnknownFunction, Keys> {
   dependencies: SelectorArray
   /** Counts the number of times the output has been recalculated */
   recomputations: () => number
-  /** Resets the count of recomputations count to 0 */
+  /** Total computation time of everytime the output has been recalculated */
+  computationTime: () => number
+  /** Resets the count of recomputations count and computation time to 0 */
   resetRecomputations: () => number
 }
 
