@@ -1,40 +1,40 @@
 import type {
-  DropFirst,
-  Expand,
-  GetParamsFromSelectors,
-  Head,
-  MergeParameters,
-  ObjValueTuple,
-  OutputSelector,
   Selector,
+  GetParamsFromSelectors,
+  OutputSelector,
   SelectorArray,
   SelectorResultArray,
+  DropFirst,
+  MergeParameters,
+  Expand,
+  ObjValueTuple,
+  Head,
   Tail
 } from './types'
 
 export type {
-  EqualityFn,
+  Selector,
   GetParamsFromSelectors,
   GetStateFromSelectors,
-  OutputParametricSelector,
   OutputSelector,
-  OutputSelectorFields,
-  ParametricSelector,
-  Selector,
+  EqualityFn,
   SelectorArray,
-  SelectorResultArray
+  SelectorResultArray,
+  ParametricSelector,
+  OutputParametricSelector,
+  OutputSelectorFields
 } from './types'
 
 import {
-  DefaultMemoizeOptions,
+  defaultMemoize,
   defaultEqualityCheck,
-  defaultMemoize
+  DefaultMemoizeOptions
 } from './defaultMemoize'
 
 export { autotrackMemoize } from './autotrackMemoize/autotrackMemoize'
 export { weakMapMemoize } from './weakMapMemoize'
 
-export { defaultEqualityCheck, defaultMemoize }
+export { defaultMemoize, defaultEqualityCheck }
 
 export type { DefaultMemoizeOptions }
 
