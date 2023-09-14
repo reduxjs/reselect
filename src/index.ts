@@ -1,40 +1,40 @@
 import type {
-  Selector,
+  DropFirst,
+  Expand,
   GetParamsFromSelectors,
+  Head,
+  MergeParameters,
+  ObjValueTuple,
   OutputSelector,
+  Selector,
   SelectorArray,
   SelectorResultArray,
-  DropFirst,
-  MergeParameters,
-  Expand,
-  ObjValueTuple,
-  Head,
   Tail
 } from './types'
 
 export type {
-  Selector,
+  EqualityFn,
   GetParamsFromSelectors,
   GetStateFromSelectors,
-  OutputSelector,
-  EqualityFn,
-  SelectorArray,
-  SelectorResultArray,
-  ParametricSelector,
   OutputParametricSelector,
-  OutputSelectorFields
+  OutputSelector,
+  OutputSelectorFields,
+  ParametricSelector,
+  Selector,
+  SelectorArray,
+  SelectorResultArray
 } from './types'
 
 import {
-  defaultMemoize,
+  DefaultMemoizeOptions,
   defaultEqualityCheck,
-  DefaultMemoizeOptions
+  defaultMemoize
 } from './defaultMemoize'
 
 export { autotrackMemoize } from './autotrackMemoize/autotrackMemoize'
 export { weakMapMemoize } from './weakMapMemoize'
 
-export { defaultMemoize, defaultEqualityCheck }
+export { defaultEqualityCheck, defaultMemoize }
 
 export type { DefaultMemoizeOptions }
 
@@ -67,10 +67,11 @@ function getDependencies(funcs: unknown[]) {
 }
 
 export function createSelectorCreator<
-  /** Selectors will eventually accept some function to be memoized */
-  F extends (...args: unknown[]) => unknown,
   /** A memoizer such as defaultMemoize that accepts a function + some possible options */
-  MemoizeFunction extends (func: F, ...options: any[]) => F,
+  MemoizeFunction extends (
+    func: (...args: unknown[]) => unknown,
+    ...options: any[]
+  ) => (...args: unknown[]) => unknown,
   /** The additional options arguments to the memoizer */
   MemoizeOptions extends unknown[] = DropFirst<Parameters<MemoizeFunction>>
 >(
@@ -123,7 +124,7 @@ export function createSelectorCreator<
         recomputations++
         // apply arguments instead of spreading for performance.
         return resultFunc!.apply(null, arguments)
-      } as F,
+      } as Parameters<MemoizeFunction>[0],
       ...finalMemoizeOptions
     )
 
@@ -196,7 +197,7 @@ export function createSelectorCreator<
       lastResult = memoizedResultFunc.apply(null, params)
 
       return lastResult
-    } as F)
+    } as Parameters<MemoizeFunction>[0])
 
     Object.assign(selector, {
       resultFunc,
@@ -211,7 +212,7 @@ export function createSelectorCreator<
   }
   // @ts-ignore
   return createSelector as CreateSelectorFunction<
-    F,
+    any,
     MemoizeFunction,
     MemoizeOptions
   >
@@ -226,15 +227,18 @@ export interface CreateSelectorOptions<MemoizeOptions extends unknown[]> {
  * An instance of createSelector, customized with a given memoize implementation
  */
 export interface CreateSelectorFunction<
-  F extends (...args: unknown[]) => unknown,
-  MemoizeFunction extends (func: F, ...options: any[]) => F,
+  State,
+  MemoizeFunction extends (
+    func: (...args: unknown[]) => unknown,
+    ...options: any[]
+  ) => (...args: unknown[]) => unknown,
   MemoizeOptions extends unknown[] = DropFirst<Parameters<MemoizeFunction>>,
   Keys = Expand<
     Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
   >
 > {
   /** Input selectors as separate inline arguments */
-  <Selectors extends SelectorArray, Result>(
+  <Selectors extends readonly Selector<State>[], Result>(
     ...items: [
       ...Selectors,
       (...args: SelectorResultArray<Selectors>) => Result
@@ -249,7 +253,7 @@ export interface CreateSelectorFunction<
     Keys
 
   /** Input selectors as separate inline arguments with memoizeOptions passed */
-  <Selectors extends SelectorArray, Result>(
+  <Selectors extends readonly Selector<State>[], Result>(
     ...items: [
       ...Selectors,
       (...args: SelectorResultArray<Selectors>) => Result,
@@ -265,7 +269,7 @@ export interface CreateSelectorFunction<
     Keys
 
   /** Input selectors as a separate array */
-  <Selectors extends SelectorArray, Result>(
+  <Selectors extends readonly Selector<State>[], Result>(
     selectors: [...Selectors],
     combiner: (...args: SelectorResultArray<Selectors>) => Result,
     options?: CreateSelectorOptions<MemoizeOptions>
