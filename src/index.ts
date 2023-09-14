@@ -1,40 +1,42 @@
 import type {
-  Selector,
+  DropFirst,
+  Expand,
   GetParamsFromSelectors,
+  Head,
+  MergeParameters,
+  ObjValueTuple,
   OutputSelector,
+  Selector,
   SelectorArray,
   SelectorResultArray,
-  DropFirst,
-  MergeParameters,
-  Expand,
-  ObjValueTuple,
-  Head,
   Tail
 } from './types'
 
 export type {
-  Selector,
+  EqualityFn,
   GetParamsFromSelectors,
   GetStateFromSelectors,
-  OutputSelector,
-  EqualityFn,
-  SelectorArray,
-  SelectorResultArray,
-  ParametricSelector,
   OutputParametricSelector,
-  OutputSelectorFields
+  OutputSelector,
+  OutputSelectorFields,
+  ParametricSelector,
+  Selector,
+  SelectorArray,
+  SelectorResultArray
 } from './types'
 
+import { autotrackMemoize } from './autotrackMemoize/autotrackMemoize'
 import {
-  defaultMemoize,
+  DefaultMemoizeOptions,
   defaultEqualityCheck,
-  DefaultMemoizeOptions
+  defaultMemoize
 } from './defaultMemoize'
+import { weakMapMemoize } from './weakMapMemoize'
 
 export { autotrackMemoize } from './autotrackMemoize/autotrackMemoize'
 export { weakMapMemoize } from './weakMapMemoize'
 
-export { defaultMemoize, defaultEqualityCheck }
+export { defaultEqualityCheck, defaultMemoize }
 
 export type { DefaultMemoizeOptions }
 
@@ -281,6 +283,31 @@ export interface CreateSelectorFunction<
 
 export const createSelector =
   /* #__PURE__ */ createSelectorCreator(defaultMemoize)
+
+export const defaultCreateSelector = createSelectorCreator(defaultMemoize)
+export const weakMapCreateSelector = createSelectorCreator(weakMapMemoize)
+export const AutotrackCreateSelector = createSelectorCreator(autotrackMemoize)
+
+export type TypedCreateSelectorDefault<State> = <
+  Selectors extends readonly Selector<State>[],
+  Result
+>(
+  ...args: Parameters<typeof defaultCreateSelector<Selectors, Result>>
+) => ReturnType<typeof defaultCreateSelector<Selectors, Result>>
+
+export type TypedCreateSelectorWeakMap<State> = <
+  Selectors extends readonly Selector<State>[],
+  Result
+>(
+  ...args: Parameters<typeof weakMapCreateSelector<Selectors, Result>>
+) => ReturnType<typeof weakMapCreateSelector<Selectors, Result>>
+// Not sure if this is necessary since the options object for both weakMapMemoize and autotrackMemoize is identical.
+export type TypedCreateSelectorAutotrack<State> = <
+  Selectors extends readonly Selector<State>[],
+  Result
+>(
+  ...args: Parameters<typeof AutotrackCreateSelector<Selectors, Result>>
+) => ReturnType<typeof AutotrackCreateSelector<Selectors, Result>>
 
 type SelectorsObject = { [key: string]: (...args: any[]) => any }
 
