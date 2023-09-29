@@ -1,40 +1,40 @@
 import type {
-  Selector,
+  DropFirst,
+  Expand,
   GetParamsFromSelectors,
+  Head,
+  MergeParameters,
+  ObjValueTuple,
   OutputSelector,
+  Selector,
   SelectorArray,
   SelectorResultArray,
-  DropFirst,
-  MergeParameters,
-  Expand,
-  ObjValueTuple,
-  Head,
   Tail
 } from './types'
 
 export type {
-  Selector,
+  EqualityFn,
   GetParamsFromSelectors,
   GetStateFromSelectors,
-  OutputSelector,
-  EqualityFn,
-  SelectorArray,
-  SelectorResultArray,
-  ParametricSelector,
   OutputParametricSelector,
-  OutputSelectorFields
+  OutputSelector,
+  OutputSelectorFields,
+  ParametricSelector,
+  Selector,
+  SelectorArray,
+  SelectorResultArray
 } from './types'
 
 import {
-  defaultMemoize,
+  DefaultMemoizeOptions,
   defaultEqualityCheck,
-  DefaultMemoizeOptions
+  defaultMemoize
 } from './defaultMemoize'
 
 export { autotrackMemoize } from './autotrackMemoize/autotrackMemoize'
 export { weakMapMemoize } from './weakMapMemoize'
 
-export { defaultMemoize, defaultEqualityCheck }
+export { defaultEqualityCheck, defaultMemoize }
 
 export type { DefaultMemoizeOptions }
 
@@ -91,7 +91,9 @@ export function createSelectorCreator<
 
     // If the result func is actually an _object_, assume it's our options object
     if (typeof resultFunc === 'object') {
-      directlyPassedOptions = resultFunc as any
+      directlyPassedOptions =
+        resultFunc as CreateSelectorOptions<MemoizeOptions>
+
       // and pop the real result func off
       resultFunc = funcs.pop()
     }
@@ -102,10 +104,20 @@ export function createSelectorCreator<
       )
     }
 
+    // type Props = typeof directlyPassedOptions.memoizeMethod extends Function
+    //   ? DropFirst<Parameters<typeof directlyPassedOptions.memoizeMethod>>
+    //   : MemoizeOptions
+
     // Determine which set of options we're using. Prefer options passed directly,
     // but fall back to options given to createSelectorCreator.
-    const { memoizeOptions = memoizeOptionsFromArgs, inputStabilityCheck } =
-      directlyPassedOptions
+    const {
+      memoizeOptions = memoizeOptionsFromArgs,
+      inputStabilityCheck,
+      memoizeMethod = memoize
+    } = directlyPassedOptions as CreateSelectorOptionsWithMemoizeMethod<
+      F,
+      MemoizeFunction
+    >
 
     // Simplifying assumption: it's unlikely that the first options arg of the provided memoizer
     // is an array. In most libs I've looked at, it's an equality function or options object.
@@ -118,7 +130,7 @@ export function createSelectorCreator<
 
     const dependencies = getDependencies(funcs)
 
-    const memoizedResultFunc = memoize(
+    const memoizedResultFunc = memoizeMethod(
       function recomputationWrapper() {
         recomputations++
         // apply arguments instead of spreading for performance.
@@ -128,7 +140,7 @@ export function createSelectorCreator<
     )
 
     // @ts-ignore
-    const makeAnObject: (...args: unknown[]) => object = memoize(
+    const makeAnObject: (...args: unknown[]) => object = memoizeMethod(
       // @ts-ignore
       () => ({}),
       ...finalMemoizeOptions
@@ -217,10 +229,53 @@ export function createSelectorCreator<
   >
 }
 
-export interface CreateSelectorOptions<MemoizeOptions extends unknown[]> {
-  memoizeOptions?: MemoizeOptions[0] | MemoizeOptions
-  inputStabilityCheck?: StabilityCheck
+type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never }
+
+export type XOR<T, U> = T | U extends object
+  ? (T & Without<U, T>) | (U & Without<T, U>)
+  : T | U
+
+type Not<T> = {
+  [P in keyof T]?: void
 }
+
+type DiscriminateUnion<
+  Union,
+  TagKey extends keyof Union,
+  TagValue extends Union[TagKey]
+> = Union extends Record<TagKey, TagValue> ? Union : never
+
+export type CreateSelectorOptionsWithMemoizeMethod<
+  F extends (...args: unknown[]) => unknown,
+  MemoizeFunction extends (func: F, ...options: any[]) => F = (
+    func: F,
+    ...options: any[]
+  ) => F
+> = {
+  inputStabilityCheck?: StabilityCheck
+  memoizeMethod?: MemoizeFunction
+  memoizeOptions?:
+    | DropFirst<Parameters<MemoizeFunction>>
+    | DropFirst<Parameters<MemoizeFunction>>[0]
+}
+
+export type CreateSelectorOptions<MemoizeOptions extends unknown[]> = {
+  inputStabilityCheck?: StabilityCheck
+} & { memoizeOptions?: MemoizeOptions[0] | MemoizeOptions }
+// & {
+//   memoizeMethod?: never
+// }
+
+// & XOR<
+//   {
+//     memoizeMethod: F
+//     memoizeOptions?: DropFirst<Parameters<F>>
+//   },
+//   {
+//     memoizeOptions: MemoizeOptions[0] | MemoizeOptions
+//     memoizeMethod?: never
+//   }
+// >
 
 /**
  * An instance of createSelector, customized with a given memoize implementation
@@ -253,7 +308,20 @@ export interface CreateSelectorFunction<
     ...items: [
       ...Selectors,
       (...args: SelectorResultArray<Selectors>) => Result,
-      CreateSelectorOptions<MemoizeOptions>
+      (
+        | CreateSelectorOptions<MemoizeOptions>
+        // | CreateSelectorOptionsWithMemoizeMethod<F, MemoizeFunction>
+      )
+      // CreateSelectorOptions<MemoizeOptions>['memoizeMethod'] extends infer O extends (
+      //   ...args: any[]
+      // ) => any
+      //   ? Omit<CreateSelectorOptions<MemoizeOptions>, 'memoizeOptions'> & {
+      //       memoizeOptions?:
+      //         | DropFirst<Parameters<O>>
+      //         | DropFirst<Parameters<O>>[0]
+      //       // memoizeMethod?: O
+      //     }
+      //   : CreateSelectorOptions<MemoizeOptions>
     ]
   ): OutputSelector<
     Selectors,
@@ -268,7 +336,61 @@ export interface CreateSelectorFunction<
   <Selectors extends SelectorArray, Result>(
     selectors: [...Selectors],
     combiner: (...args: SelectorResultArray<Selectors>) => Result,
-    options?: CreateSelectorOptions<MemoizeOptions>
+    // options?: CreateSelectorOptions<MemoizeOptions>['memoizeMethod'] extends infer O extends (
+    //   func: infer Y extends (...args: any[]) => unknown,
+    //   ...extraOptions: infer P extends any[]
+    // ) => (...args: any[]) => unknown
+    //   ? Omit<
+    //       CreateSelectorOptions<MemoizeOptions>,
+    //       'memoizeOptions' | 'memoizeMethod'
+    //     > & {
+    //       memoizeOptions?: P | P[0]
+    //       memoizeMethod: O
+    //     }
+    //   : never
+    // options?: CreateSelectorOptions<MemoizeOptions>['memoizeMethod'] extends infer O extends (
+    //   ...args: any[]
+    // ) => any
+    //   ? Omit<CreateSelectorOptions<MemoizeOptions>, 'memoizeOptions'> & {
+    //       memoizeOptions?:
+    //         | DropFirst<Parameters<O>>
+    //         | DropFirst<Parameters<O>>[0]
+    //       // memoizeMethod?: O
+    //     }
+    //   : CreateSelectorOptions<MemoizeOptions>
+    options?:
+      | CreateSelectorOptions<MemoizeOptions>
+      // | CreateSelectorOptionsWithMemoizeMethod<F, MemoizeFunction>
+    // options?: CreateSelectorOptions<MemoizeOptions>['memoizeMethod'] extends Function
+    //   ? Omit<CreateSelectorOptions<MemoizeOptions>, 'memoizeOptions'> & {
+    //       memoizeOptions?: CreateSelectorOptions<
+    //         DropFirst<
+    //           Parameters<CreateSelectorOptions<MemoizeOptions>['memoizeMethod']>
+    //         >
+    //       >
+    //     }
+    //   : CreateSelectorOptions<MemoizeOptions>
+  ): OutputSelector<
+    Selectors,
+    Result,
+    (...args: SelectorResultArray<Selectors>) => Result,
+    GetParamsFromSelectors<Selectors>,
+    Keys
+  > &
+    Keys
+
+  <Selectors extends SelectorArray, Result, O extends (func: F, ...options: any[]) => F>(
+    ...items: [
+      ...Selectors,
+      (...args: SelectorResultArray<Selectors>) => Result,
+      {
+        inputStabilityCheck?: StabilityCheck
+        memoizeMethod: O
+        memoizeOptions?:
+          | DropFirst<Parameters<O>>
+          | DropFirst<Parameters<O>>[0]
+      }
+    ]
   ): OutputSelector<
     Selectors,
     Result,

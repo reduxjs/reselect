@@ -1,4 +1,4 @@
-import { createSelectorCreator, weakMapMemoize } from 'reselect'
+import { createSelectorCreator, defaultMemoize, weakMapMemoize } from 'reselect'
 
 // Construct 1E6 states for perf test outside of the perf test so as to not change the execute time of the test function
 const numOfStates = 1000000
@@ -143,7 +143,8 @@ describe('Basic selector behavior with autotrack', () => {
   test('memoized composite arguments', () => {
     const selector = createSelector(
       (state: StateSub) => state.sub,
-      sub => sub.a
+      sub => sub.a,
+      { memoizeMethod: defaultMemoize }
     )
     const state1 = { sub: { a: 1 } }
     expect(selector(state1)).toEqual(1)
