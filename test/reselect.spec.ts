@@ -1,12 +1,16 @@
 // TODO: Add test for React Redux connect function
 
-import lodashMemoize from 'lodash/memoize'
 import {
-  autotrackMemoize,
   createSelector,
   createSelectorCreator,
-  defaultMemoize
+  defaultMemoize,
+  createStructuredSelector,
+  autotrackMemoize,
+  weakMapMemoize
 } from 'reselect'
+import lodashMemoize from 'lodash/memoize'
+import { vi } from 'vitest'
+import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 // Construct 1E6 states for perf test outside of the perf test so as to not change the execute time of the test function
 const numOfStates = 1000000
@@ -389,7 +393,7 @@ describe('Customizing selectors', () => {
     expect(memoizer3Calls).toBeGreaterThan(0)
   })
   test('passing memoizeMethod directly to createSelector', () => {
-    type State = {
+    interface State {
       todos: {
         id: number
         completed: boolean
@@ -410,13 +414,18 @@ describe('Customizing selectors', () => {
     const selectorDefault = createSelector(
       (state: State) => state.todos,
       todos => todos.map(t => t.id),
-      { memoizeMethod: defaultMemoize, memoizeOptions: {} }
+      { memoizeMethod: defaultMemoize, memoizeOptions: { maxSize: 2 } }
     )
     expect(selectorDefault(state)).toStrictEqual([0, 1])
     const selectorAutotrack = createSelector(
       [(state: State) => state.todos],
       todos => todos.map(t => t.id),
-      { memoizeMethod: autotrackMemoize, memoizeOptions: { maxSize: 2 } }
+      { memoizeMethod: autotrackMemoize }
+    )
+    const selectorAutotrack1 = createSelector(
+      (state: State) => state.todos,
+      todos => todos.map(t => t.id),
+      { memoizeMethod: autotrackMemoize }
     )
     expect(selectorAutotrack(state)).toStrictEqual([0, 1])
     expect(selectorDefault.recomputations()).toBe(1)
