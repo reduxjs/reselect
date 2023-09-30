@@ -401,139 +401,70 @@ describe('Customizing selectors', () => {
     }
     const state: State = {
       todos: [
-        {
-          id: 0,
-          completed: false
-        },
-        {
-          id: 1,
-          completed: false
-        }
+        { id: 0, completed: false },
+        { id: 1, completed: false }
       ]
     }
     const selectorDefault = createSelector(
       (state: State) => state.todos,
-      todos => todos.map(t => t.id),
-      { memoizeMethod: defaultMemoize, memoizeOptions: { maxSize: 2 } }
+      todos => todos.map(t => t.id)
     )
-    expect(selectorDefault(state)).toStrictEqual([0, 1])
     const selectorAutotrack = createSelector(
-      [(state: State) => state.todos],
-      todos => todos.map(t => t.id),
-      { memoizeMethod: autotrackMemoize }
-    )
-    const selectorAutotrack1 = createSelector(
       (state: State) => state.todos,
       todos => todos.map(t => t.id),
       { memoizeMethod: autotrackMemoize }
     )
+    const keys = [
+      'resultFunc',
+      'memoizedResultFunc',
+      'dependencies',
+      'lastResult',
+      'recomputations',
+      'resetRecomputations',
+      'clearCache'
+    ]
+    expect(selectorDefault).to.include.all.keys(keys)
+    expect(selectorAutotrack).to.include.all.keys(keys)
+    expect(selectorDefault.lastResult()).toBeUndefined()
+    expect(selectorAutotrack.lastResult()).toBeUndefined()
+    expect(selectorDefault.recomputations()).toBe(0)
+    expect(selectorAutotrack.recomputations()).toBe(0)
+    expect(selectorDefault(state)).toStrictEqual([0, 1])
     expect(selectorAutotrack(state)).toStrictEqual([0, 1])
     expect(selectorDefault.recomputations()).toBe(1)
     expect(selectorAutotrack.recomputations()).toBe(1)
     selectorDefault({
       todos: [
-        {
-          id: 0,
-          completed: false
-        },
-        {
-          id: 1,
-          completed: false
-        }
+        { id: 0, completed: false },
+        { id: 1, completed: false }
       ]
     })
+    const defaultSelectorLastResult1 = selectorDefault.lastResult()
     selectorDefault({
       todos: [
-        {
-          id: 0,
-          completed: false
-        },
-        {
-          id: 1,
-          completed: false
-        }
+        { id: 0, completed: true },
+        { id: 1, completed: true }
       ]
     })
-    selectorDefault({
-      todos: [
-        {
-          id: 0,
-          completed: false
-        },
-        {
-          id: 1,
-          completed: false
-        }
-      ]
-    })
-    const defaultMemoizeLastResult1 = selectorDefault.lastResult()
-    selectorDefault({
-      todos: [
-        {
-          id: 0,
-          completed: true
-        },
-        {
-          id: 1,
-          completed: false
-        }
-      ]
-    })
-    const defaultMemoizeLastResult2 = selectorDefault.lastResult()
+    const defaultSelectorLastResult2 = selectorDefault.lastResult()
     selectorAutotrack({
       todos: [
-        {
-          id: 0,
-          completed: false
-        },
-        {
-          id: 1,
-          completed: false
-        }
+        { id: 0, completed: false },
+        { id: 1, completed: false }
       ]
     })
+    const autotrackSelectorLastResult1 = selectorAutotrack.lastResult()
     selectorAutotrack({
       todos: [
-        {
-          id: 0,
-          completed: false
-        },
-        {
-          id: 1,
-          completed: false
-        }
+        { id: 0, completed: true }, // flipping completed flag does not cause the autotrack memoizer to re-run.
+        { id: 1, completed: true }
       ]
     })
-    selectorAutotrack({
-      todos: [
-        {
-          id: 0,
-          completed: false
-        },
-        {
-          id: 1,
-          completed: false
-        }
-      ]
-    })
-    const autotrackMemoizeLastResult1 = selectorAutotrack.lastResult()
-    selectorAutotrack({
-      todos: [
-        {
-          id: 0,
-          completed: true
-        },
-        {
-          id: 1,
-          completed: false
-        }
-      ]
-    })
-    const autotrackMemoizeLastResult2 = selectorAutotrack.lastResult()
-    expect(selectorDefault.recomputations()).toBe(5)
+    const autotrackSelectorLastResult2 = selectorAutotrack.lastResult()
+    expect(selectorDefault.recomputations()).toBe(3)
     expect(selectorAutotrack.recomputations()).toBe(1)
-    expect(autotrackMemoizeLastResult1).toBe(autotrackMemoizeLastResult2)
-    expect(defaultMemoizeLastResult1).not.toBe(defaultMemoizeLastResult2) // Default memoize does not preserve referential equality but autotrack does.
-    expect(defaultMemoizeLastResult1).toStrictEqual(defaultMemoizeLastResult2)
+    expect(autotrackSelectorLastResult1).toBe(autotrackSelectorLastResult2)
+    expect(defaultSelectorLastResult1).not.toBe(defaultSelectorLastResult2) // Default memoize does not preserve referential equality but autotrack does.
+    expect(defaultSelectorLastResult1).toStrictEqual(defaultSelectorLastResult2)
   })
 })

@@ -10,7 +10,9 @@ import {
   OutputSelector,
   SelectorResultArray,
   Selector,
-  GetStateFromSelectors
+  GetStateFromSelectors,
+  weakMapMemoize,
+  autotrackMemoize
 } from 'reselect'
 import { isEqual, groupBy } from 'lodash'
 
@@ -1664,4 +1666,131 @@ function issue555() {
   const selectorResult1 = someSelector1(state, undefined)
   const selectorResult2 = someSelector2(state, undefined)
   const selectorResult3 = someSelector3(state, null)
+}
+
+function testMemoizeMethodInCreateSelector() {
+  interface State {
+    todos: {
+      id: number
+      completed: boolean
+    }[]
+  }
+  const state: State = {
+    todos: [
+      {
+        id: 0,
+        completed: false
+      },
+      {
+        id: 1,
+        completed: false
+      }
+    ]
+  }
+  const selectorDefaultSeparateInlineArgs = createSelector(
+    (state: State) => state.todos,
+    todos => todos.map(t => t.id),
+    { memoizeMethod: defaultMemoize }
+  )
+  const selectorDefaultArgsAsArray = createSelector(
+    [(state: State) => state.todos],
+    todos => todos.map(t => t.id),
+    { memoizeMethod: defaultMemoize }
+  )
+  const selectorDefaultArgsAsArrayWithMemoizeOptions = createSelector(
+    [(state: State) => state.todos],
+    todos => todos.map(t => t.id),
+    { memoizeMethod: defaultMemoize, memoizeOptions: { maxSize: 2 } }
+  )
+  const selectorDefaultSeparateInlineArgsWithMemoizeOptions = createSelector(
+    (state: State) => state.todos,
+    todos => todos.map(t => t.id),
+    { memoizeMethod: defaultMemoize, memoizeOptions: { maxSize: 2 } }
+  )
+  const selectorAutotrackSeparateInlineArgs = createSelector(
+    (state: State) => state.todos,
+    todos => todos.map(t => t.id),
+    { memoizeMethod: autotrackMemoize }
+  )
+  const selectorAutotrackArgsAsArray = createSelector(
+    [(state: State) => state.todos],
+    todos => todos.map(t => t.id),
+    { memoizeMethod: autotrackMemoize }
+  )
+  // @ts-expect-error When memoizeMethod is autotrackMemoize, type of memoizeOptions needs to be the same as options args in autotrackMemoize.
+  const selectorAutotrackArgsAsArrayWithMemoizeOptions = createSelector(
+    [(state: State) => state.todos],
+    // @ts-expect-error
+    todos => todos.map(t => t.id),
+    { memoizeMethod: autotrackMemoize, memoizeOptions: { maxSize: 2 } }
+  )
+  // @ts-expect-error When memoizeMethod is autotrackMemoize, type of memoizeOptions needs to be the same as options args in autotrackMemoize.
+  const selectorAutotrackSeparateInlineArgsWithMemoizeOptions = createSelector(
+    (state: State) => state.todos,
+    // @ts-expect-error
+    todos => todos.map(t => t.id),
+    { memoizeMethod: autotrackMemoize, memoizeOptions: { maxSize: 2 } }
+  )
+  const selectorWeakMapSeparateInlineArgs = createSelector(
+    (state: State) => state.todos,
+    todos => todos.map(t => t.id),
+    { memoizeMethod: weakMapMemoize }
+  )
+  const selectorWeakMapArgsAsArray = createSelector(
+    [(state: State) => state.todos],
+    todos => todos.map(t => t.id),
+    { memoizeMethod: weakMapMemoize }
+  )
+  // @ts-expect-error When memoizeMethod is weakMapMemoize, type of memoizeOptions needs to be the same as options args in weakMapMemoize.
+  const selectorWeakMapArgsAsArrayWithMemoizeOptions = createSelector(
+    [(state: State) => state.todos],
+    // @ts-expect-error
+    todos => todos.map(t => t.id),
+    { memoizeMethod: weakMapMemoize, memoizeOptions: { maxSize: 2 } }
+  )
+  // @ts-expect-error When memoizeMethod is weakMapMemoize, type of memoizeOptions needs to be the same as options args in weakMapMemoize.
+  const selectorWeakMapSeparateInlineArgsWithMemoizeOptions = createSelector(
+    (state: State) => state.todos,
+    // @ts-expect-error
+    todos => todos.map(t => t.id),
+    { memoizeMethod: weakMapMemoize, memoizeOptions: { maxSize: 2 } }
+  )
+  const createSelectorDefault = createSelectorCreator(defaultMemoize)
+  const createSelectorWeakMap = createSelectorCreator(weakMapMemoize)
+  const createSelectorAutotrack = createSelectorCreator(autotrackMemoize)
+  const changeMemoizeMethodSelectorDefault = createSelectorDefault(
+    (state: State) => state.todos,
+    todos => todos.map(t => t.id),
+    { memoizeMethod: weakMapMemoize }
+  )
+  const changeMemoizeMethodSelectorWeakMap = createSelectorWeakMap(
+    (state: State) => state.todos,
+    todos => todos.map(t => t.id),
+    { memoizeMethod: defaultMemoize }
+  )
+  const changeMemoizeMethodSelectorAutotrack = createSelectorAutotrack(
+    (state: State) => state.todos,
+    todos => todos.map(t => t.id),
+    { memoizeMethod: defaultMemoize }
+  )
+  const changeMemoizeMethodSelectorDefaultWithMemoizeOptions =
+    // @ts-expect-error When memoizeMethod is changed to weakMapMemoize or autotrackMemoize, memoizeOptions cannot be the same type as options args in defaultMemoize.
+    createSelectorDefault(
+      (state: State) => state.todos,
+      // @ts-expect-error
+      todos => todos.map(t => t.id),
+      { memoizeMethod: weakMapMemoize, memoizeOptions: { maxSize: 2 } }
+    )
+  const changeMemoizeMethodSelectorWeakMapWithMemoizeOptions =
+    createSelectorWeakMap(
+      (state: State) => state.todos,
+      todos => todos.map(t => t.id),
+      { memoizeMethod: defaultMemoize, memoizeOptions: { maxSize: 2 } } // When memoizeMethod is changed to defaultMemoize, memoizeOptions can now be the same type as options args in defaultMemoize.
+    )
+  const changeMemoizeMethodSelectorAutotrackWithMemoizeOptions =
+    createSelectorAutotrack(
+      (state: State) => state.todos,
+      todos => todos.map(t => t.id),
+      { memoizeMethod: defaultMemoize, memoizeOptions: { maxSize: 2 } } // When memoizeMethod is changed to defaultMemoize, memoizeOptions can now be the same type as options args in defaultMemoize.
+    )
 }

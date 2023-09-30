@@ -222,20 +222,27 @@ export function createSelectorCreator<
 
 export type CreateSelectorOptions<
   MemoizeOptions extends unknown[],
-  O extends (...args: any[]) => (...args: any[]) => any = never
-> = [O] extends [never]
+  MemoizeMethod extends <Func extends (...args: unknown[]) => unknown>(
+    func: Func,
+    ...options: any[]
+  ) => Func = never
+> = [MemoizeMethod] extends [never]
   ? {
       inputStabilityCheck?: StabilityCheck
       memoizeOptions?: MemoizeOptions[0] | MemoizeOptions
-      memoizeMethod?: (
-        func: (...args: unknown[]) => unknown,
+      /** A function that takes another function and returns it. */
+      memoizeMethod?: <F extends (...args: unknown[]) => unknown>(
+        func: F,
         ...options: any[]
-      ) => (...args: unknown[]) => unknown
+      ) => F
     }
   : {
       inputStabilityCheck?: StabilityCheck
-      memoizeMethod?: O
-      memoizeOptions?: DropFirst<Parameters<O>>[0] | DropFirst<Parameters<O>>
+      /** A function that takes another function and returns it. */
+      memoizeMethod?: MemoizeMethod
+      memoizeOptions?:
+        | DropFirst<Parameters<MemoizeMethod>>[0]
+        | DropFirst<Parameters<MemoizeMethod>>
     }
 
 /**
@@ -268,12 +275,15 @@ export interface CreateSelectorFunction<
   <
     Selectors extends SelectorArray,
     Result,
-    O extends (func: F, ...options: any[]) => F = never
+    MemoizeMethod extends <Func extends (...args: unknown[]) => unknown>(
+      func: Func,
+      ...options: any[]
+    ) => Func = never
   >(
     ...items: [
       ...Selectors,
       (...args: SelectorResultArray<Selectors>) => Result,
-      CreateSelectorOptions<MemoizeOptions, O>
+      CreateSelectorOptions<MemoizeOptions, MemoizeMethod>
     ]
   ): OutputSelector<
     Selectors,
@@ -288,11 +298,14 @@ export interface CreateSelectorFunction<
   <
     Selectors extends SelectorArray,
     Result,
-    O extends (func: F, ...options: any[]) => F = never
+    MemoizeMethod extends <Func extends (...args: unknown[]) => unknown>(
+      func: Func,
+      ...options: any[]
+    ) => Func = never
   >(
     selectors: [...Selectors],
     combiner: (...args: SelectorResultArray<Selectors>) => Result,
-    options?: CreateSelectorOptions<MemoizeOptions, O>
+    options?: CreateSelectorOptions<MemoizeOptions, MemoizeMethod>
   ): OutputSelector<
     Selectors,
     Result,
