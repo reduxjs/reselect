@@ -1,15 +1,18 @@
 import type {
+  CreateMemoizeOrOptions,
   DropFirst,
   Expand,
   GetParamsFromSelectors,
   Head,
+  MemoizeOptsFromParams,
   MergeParameters,
   ObjValueTuple,
   OutputSelector,
   Selector,
   SelectorArray,
   SelectorResultArray,
-  Tail
+  Tail,
+  UnknownMemoizer
 } from './types'
 
 export type {
@@ -25,11 +28,8 @@ export type {
   SelectorResultArray
 } from './types'
 
-import {
-  DefaultMemoizeOptions,
-  defaultEqualityCheck,
-  defaultMemoize
-} from './defaultMemoize'
+import type { DefaultMemoizeOptions } from './defaultMemoize'
+import { defaultEqualityCheck, defaultMemoize } from './defaultMemoize'
 
 export { autotrackMemoize } from './autotrackMemoize/autotrackMemoize'
 export { weakMapMemoize } from './weakMapMemoize'
@@ -297,24 +297,24 @@ export function createSelectorCreator<
 }
 
 export type CreateSelectorOptions<
-  MemoizeOptions extends unknown[],
-  MemoizeFunction extends UnknownMemoizer = never,
-  ArgsMemoizeFunction extends UnknownMemoizer = never
+  MemoizeFunction extends UnknownMemoizer,
+  OverrideMemoizeFunction extends UnknownMemoizer = never,
+  OverrideArgsMemoizeFunction extends UnknownMemoizer = never
 > = {
   inputStabilityCheck?: StabilityCheck
   /** A function that takes another function and returns it. */
-  memoizeMethod?: [MemoizeFunction] extends [never]
+  memoize?: [OverrideMemoizeFunction] extends [never]
     ? UnknownMemoizer
-    : MemoizeFunction
-  argsMemoizeMethod?: [ArgsMemoizeFunction] extends [never]
+    : OverrideMemoizeFunction
+  argsMemoize?: [OverrideArgsMemoizeFunction] extends [never]
     ? UnknownMemoizer
-    : ArgsMemoizeFunction
-  memoizeOptions?: [MemoizeFunction] extends [never]
-    ? MemoizeOptions[0] | MemoizeOptions
-    : RestParams<MemoizeFunction>
-  argsMemoizeOptions?: [ArgsMemoizeFunction] extends [never]
-    ? RestParams<typeof defaultMemoize>
-    : RestParams<ArgsMemoizeFunction>
+    : OverrideArgsMemoizeFunction
+  memoizeOptions?: [OverrideMemoizeFunction] extends [never]
+    ? MemoizeOptsFromParams<MemoizeFunction>
+    : MemoizeOptsFromParams<OverrideMemoizeFunction>
+  argsMemoizeOptions?: [OverrideArgsMemoizeFunction] extends [never]
+    ? MemoizeOptsFromParams<typeof defaultMemoize>
+    : MemoizeOptsFromParams<OverrideArgsMemoizeFunction>
 }
 
 /**
@@ -345,16 +345,16 @@ export interface CreateSelectorFunction<
   <
     Selectors extends SelectorArray,
     Result,
-    MemoizeMethod extends UnknownMemoizer = never,
-    ArgsMemoizeMethod extends UnknownMemoizer = never
+    OverrideMemoizeFunction extends UnknownMemoizer = never,
+    OverrideArgsMemoizeFunction extends UnknownMemoizer = never
   >(
     ...items: [
       ...Selectors,
       (...args: SelectorResultArray<Selectors>) => Result,
       CreateSelectorOptions<
-        DropFirst<Parameters<MemoizeFunction>>,
-        MemoizeMethod,
-        ArgsMemoizeMethod
+        MemoizeFunction,
+        OverrideMemoizeFunction,
+        OverrideArgsMemoizeFunction
       >
     ]
   ): OutputSelector<
@@ -370,15 +370,15 @@ export interface CreateSelectorFunction<
   <
     Selectors extends SelectorArray,
     Result,
-    MemoizeMethod extends UnknownMemoizer = never,
-    ArgsMemoizeMethod extends UnknownMemoizer = never
+    OverrideMemoizeFunction extends UnknownMemoizer = never,
+    OverrideArgsMemoizeFunction extends UnknownMemoizer = never
   >(
     selectors: [...Selectors],
     combiner: (...args: SelectorResultArray<Selectors>) => Result,
     options?: CreateSelectorOptions<
-      DropFirst<Parameters<MemoizeFunction>>,
-      MemoizeMethod,
-      ArgsMemoizeMethod
+      MemoizeFunction,
+      OverrideMemoizeFunction,
+      OverrideArgsMemoizeFunction
     >
   ): OutputSelector<
     Selectors,
