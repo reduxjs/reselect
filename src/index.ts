@@ -111,7 +111,7 @@ export function createSelectorCreator<
 /**
  * Can be used to make a customized version of `createSelector`.
  * @param memoizeOptions - An object containing the memoize function and other options for memoization.
- * @param memoizeOptions.memoizeMethod - A memoization function that accepts the result function and memoize options.
+ * @param memoizeOptions.memoize - A memoization function that accepts the result function and memoize options.
  * @returns A customized `createSelector` function.
  */
 export function createSelectorCreator<
@@ -123,7 +123,7 @@ export function createSelectorCreator<
     never,
     ArgsMemoizeFunction
   > & {
-    memoizeMethod: MemoizeFunction
+    memoize: MemoizeFunction
   }
 ): CreateSelectorFunction<MemoizeFunction>
 
@@ -148,7 +148,7 @@ export function createSelectorCreator<
 >(
   memoizeOrOptions: MemoizeOrOptions,
   ...memoizeOptionsFromArgs: MemoizeOrOptions extends {
-    memoizeMethod: MemoizeFunction
+    memoize: MemoizeFunction
   }
     ? []
     : DropFirst<Parameters<MemoizeFunction>>
@@ -185,12 +185,12 @@ export function createSelectorCreator<
         ? memoizeOptionsFromArgs
         : memoizeOrOptions.memoizeOptions,
       inputStabilityCheck,
-      memoizeMethod = typeof memoizeOrOptions === 'function'
+      memoize = typeof memoizeOrOptions === 'function'
         ? memoizeOrOptions
-        : memoizeOrOptions.memoizeMethod,
-      argsMemoizeMethod = typeof memoizeOrOptions === 'function'
+        : memoizeOrOptions.memoize,
+      argsMemoize = typeof memoizeOrOptions === 'function'
         ? defaultMemoize
-        : memoizeOrOptions?.argsMemoizeMethod ?? defaultMemoize
+        : memoizeOrOptions?.argsMemoize ?? defaultMemoize
     } = directlyPassedOptions
 
     // Simplifying assumption: it's unlikely that the first options arg of the provided memoizer
@@ -204,14 +204,14 @@ export function createSelectorCreator<
 
     const dependencies = getDependencies(funcs)
 
-    const memoizedResultFunc = memoizeMethod(function recomputationWrapper() {
+    const memoizedResultFunc = memoize(function recomputationWrapper() {
       recomputations++
       // apply arguments instead of spreading for performance.
       return resultFunc!.apply(null, arguments)
     }, ...finalMemoizeOptions)
 
     // @ts-ignore
-    const makeAnObject: (...args: unknown[]) => object = memoizeMethod(
+    const makeAnObject: (...args: unknown[]) => object = memoize(
       // @ts-ignore
       () => ({}),
       ...finalMemoizeOptions
@@ -228,7 +228,7 @@ export function createSelectorCreator<
     // Arguments change all the time, but input values change less often.
     // Most of the time shallow equality _is_ what we really want here.
     // TODO Rethink this change, or find a way to expose more options?
-    const selector = argsMemoizeMethod(function dependenciesChecker() {
+    const selector = argsMemoize(function dependenciesChecker() {
       const params = []
       const { length } = dependencies
 

@@ -34,7 +34,7 @@ describe('bench', () => {
       const selectorAutotrack = createSelector(
         (state: State) => state.todos,
         todos => todos.map(t => t.id),
-        { memoizeMethod: autotrackMemoize }
+        { memoize: autotrackMemoize }
       )
       selectorAutotrack(state)
     },
@@ -47,7 +47,7 @@ describe('bench', () => {
       const selectorWeakMap = createSelector(
         (state: State) => state.todos,
         todos => todos.map(t => t.id),
-        { memoizeMethod: weakMapMemoize }
+        { memoize: weakMapMemoize }
       )
       selectorWeakMap(state)
     },

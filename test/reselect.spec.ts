@@ -389,7 +389,7 @@ describe('Customizing selectors', () => {
 
     expect(memoizer3Calls).toBeGreaterThan(0)
   })
-  test('passing memoizeMethod directly to createSelector', () => {
+  test('passing memoize directly to createSelector', () => {
     interface State {
       todos: {
         id: number
@@ -409,7 +409,7 @@ describe('Customizing selectors', () => {
     const selectorAutotrack = createSelector(
       (state: State) => state.todos,
       todos => todos.map(t => t.id),
-      { memoizeMethod: autotrackMemoize }
+      { memoize: autotrackMemoize }
     )
     const keys = [
       'resultFunc',
@@ -481,7 +481,7 @@ describe('Customizing selectors', () => {
     const selectorDefault = createSelector(
       (state: State) => state.todos,
       todos => todos.map(t => t.id),
-      { argsMemoizeOptions: { maxSize: 2 }, argsMemoizeMethod: defaultMemoize }
+      { argsMemoizeOptions: { maxSize: 2 }, argsMemoize: defaultMemoize }
     )
     const selectorAutotrack = createSelector(
       (state: State) => state.todos,
@@ -490,8 +490,8 @@ describe('Customizing selectors', () => {
     )
     const createSelectorFunc = createSelectorCreator(microMemoize)
     const createSelectorObj = createSelectorCreator({
-      memoizeMethod: defaultMemoize,
-      argsMemoizeMethod: defaultMemoize,
+      memoize: defaultMemoize,
+      argsMemoize: defaultMemoize,
       memoizeOptions: { maxSize: 2 },
       argsMemoizeOptions: { maxSize: 2 }
     })
@@ -499,9 +499,10 @@ describe('Customizing selectors', () => {
       (state: State) => state.todos,
       todos => todos.map(t => t.id),
       {
-        memoizeMethod: defaultMemoize,
+        memoize: defaultMemoize,
+        // memoizeOptions: (a, b) => a === b,
         memoizeOptions: { maxSize: 2 },
-        argsMemoizeMethod: defaultMemoize,
+        argsMemoize: defaultMemoize,
         argsMemoizeOptions: { maxSize: 2 }
       }
     )
@@ -509,9 +510,9 @@ describe('Customizing selectors', () => {
       (state: State) => state.todos,
       todos => todos.map(t => t.id),
       {
-        memoizeMethod: defaultMemoize,
+        memoize: defaultMemoize,
         memoizeOptions: { maxSize: 2 },
-        argsMemoizeMethod: defaultMemoize,
+        argsMemoize: defaultMemoize,
         argsMemoizeOptions: { maxSize: 2 }
       }
     )
@@ -542,15 +543,15 @@ describe('Customizing selectors', () => {
     const autotrackSelectorLastResult1 = selectorAutotrack.lastResult()
     selectorAutotrack({
       todos: [
-        { id: 0, completed: true }, // flipping completed flag does not cause the autotrack memoizer to re-run.
+        { id: 0, completed: true },
         { id: 1, completed: true }
       ]
     })
     const autotrackSelectorLastResult2 = selectorAutotrack.lastResult()
     expect(selectorDefault.recomputations()).toBe(3)
-    expect(selectorAutotrack.recomputations()).toBe(1)
-    expect(autotrackSelectorLastResult1).toBe(autotrackSelectorLastResult2)
-    expect(defaultSelectorLastResult1).not.toBe(defaultSelectorLastResult2) // Default memoize does not preserve referential equality but autotrack does.
+    expect(selectorAutotrack.recomputations()).toBe(3)
+    expect(autotrackSelectorLastResult1).not.toBe(autotrackSelectorLastResult2)
+    expect(defaultSelectorLastResult1).not.toBe(defaultSelectorLastResult2)
     expect(defaultSelectorLastResult1).toStrictEqual(defaultSelectorLastResult2)
   })
 })
