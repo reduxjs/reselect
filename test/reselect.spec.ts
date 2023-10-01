@@ -1,6 +1,7 @@
 // TODO: Add test for React Redux connect function
 
 import lodashMemoize from 'lodash/memoize'
+import microMemoize from 'micro-memoize'
 import {
   autotrackMemoize,
   createSelector,
@@ -487,7 +488,7 @@ describe('Customizing selectors', () => {
       todos => todos.map(t => t.id),
       {}
     )
-    const createSelectorFunc = createSelectorCreator(lodashMemoize)
+    const createSelectorFunc = createSelectorCreator(microMemoize)
     const createSelectorObj = createSelectorCreator({
       memoizeMethod: defaultMemoize,
       argsMemoizeMethod: defaultMemoize,

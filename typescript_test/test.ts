@@ -1708,7 +1708,6 @@ function testMemoizeMethodInCreateSelector() {
   // @ts-expect-error When memoizeMethod is autotrackMemoize, type of memoizeOptions needs to be the same as options args in autotrackMemoize.
   const selectorAutotrackArgsAsArrayWithMemoizeOptions = createSelector(
     [(state: State) => state.todos],
-    // @ts-expect-error
     todos => todos.map(t => t.id),
     { memoizeMethod: autotrackMemoize, memoizeOptions: { maxSize: 2 } }
   )
@@ -1732,7 +1731,6 @@ function testMemoizeMethodInCreateSelector() {
   // @ts-expect-error When memoizeMethod is weakMapMemoize, type of memoizeOptions needs to be the same as options args in weakMapMemoize.
   const selectorWeakMapArgsAsArrayWithMemoizeOptions = createSelector(
     [(state: State) => state.todos],
-    // @ts-expect-error
     todos => todos.map(t => t.id),
     { memoizeMethod: weakMapMemoize, memoizeOptions: { maxSize: 2 } }
   )
@@ -1823,7 +1821,6 @@ function testArgsMemoizeMethodInCreateSelector() {
   // @ts-expect-error When argsMemoizeMethod is autotrackMemoize, type of argsMemoizeOptions needs to be the same as options args in autotrackMemoize.
   const selectorAutotrackArgsAsArrayWithMemoizeOptions = createSelector(
     [(state: State) => state.todos],
-    // @ts-expect-error
     todos => todos.map(t => t.id),
     { argsMemoizeMethod: autotrackMemoize, argsMemoizeOptions: { maxSize: 2 } }
   )
@@ -1847,7 +1844,6 @@ function testArgsMemoizeMethodInCreateSelector() {
   // @ts-expect-error When argsMemoizeMethod is weakMapMemoize, type of argsMemoizeOptions needs to be the same as options args in weakMapMemoize.
   const selectorWeakMapArgsAsArrayWithMemoizeOptions = createSelector(
     [(state: State) => state.todos],
-    // @ts-expect-error
     todos => todos.map(t => t.id),
     { argsMemoizeMethod: weakMapMemoize, argsMemoizeOptions: { maxSize: 2 } }
   )
