@@ -66,49 +66,82 @@ function getDependencies(funcs: unknown[]) {
   return dependencies as SelectorArray
 }
 
-type SetRequired<
-  BaseType,
-  Keys extends keyof BaseType
-> = BaseType extends unknown
-  ? Omit<BaseType, Keys> & Required<Pick<BaseType, Keys>>
-  : never
+/**
+ * Can be used to make a customized version of `createSelector`.
+ * @param memoize - A memoization function to replace `defaultMemoize`.
+ * @param memoizeOptionsFromArgs - Zero or more configuration options to be passed to the memoize function.
+ * The selectors `resultFunc` is passed as the first argument to `memoize` and the `memoizeOptions` are passed as the second argument onwards:
+ * @returns A customized `createSelector` function.
+ * @example
+ * ```
+ * const customSelectorCreator = createSelectorCreator(
+  customMemoize, // function to be used to memoize resultFunc
+  option1, // option1 will be passed as second argument to customMemoize
+  option2, // option2 will be passed as third argument to customMemoize
+  option3 // option3 will be passed as fourth argument to customMemoize
+)
 
-type UnknownFunction = (...args: unknown[]) => unknown
-type AnyFunction = (...args: any[]) => any
-type UnknownMemoizer<F extends UnknownFunction = UnknownFunction> = (
-  func: F,
-  ...options: any[]
-) => F
-
-type RestParams<F extends AnyFunction> =
-  | DropFirst<Parameters<F>>
-  | DropFirst<Parameters<F>>[0]
-
-type GetMemoizeOptions<
-  MemoizeFunction extends UnknownMemoizer,
-  ArgsMemoizeFunction extends UnknownMemoizer = never
-> = {
-  memoizeMethod: MemoizeFunction
-  memoizeOptions?: RestParams<MemoizeFunction>
-  inputStabilityCheck?: StabilityCheck
-  argsMemoizeMethod?: [ArgsMemoizeFunction] extends [never]
-    ? UnknownMemoizer
-    : ArgsMemoizeFunction
-  argsMemoizeOptions?: [ArgsMemoizeFunction] extends [never]
-    ? RestParams<typeof defaultMemoize>
-    : RestParams<ArgsMemoizeFunction>
-}
-
+const customSelector = customSelectorCreator(
+  input1,
+  input2,
+  resultFunc // resultFunc will be passed as first argument to customMemoize
+)
+ * ```
+ * @template MemoizeFunction - A memoizer such as `defaultMemoize` that accepts a function + some possible options.
+ * @template ArgsMemoizeFunction - The memoizer function used to memoize the arguments of the selector.
+ */
 export function createSelectorCreator<
-  /** A memoizer such as defaultMemoize that accepts a function + some possible options */
   MemoizeFunction extends UnknownMemoizer,
-  /** The memoizer function used to memoize the arguments of the selector */
-  ArgsMemoizeFunction extends UnknownMemoizer = never
+  ArgsMemoizeFunction extends UnknownMemoizer
 >(
-  memoizeOrOptions:
-    | MemoizeFunction
-    | GetMemoizeOptions<MemoizeFunction, ArgsMemoizeFunction>,
+  memoize: MemoizeFunction,
   ...memoizeOptionsFromArgs: DropFirst<Parameters<MemoizeFunction>>
+): CreateSelectorFunction<MemoizeFunction>
+
+/**
+ * Can be used to make a customized version of `createSelector`.
+ * @param memoizeOptions - An object containing the memoize function and other options for memoization.
+ * @param memoizeOptions.memoizeMethod - A memoization function that accepts the result function and memoize options.
+ * @returns A customized `createSelector` function.
+ */
+export function createSelectorCreator<
+  MemoizeFunction extends UnknownMemoizer,
+  ArgsMemoizeFunction extends UnknownMemoizer
+>(
+  memoizeOptions: CreateSelectorOptions<
+    MemoizeFunction,
+    never,
+    ArgsMemoizeFunction
+  > & {
+    memoizeMethod: MemoizeFunction
+  }
+): CreateSelectorFunction<MemoizeFunction>
+
+/**
+ * Can be used to make a customized version of `createSelector`.
+ * @param memoizeOrOptions - A memoization function to replace `defaultMemoize`. It can also be an options object.
+ * @param memoizeOptionsFromArgs - Zero or more configuration options to be passed to the memoize function.
+ * The selector's `resultFunc` is passed as the first argument to `memoize` when `memoizeOrOptions` is a function,
+ * and the `memoizeOptions` are passed as the second argument onwards.
+ * @returns A customized `createSelector` function.
+ * @template MemoizeFunction - A memoizer such as `defaultMemoize` that accepts a function + some possible options.
+ * @template ArgsMemoizeFunction - The memoizer function used to memoize the arguments of the selector.
+ * @template MemoizeOrOptions - A memoization function to replace `defaultMemoize`. It can also be an options object.
+ */
+export function createSelectorCreator<
+  MemoizeFunction extends UnknownMemoizer,
+  ArgsMemoizeFunction extends UnknownMemoizer,
+  MemoizeOrOptions extends CreateMemoizeOrOptions<
+    MemoizeFunction,
+    ArgsMemoizeFunction
+  >
+>(
+  memoizeOrOptions: MemoizeOrOptions,
+  ...memoizeOptionsFromArgs: MemoizeOrOptions extends {
+    memoizeMethod: MemoizeFunction
+  }
+    ? []
+    : DropFirst<Parameters<MemoizeFunction>>
 ) {
   const createSelector = (...funcs: Function[]) => {
     let recomputations = 0
@@ -117,16 +150,14 @@ export function createSelectorCreator<
     // Due to the intricacies of rest params, we can't do an optional arg after `...funcs`.
     // So, start by declaring the default value here.
     // (And yes, the words 'memoize' and 'options' appear too many times in this next sequence.)
-    let directlyPassedOptions: CreateSelectorOptions<
-      DropFirst<Parameters<MemoizeFunction>>
-    > = {}
+    let directlyPassedOptions: CreateSelectorOptions<MemoizeFunction> = {}
 
     // Normally, the result func or "output selector" is the last arg
     let resultFunc = funcs.pop()
 
     // If the result func is actually an _object_, assume it's our options object
     if (typeof resultFunc === 'object') {
-      directlyPassedOptions = resultFunc as any
+      directlyPassedOptions = resultFunc
       // and pop the real result func off
       resultFunc = funcs.pop()
     }
