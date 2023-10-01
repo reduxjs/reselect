@@ -1,16 +1,12 @@
 // TODO: Add test for React Redux connect function
 
+import lodashMemoize from 'lodash/memoize'
 import {
+  autotrackMemoize,
   createSelector,
   createSelectorCreator,
-  defaultMemoize,
-  createStructuredSelector,
-  autotrackMemoize,
-  weakMapMemoize
+  defaultMemoize
 } from 'reselect'
-import lodashMemoize from 'lodash/memoize'
-import { vi } from 'vitest'
-import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 // Construct 1E6 states for perf test outside of the perf test so as to not change the execute time of the test function
 const numOfStates = 1000000
@@ -431,6 +427,95 @@ describe('Customizing selectors', () => {
     expect(selectorAutotrack.recomputations()).toBe(0)
     expect(selectorDefault(state)).toStrictEqual([0, 1])
     expect(selectorAutotrack(state)).toStrictEqual([0, 1])
+    expect(selectorDefault.recomputations()).toBe(1)
+    expect(selectorAutotrack.recomputations()).toBe(1)
+    selectorDefault({
+      todos: [
+        { id: 0, completed: false },
+        { id: 1, completed: false }
+      ]
+    })
+    const defaultSelectorLastResult1 = selectorDefault.lastResult()
+    selectorDefault({
+      todos: [
+        { id: 0, completed: true },
+        { id: 1, completed: true }
+      ]
+    })
+    const defaultSelectorLastResult2 = selectorDefault.lastResult()
+    selectorAutotrack({
+      todos: [
+        { id: 0, completed: false },
+        { id: 1, completed: false }
+      ]
+    })
+    const autotrackSelectorLastResult1 = selectorAutotrack.lastResult()
+    selectorAutotrack({
+      todos: [
+        { id: 0, completed: true }, // flipping completed flag does not cause the autotrack memoizer to re-run.
+        { id: 1, completed: true }
+      ]
+    })
+    const autotrackSelectorLastResult2 = selectorAutotrack.lastResult()
+    expect(selectorDefault.recomputations()).toBe(3)
+    expect(selectorAutotrack.recomputations()).toBe(1)
+    expect(autotrackSelectorLastResult1).toBe(autotrackSelectorLastResult2)
+    expect(defaultSelectorLastResult1).not.toBe(defaultSelectorLastResult2) // Default memoize does not preserve referential equality but autotrack does.
+    expect(defaultSelectorLastResult1).toStrictEqual(defaultSelectorLastResult2)
+  })
+
+  test('args memoize', () => {
+    interface State {
+      todos: {
+        id: number
+        completed: boolean
+      }[]
+    }
+    const state: State = {
+      todos: [
+        { id: 0, completed: false },
+        { id: 1, completed: false }
+      ]
+    }
+    const selectorDefault = createSelector(
+      (state: State) => state.todos,
+      todos => todos.map(t => t.id),
+      { argsMemoizeOptions: { maxSize: 2 }, argsMemoizeMethod: defaultMemoize }
+    )
+    const selectorAutotrack = createSelector(
+      (state: State) => state.todos,
+      todos => todos.map(t => t.id),
+      {}
+    )
+    const createSelectorFunc = createSelectorCreator(lodashMemoize)
+    const createSelectorObj = createSelectorCreator({
+      memoizeMethod: defaultMemoize,
+      argsMemoizeMethod: defaultMemoize,
+      memoizeOptions: { maxSize: 2 },
+      argsMemoizeOptions: { maxSize: 2 }
+    })
+    const selectorFunc = createSelectorFunc(
+      (state: State) => state.todos,
+      todos => todos.map(t => t.id),
+      {
+        memoizeMethod: defaultMemoize,
+        memoizeOptions: { maxSize: 2 },
+        argsMemoizeMethod: defaultMemoize,
+        argsMemoizeOptions: { maxSize: 2 }
+      }
+    )
+    const selectorObj = createSelectorObj(
+      (state: State) => state.todos,
+      todos => todos.map(t => t.id),
+      {
+        memoizeMethod: defaultMemoize,
+        memoizeOptions: { maxSize: 2 },
+        argsMemoizeMethod: defaultMemoize,
+        argsMemoizeOptions: { maxSize: 2 }
+      }
+    )
+    expect(selectorDefault({ ...state })).toStrictEqual([0, 1])
+    expect(selectorAutotrack({ ...state })).toStrictEqual([0, 1])
     expect(selectorDefault.recomputations()).toBe(1)
     expect(selectorAutotrack.recomputations()).toBe(1)
     selectorDefault({

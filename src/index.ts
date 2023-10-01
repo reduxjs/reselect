@@ -1,40 +1,40 @@
 import type {
-  Selector,
+  DropFirst,
+  Expand,
   GetParamsFromSelectors,
+  Head,
+  MergeParameters,
+  ObjValueTuple,
   OutputSelector,
+  Selector,
   SelectorArray,
   SelectorResultArray,
-  DropFirst,
-  MergeParameters,
-  Expand,
-  ObjValueTuple,
-  Head,
   Tail
 } from './types'
 
 export type {
-  Selector,
+  EqualityFn,
   GetParamsFromSelectors,
   GetStateFromSelectors,
-  OutputSelector,
-  EqualityFn,
-  SelectorArray,
-  SelectorResultArray,
-  ParametricSelector,
   OutputParametricSelector,
-  OutputSelectorFields
+  OutputSelector,
+  OutputSelectorFields,
+  ParametricSelector,
+  Selector,
+  SelectorArray,
+  SelectorResultArray
 } from './types'
 
 import {
-  defaultMemoize,
+  DefaultMemoizeOptions,
   defaultEqualityCheck,
-  DefaultMemoizeOptions
+  defaultMemoize
 } from './defaultMemoize'
 
 export { autotrackMemoize } from './autotrackMemoize/autotrackMemoize'
 export { weakMapMemoize } from './weakMapMemoize'
 
-export { defaultMemoize, defaultEqualityCheck }
+export { defaultEqualityCheck, defaultMemoize }
 
 export type { DefaultMemoizeOptions }
 
@@ -66,16 +66,76 @@ function getDependencies(funcs: unknown[]) {
   return dependencies as SelectorArray
 }
 
+type SetRequired<
+  BaseType,
+  Keys extends keyof BaseType
+> = BaseType extends unknown
+  ? Omit<BaseType, Keys> & Required<Pick<BaseType, Keys>>
+  : never
+
+type UnknownFunction = (...args: unknown[]) => unknown
+type AnyFunction = (...args: any[]) => any
+type UnknownMemoizer<F extends UnknownFunction = UnknownFunction> = (
+  func: F,
+  ...options: any[]
+) => F
+
+type AnyMemoizer = <Func extends UnknownFunction>(
+  func: Func,
+  ...options: any[]
+) => Func
+
+type RestParams<F extends AnyFunction> =
+  | DropFirst<Parameters<F>>
+  | DropFirst<Parameters<F>>[0]
+
+type GetMemoizeOptions<
+  F extends UnknownFunction,
+  MemoizeFunction extends UnknownMemoizer<F>,
+  ArgsMemoizeMethod extends UnknownMemoizer<F> = never
+> = {
+  memoizeMethod: MemoizeFunction
+  memoizeOptions?: RestParams<MemoizeFunction>
+  inputStabilityCheck?: StabilityCheck
+  argsMemoizeMethod?: [ArgsMemoizeMethod] extends [never]
+    ? UnknownMemoizer<F>
+    : ArgsMemoizeMethod
+  argsMemoizeOptions?: [ArgsMemoizeMethod] extends [never]
+    ? RestParams<typeof defaultMemoize<F>>
+    : RestParams<ArgsMemoizeMethod>
+}
+
 export function createSelectorCreator<
-  /** Selectors will eventually accept some function to be memoized */
-  F extends (...args: unknown[]) => unknown,
-  /** A memoizer such as defaultMemoize that accepts a function + some possible options */
-  MemoizeFunction extends (func: F, ...options: any[]) => F,
-  /** The additional options arguments to the memoizer */
+  F extends UnknownFunction,
+  MemoizeFunction extends UnknownMemoizer<F>,
+  MemoizeOptions extends unknown[] = DropFirst<Parameters<MemoizeFunction>>,
+  ArgsMemoizeMethod extends UnknownMemoizer<F> = never
+>(
+  memoizeOptions: GetMemoizeOptions<F, MemoizeFunction, ArgsMemoizeMethod>
+): CreateSelectorFunction<F, MemoizeFunction, MemoizeOptions>
+
+export function createSelectorCreator<
+  F extends UnknownFunction,
+  MemoizeFunction extends UnknownMemoizer<F>,
   MemoizeOptions extends unknown[] = DropFirst<Parameters<MemoizeFunction>>
 >(
   memoize: MemoizeFunction,
   ...memoizeOptionsFromArgs: DropFirst<Parameters<MemoizeFunction>>
+): CreateSelectorFunction<F, MemoizeFunction, MemoizeOptions>
+
+export function createSelectorCreator<
+  /** Selectors will eventually accept some function to be memoized */
+  F extends UnknownFunction,
+  /** A memoizer such as defaultMemoize that accepts a function + some possible options */
+  MemoizeFunction extends UnknownMemoizer<F>,
+  /** The additional options arguments to the memoizer */
+  MemoizeOptions extends unknown[] = DropFirst<Parameters<MemoizeFunction>>,
+  ArgsMemoizeMethod extends UnknownMemoizer<F> = never
+>(
+  memoizeOrOptions:
+    | MemoizeFunction
+    | GetMemoizeOptions<F, MemoizeFunction, ArgsMemoizeMethod>,
+  ...memoizeOptionsFromArgs: MemoizeOptions
 ) {
   const createSelector = (...funcs: Function[]) => {
     let recomputations = 0
@@ -105,9 +165,16 @@ export function createSelectorCreator<
     // Determine which set of options we're using. Prefer options passed directly,
     // but fall back to options given to createSelectorCreator.
     const {
-      memoizeOptions = memoizeOptionsFromArgs,
+      memoizeOptions = typeof memoizeOrOptions === 'function'
+        ? memoizeOptionsFromArgs
+        : memoizeOrOptions.memoizeOptions,
       inputStabilityCheck,
-      memoizeMethod = memoize
+      memoizeMethod = typeof memoizeOrOptions === 'function'
+        ? memoizeOrOptions
+        : memoizeOrOptions.memoizeMethod,
+      argsMemoizeMethod = typeof memoizeOrOptions === 'function'
+        ? defaultMemoize<F>
+        : memoizeOrOptions?.argsMemoizeMethod ?? defaultMemoize<F>
     } = directlyPassedOptions
 
     // Simplifying assumption: it's unlikely that the first options arg of the provided memoizer
@@ -148,7 +215,7 @@ export function createSelectorCreator<
     // Arguments change all the time, but input values change less often.
     // Most of the time shallow equality _is_ what we really want here.
     // TODO Rethink this change, or find a way to expose more options?
-    const selector = defaultMemoize(function dependenciesChecker() {
+    const selector = argsMemoizeMethod(function dependenciesChecker() {
       const params = []
       const { length } = dependencies
 
@@ -222,35 +289,31 @@ export function createSelectorCreator<
 
 export type CreateSelectorOptions<
   MemoizeOptions extends unknown[],
-  MemoizeMethod extends <Func extends (...args: unknown[]) => unknown>(
-    func: Func,
-    ...options: any[]
-  ) => Func = never
-> = [MemoizeMethod] extends [never]
-  ? {
-      inputStabilityCheck?: StabilityCheck
-      memoizeOptions?: MemoizeOptions[0] | MemoizeOptions
-      /** A function that takes another function and returns it. */
-      memoizeMethod?: <F extends (...args: unknown[]) => unknown>(
-        func: F,
-        ...options: any[]
-      ) => F
-    }
-  : {
-      inputStabilityCheck?: StabilityCheck
-      /** A function that takes another function and returns it. */
-      memoizeMethod?: MemoizeMethod
-      memoizeOptions?:
-        | DropFirst<Parameters<MemoizeMethod>>[0]
-        | DropFirst<Parameters<MemoizeMethod>>
-    }
+  MemoizeFunction extends UnknownMemoizer = never,
+  ArgsMemoizeFunction extends UnknownMemoizer = never
+> = {
+  inputStabilityCheck?: StabilityCheck
+  /** A function that takes another function and returns it. */
+  memoizeMethod?: [MemoizeFunction] extends [never]
+    ? UnknownMemoizer
+    : MemoizeFunction
+  argsMemoizeMethod?: [ArgsMemoizeFunction] extends [never]
+    ? UnknownMemoizer
+    : ArgsMemoizeFunction
+  memoizeOptions?: [MemoizeFunction] extends [never]
+    ? MemoizeOptions[0] | MemoizeOptions
+    : RestParams<MemoizeFunction>
+  argsMemoizeOptions?: [ArgsMemoizeFunction] extends [never]
+    ? RestParams<typeof defaultMemoize>
+    : RestParams<ArgsMemoizeFunction>
+}
 
 /**
  * An instance of createSelector, customized with a given memoize implementation
  */
 export interface CreateSelectorFunction<
-  F extends (...args: unknown[]) => unknown,
-  MemoizeFunction extends (func: F, ...options: any[]) => F,
+  F extends UnknownFunction,
+  MemoizeFunction extends UnknownMemoizer<F>,
   MemoizeOptions extends unknown[] = DropFirst<Parameters<MemoizeFunction>>,
   Keys = Expand<
     Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
@@ -275,15 +338,13 @@ export interface CreateSelectorFunction<
   <
     Selectors extends SelectorArray,
     Result,
-    MemoizeMethod extends <Func extends (...args: unknown[]) => unknown>(
-      func: Func,
-      ...options: any[]
-    ) => Func = never
+    MemoizeMethod extends AnyMemoizer = never,
+    ArgsMemoizeMethod extends AnyMemoizer = never
   >(
     ...items: [
       ...Selectors,
       (...args: SelectorResultArray<Selectors>) => Result,
-      CreateSelectorOptions<MemoizeOptions, MemoizeMethod>
+      CreateSelectorOptions<MemoizeOptions, MemoizeMethod, ArgsMemoizeMethod>
     ]
   ): OutputSelector<
     Selectors,
@@ -298,14 +359,16 @@ export interface CreateSelectorFunction<
   <
     Selectors extends SelectorArray,
     Result,
-    MemoizeMethod extends <Func extends (...args: unknown[]) => unknown>(
-      func: Func,
-      ...options: any[]
-    ) => Func = never
+    MemoizeMethod extends AnyMemoizer = never,
+    ArgsMemoizeMethod extends AnyMemoizer = never
   >(
     selectors: [...Selectors],
     combiner: (...args: SelectorResultArray<Selectors>) => Result,
-    options?: CreateSelectorOptions<MemoizeOptions, MemoizeMethod>
+    options?: CreateSelectorOptions<
+      MemoizeOptions,
+      MemoizeMethod,
+      ArgsMemoizeMethod
+    >
   ): OutputSelector<
     Selectors,
     Result,
