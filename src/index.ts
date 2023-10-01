@@ -90,51 +90,59 @@ type RestParams<F extends AnyFunction> =
   | DropFirst<Parameters<F>>[0]
 
 type GetMemoizeOptions<
-  F extends UnknownFunction,
-  MemoizeFunction extends UnknownMemoizer<F>,
-  ArgsMemoizeMethod extends UnknownMemoizer<F> = never
+  // F extends UnknownFunction,
+  MemoizeFunction extends AnyMemoizer,
+  ArgsMemoizeMethod extends AnyMemoizer = never
 > = {
   memoizeMethod: MemoizeFunction
   memoizeOptions?: RestParams<MemoizeFunction>
   inputStabilityCheck?: StabilityCheck
   argsMemoizeMethod?: [ArgsMemoizeMethod] extends [never]
-    ? UnknownMemoizer<F>
+    ? AnyMemoizer
     : ArgsMemoizeMethod
   argsMemoizeOptions?: [ArgsMemoizeMethod] extends [never]
-    ? RestParams<typeof defaultMemoize<F>>
+    ? RestParams<typeof defaultMemoize>
     : RestParams<ArgsMemoizeMethod>
 }
 
 export function createSelectorCreator<
-  F extends UnknownFunction,
-  MemoizeFunction extends UnknownMemoizer<F>,
+  // F extends UnknownFunction,
+  MemoizeFunction extends AnyMemoizer,
   MemoizeOptions extends unknown[] = DropFirst<Parameters<MemoizeFunction>>,
-  ArgsMemoizeMethod extends UnknownMemoizer<F> = never
+  ArgsMemoizeMethod extends AnyMemoizer = never
 >(
-  memoizeOptions: GetMemoizeOptions<F, MemoizeFunction, ArgsMemoizeMethod>
-): CreateSelectorFunction<F, MemoizeFunction, MemoizeOptions>
+  memoizeOptions: GetMemoizeOptions<MemoizeFunction, ArgsMemoizeMethod>
+): CreateSelectorFunction<
+  // Parameters<MemoizeFunction>[0],
+  MemoizeFunction,
+  MemoizeOptions
+>
 
 export function createSelectorCreator<
-  F extends UnknownFunction,
-  MemoizeFunction extends UnknownMemoizer<F>,
+  // F extends UnknownFunction,
+  MemoizeFunction extends UnknownMemoizer,
   MemoizeOptions extends unknown[] = DropFirst<Parameters<MemoizeFunction>>
 >(
   memoize: MemoizeFunction,
   ...memoizeOptionsFromArgs: DropFirst<Parameters<MemoizeFunction>>
-): CreateSelectorFunction<F, MemoizeFunction, MemoizeOptions>
+): CreateSelectorFunction<
+  // Parameters<MemoizeFunction>[0],
+  MemoizeFunction,
+  MemoizeOptions
+>
 
 export function createSelectorCreator<
   /** Selectors will eventually accept some function to be memoized */
-  F extends UnknownFunction,
+  // F extends UnknownFunction,
   /** A memoizer such as defaultMemoize that accepts a function + some possible options */
-  MemoizeFunction extends UnknownMemoizer<F>,
+  MemoizeFunction extends AnyMemoizer,
   /** The additional options arguments to the memoizer */
   MemoizeOptions extends unknown[] = DropFirst<Parameters<MemoizeFunction>>,
-  ArgsMemoizeMethod extends UnknownMemoizer<F> = never
+  ArgsMemoizeMethod extends AnyMemoizer = never
 >(
   memoizeOrOptions:
     | MemoizeFunction
-    | GetMemoizeOptions<F, MemoizeFunction, ArgsMemoizeMethod>,
+    | GetMemoizeOptions<MemoizeFunction, ArgsMemoizeMethod>,
   ...memoizeOptionsFromArgs: MemoizeOptions
 ) {
   const createSelector = (...funcs: Function[]) => {
@@ -173,8 +181,8 @@ export function createSelectorCreator<
         ? memoizeOrOptions
         : memoizeOrOptions.memoizeMethod,
       argsMemoizeMethod = typeof memoizeOrOptions === 'function'
-        ? defaultMemoize<F>
-        : memoizeOrOptions?.argsMemoizeMethod ?? defaultMemoize<F>
+        ? defaultMemoize
+        : memoizeOrOptions?.argsMemoizeMethod ?? defaultMemoize
     } = directlyPassedOptions
 
     // Simplifying assumption: it's unlikely that the first options arg of the provided memoizer
@@ -188,14 +196,11 @@ export function createSelectorCreator<
 
     const dependencies = getDependencies(funcs)
 
-    const memoizedResultFunc = memoizeMethod(
-      function recomputationWrapper() {
-        recomputations++
-        // apply arguments instead of spreading for performance.
-        return resultFunc!.apply(null, arguments)
-      } as F,
-      ...finalMemoizeOptions
-    )
+    const memoizedResultFunc = memoizeMethod(function recomputationWrapper() {
+      recomputations++
+      // apply arguments instead of spreading for performance.
+      return resultFunc!.apply(null, arguments)
+    }, ...finalMemoizeOptions)
 
     // @ts-ignore
     const makeAnObject: (...args: unknown[]) => object = memoizeMethod(
@@ -266,7 +271,7 @@ export function createSelectorCreator<
       lastResult = memoizedResultFunc.apply(null, params)
 
       return lastResult
-    } as F)
+    })
 
     Object.assign(selector, {
       resultFunc,
@@ -281,7 +286,7 @@ export function createSelectorCreator<
   }
   // @ts-ignore
   return createSelector as CreateSelectorFunction<
-    F,
+    // Parameters<MemoizeFunction>[0],
     MemoizeFunction,
     MemoizeOptions
   >
@@ -289,8 +294,8 @@ export function createSelectorCreator<
 
 export type CreateSelectorOptions<
   MemoizeOptions extends unknown[],
-  MemoizeFunction extends UnknownMemoizer = never,
-  ArgsMemoizeFunction extends UnknownMemoizer = never
+  MemoizeFunction extends AnyMemoizer = never,
+  ArgsMemoizeFunction extends AnyMemoizer = never
 > = {
   inputStabilityCheck?: StabilityCheck
   /** A function that takes another function and returns it. */
@@ -312,8 +317,8 @@ export type CreateSelectorOptions<
  * An instance of createSelector, customized with a given memoize implementation
  */
 export interface CreateSelectorFunction<
-  F extends UnknownFunction,
-  MemoizeFunction extends UnknownMemoizer<F>,
+  // F extends UnknownFunction,
+  MemoizeFunction extends UnknownMemoizer,
   MemoizeOptions extends unknown[] = DropFirst<Parameters<MemoizeFunction>>,
   Keys = Expand<
     Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
