@@ -1,3 +1,4 @@
+import { CreateSelectorOptions } from 'reselect'
 import type { MergeParameters } from './versionedTypes'
 export type { MergeParameters } from './versionedTypes'
 
@@ -7,7 +8,8 @@ export type { MergeParameters } from './versionedTypes'
  *
  */
 
-/** A standard selector function, which takes three generic type arguments:
+/**
+ * A standard selector function, which takes three generic type arguments:
  * @param State The first value, often a Redux root state object
  * @param Result The final result returned by the selector
  * @param Params All additional arguments passed into the selector
@@ -102,6 +104,16 @@ export type GetParamsFromSelectors<
   RemainingItems extends readonly unknown[] = Tail<MergeParameters<S>>
 > = RemainingItems
 
+/** Utility that Creates the `memoizeOrOptions` parameter type for `createSelectorCreator` */
+export type CreateMemoizeOrOptions<
+  MemoizeFunction extends UnknownMemoizer,
+  ArgsMemoizeFunction extends UnknownMemoizer = never
+> =
+  | MemoizeFunction
+  | (CreateSelectorOptions<MemoizeFunction, never, ArgsMemoizeFunction> & {
+      memoize: MemoizeFunction
+    })
+
 /*
  *
  * Reselect Internal Utility Types
@@ -110,6 +122,18 @@ export type GetParamsFromSelectors<
 
 /** Any function with arguments */
 export type AnyFunction = (...args: any[]) => any
+/** Any function with unknown arguments */
+export type UnknownFunction = (...args: unknown[]) => unknown
+/** Any Memoizer function. A memoizer is a function that accepts another function and returns it. */
+export type UnknownMemoizer<Func extends UnknownFunction = UnknownFunction> = (
+  func: Func,
+  ...options: any[]
+) => Func
+
+/** Extracts memoize options from the parameters of a memoizer function. */
+export type MemoizeOptsFromParams<MemoizeFunction extends UnknownMemoizer> =
+  | DropFirst<Parameters<MemoizeFunction>>[0]
+  | DropFirst<Parameters<MemoizeFunction>>
 
 /** Extract the return type from all functions as a tuple */
 export type ExtractReturnType<T extends readonly AnyFunction[]> = {
