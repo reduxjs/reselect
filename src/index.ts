@@ -42,10 +42,20 @@ type StabilityCheck = 'always' | 'once' | 'never'
 
 let globalStabilityCheck: StabilityCheck = 'once'
 
+/**
+ * In development, an extra check is conducted on your input selectors.
+ * It runs your input selectors an extra time with the same parameters, and warns in console if they return a different result (based on your `memoize` method).
+ * @param enabled - Enable or disable `inputStabilityCheck` globally.
+ */
 export function setInputStabilityCheckEnabled(enabled: StabilityCheck) {
   globalStabilityCheck = enabled
 }
 
+/**
+ * Extracts the "dependencies" / "input selectors"
+ * @param funcs - An array of dependencies
+ * @returns An array of selectors.
+ */
 function getDependencies(funcs: unknown[]) {
   const dependencies = Array.isArray(funcs[0]) ? funcs[0] : funcs
 
