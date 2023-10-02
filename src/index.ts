@@ -190,7 +190,10 @@ export function createSelectorCreator<
         : memoizeOrOptions.memoize,
       argsMemoize = typeof memoizeOrOptions === 'function'
         ? defaultMemoize
-        : memoizeOrOptions?.argsMemoize ?? defaultMemoize
+        : memoizeOrOptions?.argsMemoize ?? defaultMemoize,
+      argsMemoizeOptions = typeof memoizeOrOptions === 'function'
+        ? undefined
+        : memoizeOrOptions?.argsMemoizeOptions
     } = directlyPassedOptions
 
     // Simplifying assumption: it's unlikely that the first options arg of the provided memoizer
@@ -201,6 +204,10 @@ export function createSelectorCreator<
     const finalMemoizeOptions = Array.isArray(memoizeOptions)
       ? memoizeOptions
       : [memoizeOptions]
+
+    const finalArgsMemoizeOptions = Array.isArray(argsMemoizeOptions)
+      ? argsMemoizeOptions
+      : [argsMemoizeOptions]
 
     const dependencies = getDependencies(funcs)
 
@@ -279,7 +286,7 @@ export function createSelectorCreator<
       lastResult = memoizedResultFunc.apply(null, params)
 
       return lastResult
-    })
+    }, ...finalArgsMemoizeOptions)
 
     Object.assign(selector, {
       resultFunc,
