@@ -1,7 +1,6 @@
 import type {
   CreateMemoizeOrOptions,
   DropFirst,
-  Expand,
   GetParamsFromSelectors,
   Head,
   MemoizeOptsFromParams,
@@ -375,10 +374,7 @@ export type CreateSelectorOptions<
  * An instance of createSelector, customized with a given memoize implementation
  */
 export interface CreateSelectorFunction<
-  MemoizeFunction extends UnknownMemoizer,
-  Keys = Expand<
-    Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
-  >
+  MemoizeFunction extends UnknownMemoizer
 > {
   /** Input selectors as separate inline arguments */
   <Selectors extends SelectorArray, Result>(
@@ -391,9 +387,9 @@ export interface CreateSelectorFunction<
     Result,
     (...args: SelectorResultArray<Selectors>) => Result,
     GetParamsFromSelectors<Selectors>,
-    Keys
+    Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
   > &
-    Keys
+    Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
 
   /** Input selectors as separate inline arguments with memoizeOptions passed */
   <
@@ -416,9 +412,9 @@ export interface CreateSelectorFunction<
     Result,
     (...args: SelectorResultArray<Selectors>) => Result,
     GetParamsFromSelectors<Selectors>,
-    Keys
+    ReturnType<MemoizeFunction>
   > &
-    Keys
+    ReturnType<MemoizeFunction>
 
   /** Input selectors as a separate array */
   <
@@ -439,9 +435,9 @@ export interface CreateSelectorFunction<
     Result,
     (...args: SelectorResultArray<Selectors>) => Result,
     GetParamsFromSelectors<Selectors>,
-    Keys
+    ReturnType<MemoizeFunction>
   > &
-    Keys
+    ReturnType<MemoizeFunction>
 }
 
 export const createSelector =
