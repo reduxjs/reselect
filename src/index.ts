@@ -309,14 +309,61 @@ export type CreateSelectorOptions<
   OverrideArgsMemoizeFunction extends UnknownMemoizer = never
 > = {
   inputStabilityCheck?: StabilityCheck
-  /** A function that takes another function and returns it. */
-  memoize?: [OverrideMemoizeFunction] extends [never]
+  /** A function that accepts another function and returns it. This function is used to memoize `resultFunc`
+   * @example
+   * ```
+   * const state = {
+      todos: [
+        { id: 0, completed: false },
+        { id: 1, completed: false }
+      ]
+    }
+    const selectTodoIds = createSelector(
+      state => state.todos,
+      todos => todos.map(t => t.id),
+      {
+        memoize: defaultMemoize, // function to be used to memoize `resultFunc`
+        memoizeOptions: { // These options will be passed as an argument to `memoize`
+          maxSize: 2,
+          equalityCheck: (a, b) => a === b,
+          resultEqualityCheck: (a, b) => a === b
+        }
+      }
+    )
+    const todoIds = selectTodoIds(state) // `argsMemoize` is used to memoize the arguments passed to the selector, in this case that would be `state`.
+   * ```
+  */
+  memoize?: [OverrideMemoizeFunction] extends [never] // If `memoize` is not provided inside the options object, fallback to `UnknownMemoizer`.
     ? UnknownMemoizer
     : OverrideMemoizeFunction
+  /** The memoizer function used to memoize the arguments of the selector.
+   * @example
+   * ```
+   * const state = {
+      todos: [
+        { id: 0, completed: false },
+        { id: 1, completed: false }
+      ]
+    }
+    const selectTodoIds = createSelector(
+      state => state.todos,
+      todos => todos.map(t => t.id),
+      {
+        argsMemoize: defaultMemoize, // function to be used to memoize arguments passed to the selector.
+        argsMemoizeOptions: { // These options will be passed as arguments to `argsMemoize`
+          maxSize: 2,
+          equalityCheck: (a, b) => a === b,
+          resultEqualityCheck: (a, b) => a === b
+        }
+      }
+    )
+    const todoIds = selectTodoIds(state) // `argsMemoize` is used to memoize the arguments passed to the selector, in this case that would be `state`.
+   * ```
+   */
   argsMemoize?: [OverrideArgsMemoizeFunction] extends [never]
     ? UnknownMemoizer
     : OverrideArgsMemoizeFunction
-  memoizeOptions?: [OverrideMemoizeFunction] extends [never]
+  memoizeOptions?: [OverrideMemoizeFunction] extends [never] // Should dynamically change to the options argument of `memoize`.
     ? MemoizeOptsFromParams<MemoizeFunction>
     : MemoizeOptsFromParams<OverrideMemoizeFunction>
   argsMemoizeOptions?: [OverrideArgsMemoizeFunction] extends [never]
