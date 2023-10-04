@@ -1,4 +1,3 @@
-import { CreateSelectorOptions } from 'reselect'
 import type { MergeParameters } from './versionedTypes'
 export type { MergeParameters } from './versionedTypes'
 
@@ -120,10 +119,25 @@ export type UnknownMemoizer<Func extends UnknownFunction = UnknownFunction> = (
   ...options: any[]
 ) => Func
 
+/**
+ * Omit any index signatures from the given object type, leaving only explicitly defined properties.
+ * Source: https://stackoverflow.com/questions/51465182/how-to-remove-index-signature-using-mapped-types/68261113#68261113
+ * This is mainly used to remove explicit `any`s from the return type of some memoizers. e.g: `microMemoize`
+ */
+export type OmitIndexSignature<ObjectType> = {
+  [KeyType in keyof ObjectType as {} extends Record<KeyType, unknown>
+    ? never
+    : KeyType]: ObjectType[KeyType]
+}
+
 /** Extracts memoize options from the parameters of a memoizer function. */
 export type MemoizeOptsFromParams<MemoizeFunction extends UnknownMemoizer> =
   | DropFirst<Parameters<MemoizeFunction>>[0]
   | DropFirst<Parameters<MemoizeFunction>>
+
+/** Extract the extra properties that are attached to the return value of a memoizer. e.g.: clearCache */
+export type ExtractMemoizerFields<T extends UnknownMemoizer> =
+  OmitIndexSignature<ReturnType<T>>
 
 /** Extract the return type from all functions as a tuple */
 export type ExtractReturnType<T extends readonly AnyFunction[]> = {

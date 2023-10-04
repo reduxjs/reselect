@@ -2,6 +2,7 @@
   "compilerOptions": {
     "module": "commonjs",
     "strict": true,
+    "esModuleInterop": true,
     "target": "ES2015",
     "declaration": true,
     "noEmit": true,
@@ -10,6 +11,5 @@
       "reselect": ["../src/index"]  // @remap-prod-remove-line
     }
   },
-  "include": ["test.ts"],
-  
+  "include": ["test.ts", "argsMemoizeTypeTest.ts"]
 }
