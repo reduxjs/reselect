@@ -140,10 +140,11 @@ export function createSelectorCreator<MemoizeFunction extends UnknownMemoizer>(
 export function createSelectorCreator<
   MemoizeFunction extends UnknownMemoizer,
   ArgsMemoizeFunction extends UnknownMemoizer,
-  MemoizeOrOptions extends CreateMemoizeOrOptions<
-    MemoizeFunction,
-    ArgsMemoizeFunction
-  >
+  MemoizeOrOptions extends
+    | MemoizeFunction
+    | (CreateSelectorOptions<MemoizeFunction, ArgsMemoizeFunction> & {
+        memoize: MemoizeFunction
+      })
 >(
   memoizeOrOptions: MemoizeOrOptions,
   ...memoizeOptionsFromArgs: MemoizeOrOptions extends {
@@ -152,6 +153,18 @@ export function createSelectorCreator<
     ? []
     : DropFirst<Parameters<MemoizeFunction>>
 ) {
+  // TODO: Might change to if statement.
+  const defaultOptions: CreateSelectorOptions<
+    MemoizeFunction,
+    ArgsMemoizeFunction
+  > & { memoize: MemoizeFunction } =
+    typeof memoizeOrOptions === 'function'
+      ? {
+        memoize: memoizeOrOptions as MemoizeFunction,
+        memoizeOptions: memoizeOptionsFromArgs
+      }
+      : memoizeOrOptions
+
   const createSelector = (...funcs: Function[]) => {
     let recomputations = 0
     let lastResult: unknown
@@ -159,7 +172,10 @@ export function createSelectorCreator<
     // Due to the intricacies of rest params, we can't do an optional arg after `...funcs`.
     // So, start by declaring the default value here.
     // (And yes, the words 'memoize' and 'options' appear too many times in this next sequence.)
-    let directlyPassedOptions: CreateSelectorOptions<MemoizeFunction> = {}
+    let directlyPassedOptions: CreateSelectorOptions<
+      MemoizeFunction,
+      ArgsMemoizeFunction
+    > = {}
 
     // Normally, the result func or "output selector" is the last arg
     let resultFunc = funcs.pop()
@@ -179,21 +195,15 @@ export function createSelectorCreator<
 
     // Determine which set of options we're using. Prefer options passed directly,
     // but fall back to options given to createSelectorCreator.
+    const combinedOptions = { ...defaultOptions, ...directlyPassedOptions }
+
     const {
-      memoizeOptions = typeof memoizeOrOptions === 'function'
-        ? memoizeOptionsFromArgs
-        : memoizeOrOptions.memoizeOptions,
-      inputStabilityCheck,
-      memoize = typeof memoizeOrOptions === 'function'
-        ? memoizeOrOptions
-        : memoizeOrOptions.memoize,
-      argsMemoize = typeof memoizeOrOptions === 'function'
-        ? defaultMemoize
-        : memoizeOrOptions?.argsMemoize ?? defaultMemoize,
-      argsMemoizeOptions = typeof memoizeOrOptions === 'function'
-        ? undefined
-        : memoizeOrOptions?.argsMemoizeOptions
-    } = directlyPassedOptions
+      memoize = defaultMemoize,
+      memoizeOptions = [],
+      argsMemoize = defaultMemoize,
+      argsMemoizeOptions = [],
+      inputStabilityCheck
+    } = combinedOptions
 
     // Simplifying assumption: it's unlikely that the first options arg of the provided memoizer
     // is an array. In most libs I've looked at, it's an equality function or options object.
@@ -299,7 +309,10 @@ export function createSelectorCreator<
     return selector
   }
   // @ts-ignore
-  return createSelector as CreateSelectorFunction<MemoizeFunction>
+  return createSelector as CreateSelectorFunction<
+    MemoizeFunction,
+    ArgsMemoizeFunction
+  >
 }
 
 export type CreateSelectorOptions<
