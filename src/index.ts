@@ -1,6 +1,6 @@
 import type {
-  CreateMemoizeOrOptions,
   DropFirst,
+  ExtractMemoizerFields,
   GetParamsFromSelectors,
   Head,
   MemoizeOptsFromParams,
@@ -51,7 +51,7 @@ export function setInputStabilityCheckEnabled(enabled: StabilityCheck) {
 }
 
 /**
- * Extracts the "dependencies" / "input selectors"
+ * Extracts the "dependencies" / "input selectors" as an array.
  * @param funcs - An array of dependencies
  * @returns An array of selectors.
  */
@@ -121,32 +121,10 @@ const customSelector = customSelectorCreator(
  * @template MemoizeFunction - A memoizer such as `defaultMemoize` that accepts a function + some possible options.
  * @template ArgsMemoizeFunction - The memoizer function used to memoize the arguments of the selector.
  */
-export function createSelectorCreator<
-  MemoizeFunction extends UnknownMemoizer,
-  ArgsMemoizeFunction extends UnknownMemoizer
->(
+export function createSelectorCreator<MemoizeFunction extends UnknownMemoizer>(
   memoize: MemoizeFunction,
   ...memoizeOptionsFromArgs: DropFirst<Parameters<MemoizeFunction>>
-): CreateSelectorFunction<MemoizeFunction>
-
-/**
- * Can be used to make a customized version of `createSelector`.
- * @param memoizeOptions - An object containing the memoize function and other options for memoization.
- * @param memoizeOptions.memoize - A memoization function that accepts the result function and memoize options.
- * @returns A customized `createSelector` function.
- */
-export function createSelectorCreator<
-  MemoizeFunction extends UnknownMemoizer,
-  ArgsMemoizeFunction extends UnknownMemoizer
->(
-  memoizeOptions: CreateSelectorOptions<
-    MemoizeFunction,
-    never,
-    ArgsMemoizeFunction
-  > & {
-    memoize: MemoizeFunction
-  }
-): CreateSelectorFunction<MemoizeFunction>
+): CreateSelectorFunction<MemoizeFunction, typeof defaultMemoize>
 
 /**
  * Can be used to make a customized version of `createSelector`.
