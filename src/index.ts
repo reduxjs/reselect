@@ -388,7 +388,8 @@ export interface CreateSelectorOptions<
  * An instance of createSelector, customized with a given memoize implementation
  */
 export interface CreateSelectorFunction<
-  MemoizeFunction extends UnknownMemoizer
+  MemoizeFunction extends UnknownMemoizer,
+  ArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
 > {
   /** Input selectors as separate inline arguments */
   <Selectors extends SelectorArray, Result>(
@@ -401,22 +402,23 @@ export interface CreateSelectorFunction<
     Result,
     (...args: SelectorResultArray<Selectors>) => Result,
     GetParamsFromSelectors<Selectors>,
-    Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
+    ExtractMemoizerFields<MemoizeFunction>
   > &
-    Pick<ReturnType<MemoizeFunction>, keyof ReturnType<MemoizeFunction>>
+    ExtractMemoizerFields<ArgsMemoizeFunction>
 
   /** Input selectors as separate inline arguments with memoizeOptions passed */
   <
     Selectors extends SelectorArray,
     Result,
-    OverrideMemoizeFunction extends UnknownMemoizer = never,
-    OverrideArgsMemoizeFunction extends UnknownMemoizer = never
+    OverrideMemoizeFunction extends UnknownMemoizer = MemoizeFunction,
+    OverrideArgsMemoizeFunction extends UnknownMemoizer = ArgsMemoizeFunction
   >(
     ...items: [
       ...Selectors,
       (...args: SelectorResultArray<Selectors>) => Result,
       CreateSelectorOptions<
         MemoizeFunction,
+        ArgsMemoizeFunction,
         OverrideMemoizeFunction,
         OverrideArgsMemoizeFunction
       >
@@ -426,21 +428,22 @@ export interface CreateSelectorFunction<
     Result,
     (...args: SelectorResultArray<Selectors>) => Result,
     GetParamsFromSelectors<Selectors>,
-    ReturnType<MemoizeFunction>
+    ExtractMemoizerFields<OverrideMemoizeFunction>
   > &
-    ReturnType<MemoizeFunction>
+    ExtractMemoizerFields<OverrideArgsMemoizeFunction>
 
   /** Input selectors as a separate array */
   <
     Selectors extends SelectorArray,
     Result,
-    OverrideMemoizeFunction extends UnknownMemoizer = never,
-    OverrideArgsMemoizeFunction extends UnknownMemoizer = never
+    OverrideMemoizeFunction extends UnknownMemoizer = MemoizeFunction,
+    OverrideArgsMemoizeFunction extends UnknownMemoizer = ArgsMemoizeFunction
   >(
     selectors: [...Selectors],
     combiner: (...args: SelectorResultArray<Selectors>) => Result,
     options?: CreateSelectorOptions<
       MemoizeFunction,
+      ArgsMemoizeFunction,
       OverrideMemoizeFunction,
       OverrideArgsMemoizeFunction
     >
@@ -449,9 +452,9 @@ export interface CreateSelectorFunction<
     Result,
     (...args: SelectorResultArray<Selectors>) => Result,
     GetParamsFromSelectors<Selectors>,
-    ReturnType<MemoizeFunction>
+    ExtractMemoizerFields<OverrideMemoizeFunction>
   > &
-    ReturnType<MemoizeFunction>
+    ExtractMemoizerFields<OverrideArgsMemoizeFunction>
 }
 
 export const createSelector =
@@ -465,7 +468,7 @@ export interface StructuredSelectorCreator {
     SelectorParams = MergeParameters<ObjValueTuple<SelectorMap>>
   >(
     selectorMap: SelectorMap,
-    selectorCreator?: CreateSelectorFunction<any>
+    selectorCreator?: CreateSelectorFunction<any, any>
   ): (
     // Accept an arbitrary number of parameters for all selectors
     // The annoying head/tail bit here is because TS isn't convinced that
@@ -479,7 +482,7 @@ export interface StructuredSelectorCreator {
 
   <State, Result = State>(
     selectors: { [K in keyof Result]: Selector<State, Result[K], never> },
-    selectorCreator?: CreateSelectorFunction<any>
+    selectorCreator?: CreateSelectorFunction<any, any>
   ): Selector<State, Result, never>
 }
 
