@@ -104,16 +104,6 @@ export type GetParamsFromSelectors<
   RemainingItems extends readonly unknown[] = Tail<MergeParameters<S>>
 > = RemainingItems
 
-/** Utility that Creates the `memoizeOrOptions` parameter type for `createSelectorCreator` */
-export type CreateMemoizeOrOptions<
-  MemoizeFunction extends UnknownMemoizer,
-  ArgsMemoizeFunction extends UnknownMemoizer = never
-> =
-  | MemoizeFunction
-  | (CreateSelectorOptions<MemoizeFunction, never, ArgsMemoizeFunction> & {
-      memoize: MemoizeFunction
-    })
-
 /*
  *
  * Reselect Internal Utility Types
