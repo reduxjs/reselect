@@ -84,7 +84,7 @@ function getDependencies(funcs: unknown[]) {
 export function createSelectorCreator<
   MemoizeFunction extends UnknownMemoizer,
   ArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
-  // FIXME: unify or intersect this type parameter with `CreateSelectorOptions` to obtain a maintain source of truth.
+  // FIXME: unify or intersect this type parameter with `CreateSelectorOptions` to maintain a source of truth.
 >(memoizeOptions: {
   inputStabilityCheck?: StabilityCheck
   memoize: MemoizeFunction
@@ -160,9 +160,9 @@ export function createSelectorCreator<
   > & { memoize: MemoizeFunction } =
     typeof memoizeOrOptions === 'function'
       ? {
-        memoize: memoizeOrOptions as MemoizeFunction,
-        memoizeOptions: memoizeOptionsFromArgs
-      }
+          memoize: memoizeOrOptions as MemoizeFunction,
+          memoizeOptions: memoizeOptionsFromArgs
+        }
       : memoizeOrOptions
 
   const createSelector = (...funcs: Function[]) => {
