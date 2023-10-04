@@ -315,11 +315,12 @@ export function createSelectorCreator<
   >
 }
 
-export type CreateSelectorOptions<
+export interface CreateSelectorOptions<
   MemoizeFunction extends UnknownMemoizer,
-  OverrideMemoizeFunction extends UnknownMemoizer = never,
-  OverrideArgsMemoizeFunction extends UnknownMemoizer = never
-> = {
+  ArgsMemoizeFunction extends UnknownMemoizer,
+  OverrideMemoizeFunction extends UnknownMemoizer = MemoizeFunction,
+  OverrideArgsMemoizeFunction extends UnknownMemoizer = ArgsMemoizeFunction
+> {
   inputStabilityCheck?: StabilityCheck
   /** A function that accepts another function and returns it. This function is used to memoize `resultFunc`
    * @example
@@ -345,8 +346,8 @@ export type CreateSelectorOptions<
     const todoIds = selectTodoIds(state) // `argsMemoize` is used to memoize the arguments passed to the selector, in this case that would be `state`.
    * ```
   */
-  memoize?: [OverrideMemoizeFunction] extends [never] // If `memoize` is not provided inside the options object, fallback to `UnknownMemoizer`.
-    ? UnknownMemoizer
+  memoize?: [OverrideMemoizeFunction] extends [never] // If `memoize` is not provided inside the options object, fallback to `MemoizeFunction`.
+    ? MemoizeFunction
     : OverrideMemoizeFunction
   /** The memoizer function used to memoize the arguments of the selector.
    * @example
@@ -373,13 +374,13 @@ export type CreateSelectorOptions<
    * ```
    */
   argsMemoize?: [OverrideArgsMemoizeFunction] extends [never]
-    ? UnknownMemoizer
+    ? ArgsMemoizeFunction
     : OverrideArgsMemoizeFunction
   memoizeOptions?: [OverrideMemoizeFunction] extends [never] // Should dynamically change to the options argument of `memoize`.
     ? MemoizeOptsFromParams<MemoizeFunction>
     : MemoizeOptsFromParams<OverrideMemoizeFunction>
   argsMemoizeOptions?: [OverrideArgsMemoizeFunction] extends [never]
-    ? MemoizeOptsFromParams<typeof defaultMemoize>
+    ? MemoizeOptsFromParams<ArgsMemoizeFunction>
     : MemoizeOptsFromParams<OverrideArgsMemoizeFunction>
 }
 
