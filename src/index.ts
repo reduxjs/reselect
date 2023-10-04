@@ -77,6 +77,28 @@ function getDependencies(funcs: unknown[]) {
 
 /**
  * Can be used to make a customized version of `createSelector`.
+ * @param memoizeOptions - An object containing the memoize function and other options for memoization.
+ * @param memoizeOptions.memoize - A memoization function that accepts the result function and memoize options.
+ * @returns A customized `createSelector` function.
+ */
+export function createSelectorCreator<
+  MemoizeFunction extends UnknownMemoizer,
+  ArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
+  // FIXME: unify or intersect this type parameter with `CreateSelectorOptions` to obtain a maintain source of truth.
+>(memoizeOptions: {
+  inputStabilityCheck?: StabilityCheck
+  memoize: MemoizeFunction
+  memoizeOptions?: MemoizeOptsFromParams<MemoizeFunction>
+  argsMemoize?: [ArgsMemoizeFunction] extends [never]
+    ? typeof defaultMemoize
+    : ArgsMemoizeFunction
+  argsMemoizeOptions?: [ArgsMemoizeFunction] extends [never]
+    ? MemoizeOptsFromParams<typeof defaultMemoize>
+    : MemoizeOptsFromParams<ArgsMemoizeFunction>
+}): CreateSelectorFunction<MemoizeFunction, ArgsMemoizeFunction>
+
+/**
+ * Can be used to make a customized version of `createSelector`.
  * @param memoize - A memoization function to replace `defaultMemoize`.
  * @param memoizeOptionsFromArgs - Zero or more configuration options to be passed to the memoize function.
  * The selectors `resultFunc` is passed as the first argument to `memoize` and the `memoizeOptions` are passed as the second argument onwards:
