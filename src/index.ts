@@ -153,17 +153,20 @@ export function createSelectorCreator<
     ? []
     : DropFirst<Parameters<MemoizeFunction>>
 ) {
-  // TODO: Might change to if statement.
-  const defaultOptions: CreateSelectorOptions<
+  let options: CreateSelectorOptions<
     MemoizeFunction,
     ArgsMemoizeFunction
-  > & { memoize: MemoizeFunction } =
-    typeof memoizeOrOptions === 'function'
-      ? {
-          memoize: memoizeOrOptions as MemoizeFunction,
-          memoizeOptions: memoizeOptionsFromArgs
-        }
-      : memoizeOrOptions
+  > = {}
+
+  if (typeof memoizeOrOptions === 'function') {
+    options = {
+      ...options,
+      memoize: memoizeOrOptions as MemoizeFunction,
+      memoizeOptions: memoizeOptionsFromArgs
+    }
+  } else {
+    options = memoizeOrOptions
+  }
 
   const createSelector = (...funcs: Function[]) => {
     let recomputations = 0
@@ -195,7 +198,7 @@ export function createSelectorCreator<
 
     // Determine which set of options we're using. Prefer options passed directly,
     // but fall back to options given to createSelectorCreator.
-    const combinedOptions = { ...defaultOptions, ...directlyPassedOptions }
+    const combinedOptions = { ...options, ...directlyPassedOptions }
 
     const {
       memoize = defaultMemoize,
