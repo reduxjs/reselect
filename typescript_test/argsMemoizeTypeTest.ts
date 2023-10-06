@@ -65,6 +65,16 @@ function testArgsMemoizeInCreateSelectorCreatorDoneCorrectly() {
       argsMemoizeOptions: { equalityCheck: (a, b) => a === b, maxSize: 3 }
     }
   )
+  const selectorMicroMemoizeOverriddenArray = createSelectorMicroMemoize(
+    [(state: State) => state.todos],
+    todos => todos.map(t => t.id),
+    {
+      memoize: defaultMemoize,
+      argsMemoize: defaultMemoize,
+      memoizeOptions: { equalityCheck: (a, b) => a === b, maxSize: 2 },
+      argsMemoizeOptions: { equalityCheck: (a, b) => a === b, maxSize: 3 }
+    }
+  )
   selectorMicroMemoizeOverridden(state)
   // @ts-expect-error
   selectorMicroMemoizeOverridden()

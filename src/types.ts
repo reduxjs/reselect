@@ -130,7 +130,32 @@ export type OmitIndexSignature<ObjectType> = {
     : KeyType]: ObjectType[KeyType]
 }
 
-/** Extracts memoize options from the parameters of a memoizer function. */
+/**
+ * An if-else-like type that resolves depending on whether the given type is `never`.
+ * This is mainly used to conditionally resolve the type of a `memoizeOptions` object based on whether `memoize` is provided or not.
+ */
+export type IfNever<T, TypeIfNever, TypeIfNotNever> = [T] extends [never]
+  ? TypeIfNever
+  : TypeIfNotNever
+
+/** If `BaseType` is `never` fallback to `FallbackType` */
+export type Fallback<BaseType, FallbackType> = IfNever<
+  BaseType,
+  FallbackType,
+  BaseType
+>
+
+/** Derive the type of memoize options object based on whether the memoize function itself was overridden. */
+export type OverrideMemoizeOptions<
+  MemoizeFunction extends UnknownMemoizer,
+  OverrideMemoizeFunction extends UnknownMemoizer = never
+> = IfNever<
+  OverrideMemoizeFunction,
+  MemoizeOptsFromParams<MemoizeFunction>,
+  MemoizeOptsFromParams<OverrideMemoizeFunction>
+>
+
+/** Extract memoize options from the parameters of a memoizer function. */
 export type MemoizeOptsFromParams<MemoizeFunction extends UnknownMemoizer> =
   | DropFirst<Parameters<MemoizeFunction>>[0]
   | DropFirst<Parameters<MemoizeFunction>>

@@ -1,12 +1,13 @@
 import type {
   DropFirst,
   ExtractMemoizerFields,
+  Fallback,
   GetParamsFromSelectors,
   Head,
-  MemoizeOptsFromParams,
   MergeParameters,
   ObjValueTuple,
   OutputSelector,
+  OverrideMemoizeOptions,
   Selector,
   SelectorArray,
   SelectorResultArray,
@@ -115,7 +116,6 @@ const customSelector = customSelectorCreator(
 )
  * ```
  * @template MemoizeFunction - A memoizer such as `defaultMemoize` that accepts a function + some possible options.
- * @template ArgsMemoizeFunction - The memoizer function used to memoize the arguments of the selector.
  */
 export function createSelectorCreator<MemoizeFunction extends UnknownMemoizer>(
   memoize: MemoizeFunction,
@@ -138,9 +138,7 @@ export function createSelectorCreator<
   ArgsMemoizeFunction extends UnknownMemoizer,
   MemoizeOrOptions extends
     | MemoizeFunction
-    | (CreateSelectorOptions<MemoizeFunction, ArgsMemoizeFunction> & {
-        memoize: MemoizeFunction
-      })
+    | CreateSelectorOptions<MemoizeFunction, ArgsMemoizeFunction>
 >(
   memoizeOrOptions: MemoizeOrOptions,
   ...memoizeOptionsFromArgs: MemoizeOrOptions extends {
@@ -149,9 +147,8 @@ export function createSelectorCreator<
     ? []
     : DropFirst<Parameters<MemoizeFunction>>
 ) {
-  let options: CreateSelectorOptions<
-    MemoizeFunction,
-    ArgsMemoizeFunction
+  let options: Partial<
+    CreateSelectorOptions<MemoizeFunction, ArgsMemoizeFunction>
   > = {}
 
   if (typeof memoizeOrOptions === 'function') {
@@ -171,9 +168,8 @@ export function createSelectorCreator<
     // Due to the intricacies of rest params, we can't do an optional arg after `...funcs`.
     // So, start by declaring the default value here.
     // (And yes, the words 'memoize' and 'options' appear too many times in this next sequence.)
-    let directlyPassedOptions: CreateSelectorOptions<
-      MemoizeFunction,
-      ArgsMemoizeFunction
+    let directlyPassedOptions: Partial<
+      CreateSelectorOptions<MemoizeFunction, ArgsMemoizeFunction>
     > = {}
 
     // Normally, the result func or "output selector" is the last arg
@@ -317,11 +313,11 @@ export function createSelectorCreator<
 export interface CreateSelectorOptions<
   MemoizeFunction extends UnknownMemoizer,
   ArgsMemoizeFunction extends UnknownMemoizer,
-  OverrideMemoizeFunction extends UnknownMemoizer = MemoizeFunction,
-  OverrideArgsMemoizeFunction extends UnknownMemoizer = ArgsMemoizeFunction
+  OverrideMemoizeFunction extends UnknownMemoizer = never,
+  OverrideArgsMemoizeFunction extends UnknownMemoizer = never
 > {
   inputStabilityCheck?: StabilityCheck
-  /** A function that accepts another function and returns it. This function is used to memoize `resultFunc`
+  /** A function that accepts another function and returns it. This function is used to memoize `resultFunc`.
    * @example
    * ```
    * const state = {
@@ -332,10 +328,10 @@ export interface CreateSelectorOptions<
     }
     const selectTodoIds = createSelector(
       state => state.todos,
-      todos => todos.map(t => t.id),
+      todos => todos.map(t => t.id), // --> `resultFunc`
       {
-        memoize: defaultMemoize, // function to be used to memoize `resultFunc`
-        memoizeOptions: { // These options will be passed as an argument to `memoize`
+        memoize: defaultMemoize, // Function to be used to memoize `resultFunc`.
+        memoizeOptions: { // These options will be passed as the second argument to `memoize`.
           maxSize: 2,
           equalityCheck: (a, b) => a === b,
           resultEqualityCheck: (a, b) => a === b
@@ -345,9 +341,8 @@ export interface CreateSelectorOptions<
     const todoIds = selectTodoIds(state) // `argsMemoize` is used to memoize the arguments passed to the selector, in this case that would be `state`.
    * ```
   */
-  memoize?: [OverrideMemoizeFunction] extends [never] // If `memoize` is not provided inside the options object, fallback to `MemoizeFunction`.
-    ? MemoizeFunction
-    : OverrideMemoizeFunction
+  // If `memoize` is not provided inside the options object, fallback to `MemoizeFunction` which is the original memoize function passed into `createSelectorCreator`.
+  memoize: Fallback<OverrideMemoizeFunction, MemoizeFunction>
   /** The memoizer function used to memoize the arguments of the selector.
    * @example
    * ```
@@ -361,8 +356,8 @@ export interface CreateSelectorOptions<
       state => state.todos,
       todos => todos.map(t => t.id),
       {
-        argsMemoize: defaultMemoize, // function to be used to memoize arguments passed to the selector.
-        argsMemoizeOptions: { // These options will be passed as arguments to `argsMemoize`
+        argsMemoize: defaultMemoize, // Function to be used to memoize arguments passed to the selector.
+        argsMemoizeOptions: { // These options will be passed as arguments to `argsMemoize`.
           maxSize: 2,
           equalityCheck: (a, b) => a === b,
           resultEqualityCheck: (a, b) => a === b
@@ -372,15 +367,21 @@ export interface CreateSelectorOptions<
     const todoIds = selectTodoIds(state) // `argsMemoize` is used to memoize the arguments passed to the selector, in this case that would be `state`.
    * ```
    */
-  argsMemoize?: [OverrideArgsMemoizeFunction] extends [never]
-    ? ArgsMemoizeFunction
-    : OverrideArgsMemoizeFunction
-  memoizeOptions?: [OverrideMemoizeFunction] extends [never] // Should dynamically change to the options argument of `memoize`.
-    ? MemoizeOptsFromParams<MemoizeFunction>
-    : MemoizeOptsFromParams<OverrideMemoizeFunction>
-  argsMemoizeOptions?: [OverrideArgsMemoizeFunction] extends [never]
-    ? MemoizeOptsFromParams<ArgsMemoizeFunction>
-    : MemoizeOptsFromParams<OverrideArgsMemoizeFunction>
+  // If `argsMemoize` is not provided inside the options object,
+  // fallback to `ArgsMemoizeFunction` which is the original `argsMemoize` function passed into `createSelectorCreator`.
+  // If none was passed originally to `createSelectorCreator`, it should fallback to `defaultMemoize`.
+  argsMemoize?: Fallback<OverrideArgsMemoizeFunction, ArgsMemoizeFunction>
+  /** Options object passed to `memoize` as the second argument. */
+  // Should dynamically change to the options argument of `memoize`.
+  memoizeOptions?: OverrideMemoizeOptions<
+    MemoizeFunction,
+    OverrideMemoizeFunction
+  >
+  /** Options object passed to `argsMemoize` as the second argument. */
+  argsMemoizeOptions?: OverrideMemoizeOptions<
+    ArgsMemoizeFunction,
+    OverrideArgsMemoizeFunction
+  >
 }
 
 /**
@@ -415,11 +416,13 @@ export interface CreateSelectorFunction<
     ...items: [
       ...Selectors,
       (...args: SelectorResultArray<Selectors>) => Result,
-      CreateSelectorOptions<
-        MemoizeFunction,
-        ArgsMemoizeFunction,
-        OverrideMemoizeFunction,
-        OverrideArgsMemoizeFunction
+      Partial<
+        CreateSelectorOptions<
+          MemoizeFunction,
+          ArgsMemoizeFunction,
+          OverrideMemoizeFunction,
+          OverrideArgsMemoizeFunction
+        >
       >
     ]
   ): OutputSelector<
@@ -440,11 +443,13 @@ export interface CreateSelectorFunction<
   >(
     selectors: [...Selectors],
     combiner: (...args: SelectorResultArray<Selectors>) => Result,
-    options?: CreateSelectorOptions<
-      MemoizeFunction,
-      ArgsMemoizeFunction,
-      OverrideMemoizeFunction,
-      OverrideArgsMemoizeFunction
+    options?: Partial<
+      CreateSelectorOptions<
+        MemoizeFunction,
+        ArgsMemoizeFunction,
+        OverrideMemoizeFunction,
+        OverrideArgsMemoizeFunction
+      >
     >
   ): OutputSelector<
     Selectors,
