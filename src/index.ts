@@ -394,8 +394,8 @@ export interface CreateSelectorFunction<
   /** Input selectors as separate inline arguments */
   <Selectors extends SelectorArray, Result>(
     ...items: [
-      ...Selectors,
-      (...args: SelectorResultArray<Selectors>) => Result
+      ...selectors: Selectors,
+      combiner: (...args: SelectorResultArray<Selectors>) => Result
     ]
   ): OutputSelector<
     Selectors,
@@ -414,9 +414,9 @@ export interface CreateSelectorFunction<
     OverrideArgsMemoizeFunction extends UnknownMemoizer = ArgsMemoizeFunction
   >(
     ...items: [
-      ...Selectors,
-      (...args: SelectorResultArray<Selectors>) => Result,
-      Partial<
+      ...selectors: Selectors,
+      combiner: (...args: SelectorResultArray<Selectors>) => Result,
+      options: Partial<
         CreateSelectorOptions<
           MemoizeFunction,
           ArgsMemoizeFunction,
