@@ -12,9 +12,6 @@
     "array-bracket-spacing": [0],
     "comma-dangle": [2, "never"],
     "eol-last": 2,
-    "indent": [2, 2, {
-      "SwitchCase": 1
-    }],
     "no-multiple-empty-lines": 2,
     "object-curly-spacing": [2, "always"],
     "quotes": [2, "single", {"avoidEscape": true, "allowTemplateLiterals": true}],
