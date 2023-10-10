@@ -12,5 +12,5 @@
       "@internal/*": ["../src/*"]
     }
   },
-  "include": ["test.ts", "argsMemoizeTypeTest.ts"]
+  "include": ["test.ts", "argsMemoize.typetest.ts"]
 }
