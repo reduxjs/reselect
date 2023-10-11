@@ -1,17 +1,19 @@
 // Original source:
 // - https://github.com/facebook/react/blob/0b974418c9a56f6c560298560265dcf4b65784bc/packages/react/src/ReactCache.js
 
+import type { AnyFunction } from './types'
+
 const UNTERMINATED = 0
 const TERMINATED = 1
 
-type UnterminatedCacheNode<T> = {
+interface UnterminatedCacheNode<T> {
   s: 0
   v: void
   o: null | WeakMap<Function | Object, CacheNode<T>>
   p: null | Map<string | number | null | void | symbol | boolean, CacheNode<T>>
 }
 
-type TerminatedCacheNode<T> = {
+interface TerminatedCacheNode<T> {
   s: 1
   v: T
   o: null | WeakMap<Function | Object, CacheNode<T>>
@@ -29,7 +31,7 @@ function createCacheNode<T>(): CacheNode<T> {
   }
 }
 
-export function weakMapMemoize<F extends (...args: any[]) => any>(func: F) {
+export function weakMapMemoize<F extends AnyFunction>(func: F) {
   // we reference arguments instead of spreading them for performance reasons
 
   let fnNode = createCacheNode()

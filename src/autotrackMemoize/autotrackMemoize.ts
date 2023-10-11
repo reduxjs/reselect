@@ -6,8 +6,9 @@ import {
   createCacheKeyComparator,
   defaultEqualityCheck
 } from '@internal/defaultMemoize'
+import type { AnyFunction } from '@internal/types'
 
-export function autotrackMemoize<F extends (...args: any[]) => any>(func: F) {
+export function autotrackMemoize<F extends AnyFunction>(func: F) {
   // we reference arguments instead of spreading them for performance reasons
 
   const node: Node<Record<string, unknown>> = createNode(

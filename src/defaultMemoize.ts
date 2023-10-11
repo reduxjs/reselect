@@ -1,4 +1,4 @@
-import type { EqualityFn } from './types'
+import type { AnyFunction, EqualityFn } from './types'
 
 // Cache implementation based on Erik Rasmussen's `lru-memoize`:
 // https://github.com/erikras/lru-memoize
@@ -101,7 +101,7 @@ export function createCacheKeyComparator(equalityCheck: EqualityFn) {
     }
 
     // Do this in a for loop (and not a `forEach` or an `every`) so we can determine equality as fast as possible.
-    const length = prev.length
+    const { length } = prev
     for (let i = 0; i < length; i++) {
       if (!equalityCheck(prev[i], next[i])) {
         return false
@@ -120,7 +120,7 @@ export interface DefaultMemoizeOptions {
 
 // defaultMemoize now supports a configurable cache size with LRU behavior,
 // and optional comparison of the result value with existing values
-export function defaultMemoize<F extends (...args: any[]) => any>(
+export function defaultMemoize<F extends AnyFunction>(
   func: F,
   equalityCheckOrOptions?: EqualityFn | DefaultMemoizeOptions
 ) {

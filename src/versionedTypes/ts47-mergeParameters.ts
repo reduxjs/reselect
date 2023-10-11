@@ -1,7 +1,7 @@
 // This entire implementation courtesy of Anders Hjelsberg:
 // https://github.com/microsoft/TypeScript/pull/50831#issuecomment-1253830522
 
-type UnknownFunction = (...args: any[]) => any
+import type { AnyFunction } from '@internal/types'
 
 type LongestTuple<T extends readonly unknown[][]> = T extends [
   infer U extends unknown[]
@@ -34,11 +34,11 @@ type MergeTuples<
   [K in keyof L]: Intersect<ElementsAt<T, K>>
 }
 
-type ExtractParameters<T extends readonly UnknownFunction[]> = {
+type ExtractParameters<T extends readonly AnyFunction[]> = {
   [K in keyof T]: Parameters<T[K]>
 }
 
-export type MergeParameters<T extends readonly UnknownFunction[]> =
+export type MergeParameters<T extends readonly AnyFunction[]> =
   '0' extends keyof T
     ? MergeTuples<ExtractParameters<T>>
     : Parameters<T[number]>
