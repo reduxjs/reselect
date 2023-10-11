@@ -24,10 +24,7 @@ export {
   createSelectorCreator,
   setInputStabilityCheckEnabled
 } from './createSelectorCreator'
-export type {
-  CreateSelectorFunction,
-  TypedCreateSelectorFunction
-} from './createSelectorCreator'
+export type { CreateSelectorFunction } from './createSelectorCreator'
 
 export { createStructuredSelector } from './createStructuredSelector'
 export type { StructuredSelectorCreator } from './createStructuredSelector'
