@@ -65,13 +65,22 @@ export interface OutputSelectorFields<
  * - plus the attached additional fields
  */
 export type OutputSelector<
-  S extends SelectorArray,
+  Result = unknown,
+  Selectors extends SelectorArray = SelectorArray,
+  MemoizeFunction extends UnknownMemoizer = typeof defaultMemoize,
+  ArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
+> = OutputSelectorFields<
   Result,
-  Combiner extends AnyFunction,
-  Params extends readonly any[] = never, // MergeParameters<S>
-  Keys = {}
-> = Selector<GetStateFromSelectors<S>, Result, Params> &
-  OutputSelectorFields<Combiner, Keys>
+  Selectors,
+  MemoizeFunction,
+  ArgsMemoizeFunction
+> &
+  ExtractMemoizerFields<ArgsMemoizeFunction> &
+  Selector<
+    GetStateFromSelectors<Selectors>,
+    Result,
+    GetParamsFromSelectors<Selectors>
+  >
 
 /**
  * A selector that is assumed to have one additional argument, such as
