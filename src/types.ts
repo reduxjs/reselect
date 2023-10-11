@@ -1,4 +1,6 @@
+import type { defaultMemoize } from './defaultMemoize'
 import type { MergeParameters } from './versionedTypes'
+
 export type { MergeParameters } from './versionedTypes'
 
 /*
@@ -108,6 +110,30 @@ export type EqualityFn = (a: any, b: any) => boolean
 
 export type StabilityCheck = 'always' | 'once' | 'never'
 
+export interface CreateSelectorOptions<
+  MemoizeFunction extends UnknownMemoizer,
+  ArgsMemoizeFunction extends UnknownMemoizer,
+  OverrideMemoizeFunction extends UnknownMemoizer = never,
+  OverrideArgsMemoizeFunction extends UnknownMemoizer = never
+> {
+  inputStabilityCheck?: StabilityCheck
+
+  memoize: FallbackIfNever<OverrideMemoizeFunction, MemoizeFunction>
+  argsMemoize?: FallbackIfNever<
+    OverrideArgsMemoizeFunction,
+    ArgsMemoizeFunction
+  >
+
+  memoizeOptions?: OverrideMemoizeOptions<
+    MemoizeFunction,
+    OverrideMemoizeFunction
+  >
+
+  argsMemoizeOptions?: OverrideMemoizeOptions<
+    ArgsMemoizeFunction,
+    OverrideArgsMemoizeFunction
+  >
+}
 
 /*
  *
