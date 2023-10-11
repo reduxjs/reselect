@@ -265,8 +265,11 @@ export type ObjValueTuple<
   : R
 
 /** Utility type to infer the type of "all params of a function except the first", so we can determine what arguments a memoize function accepts */
-export type DropFirst<T extends unknown[]> = T extends [unknown, ...infer U]
-  ? U
+export type DropFirstParameter<Func extends AnyFunction> = Func extends (
+  firstArg: any,
+  ...restArgs: infer Rest
+) => any
+  ? Rest
   : never
 
 /**
