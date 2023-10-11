@@ -21,7 +21,7 @@ export type Selector<
   // The result will be inferred
   Result = unknown,
   // There are either 0 params, or N params
-  Params extends never | readonly any[] = any[]
+  Params extends readonly any[] = any[]
   // If there are 0 params, type the function as just State in, Result out.
   // Otherwise, type it as State + Params in, Result out.
 > = [Params] extends [never]
@@ -173,7 +173,7 @@ export type GetParamsFromSelectors<
  *
  */
 
-/** Any function with arguments */
+/** Any function with any arguments */
 export type AnyFunction = (...args: any[]) => any
 /** Any function with unknown arguments */
 export type UnknownFunction = (...args: unknown[]) => unknown
@@ -183,31 +183,8 @@ export type UnknownMemoizer<Func extends UnknownFunction = UnknownFunction> = (
   ...options: any[]
 ) => Func
 
-/**
- * Omit any index signatures from the given object type, leaving only explicitly defined properties.
- * Source: https://stackoverflow.com/questions/51465182/how-to-remove-index-signature-using-mapped-types/68261113#68261113
- * This is mainly used to remove explicit `any`s from the return type of some memoizers. e.g: `microMemoize`
- */
-export type OmitIndexSignature<ObjectType> = {
-  [KeyType in keyof ObjectType as {} extends Record<KeyType, unknown>
-    ? never
-    : KeyType]: ObjectType[KeyType]
-}
-
-/**
- * An if-else-like type that resolves depending on whether the given type is `never`.
- * This is mainly used to conditionally resolve the type of a `memoizeOptions` object based on whether `memoize` is provided or not.
- */
-export type IfNever<T, TypeIfNever, TypeIfNotNever> = [T] extends [never]
-  ? TypeIfNever
-  : TypeIfNotNever
-
-/** If `BaseType` is `never` fallback to `FallbackType` */
-export type Fallback<BaseType, FallbackType> = IfNever<
-  BaseType,
-  FallbackType,
-  BaseType
->
+/** When a generic type parameter is using its default value of `never`, fallback to a different type. */
+export type FallbackIfNever<T, FallbackTo> = IfNever<T, FallbackTo, T>
 
 /** Derive the type of memoize options object based on whether the memoize function itself was overridden. */
 export type OverrideMemoizeOptions<
@@ -215,14 +192,14 @@ export type OverrideMemoizeOptions<
   OverrideMemoizeFunction extends UnknownMemoizer = never
 > = IfNever<
   OverrideMemoizeFunction,
-  MemoizeOptsFromParams<MemoizeFunction>,
-  MemoizeOptsFromParams<OverrideMemoizeFunction>
+  MemoizeOptionsFromParameters<MemoizeFunction>,
+  MemoizeOptionsFromParameters<OverrideMemoizeFunction>
 >
 
 /** Extract memoize options from the parameters of a memoizer function. */
-export type MemoizeOptsFromParams<MemoizeFunction extends UnknownMemoizer> =
-  | DropFirst<Parameters<MemoizeFunction>>[0]
-  | DropFirst<Parameters<MemoizeFunction>>
+export type MemoizeOptionsFromParameters<
+  MemoizeFunction extends UnknownMemoizer
+> = DropFirstParameter<MemoizeFunction>[0] | DropFirstParameter<MemoizeFunction>
 
 /** Extract the extra properties that are attached to the return value of a memoizer. e.g.: clearCache */
 export type ExtractMemoizerFields<T extends UnknownMemoizer> =
@@ -254,6 +231,26 @@ export type Has<U, U1> = [U1] extends [U] ? 1 : 0
  * External/Copied Utility Types
  *
  */
+
+/**
+ * An if-else-like type that resolves depending on whether the given type is `never`.
+ * This is mainly used to conditionally resolve the type of a `memoizeOptions` object based on whether `memoize` is provided or not.
+ * Source: https://github.com/sindresorhus/type-fest
+ */
+export type IfNever<T, TypeIfNever, TypeIfNotNever> = [T] extends [never]
+  ? TypeIfNever
+  : TypeIfNotNever
+
+/**
+ * Omit any index signatures from the given object type, leaving only explicitly defined properties.
+ * Source: https://github.com/sindresorhus/type-fest
+ * This is mainly used to remove explicit `any`s from the return type of some memoizers. e.g: `microMemoize`
+ */
+export type OmitIndexSignature<ObjectType> = {
+  [KeyType in keyof ObjectType as {} extends Record<KeyType, unknown>
+    ? never
+    : KeyType]: ObjectType[KeyType]
+}
 
 /**
  * The infamous "convert a union type to an intersection type" hack
