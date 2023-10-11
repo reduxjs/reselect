@@ -295,6 +295,8 @@ export function createSelectorCreator<
       lastResult: () => lastResult,
       recomputations: () => recomputations,
       resetRecomputations: () => (recomputations = 0),
+      memoize,
+      argsMemoize
     })
   }
   return createSelector as unknown as CreateSelectorFunction<
