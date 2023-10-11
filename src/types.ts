@@ -93,14 +93,12 @@ export type ParametricSelector<State, Props, Result> = Selector<
 >
 
 /** A generated selector that is assumed to have one additional argument */
-export type OutputParametricSelector<
+export type OutputParametricSelector<State, Props, Result> = ParametricSelector<
   State,
   Props,
-  Result,
-  Combiner extends AnyFunction,
-  Keys = {}
-> = ParametricSelector<State, Props, Result> &
-  OutputSelectorFields<Combiner, Keys>
+  Result
+> &
+  OutputSelectorFields<Result, SelectorArray>
 
 /** An array of input selectors */
 export type SelectorArray = ReadonlyArray<Selector>
