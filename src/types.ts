@@ -106,6 +106,9 @@ export type SelectorArray = ReadonlyArray<Selector>
 /** A standard function returning true if two values are considered equal */
 export type EqualityFn = (a: any, b: any) => boolean
 
+export type StabilityCheck = 'always' | 'once' | 'never'
+
+
 /*
  *
  * Reselect Internal Types
