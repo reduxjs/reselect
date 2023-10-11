@@ -1,8 +1,8 @@
+import type { Cell } from './autotracking'
 import {
-  createCell as createStorage,
   getValue as consumeTag,
-  setValue,
-  Cell
+  createCell as createStorage,
+  setValue
 } from './autotracking'
 
 export type Tag = Cell<unknown>

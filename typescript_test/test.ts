@@ -1,26 +1,24 @@
 /* eslint-disable no-use-before-define */
 
 import { groupBy, isEqual } from 'lodash'
-import {
-  GetStateFromSelectors,
-  OutputSelector,
-  ParametricSelector,
-  Selector,
-  SelectorResultArray,
-  autotrackMemoize,
-  createSelector,
-  createSelectorCreator,
-  createStructuredSelector,
-  defaultEqualityCheck,
-  defaultMemoize,
-  weakMapMemoize
-} from 'reselect'
 
+import type { OutputSelector, ParametricSelector } from '@reduxjs/toolkit'
 import { configureStore, createSlice } from '@reduxjs/toolkit'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import memoizeOne from 'memoize-one'
 import microMemoize from 'micro-memoize'
-import { TypedUseSelectorHook, useSelector } from 'react-redux'
+import type { TypedUseSelectorHook } from 'react-redux'
+import { useSelector } from 'react-redux'
+import { createStructuredSelector } from 'reselect'
+import { createSelectorCreator } from '../src/createSelectorCreator'
+import { defaultEqualityCheck, defaultMemoize } from '../src/defaultMemoize'
+import type { Selector } from '../src/index'
+import { createSelector } from '../src/index'
+import type {
+  AnyFunction,
+  GetStateFromSelectors,
+  SelectorResultArray
+} from '../src/types'
 
 export function expectType<T>(t: T): T {
   return t
@@ -911,7 +909,7 @@ function testStructuredSelectorTypeParams() {
   })
 }
 
-function multiArgMemoize<F extends (...args: any[]) => any>(
+function multiArgMemoize<F extends AnyFunction>(
   func: F,
   a: number,
   b: string,
@@ -1100,12 +1098,7 @@ function issue492() {
 }
 
 function customMemoizationOptionTypes() {
-  const customMemoize = (
-    f: (...args: any[]) => any,
-    a: string,
-    b: number,
-    c: boolean
-  ) => {
+  const customMemoize = (f: AnyFunction, a: string, b: number, c: boolean) => {
     return f
   }
 
@@ -1347,10 +1340,8 @@ function deepNesting() {
   const selector15 = createSelector(selector14, s => s)
   const selector16 = createSelector(selector15, s => s)
   const selector17: OutputSelector<
-    [(state: State) => string],
     ReturnType<typeof selector16>,
-    (s: string) => string,
-    never
+    [typeof selector16]
   > = createSelector(selector16, s => s)
   const selector18 = createSelector(selector17, s => s)
   const selector19 = createSelector(selector18, s => s)

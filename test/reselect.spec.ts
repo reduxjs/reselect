@@ -6,7 +6,8 @@ import {
   autotrackMemoize,
   createSelector,
   createSelectorCreator,
-  defaultMemoize
+  defaultMemoize,
+  weakMapMemoize
 } from 'reselect'
 
 // Construct 1E6 states for perf test outside of the perf test so as to not change the execute time of the test function
@@ -413,90 +414,45 @@ describe('Customizing selectors', () => {
         }
       }
     )
-    // const selectorDefaultParametric = createSelector(
-    //   (state: State, id: number) => id,
-    //   (state: State) => state.todos,
-    //   (id, todos) => todos.filter(t => t.id === id),
-    //   {
-    //     argsMemoize: defaultMemoize,
-    //     inputStabilityCheck: 'never',
-    //     memoize: defaultMemoize,
-    //     memoizeOptions: {
-    //       equalityCheck: (a, b) => {
-    //         console.log(
-    //           'memoize equalityCheck run',
-    //           { prev: a },
-    //           '\n',
-    //           { curr: b },
-    //           a === b
-    //         )
-    //         return a === b
-    //       },
-    //       resultEqualityCheck: (a, b) => {
-    //         console.log(
-    //           'memoize resultEqualityCheck run',
-    //           { prev: a },
-    //           '\n',
-    //           { curr: b },
-    //           a === b
-    //         )
-    //         return a === b
-    //       }
-    //     },
-    //     argsMemoizeOptions: {
-    //       equalityCheck: (a, b) => {
-    //         console.log(
-    //           'argsMemoize equalityCheck run',
-    //           { prev: a },
-    //           '\n',
-    //           { curr: b },
-    //           a === b
-    //         )
-    //         return a === b
-    //       },
-    //       resultEqualityCheck: (a, b) => {
-    //         console.log(
-    //           'argsMemoize resultEqualityCheck run',
-    //           { prev: a },
-    //           '\n',
-    //           { curr: b },
-    //           a === b
-    //         )
-    //         return a === b
-    //       }
-    //     }
-    //   }
-    // )
-    // selectorDefaultParametric(state, 0)
-    // selectorDefaultParametric(state, 1)
-    // selectorDefaultParametric(state, 1)
-    // selectorDefaultParametric(
-    //   {
-    //     todos: [
-    //       { id: 0, completed: false },
-    //       { id: 1, completed: false }
-    //     ]
-    //   },
-    //   1
-    // )
-    // selectorDefaultParametric(
-    //   {
-    //     todos: [
-    //       { id: 0, completed: false },
-    //       { id: 1, completed: false }
-    //     ]
-    //   },
-    //   0
-    // )
-    // selectorDefaultParametric(
-    //   {
-    //     todos: [
-    //       { id: 0, completed: false },
-    //       { id: 1, completed: false }
-    //     ]
-    //   },
-    //   0
-    // )
+    const selectorDefaultParametric = createSelector(
+      (state: State, id: number) => id,
+      (state: State) => state.todos,
+      (id, todos) => todos.filter(t => t.id === id),
+      {
+        argsMemoize: defaultMemoize,
+        memoize: defaultMemoize
+      }
+    )
+    selectorDefaultParametric(state, 0)
+    selectorDefaultParametric(state, 1)
+    selectorDefaultParametric(state, 1)
+    selectorDefaultParametric(
+      {
+        todos: [
+          { id: 0, completed: false },
+          { id: 1, completed: false }
+        ]
+      },
+      1
+    )
+    selectorDefaultParametric(
+      {
+        todos: [
+          { id: 0, completed: false },
+          { id: 1, completed: false }
+        ]
+      },
+      0
+    )
+    selectorDefaultParametric(
+      {
+        todos: [
+          { id: 0, completed: false },
+          { id: 1, completed: false }
+        ]
+      },
+      0
+    )
     const createSelectorDefaultObj = createSelectorCreator({
       memoize: defaultMemoize
     })
@@ -1248,5 +1204,35 @@ describe('Customizing selectors', () => {
     })
     expect(selectorOverrideArgsMemoize.recomputations()).toBe(1)
     expect(selectorOriginal.recomputations()).toBe(3)
+    const selectorDefaultParametric = createSelector(
+      (state: State, id: number) => id,
+      (state: State) => state.todos,
+      (id, todos) => todos.filter(todo => todo.id === id)
+    )
+    selectorDefaultParametric(state, 1)
+    selectorDefaultParametric(state, 1)
+    expect(selectorDefaultParametric.recomputations()).toBe(1)
+    selectorDefaultParametric(state, 2)
+    selectorDefaultParametric(state, 1)
+    expect(selectorDefaultParametric.recomputations()).toBe(3)
+    selectorDefaultParametric(state, 2)
+    expect(selectorDefaultParametric.recomputations()).toBe(4)
+    const selectorDefaultParametricArgsWeakMap = createSelector(
+      (state: State, id: number) => id,
+      (state: State) => state.todos,
+      (id, todos) => todos.filter(todo => todo.id === id),
+      { argsMemoize: weakMapMemoize }
+    )
+    selectorDefaultParametricArgsWeakMap(state, 1)
+    selectorDefaultParametricArgsWeakMap(state, 1)
+    expect(selectorDefaultParametricArgsWeakMap.recomputations()).toBe(1)
+    selectorDefaultParametricArgsWeakMap(state, 2)
+    selectorDefaultParametricArgsWeakMap(state, 1)
+    expect(selectorDefaultParametricArgsWeakMap.recomputations()).toBe(2)
+    selectorDefaultParametricArgsWeakMap(state, 2)
+    // If we call the selector with 1, then 2, then 1 and back to 2 again,
+    // `defaultMemoize` will recompute a total of 4 times,
+    // but weakMapMemoize will recompute only twice.
+    expect(selectorDefaultParametricArgsWeakMap.recomputations()).toBe(2)
   })
 })
