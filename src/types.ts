@@ -110,25 +110,37 @@ export type EqualityFn = (a: any, b: any) => boolean
 
 export type StabilityCheck = 'always' | 'once' | 'never'
 
+/** The options object used inside `createSelector` and `createSelectorCreator`. */
 export interface CreateSelectorOptions<
   MemoizeFunction extends UnknownMemoizer,
   ArgsMemoizeFunction extends UnknownMemoizer,
   OverrideMemoizeFunction extends UnknownMemoizer = never,
   OverrideArgsMemoizeFunction extends UnknownMemoizer = never
 > {
+  /** Overrides the global input stability check for the selector. */
   inputStabilityCheck?: StabilityCheck
 
+  /** A function that accepts another function and returns it. This function is used to memoize `resultFunc`. */
+  // If `memoize` is not provided inside the options object, fallback to `MemoizeFunction` which is the original memoize function passed into `createSelectorCreator`.
   memoize: FallbackIfNever<OverrideMemoizeFunction, MemoizeFunction>
+
+  /** The memoizer function used to memoize the arguments of the selector. */
+  // If `argsMemoize` is not provided inside the options object,
+  // fallback to `ArgsMemoizeFunction` which is the original `argsMemoize` function passed into `createSelectorCreator`.
+  // If none was passed originally to `createSelectorCreator`, it should fallback to `defaultMemoize`.
   argsMemoize?: FallbackIfNever<
     OverrideArgsMemoizeFunction,
     ArgsMemoizeFunction
   >
 
+  /** Options object passed to `memoize` as the second argument. */
+  // Should dynamically change to the options argument of `memoize`.
   memoizeOptions?: OverrideMemoizeOptions<
     MemoizeFunction,
     OverrideMemoizeFunction
   >
 
+  /** Options object passed to `argsMemoize` as the second argument. */
   argsMemoizeOptions?: OverrideMemoizeOptions<
     ArgsMemoizeFunction,
     OverrideArgsMemoizeFunction
