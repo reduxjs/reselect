@@ -11,9 +11,9 @@ export type { MergeParameters } from './versionedTypes'
 
 /**
  * A standard selector function, which takes three generic type arguments:
- * @param State The first value, often a Redux root state object
- * @param Result The final result returned by the selector
- * @param Params All additional arguments passed into the selector
+ * @template State - The first value, often a Redux root state object
+ * @template Result - The final result returned by the selector
+ * @template Params - All additional arguments passed into the selector
  */
 export type Selector<
   // The state can be anything
@@ -21,12 +21,16 @@ export type Selector<
   // The result will be inferred
   Result = unknown,
   // There are either 0 params, or N params
-  Params extends readonly any[] = any[]
+  Params extends readonly unknown[] = any[]
   // If there are 0 params, type the function as just State in, Result out.
   // Otherwise, type it as State + Params in, Result out.
-> = [Params] extends [never]
-  ? (state: State) => Result
-  : (state: State, ...params: Params) => Result
+> =
+  /**
+   * @param state - The first value, often a Redux root state object
+   * @param params - All additional arguments passed into the selector
+   * @returns A derived value from the state
+   */
+  (state: State, ...params: FallbackIfNever<Params, []>) => Result
 
 /** A function that Combines the input selectors and returns an output selector. Otherwise known as `resultFunc`. */
 export type Combiner<Selectors extends SelectorArray, Result> = (
