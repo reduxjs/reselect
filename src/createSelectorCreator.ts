@@ -4,13 +4,22 @@ import type {
   CreateSelectorOptions,
   DropFirstParameter,
   ExtractMemoizerFields,
+  GetParamsFromSelectors,
+  GetStateFromSelectors,
   OutputSelector,
   Selector,
   SelectorArray,
+  SelectorResultArray,
   StabilityCheck,
   UnknownMemoizer
 } from './types'
-import { assertIsFunction, ensureIsArray, getDependencies } from './utils'
+import {
+  assertIsFunction,
+  collectInputSelectorResults,
+  ensureIsArray,
+  getDependencies,
+  runStabilityCheck
+} from './utils'
 
 /**
  * An instance of createSelector, customized with a given memoize implementation
@@ -21,7 +30,10 @@ export interface CreateSelectorFunction<
 > {
   /** Input selectors as separate inline arguments */
   <Selectors extends SelectorArray, Result>(
-    ...items: [...selectors: Selectors, combiner: Combiner<Selectors, Result>]
+    ...items: [
+      ...inputSelectors: Selectors,
+      combiner: Combiner<Selectors, Result>
+    ]
   ): OutputSelector<Selectors, Result, MemoizeFunction, ArgsMemoizeFunction>
 
   /** Input selectors as separate inline arguments with memoizeOptions passed */
@@ -32,7 +44,7 @@ export interface CreateSelectorFunction<
     OverrideArgsMemoizeFunction extends UnknownMemoizer = ArgsMemoizeFunction
   >(
     ...items: [
-      ...selectors: Selectors,
+      ...inputSelectors: Selectors,
       combiner: Combiner<Selectors, Result>,
       options: Partial<
         CreateSelectorOptions<
@@ -57,7 +69,7 @@ export interface CreateSelectorFunction<
     OverrideMemoizeFunction extends UnknownMemoizer = MemoizeFunction,
     OverrideArgsMemoizeFunction extends UnknownMemoizer = ArgsMemoizeFunction
   >(
-    selectors: [...Selectors],
+    inputSelectors: [...Selectors],
     combiner: Combiner<Selectors, Result>,
     options?: Partial<
       CreateSelectorOptions<
@@ -147,7 +159,7 @@ const customSelector = customCreateSelector(
 export function createSelectorCreator<MemoizeFunction extends UnknownMemoizer>(
   memoize: MemoizeFunction,
   ...memoizeOptionsFromArgs: DropFirstParameter<MemoizeFunction>
-): CreateSelectorFunction<MemoizeFunction, typeof defaultMemoize>
+): CreateSelectorFunction<MemoizeFunction>
 
 /**
  * Can be used to make a customized version of `createSelector`.
@@ -175,6 +187,7 @@ export function createSelectorCreator<
     ? never
     : DropFirstParameter<MemoizeFunction>
 ) {
+  /** `options` initially passed into `createSelectorCreator` */
   const options: CreateSelectorOptions<MemoizeFunction, ArgsMemoizeFunction> =
     typeof memoizeOrOptions === 'function'
       ? {
@@ -190,7 +203,7 @@ export function createSelectorCreator<
     OverrideArgsMemoizeFunction extends UnknownMemoizer = ArgsMemoizeFunction
   >(
     ...funcs: [
-      ...selectors: [...Selectors],
+      ...inputSelectors: [...Selectors],
       combiner: Combiner<Selectors, Result>,
       options?: Partial<
         CreateSelectorOptions<
@@ -203,7 +216,7 @@ export function createSelectorCreator<
     ]
   ) => {
     let recomputations = 0
-    let lastResult: unknown
+    let lastResult: Result
 
     // Due to the intricacies of rest params, we can't do an optional arg after `...funcs`.
     // So, start by declaring the default value here.
@@ -266,11 +279,9 @@ export function createSelectorCreator<
       recomputations++
       // apply arguments instead of spreading for performance.
       // @ts-ignore
-      return resultFunc!.apply(null, arguments)
+      return (resultFunc as Combiner<Selectors, Result>).apply(null, arguments)
     }, ...finalMemoizeOptions) as Combiner<Selectors, Result> &
-      ExtractMemoizerFields<MemoizeFunction>
-
-    const makeAnObject = memoize(() => ({}), ...finalMemoizeOptions)
+      ExtractMemoizerFields<OverrideMemoizeFunction>
 
     let firstRun = true
 
@@ -283,58 +294,48 @@ export function createSelectorCreator<
     // Arguments change all the time, but input values change less often.
     // Most of the time shallow equality _is_ what we really want here.
     // TODO Rethink this change, or find a way to expose more options?
+    // @ts-ignore
     const selector = argsMemoize(function dependenciesChecker() {
       /** Return values of input selectors which the `resultFunc` takes as arguments. */
-      const params = []
-      const { length } = dependencies
-
-      for (let i = 0; i < length; i++) {
-        // apply arguments instead of spreading and mutate a local list of params for performance.
-        // @ts-ignore
-        params.push(dependencies[i].apply(null, arguments))
-      }
+      const inputSelectorResults = collectInputSelectorResults(
+        dependencies,
+        arguments
+      ) as SelectorResultArray<Selectors>
 
       if (
         process.env.NODE_ENV !== 'production' &&
         (inputStabilityCheck === 'always' ||
           (inputStabilityCheck === 'once' && firstRun))
       ) {
-        const paramsCopy = []
+        // make a second copy of the params, to check if we got the same results
+        const inputSelectorResultsCopy = collectInputSelectorResults(
+          dependencies,
+          arguments
+        )
 
-        for (let i = 0; i < length; i++) {
-          // make a second copy of the params, to check if we got the same results
-          // @ts-ignore
-          paramsCopy.push(dependencies[i].apply(null, arguments))
-        }
-
-        // if the memoize method thinks the parameters are equal, these *should* be the same reference
-        const areParamsEqual =
-          makeAnObject.apply(null, params) ===
-          makeAnObject.apply(null, paramsCopy)
-        if (!areParamsEqual) {
-          // do we want to log more information about the selector?
-          console.warn(
-            'An input selector returned a different result when passed same arguments.' +
-              '\nThis means your output selector will likely run more frequently than intended.' +
-              '\nAvoid returning a new reference inside your input selector, e.g.' +
-              '\n`createSelector([(arg1, arg2) => ({ arg1, arg2 })],(arg1, arg2) => {})`',
-            {
-              arguments,
-              firstInputs: params,
-              secondInputs: paramsCopy
-            }
-          )
-        }
+        runStabilityCheck(
+          {
+            inputSelectorResults: inputSelectorResults as unknown[],
+            inputSelectorResultsCopy
+          },
+          { memoize, memoizeOptions: finalMemoizeOptions },
+          arguments
+        )
 
         if (firstRun) firstRun = false
       }
 
       // apply arguments instead of spreading for performance.
       // @ts-ignore
-      lastResult = memoizedResultFunc.apply(null, params)
+      lastResult = memoizedResultFunc.apply(null, inputSelectorResults)
 
       return lastResult
-    }, ...finalArgsMemoizeOptions)
+    }, ...finalArgsMemoizeOptions) as Selector<
+      GetStateFromSelectors<Selectors>,
+      Result,
+      GetParamsFromSelectors<Selectors>
+    > &
+      ExtractMemoizerFields<OverrideArgsMemoizeFunction>
 
     return Object.assign(selector, {
       resultFunc,
@@ -345,9 +346,14 @@ export function createSelectorCreator<
       resetRecomputations: () => (recomputations = 0),
       memoize,
       argsMemoize
-    })
+    }) as OutputSelector<
+      Selectors,
+      Result,
+      OverrideMemoizeFunction,
+      OverrideArgsMemoizeFunction
+    >
   }
-  return createSelector as unknown as CreateSelectorFunction<
+  return createSelector as CreateSelectorFunction<
     MemoizeFunction,
     ArgsMemoizeFunction
   >

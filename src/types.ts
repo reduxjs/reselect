@@ -21,7 +21,7 @@ export type Selector<
   // The result will be inferred
   Result = unknown,
   // There are either 0 params, or N params
-  Params extends readonly unknown[] = any[]
+  Params extends readonly any[] = any[]
   // If there are 0 params, type the function as just State in, Result out.
   // Otherwise, type it as State + Params in, Result out.
 > =
