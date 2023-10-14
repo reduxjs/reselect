@@ -22,7 +22,7 @@ export interface CreateSelectorFunction<
   /** Input selectors as separate inline arguments */
   <Selectors extends SelectorArray, Result>(
     ...items: [...selectors: Selectors, combiner: Combiner<Selectors, Result>]
-  ): OutputSelector<Result, Selectors, MemoizeFunction, ArgsMemoizeFunction>
+  ): OutputSelector<Selectors, Result, MemoizeFunction, ArgsMemoizeFunction>
 
   /** Input selectors as separate inline arguments with memoizeOptions passed */
   <
@@ -44,8 +44,8 @@ export interface CreateSelectorFunction<
       >
     ]
   ): OutputSelector<
-    Result,
     Selectors,
+    Result,
     OverrideMemoizeFunction,
     OverrideArgsMemoizeFunction
   >
@@ -68,8 +68,8 @@ export interface CreateSelectorFunction<
       >
     >
   ): OutputSelector<
-    Result,
     Selectors,
+    Result,
     OverrideMemoizeFunction,
     OverrideArgsMemoizeFunction
   >

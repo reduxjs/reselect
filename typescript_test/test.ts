@@ -1340,8 +1340,8 @@ function deepNesting() {
   const selector15 = createSelector(selector14, s => s)
   const selector16 = createSelector(selector15, s => s)
   const selector17: OutputSelector<
-    ReturnType<typeof selector16>,
-    [typeof selector16]
+    [(state: State) => string],
+    ReturnType<typeof selector16>
   > = createSelector(selector16, s => s)
   const selector18 = createSelector(selector17, s => s)
   const selector19 = createSelector(selector18, s => s)
@@ -1353,8 +1353,7 @@ function deepNesting() {
   const selector25 = createSelector(selector24, s => s)
   const selector26: Selector<
     typeof selector25 extends Selector<infer S> ? S : never,
-    ReturnType<typeof selector25>,
-    never
+    ReturnType<typeof selector25>
   > = createSelector(selector25, s => s)
   const selector27 = createSelector(selector26, s => s)
   const selector28 = createSelector(selector27, s => s)
