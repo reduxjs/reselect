@@ -4,27 +4,43 @@ import type {
   SelectorArray,
   UnknownMemoizer
 } from './types'
-
+/**
+ * Assert that the provided value is a function. If the assertion fails, a `TypeError` is thrown with an optional custom error message.
+ *
+ * @param func - The value to be checked.
+ * @param  errorMessage - An optional custom error message to use if the assertion fails.
+ * @throws A `TypeError` if the assertion fails.
+ */
 export function assertIsFunction<Func extends Function>(
   func: unknown,
-  msg = `expected a function, instead received ${typeof func}`
+  errorMessage = `expected a function, instead received ${typeof func}`
 ): asserts func is Func {
   if (typeof func !== 'function') {
-    throw new TypeError(msg)
+    throw new TypeError(errorMessage)
   }
 }
 
+/**
+ * Ensure that the input is an array. If it's already an array, it's returned as is. If it's not an array, it's wrapped in a new array.
+ *
+ * @param item - The item to be checked.
+ * @returns An array containing the input item. If the input is already an array, it's returned without modification.
+ */
 export const ensureIsArray = <T>(item: T | T[]) => {
   return Array.isArray(item) ? item : [item]
 }
 
 /**
- * Extracts the "dependencies" / "input selectors" as an array.
- * @param funcs - An array of dependencies
- * @returns An array of selectors.
+ * Extracts the "dependencies" / "input selectors" from the arguments of `createSelector`.
+ *
+ * @param createSelectorArgs - Arguments passed to `createSelector` as an array.
+ * @returns An array of "input selectors" / "dependencies".
+ * @throws A `TypeError` if any of the input selectors is not function.
  */
-export function getDependencies(funcs: unknown[]) {
-  const dependencies = Array.isArray(funcs[0]) ? funcs[0] : funcs
+export function getDependencies(createSelectorArgs: unknown[]) {
+  const dependencies = Array.isArray(createSelectorArgs[0])
+    ? createSelectorArgs[0]
+    : createSelectorArgs
 
   if (
     !dependencies.every((dep): dep is Selector => typeof dep === 'function')
@@ -44,30 +60,35 @@ export function getDependencies(funcs: unknown[]) {
 
   return dependencies as SelectorArray
 }
+
 /**
- * @param dependencies - The array of dependencies / "input selectors"
- * @param args - The array of arguments being passed to the input selectors
- * @returns - An array of input selector results.
+ * Runs each input selector and returns their collective results as an array.
+ *
+ * @param dependencies - An array of "dependencies" or "input selectors".
+ * @param inputSelectorArgs - An array of arguments being passed to the input selectors.
+ * @returns An array of input selector results.
  */
 export function collectInputSelectorResults(
   dependencies: SelectorArray,
-  args: unknown[] | IArguments
+  inputSelectorArgs: unknown[] | IArguments
 ) {
   const inputSelectorResults = []
   const { length } = dependencies
   for (let i = 0; i < length; i++) {
     // @ts-ignore
     // apply arguments instead of spreading and mutate a local list of params for performance.
-    inputSelectorResults.push(dependencies[i].apply(null, args))
+    inputSelectorResults.push(dependencies[i].apply(null, inputSelectorArgs))
   }
   return inputSelectorResults
 }
 
 /**
- * @param inputSelectorResults - Original array of input selector results.
- * @param dependencies - Array of input selectors.
- * @param options - Options object consisting of a `memoize` function and `memoizeOptions` object.
- * @param args - List of arguments being passed to the input selectors.
+ * Run a stability check to ensure the input selector results remain stable when provided with the same arguments.
+ * This function is designed to detect changes in the output of input selectors, which can impact the performance of memoized selectors.
+ *
+ * @param inputSelectorResultsObject - An object containing two arrays: `inputSelectorResults` and `inputSelectorResultsCopy`, representing the results of input selectors.
+ * @param options - Options object consisting of a `memoize` function and a `memoizeOptions` object.
+ * @param inputSelectorArgs - List of arguments being passed to the input selectors.
  */
 export function runStabilityCheck(
   inputSelectorResultsObject: {
@@ -80,16 +101,16 @@ export function runStabilityCheck(
       'memoize' | 'memoizeOptions'
     >
   >,
-  args: unknown[] | IArguments
+  inputSelectorArgs: unknown[] | IArguments
 ) {
   const { memoize, memoizeOptions } = options
   const { inputSelectorResults, inputSelectorResultsCopy } =
     inputSelectorResultsObject
-  const makeAnObject = memoize(() => ({}), ...memoizeOptions)
+  const createAnEmptyObject = memoize(() => ({}), ...memoizeOptions)
   // if the memoize method thinks the parameters are equal, these *should* be the same reference
   const areInputSelectorResultsEqual =
-    makeAnObject.apply(null, inputSelectorResults) ===
-    makeAnObject.apply(null, inputSelectorResultsCopy)
+    createAnEmptyObject.apply(null, inputSelectorResults) ===
+    createAnEmptyObject.apply(null, inputSelectorResultsCopy)
   if (!areInputSelectorResultsEqual) {
     // do we want to log more information about the selector?
     console.warn(
@@ -98,7 +119,7 @@ export function runStabilityCheck(
         '\nAvoid returning a new reference inside your input selector, e.g.' +
         '\n`createSelector([(arg1, arg2) => ({ arg1, arg2 })],(arg1, arg2) => {})`',
       {
-        arguments: args,
+        arguments: inputSelectorArgs,
         firstInputs: inputSelectorResults,
         secondInputs: inputSelectorResultsCopy
       }
