@@ -1,24 +1,24 @@
 /* eslint-disable no-use-before-define */
 
-import { groupBy, isEqual } from 'lodash'
-
-import type { OutputSelector, ParametricSelector } from '@reduxjs/toolkit'
 import { configureStore, createSlice } from '@reduxjs/toolkit'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { groupBy, isEqual } from 'lodash'
 import memoizeOne from 'memoize-one'
 import microMemoize from 'micro-memoize'
 import type { TypedUseSelectorHook } from 'react-redux'
 import { useSelector } from 'react-redux'
-import { createStructuredSelector } from 'reselect'
-import { createSelectorCreator } from '../src/createSelectorCreator'
-import { defaultEqualityCheck, defaultMemoize } from '../src/defaultMemoize'
-import type { Selector } from '../src/index'
-import { createSelector } from '../src/index'
-import type {
-  AnyFunction,
+import {
   GetStateFromSelectors,
-  SelectorResultArray
-} from '../src/types'
+  OutputSelector,
+  ParametricSelector,
+  Selector,
+  SelectorResultArray,
+  createSelector,
+  createSelectorCreator,
+  createStructuredSelector,
+  defaultEqualityCheck,
+  defaultMemoize
+} from 'reselect'
 
 export function expectType<T>(t: T): T {
   return t
@@ -909,7 +909,7 @@ function testStructuredSelectorTypeParams() {
   })
 }
 
-function multiArgMemoize<F extends AnyFunction>(
+function multiArgMemoize<F extends (...args: any[]) => any>(
   func: F,
   a: number,
   b: string,
@@ -1098,7 +1098,12 @@ function issue492() {
 }
 
 function customMemoizationOptionTypes() {
-  const customMemoize = (f: AnyFunction, a: string, b: number, c: boolean) => {
+  const customMemoize = (
+    f: (...args: any[]) => any,
+    a: string,
+    b: number,
+    c: boolean
+  ) => {
     return f
   }
 

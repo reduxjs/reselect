@@ -1,9 +1,12 @@
-import { createSelector } from '@reduxjs/toolkit'
 import memoizeOne from 'memoize-one'
 import microMemoize from 'micro-memoize'
-import { autotrackMemoize, weakMapMemoize } from 'reselect'
-import { createSelectorCreator } from '../src/createSelectorCreator'
-import { defaultMemoize } from '../src/defaultMemoize'
+import {
+  autotrackMemoize,
+  createSelector,
+  createSelectorCreator,
+  defaultMemoize,
+  weakMapMemoize
+} from 'reselect'
 import { expectExactType } from './test'
 
 interface State {
