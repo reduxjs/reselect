@@ -5,7 +5,8 @@ import type {
   UnknownMemoizer
 } from './types'
 /**
- * Assert that the provided value is a function. If the assertion fails, a `TypeError` is thrown with an optional custom error message.
+ * Assert that the provided value is a function. If the assertion fails,
+ * a `TypeError` is thrown with an optional custom error message.
  *
  * @param func - The value to be checked.
  * @param  errorMessage - An optional custom error message to use if the assertion fails.
@@ -21,7 +22,8 @@ export function assertIsFunction<Func extends Function>(
 }
 
 /**
- * Ensure that the input is an array. If it's already an array, it's returned as is. If it's not an array, it's wrapped in a new array.
+ * Ensure that the input is an array. If it's already an array, it's returned as is.
+ * If it's not an array, it will be wrapped in a new array.
  *
  * @param item - The item to be checked.
  * @returns An array containing the input item. If the input is already an array, it's returned without modification.
@@ -83,8 +85,9 @@ export function collectInputSelectorResults(
 }
 
 /**
- * Run a stability check to ensure the input selector results remain stable when provided with the same arguments.
- * This function is designed to detect changes in the output of input selectors, which can impact the performance of memoized selectors.
+ * Run a stability check to ensure the input selector results remain stable
+ * when provided with the same arguments. This function is designed to detect
+ * changes in the output of input selectors, which can impact the performance of memoized selectors.
  *
  * @param inputSelectorResultsObject - An object containing two arrays: `inputSelectorResults` and `inputSelectorResultsCopy`, representing the results of input selectors.
  * @param options - Options object consisting of a `memoize` function and a `memoizeOptions` object.

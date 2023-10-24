@@ -110,15 +110,34 @@ let globalStabilityCheck: StabilityCheckFrequency = 'once'
 
 /**
  * In development mode, an extra check is conducted on your input selectors.
- * It runs your input selectors an extra time with the same arguments, and warns in the console if they return a different result _(based on your `memoize` method)_.
+ * It runs your input selectors an extra time with the same arguments, and
+ * warns in the console if they return a different result _(based on your `memoize` method)_.
  *
  * This function allows you to override this setting for all of your selectors.
  *
  * **Note**: This setting can still be overridden per selector inside `createSelector`'s `options` object.
+ * See {@link https://github.com/reduxjs/reselect#per-selector-configuration | per-selector-configuration}
+ * and {@linkcode CreateSelectorOptions.inputStabilityCheck | inputStabilityCheck} for more details.
  *
  * _The input stability check does not run in production builds._
  *
  * @param inputStabilityCheckFrequency - How often the `inputStabilityCheck` should run for all selectors.
+ *
+ * @example
+ * ```ts
+ * import { setInputStabilityCheckEnabled } from 'reselect'
+ *
+ * // Run only the first time the selector is called. (default)
+ * setInputStabilityCheckEnabled('once')
+ *
+ * // Run every time the selector is called.
+ * setInputStabilityCheckEnabled('always')
+ *
+ * // Never run the input stability check.
+ * setInputStabilityCheckEnabled('never')
+ * ```
+ * @see {@link https://github.com/reduxjs/reselect#development-only-checks | development-only-checks}
+ * @see {@link https://github.com/reduxjs/reselect#global-configuration | global-configuration}
  */
 export function setInputStabilityCheckEnabled(
   inputStabilityCheckFrequency: StabilityCheckFrequency
