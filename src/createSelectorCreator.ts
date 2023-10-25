@@ -1,4 +1,5 @@
 import { defaultMemoize } from './defaultMemoize'
+
 import type {
   Combiner,
   CreateSelectorOptions,
@@ -12,12 +13,14 @@ import type {
   StabilityCheckFrequency,
   UnknownMemoizer
 } from './types'
+
 import {
   assertIsFunction,
   collectInputSelectorResults,
   ensureIsArray,
   getDependencies,
-  runStabilityCheck
+  runStabilityCheck,
+  shouldRunInputStabilityCheck
 } from './utils'
 
 /**
@@ -30,7 +33,17 @@ export interface CreateSelectorFunction<
   MemoizeFunction extends UnknownMemoizer,
   ArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
 > {
-  /** Input selectors as separate inline arguments */
+  /**
+   * Creates a memoized selector function.
+   *
+   * @param createSelectorArgs - An arbitrary number of input selectors as separate inline arguments and a `combiner` function.
+   * @returns An output selector.
+   *
+   * @template InputSelectors - The type of the input selectors as an array.
+   * @template Result - The return type of the `combiner` as well as the output selector.
+   * @template OverrideMemoizeFunction - The type of the optional `memoize` function that could be passed into the options object to override the original `memoize` function that was initially passed into `createSelectorCreator`.
+   * @template OverrideArgsMemoizeFunction - The type of the optional `argsMemoize` function that could be passed into the options object to override the original `argsMemoize` function that was initially passed into `createSelectorCreator`.
+   */
   <InputSelectors extends SelectorArray, Result>(
     ...createSelectorArgs: [
       ...inputSelectors: InputSelectors,
@@ -43,7 +56,17 @@ export interface CreateSelectorFunction<
     ArgsMemoizeFunction
   >
 
-  /** Input selectors as separate inline arguments with memoizeOptions passed */
+  /**
+   * Creates a memoized selector function.
+   *
+   * @param createSelectorArgs - An arbitrary number of input selectors as separate inline arguments, a `combiner` function and an `options` object.
+   * @returns An output selector.
+   *
+   * @template InputSelectors - The type of the input selectors as an array.
+   * @template Result - The return type of the `combiner` as well as the output selector.
+   * @template OverrideMemoizeFunction - The type of the optional `memoize` function that could be passed into the options object to override the original `memoize` function that was initially passed into `createSelectorCreator`.
+   * @template OverrideArgsMemoizeFunction - The type of the optional `argsMemoize` function that could be passed into the options object to override the original `argsMemoize` function that was initially passed into `createSelectorCreator`.
+   */
   <
     InputSelectors extends SelectorArray,
     Result,
@@ -116,8 +139,8 @@ let globalStabilityCheck: StabilityCheckFrequency = 'once'
  * This function allows you to override this setting for all of your selectors.
  *
  * **Note**: This setting can still be overridden per selector inside `createSelector`'s `options` object.
- * See {@link https://github.com/reduxjs/reselect#per-selector-configuration | per-selector-configuration}
- * and {@linkcode CreateSelectorOptions.inputStabilityCheck | inputStabilityCheck} for more details.
+ * See {@link https://github.com/reduxjs/reselect#per-selector-configuration per-selector-configuration}
+ * and {@linkcode CreateSelectorOptions.inputStabilityCheck inputStabilityCheck} for more details.
  *
  * _The input stability check does not run in production builds._
  *
@@ -136,8 +159,8 @@ let globalStabilityCheck: StabilityCheckFrequency = 'once'
  * // Never run the input stability check.
  * setInputStabilityCheckEnabled('never')
  * ```
- * @see {@link https://github.com/reduxjs/reselect#development-only-checks | development-only-checks}
- * @see {@link https://github.com/reduxjs/reselect#global-configuration | global-configuration}
+ * @see {@link https://github.com/reduxjs/reselect#development-only-checks development-only-checks}
+ * @see {@link https://github.com/reduxjs/reselect#global-configuration global-configuration}
  */
 export function setInputStabilityCheckEnabled(
   inputStabilityCheckFrequency: StabilityCheckFrequency
@@ -252,14 +275,14 @@ export function createSelectorCreator<
       : memoizeOrOptions
 
   const createSelector = <
-    Selectors extends SelectorArray,
+    InputSelectors extends SelectorArray,
     Result,
     OverrideMemoizeFunction extends UnknownMemoizer = MemoizeFunction,
     OverrideArgsMemoizeFunction extends UnknownMemoizer = ArgsMemoizeFunction
   >(
     ...funcs: [
-      ...inputSelectors: [...Selectors],
-      combiner: Combiner<Selectors, Result>,
+      ...inputSelectors: [...InputSelectors],
+      combiner: Combiner<InputSelectors, Result>,
       createSelectorOptions?: Partial<
         CreateSelectorOptions<
           MemoizeFunction,
@@ -287,7 +310,7 @@ export function createSelectorCreator<
 
     // Normally, the result func or "combiner" is the last arg
     let resultFunc = funcs.pop() as
-      | Combiner<Selectors, Result>
+      | Combiner<InputSelectors, Result>
       | Partial<
           CreateSelectorOptions<
             MemoizeFunction,
@@ -301,7 +324,7 @@ export function createSelectorCreator<
     if (typeof resultFunc === 'object') {
       directlyPassedOptions = resultFunc
       // and pop the real result func off
-      resultFunc = funcs.pop() as Combiner<Selectors, Result>
+      resultFunc = funcs.pop() as Combiner<InputSelectors, Result>
     }
 
     assertIsFunction(
@@ -310,7 +333,7 @@ export function createSelectorCreator<
     )
 
     // Determine which set of options we're using. Prefer options passed directly,
-    // but fall back to options given to createSelectorCreator.
+    // but fall back to options given to `createSelectorCreator`.
     const combinedOptions = {
       ...createSelectorCreatorOptions,
       ...directlyPassedOptions
@@ -331,14 +354,17 @@ export function createSelectorCreator<
     // we wrap it in an array so we can apply it.
     const finalMemoizeOptions = ensureIsArray(memoizeOptions)
     const finalArgsMemoizeOptions = ensureIsArray(argsMemoizeOptions)
-    const dependencies = getDependencies(funcs) as Selectors
+    const dependencies = getDependencies(funcs) as InputSelectors
 
     const memoizedResultFunc = memoize(function recomputationWrapper() {
       recomputations++
       // apply arguments instead of spreading for performance.
       // @ts-ignore
-      return (resultFunc as Combiner<Selectors, Result>).apply(null, arguments)
-    }, ...finalMemoizeOptions) as Combiner<Selectors, Result> &
+      return (resultFunc as Combiner<InputSelectors, Result>).apply(
+        null,
+        arguments
+      )
+    }, ...finalMemoizeOptions) as Combiner<InputSelectors, Result> &
       ExtractMemoizerFields<OverrideMemoizeFunction>
 
     let firstRun = true
@@ -360,12 +386,7 @@ export function createSelectorCreator<
         arguments
       )
 
-      const shouldRunInputStabilityCheck =
-        process.env.NODE_ENV !== 'production' &&
-        (inputStabilityCheck === 'always' ||
-          (inputStabilityCheck === 'once' && firstRun))
-
-      if (shouldRunInputStabilityCheck) {
+      if (shouldRunInputStabilityCheck(inputStabilityCheck, firstRun)) {
         // make a second copy of the params, to check if we got the same results
         const inputSelectorResultsCopy = collectInputSelectorResults(
           dependencies,
@@ -387,9 +408,9 @@ export function createSelectorCreator<
 
       return lastResult
     }, ...finalArgsMemoizeOptions) as Selector<
-      GetStateFromSelectors<Selectors>,
+      GetStateFromSelectors<InputSelectors>,
       Result,
-      GetParamsFromSelectors<Selectors>
+      GetParamsFromSelectors<InputSelectors>
     > &
       ExtractMemoizerFields<OverrideArgsMemoizeFunction>
 
@@ -403,7 +424,7 @@ export function createSelectorCreator<
       memoize,
       argsMemoize
     }) as OutputSelector<
-      Selectors,
+      InputSelectors,
       Result,
       OverrideMemoizeFunction,
       OverrideArgsMemoizeFunction

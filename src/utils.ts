@@ -2,8 +2,10 @@ import type {
   CreateSelectorOptions,
   Selector,
   SelectorArray,
+  StabilityCheckFrequency,
   UnknownMemoizer
 } from './types'
+
 /**
  * Assert that the provided value is a function. If the assertion fails,
  * a `TypeError` is thrown with an optional custom error message.
@@ -129,3 +131,22 @@ export function runStabilityCheck(
     )
   }
 }
+
+/**
+ * Determines if the input stability check should run.
+ *
+ * @param inputStabilityCheck - The frequency of the input stability check.
+ * @param firstRun - Indicates whether it is the first time the selector has run.
+ * @returns true if the input stability check should run, otherwise false.
+ */
+export const shouldRunInputStabilityCheck = (
+  inputStabilityCheck: StabilityCheckFrequency,
+  firstRun: boolean
+) => {
+  return (
+    process.env.NODE_ENV !== 'production' &&
+    (inputStabilityCheck === 'always' ||
+      (inputStabilityCheck === 'once' && firstRun))
+  )
+}
+
