@@ -386,7 +386,10 @@ export function createSelectorCreator<
         arguments
       )
 
-      if (shouldRunInputStabilityCheck(inputStabilityCheck, firstRun)) {
+      if (
+        process.env.NODE_ENV !== 'production' &&
+        shouldRunInputStabilityCheck(inputStabilityCheck, firstRun)
+      ) {
         // make a second copy of the params, to check if we got the same results
         const inputSelectorResultsCopy = collectInputSelectorResults(
           dependencies,

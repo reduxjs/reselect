@@ -144,9 +144,7 @@ export const shouldRunInputStabilityCheck = (
   firstRun: boolean
 ) => {
   return (
-    process.env.NODE_ENV !== 'production' &&
-    (inputStabilityCheck === 'always' ||
-      (inputStabilityCheck === 'once' && firstRun))
+    inputStabilityCheck === 'always' ||
+    (inputStabilityCheck === 'once' && firstRun)
   )
 }
-
