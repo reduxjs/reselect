@@ -29,18 +29,7 @@ export default defineConfig(options => {
       format: ['esm'],
       outExtension: () => ({ js: '.mjs' }),
       dts: true,
-      clean: true,
-      async onSuccess() {
-        console.log('onSuccess')
-
-        console.log('Generating TS 4.6 types...')
-        await execAsync('yarn tsc -p tsconfig.ts46types.json')
-        fs.copyFileSync(
-          'src/versionedTypes/package.dist.json',
-          'dist/versionedTypes/ts46/versionedTypes/package.json'
-        )
-        console.log('TS 4.6 types done')
-      }
+      clean: true
     },
 
     // Support Webpack 4 by pointing `"module"` to a file with a `.js` extension

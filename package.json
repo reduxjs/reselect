@@ -13,13 +13,6 @@
       "default": "./dist/cjs/reselect.cjs"
     }
   },
-  "typesVersions": {
-    "<=4.6": {
-      "*": [
-        "./dist/versionedTypes/ts46/index.d.ts"
-      ]
-    }
-  },
   "files": [
     "src",
     "dist"
