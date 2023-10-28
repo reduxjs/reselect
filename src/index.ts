@@ -46,6 +46,14 @@ export function setInputStabilityCheckEnabled(enabled: StabilityCheck) {
   globalStabilityCheck = enabled
 }
 
+function getTime() {
+  if (performance && typeof performance.now === 'function') {
+    return performance.now()
+  }
+
+  return Date.now()
+}
+
 function getDependencies(funcs: unknown[]) {
   const dependencies = Array.isArray(funcs[0]) ? funcs[0] : funcs
 
@@ -79,6 +87,7 @@ export function createSelectorCreator<
 ) {
   const createSelector = (...funcs: Function[]) => {
     let recomputations = 0
+    let computationTime = 0
     let lastResult: unknown
 
     // Due to the intricacies of rest params, we can't do an optional arg after `...funcs`.
@@ -121,8 +130,12 @@ export function createSelectorCreator<
     const memoizedResultFunc = memoize(
       function recomputationWrapper() {
         recomputations++
+        const computationStartTime = getTime()
         // apply arguments instead of spreading for performance.
-        return resultFunc!.apply(null, arguments)
+        const resultFuncOutput = resultFunc!.apply(null, arguments)
+        computationTime += getTime() - computationStartTime
+
+        return resultFuncOutput
       } as F,
       ...finalMemoizeOptions
     )
@@ -204,7 +217,8 @@ export function createSelectorCreator<
       dependencies,
       lastResult: () => lastResult,
       recomputations: () => recomputations,
-      resetRecomputations: () => (recomputations = 0)
+      resetRecomputations: () => (recomputations = 0, computationTime = 0),
+      computationTime: () => computationTime
     })
 
     return selector
