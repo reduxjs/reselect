@@ -5,7 +5,7 @@ import { configureStore, createSlice } from '@reduxjs/toolkit'
 import lodashMemoize from 'lodash/memoize'
 import microMemoize from 'micro-memoize'
 import {
-  autotrackMemoize,
+  unstable_autotrackMemoize,
   createSelector,
   createSelectorCreator,
   defaultMemoize,
@@ -507,7 +507,7 @@ describe<LocalTestContext>('argsMemoize and memoize', it => {
     const selectorAutotrack = createSelector(
       (state: TodoState) => state.todos,
       todos => todos.map(({ id }) => id),
-      { memoize: autotrackMemoize }
+      { memoize: unstable_autotrackMemoize }
     )
     const outPutSelectorFields: (keyof OutputSelectorFields)[] = [
       'memoize',
@@ -691,16 +691,16 @@ describe<LocalTestContext>('argsMemoize and memoize', it => {
     // Call with new reference to force the selector to re-run
     selectorOriginal(deepClone(state))
     selectorOriginal(deepClone(state))
-    // Override `argsMemoize` with `autotrackMemoize`
+    // Override `argsMemoize` with `unstable_autotrackMemoize`
     const selectorOverrideArgsMemoize = createSelector(
       (state: TodoState) => state.todos,
       todos => todos.map(({ id }) => id),
       {
         memoize: defaultMemoize,
         memoizeOptions: { equalityCheck: (a, b) => a === b },
-        // WARNING!! This is just for testing purposes, do not use `autotrackMemoize` to memoize the arguments,
+        // WARNING!! This is just for testing purposes, do not use `unstable_autotrackMemoize` to memoize the arguments,
         // it can return false positives, since it's not tracking a nested field.
-        argsMemoize: autotrackMemoize
+        argsMemoize: unstable_autotrackMemoize
       }
     )
     selectorOverrideArgsMemoize(state)

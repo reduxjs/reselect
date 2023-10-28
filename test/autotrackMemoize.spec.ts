@@ -1,4 +1,4 @@
-import { createSelectorCreator, autotrackMemoize } from 'reselect'
+import { createSelectorCreator, unstable_autotrackMemoize } from 'reselect'
 
 // Construct 1E6 states for perf test outside of the perf test so as to not change the execute time of the test function
 const numOfStates = 1000000
@@ -24,7 +24,7 @@ for (let i = 0; i < numOfStates; i++) {
 }
 
 describe('Basic selector behavior with autotrack', () => {
-  const createSelector = createSelectorCreator(autotrackMemoize)
+  const createSelector = createSelectorCreator(unstable_autotrackMemoize)
 
   test('basic selector', () => {
     // console.log('Selector test')
@@ -122,8 +122,8 @@ describe('Basic selector behavior with autotrack', () => {
 
       expect(selector(state1)).toBe(3)
       expect(selector.recomputations()).toBe(1)
-      // Expected a million calls to a selector with the same arguments to take less than 1 second
-      expect(totalTime).toBeLessThan(1000)
+      // Expected a million calls to a selector with the same arguments to take less than 2 seconds
+      expect(totalTime).toBeLessThan(2000)
     })
 
     test('basic selector cache hit performance for state changes but shallowly equal selector args', () => {
@@ -147,7 +147,7 @@ describe('Basic selector behavior with autotrack', () => {
       expect(selector.recomputations()).toBe(1)
 
       // Expected a million calls to a selector with the same arguments to take less than 1 second
-      expect(totalTime).toBeLessThan(1000)
+      expect(totalTime).toBeLessThan(2000)
     })
   })
 

@@ -12,7 +12,7 @@ export type {
   SelectorResultArray
 } from './types'
 
-export { autotrackMemoize } from './autotrackMemoize/autotrackMemoize'
+export { autotrackMemoize as unstable_autotrackMemoize } from './autotrackMemoize/autotrackMemoize'
 
 export { weakMapMemoize } from './weakMapMemoize'
 
