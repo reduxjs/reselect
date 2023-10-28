@@ -7,9 +7,9 @@
     "noEmit": true,
     "skipLibCheck": true,
     "paths": {
-      "reselect": ["../src/index"]  // @remap-prod-remove-line
+      "reselect": ["../src/index"], // @remap-prod-remove-line
+      "@internal/*": ["../src/*"]
     }
   },
-  "include": ["test.ts"],
-  
+  "include": ["test.ts", "argsMemoize.typetest.ts"]
 }

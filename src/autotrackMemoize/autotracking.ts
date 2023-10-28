@@ -3,6 +3,7 @@
 // Additional references:
 // - https://www.pzuraq.com/blog/how-autotracking-works
 // - https://v5.chriskrycho.com/journal/autotracking-elegant-dx-via-cutting-edge-cs/
+import type { EqualityFn } from '@internal/types'
 import { assert } from './utils'
 
 // The global revision clock. Every time state changes, the clock increments.
@@ -12,8 +13,6 @@ export let $REVISION = 0
 // to track any dependencies that are used while computing. If no cache is
 // computing, then the tracker is null.
 let CURRENT_TRACKER: Set<Cell<any> | TrackingCache> | null = null
-
-type EqualityFn = (a: any, b: any) => boolean
 
 // Storage represents a root value in the system - the actual state of our app.
 export class Cell<T> {

@@ -1,24 +1,24 @@
 /* eslint-disable no-use-before-define */
 
+import { configureStore, createSlice } from '@reduxjs/toolkit'
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { groupBy, isEqual } from 'lodash'
+import memoizeOne from 'memoize-one'
+import microMemoize from 'micro-memoize'
+import type { TypedUseSelectorHook } from 'react-redux'
+import { useSelector } from 'react-redux'
 import {
+  GetStateFromSelectors,
+  OutputSelector,
+  ParametricSelector,
+  Selector,
+  SelectorResultArray,
   createSelector,
-  defaultMemoize,
-  defaultEqualityCheck,
   createSelectorCreator,
   createStructuredSelector,
-  ParametricSelector,
-  OutputSelector,
-  SelectorResultArray,
-  Selector,
-  GetStateFromSelectors
+  defaultEqualityCheck,
+  defaultMemoize
 } from 'reselect'
-import { isEqual, groupBy } from 'lodash'
-
-import microMemoize from 'micro-memoize'
-import memoizeOne from 'memoize-one'
-import { createSlice, configureStore } from '@reduxjs/toolkit'
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux'
 
 export function expectType<T>(t: T): T {
   return t
@@ -948,7 +948,7 @@ function multiArgMemoize<F extends (...args: any[]) => any>(
     (state: { foo: string }) => state.foo,
     foo => foo + '!'
   )
-  // @ts-expect-error - not using defaultMemoize, so clearCache shouldn't exist
+  // error is not applicable anymore
   select.clearCache()
 
   const createMultiMemoizeArgSelector2 = createSelectorCreator(
@@ -1346,9 +1346,7 @@ function deepNesting() {
   const selector16 = createSelector(selector15, s => s)
   const selector17: OutputSelector<
     [(state: State) => string],
-    ReturnType<typeof selector16>,
-    (s: string) => string,
-    never
+    ReturnType<typeof selector16>
   > = createSelector(selector16, s => s)
   const selector18 = createSelector(selector17, s => s)
   const selector19 = createSelector(selector18, s => s)
@@ -1360,8 +1358,7 @@ function deepNesting() {
   const selector25 = createSelector(selector24, s => s)
   const selector26: Selector<
     typeof selector25 extends Selector<infer S> ? S : never,
-    ReturnType<typeof selector25>,
-    never
+    ReturnType<typeof selector25>
   > = createSelector(selector25, s => s)
   const selector27 = createSelector(selector26, s => s)
   const selector28 = createSelector(selector27, s => s)

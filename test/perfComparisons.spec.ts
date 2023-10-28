@@ -1,11 +1,12 @@
+import type { PayloadAction } from '@reduxjs/toolkit'
+import { configureStore, createSlice } from '@reduxjs/toolkit'
 import {
+  autotrackMemoize,
   createSelectorCreator,
   defaultMemoize,
-  autotrackMemoize,
   weakMapMemoize
 } from 'reselect'
 import { vi } from 'vitest'
-import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 describe('More perf comparisons', () => {
   const originalEnv = process.env.NODE_ENV

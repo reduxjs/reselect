@@ -1,13 +1,14 @@
 import { createNode, updateNode } from './proxy'
-import { Node } from './tracking'
+import type { Node } from './tracking'
 
-import { createCache } from './autotracking'
 import {
   createCacheKeyComparator,
   defaultEqualityCheck
 } from '@internal/defaultMemoize'
+import type { AnyFunction } from '@internal/types'
+import { createCache } from './autotracking'
 
-export function autotrackMemoize<F extends (...args: any[]) => any>(func: F) {
+export function autotrackMemoize<F extends AnyFunction>(func: F) {
   // we reference arguments instead of spreading them for performance reasons
 
   const node: Node<Record<string, unknown>> = createNode(

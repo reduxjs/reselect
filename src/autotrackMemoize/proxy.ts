@@ -1,14 +1,13 @@
 // Original source:
 // - https://github.com/simonihmig/tracked-redux/blob/master/packages/tracked-redux/src/-private/proxy.ts
 
+import type { Node, Tag } from './tracking'
 import {
   consumeCollection,
-  dirtyCollection,
-  Node,
-  Tag,
   consumeTag,
-  dirtyTag,
-  createTag
+  createTag,
+  dirtyCollection,
+  dirtyTag
 } from './tracking'
 
 export const REDUX_PROXY_LABEL = Symbol()
