@@ -67,6 +67,6 @@
     "shelljs": "^0.8.5",
     "tsup": "^6.7.0",
     "typescript": "^4.9",
-    "vitest": "^0.29.8"
+    "vitest": "^0.34"
   }
 }

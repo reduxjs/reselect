@@ -1,7 +1,7 @@
 import memoizeOne from 'memoize-one'
 import microMemoize from 'micro-memoize'
 import {
-  autotrackMemoize,
+  unstable_autotrackMemoize,
   createSelector,
   createSelectorCreator,
   defaultMemoize,
@@ -46,26 +46,26 @@ function overrideOnlyMemoizeInCreateSelector() {
   const selectorAutotrackSeparateInlineArgs = createSelector(
     (state: State) => state.todos,
     todos => todos.map(t => t.id),
-    { memoize: autotrackMemoize }
+    { memoize: unstable_autotrackMemoize }
   )
   const selectorAutotrackArgsAsArray = createSelector(
     [(state: State) => state.todos],
     todos => todos.map(t => t.id),
-    { memoize: autotrackMemoize }
+    { memoize: unstable_autotrackMemoize }
   )
-  // @ts-expect-error When memoize is autotrackMemoize, type of memoizeOptions needs to be the same as options args in autotrackMemoize.
+  // @ts-expect-error When memoize is unstable_autotrackMemoize, type of memoizeOptions needs to be the same as options args in unstable_autotrackMemoize.
   const selectorAutotrackArgsAsArrayWithMemoizeOptions = createSelector(
     [(state: State) => state.todos],
     // @ts-expect-error
     todos => todos.map(t => t.id),
-    { memoize: autotrackMemoize, memoizeOptions: { maxSize: 2 } }
+    { memoize: unstable_autotrackMemoize, memoizeOptions: { maxSize: 2 } }
   )
-  // @ts-expect-error When memoize is autotrackMemoize, type of memoizeOptions needs to be the same as options args in autotrackMemoize.
+  // @ts-expect-error When memoize is unstable_autotrackMemoize, type of memoizeOptions needs to be the same as options args in unstable_autotrackMemoize.
   const selectorAutotrackSeparateInlineArgsWithMemoizeOptions = createSelector(
     (state: State) => state.todos,
     // @ts-expect-error
     todos => todos.map(t => t.id),
-    { memoize: autotrackMemoize, memoizeOptions: { maxSize: 2 } }
+    { memoize: unstable_autotrackMemoize, memoizeOptions: { maxSize: 2 } }
   )
   const selectorWeakMapSeparateInlineArgs = createSelector(
     (state: State) => state.todos,
@@ -93,7 +93,9 @@ function overrideOnlyMemoizeInCreateSelector() {
   )
   const createSelectorDefault = createSelectorCreator(defaultMemoize)
   const createSelectorWeakMap = createSelectorCreator(weakMapMemoize)
-  const createSelectorAutotrack = createSelectorCreator(autotrackMemoize)
+  const createSelectorAutotrack = createSelectorCreator(
+    unstable_autotrackMemoize
+  )
   const changeMemoizeMethodSelectorDefault = createSelectorDefault(
     (state: State) => state.todos,
     todos => todos.map(t => t.id),
@@ -110,7 +112,7 @@ function overrideOnlyMemoizeInCreateSelector() {
     { memoize: defaultMemoize }
   )
   const changeMemoizeMethodSelectorDefaultWithMemoizeOptions =
-    // @ts-expect-error When memoize is changed to weakMapMemoize or autotrackMemoize, memoizeOptions cannot be the same type as options args in defaultMemoize.
+    // @ts-expect-error When memoize is changed to weakMapMemoize or unstable_autotrackMemoize, memoizeOptions cannot be the same type as options args in defaultMemoize.
     createSelectorDefault(
       (state: State) => state.todos,
       // @ts-expect-error
@@ -155,26 +157,32 @@ function overrideOnlyArgsMemoizeInCreateSelector() {
   const selectorAutotrackSeparateInlineArgs = createSelector(
     (state: State) => state.todos,
     todos => todos.map(t => t.id),
-    { argsMemoize: autotrackMemoize }
+    { argsMemoize: unstable_autotrackMemoize }
   )
   const selectorAutotrackArgsAsArray = createSelector(
     [(state: State) => state.todos],
     todos => todos.map(t => t.id),
-    { argsMemoize: autotrackMemoize }
+    { argsMemoize: unstable_autotrackMemoize }
   )
-  // @ts-expect-error When argsMemoize is autotrackMemoize, type of argsMemoizeOptions needs to be the same as options args in autotrackMemoize.
+  // @ts-expect-error When argsMemoize is unstable_autotrackMemoize, type of argsMemoizeOptions needs to be the same as options args in unstable_autotrackMemoize.
   const selectorAutotrackArgsAsArrayWithMemoizeOptions = createSelector(
     [(state: State) => state.todos],
     // @ts-expect-error
     todos => todos.map(t => t.id),
-    { argsMemoize: autotrackMemoize, argsMemoizeOptions: { maxSize: 2 } }
+    {
+      argsMemoize: unstable_autotrackMemoize,
+      argsMemoizeOptions: { maxSize: 2 }
+    }
   )
-  // @ts-expect-error When argsMemoize is autotrackMemoize, type of argsMemoizeOptions needs to be the same as options args in autotrackMemoize.
+  // @ts-expect-error When argsMemoize is unstable_autotrackMemoize, type of argsMemoizeOptions needs to be the same as options args in unstable_autotrackMemoize.
   const selectorAutotrackSeparateInlineArgsWithMemoizeOptions = createSelector(
     (state: State) => state.todos,
     // @ts-expect-error
     todos => todos.map(t => t.id),
-    { argsMemoize: autotrackMemoize, argsMemoizeOptions: { maxSize: 2 } }
+    {
+      argsMemoize: unstable_autotrackMemoize,
+      argsMemoizeOptions: { maxSize: 2 }
+    }
   )
   const selectorWeakMapSeparateInlineArgs = createSelector(
     (state: State) => state.todos,
@@ -202,7 +210,9 @@ function overrideOnlyArgsMemoizeInCreateSelector() {
   )
   const createSelectorDefault = createSelectorCreator(defaultMemoize)
   const createSelectorWeakMap = createSelectorCreator(weakMapMemoize)
-  const createSelectorAutotrack = createSelectorCreator(autotrackMemoize)
+  const createSelectorAutotrack = createSelectorCreator(
+    unstable_autotrackMemoize
+  )
   const changeMemoizeMethodSelectorDefault = createSelectorDefault(
     (state: State) => state.todos,
     todos => todos.map(t => t.id),
@@ -219,7 +229,7 @@ function overrideOnlyArgsMemoizeInCreateSelector() {
     { argsMemoize: defaultMemoize }
   )
   const changeMemoizeMethodSelectorDefaultWithMemoizeOptions =
-    // @ts-expect-error When argsMemoize is changed to weakMapMemoize or autotrackMemoize, argsMemoizeOptions cannot be the same type as options args in defaultMemoize.
+    // @ts-expect-error When argsMemoize is changed to weakMapMemoize or unstable_autotrackMemoize, argsMemoizeOptions cannot be the same type as options args in defaultMemoize.
     createSelectorDefault(
       (state: State) => state.todos,
       // @ts-expect-error
