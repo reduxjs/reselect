@@ -1,6 +1,6 @@
 /* eslint-disable no-use-before-define */
 
-import type { AnyFunction, ExtractMemoizerFields } from '@internal/types'
+import type { AnyFunction, ExtractMemoizerFields } from '../src/types'
 import { configureStore, createSlice } from '@reduxjs/toolkit'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { groupBy, isEqual } from 'lodash'
