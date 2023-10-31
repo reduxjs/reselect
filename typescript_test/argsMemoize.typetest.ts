@@ -1,10 +1,10 @@
 import memoizeOne from 'memoize-one'
 import microMemoize from 'micro-memoize'
 import {
-  unstable_autotrackMemoize,
   createSelector,
   createSelectorCreator,
   defaultMemoize,
+  unstable_autotrackMemoize as autotrackMemoize,
   weakMapMemoize
 } from 'reselect'
 import { expectExactType } from './test'
@@ -46,26 +46,26 @@ function overrideOnlyMemoizeInCreateSelector() {
   const selectorAutotrackSeparateInlineArgs = createSelector(
     (state: State) => state.todos,
     todos => todos.map(t => t.id),
-    { memoize: unstable_autotrackMemoize }
+    { memoize: autotrackMemoize }
   )
   const selectorAutotrackArgsAsArray = createSelector(
     [(state: State) => state.todos],
     todos => todos.map(t => t.id),
-    { memoize: unstable_autotrackMemoize }
+    { memoize: autotrackMemoize }
   )
-  // @ts-expect-error When memoize is unstable_autotrackMemoize, type of memoizeOptions needs to be the same as options args in unstable_autotrackMemoize.
+  // @ts-expect-error When memoize is autotrackMemoize, type of memoizeOptions needs to be the same as options args in autotrackMemoize.
   const selectorAutotrackArgsAsArrayWithMemoizeOptions = createSelector(
     [(state: State) => state.todos],
     // @ts-expect-error
     todos => todos.map(t => t.id),
-    { memoize: unstable_autotrackMemoize, memoizeOptions: { maxSize: 2 } }
+    { memoize: autotrackMemoize, memoizeOptions: { maxSize: 2 } }
   )
-  // @ts-expect-error When memoize is unstable_autotrackMemoize, type of memoizeOptions needs to be the same as options args in unstable_autotrackMemoize.
+  // @ts-expect-error When memoize is autotrackMemoize, type of memoizeOptions needs to be the same as options args in autotrackMemoize.
   const selectorAutotrackSeparateInlineArgsWithMemoizeOptions = createSelector(
     (state: State) => state.todos,
     // @ts-expect-error
     todos => todos.map(t => t.id),
-    { memoize: unstable_autotrackMemoize, memoizeOptions: { maxSize: 2 } }
+    { memoize: autotrackMemoize, memoizeOptions: { maxSize: 2 } }
   )
   const selectorWeakMapSeparateInlineArgs = createSelector(
     (state: State) => state.todos,
@@ -93,9 +93,7 @@ function overrideOnlyMemoizeInCreateSelector() {
   )
   const createSelectorDefault = createSelectorCreator(defaultMemoize)
   const createSelectorWeakMap = createSelectorCreator(weakMapMemoize)
-  const createSelectorAutotrack = createSelectorCreator(
-    unstable_autotrackMemoize
-  )
+  const createSelectorAutotrack = createSelectorCreator(autotrackMemoize)
   const changeMemoizeMethodSelectorDefault = createSelectorDefault(
     (state: State) => state.todos,
     todos => todos.map(t => t.id),
@@ -112,7 +110,7 @@ function overrideOnlyMemoizeInCreateSelector() {
     { memoize: defaultMemoize }
   )
   const changeMemoizeMethodSelectorDefaultWithMemoizeOptions =
-    // @ts-expect-error When memoize is changed to weakMapMemoize or unstable_autotrackMemoize, memoizeOptions cannot be the same type as options args in defaultMemoize.
+    // @ts-expect-error When memoize is changed to weakMapMemoize or autotrackMemoize, memoizeOptions cannot be the same type as options args in defaultMemoize.
     createSelectorDefault(
       (state: State) => state.todos,
       // @ts-expect-error
@@ -157,30 +155,30 @@ function overrideOnlyArgsMemoizeInCreateSelector() {
   const selectorAutotrackSeparateInlineArgs = createSelector(
     (state: State) => state.todos,
     todos => todos.map(t => t.id),
-    { argsMemoize: unstable_autotrackMemoize }
+    { argsMemoize: autotrackMemoize }
   )
   const selectorAutotrackArgsAsArray = createSelector(
     [(state: State) => state.todos],
     todos => todos.map(t => t.id),
-    { argsMemoize: unstable_autotrackMemoize }
+    { argsMemoize: autotrackMemoize }
   )
-  // @ts-expect-error When argsMemoize is unstable_autotrackMemoize, type of argsMemoizeOptions needs to be the same as options args in unstable_autotrackMemoize.
+  // @ts-expect-error When argsMemoize is autotrackMemoize, type of argsMemoizeOptions needs to be the same as options args in autotrackMemoize.
   const selectorAutotrackArgsAsArrayWithMemoizeOptions = createSelector(
     [(state: State) => state.todos],
     // @ts-expect-error
     todos => todos.map(t => t.id),
     {
-      argsMemoize: unstable_autotrackMemoize,
+      argsMemoize: autotrackMemoize,
       argsMemoizeOptions: { maxSize: 2 }
     }
   )
-  // @ts-expect-error When argsMemoize is unstable_autotrackMemoize, type of argsMemoizeOptions needs to be the same as options args in unstable_autotrackMemoize.
+  // @ts-expect-error When argsMemoize is autotrackMemoize, type of argsMemoizeOptions needs to be the same as options args in autotrackMemoize.
   const selectorAutotrackSeparateInlineArgsWithMemoizeOptions = createSelector(
     (state: State) => state.todos,
     // @ts-expect-error
     todos => todos.map(t => t.id),
     {
-      argsMemoize: unstable_autotrackMemoize,
+      argsMemoize: autotrackMemoize,
       argsMemoizeOptions: { maxSize: 2 }
     }
   )
@@ -210,9 +208,7 @@ function overrideOnlyArgsMemoizeInCreateSelector() {
   )
   const createSelectorDefault = createSelectorCreator(defaultMemoize)
   const createSelectorWeakMap = createSelectorCreator(weakMapMemoize)
-  const createSelectorAutotrack = createSelectorCreator(
-    unstable_autotrackMemoize
-  )
+  const createSelectorAutotrack = createSelectorCreator(autotrackMemoize)
   const changeMemoizeMethodSelectorDefault = createSelectorDefault(
     (state: State) => state.todos,
     todos => todos.map(t => t.id),
@@ -229,7 +225,7 @@ function overrideOnlyArgsMemoizeInCreateSelector() {
     { argsMemoize: defaultMemoize }
   )
   const changeMemoizeMethodSelectorDefaultWithMemoizeOptions =
-    // @ts-expect-error When argsMemoize is changed to weakMapMemoize or unstable_autotrackMemoize, argsMemoizeOptions cannot be the same type as options args in defaultMemoize.
+    // @ts-expect-error When argsMemoize is changed to weakMapMemoize or autotrackMemoize, argsMemoizeOptions cannot be the same type as options args in defaultMemoize.
     createSelectorDefault(
       (state: State) => state.todos,
       // @ts-expect-error
@@ -421,7 +417,20 @@ function overrideMemoizeAndArgsMemoizeInCreateSelector() {
   expectExactType<number[]>(
     selectorMicroMemoizeOverriddenArray.resultFunc([{ id: 0, completed: true }])
   )
-  // Making sure the type of `memoizeOptions` remains the same when only overriding `argsMemoize`
+  const selectorMicroMemoizeOverrideArgsMemoizeOnlyWrong =
+    // @ts-expect-error Because `memoizeOptions` should not contain `resultEqualityCheck`.
+    createSelectorMicroMemoize(
+      (state: State) => state.todos,
+      todos => todos.map(({ id }) => id),
+      {
+        argsMemoize: defaultMemoize,
+        memoizeOptions: {
+          isPromise: false,
+          resultEqualityCheck: (a: unknown, b: unknown) => a === b
+        },
+        argsMemoizeOptions: { resultEqualityCheck: (a, b) => a === b }
+      }
+    )
   const selectorMicroMemoizeOverrideArgsMemoizeOnly =
     createSelectorMicroMemoize(
       (state: State) => state.todos,
@@ -656,6 +665,7 @@ function memoizeAndArgsMemoizeInCreateSelectorCreator() {
   )
   // @ts-expect-error
   selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault()
+  selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault.resultFunc
   selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault.clearCache()
   // @ts-expect-error
   selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault.cache
@@ -703,6 +713,12 @@ function memoizeAndArgsMemoizeInCreateSelectorCreator() {
       { id: 0, completed: true }
     ])
   )
+  expectExactType<typeof microMemoize>(
+    selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault.memoize
+  )
+  expectExactType<typeof defaultMemoize>(
+    selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault.argsMemoize
+  )
 
   const createSelectorWithWrongArgsMemoizeOptions =
     // @ts-expect-error If we don't pass in `argsMemoize`, the type for `argsMemoizeOptions` falls back to the options parameter of `defaultMemoize`.
@@ -725,4 +741,170 @@ function memoizeAndArgsMemoizeInCreateSelectorCreator() {
     },
     [] // This causes the error.
   )
+}
+
+function deepNesting() {
+  type State = { foo: string }
+  const readOne = (state: State) => state.foo
+
+  const selector0 = createSelector(readOne, one => one)
+  const selector1 = createSelector(selector0, s => s)
+  const selector2 = createSelector(selector1, s => s)
+  const selector3 = createSelector(selector2, s => s)
+  const selector4 = createSelector(selector3, s => s)
+  const selector5 = createSelector(selector4, s => s)
+  const selector6 = createSelector(selector5, s => s)
+  const selector7 = createSelector(selector6, s => s)
+  const selector8 = createSelector(selector7, s => s)
+  const selector9 = createSelector(selector8, s => s)
+  const selector10 = createSelector(selector9, s => s, {
+    memoize: microMemoize
+  })
+  selector10.dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+    .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+    .dependencies[0].dependencies[0].memoizedResultFunc.clearCache
+  const selector11 = createSelector(selector10, s => s)
+  const selector12 = createSelector(selector11, s => s)
+  const selector13 = createSelector(selector12, s => s)
+  const selector14 = createSelector(selector13, s => s)
+  const selector15 = createSelector(selector14, s => s)
+  const selector16 = createSelector(selector15, s => s)
+  const selector17 = createSelector(selector16, s => s)
+  const selector18 = createSelector(selector17, s => s)
+  const selector19 = createSelector(selector18, s => s)
+  const selector20 = createSelector(selector19, s => s)
+  selector20.dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+    .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+    .dependencies[0].dependencies[0].memoizedResultFunc.cache
+}
+
+function deepNesting1() {
+  type State = { foo: string }
+  const readOne = (state: State) => state.foo
+
+  const selector0 = createSelector(readOne, one => one)
+  const selector1 = createSelector([selector0], s => s)
+  const selector2 = createSelector([selector1], s => s)
+  const selector3 = createSelector([selector2], s => s)
+  const selector4 = createSelector([selector3], s => s)
+  const selector5 = createSelector([selector4], s => s)
+  const selector6 = createSelector([selector5], s => s)
+  const selector7 = createSelector([selector6], s => s)
+  const selector8 = createSelector([selector7], s => s)
+  const selector9 = createSelector([selector8], s => s)
+  const selector10 = createSelector([selector9], s => s)
+  const selector11 = createSelector([selector10], s => s)
+  const selector12 = createSelector([selector11], s => s)
+  const selector13 = createSelector([selector12], s => s)
+  const selector14 = createSelector([selector13], s => s)
+  const selector15 = createSelector([selector14], s => s)
+  const selector16 = createSelector([selector15], s => s)
+  const selector17 = createSelector([selector16], s => s)
+  const selector18 = createSelector([selector17], s => s)
+  const selector19 = createSelector([selector18], s => s)
+  const selector20 = createSelector([selector19], s => s)
+  const selector21 = createSelector([selector20], s => s)
+  const selector22 = createSelector([selector21], s => s)
+  const selector23 = createSelector([selector22], s => s)
+  const selector24 = createSelector([selector23], s => s)
+  const selector25 = createSelector([selector24], s => s)
+  const selector26 = createSelector([selector25], s => s)
+  const selector27 = createSelector([selector26], s => s)
+  const selector28 = createSelector([selector27], s => s)
+  const selector29 = createSelector([selector28], s => s)
+  const selector30 = createSelector([selector29], s => s)
+}
+
+function deepNesting2() {
+  type State = { foo: string }
+  const readOne = (state: State) => state.foo
+
+  const selector0 = createSelector(readOne, one => one)
+  const selector1 = createSelector(selector0, s => s, {
+    memoize: defaultMemoize
+  })
+  const selector2 = createSelector(selector1, s => s, {
+    memoize: defaultMemoize
+  })
+  const selector3 = createSelector(selector2, s => s, {
+    memoize: defaultMemoize
+  })
+  const selector4 = createSelector(selector3, s => s, {
+    memoize: defaultMemoize
+  })
+  const selector5 = createSelector(selector4, s => s, {
+    memoize: defaultMemoize
+  })
+  const selector6 = createSelector(selector5, s => s, {
+    memoize: defaultMemoize
+  })
+  const selector7 = createSelector(selector6, s => s, {
+    memoize: defaultMemoize
+  })
+  const selector8 = createSelector(selector7, s => s, {
+    memoize: defaultMemoize
+  })
+  const selector9 = createSelector(selector8, s => s, {
+    memoize: defaultMemoize
+  })
+  const selector10 = createSelector(selector9, s => s, {
+    memoize: defaultMemoize
+  })
+  const selector11 = createSelector(selector10, s => s, {
+    memoize: defaultMemoize
+  })
+  const selector12 = createSelector(selector11, s => s, {
+    memoize: defaultMemoize
+  })
+  const selector13 = createSelector(selector12, s => s, {
+    memoize: defaultMemoize
+  })
+  const selector14 = createSelector(selector13, s => s, {
+    memoize: defaultMemoize
+  })
+  const selector15 = createSelector(selector14, s => s, {
+    memoize: defaultMemoize
+  })
+  const selector16 = createSelector(selector15, s => s, {
+    memoize: defaultMemoize
+  })
+  const selector17 = createSelector(selector16, s => s, {
+    memoize: defaultMemoize
+  })
+  const selector18 = createSelector(selector17, s => s, {
+    memoize: defaultMemoize
+  })
+  const selector19 = createSelector(selector18, s => s, {
+    memoize: defaultMemoize
+  })
+  const selector20 = createSelector(selector19, s => s, {
+    memoize: defaultMemoize
+  })
+  const selector21 = createSelector(selector20, s => s, {
+    memoize: defaultMemoize
+  })
+  const selector22 = createSelector(selector21, s => s, {
+    memoize: defaultMemoize
+  })
+  const selector23 = createSelector(selector22, s => s, {
+    memoize: defaultMemoize
+  })
+  const selector24 = createSelector(selector23, s => s, {
+    memoize: defaultMemoize
+  })
+  const selector25 = createSelector(selector24, s => s, {
+    memoize: defaultMemoize
+  })
+  const selector26 = createSelector(selector25, s => s, {
+    memoize: defaultMemoize
+  })
+  const selector27 = createSelector(selector26, s => s, {
+    memoize: defaultMemoize
+  })
+  const selector28 = createSelector(selector27, s => s, {
+    memoize: defaultMemoize
+  })
+  const selector29 = createSelector(selector28, s => s, {
+    memoize: defaultMemoize
+  })
 }

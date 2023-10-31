@@ -1,7 +1,7 @@
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { configureStore, createSlice } from '@reduxjs/toolkit'
 import {
-  unstable_autotrackMemoize,
+  unstable_autotrackMemoize as autotrackMemoize,
   createSelectorCreator,
   defaultMemoize,
   weakMapMemoize
@@ -19,7 +19,7 @@ describe('More perf comparisons', () => {
   })
 
   const csDefault = createSelectorCreator(defaultMemoize)
-  const csAutotrack = createSelectorCreator(unstable_autotrackMemoize)
+  const csAutotrack = createSelectorCreator(autotrackMemoize)
 
   interface Todo {
     id: number

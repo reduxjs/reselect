@@ -10,6 +10,46 @@ import type {
 } from './types'
 import { assertIsObject } from './utils'
 
+/**
+ *
+ * @WIP
+ */
+type SelectorsMap<T extends SelectorsObject> = {
+  [Key in keyof T]: ReturnType<T[Key]>
+}
+
+// TODO: Write more type tests for `TypedStructuredSelectorCreator`.
+/**
+ * Allows you to create a pre-typed version of {@linkcode createStructuredSelector createStructuredSelector}
+ * For your root state.
+ *
+ * @since 5.0.0
+ * @public
+ * @WIP
+ */
+export interface TypedStructuredSelectorCreator<RootState = any> {
+  <
+    InputSelectorsObject extends {
+      [Key in keyof RootState]: Selector<RootState, RootState[Key], []>
+    } = {
+      [Key in keyof RootState]: Selector<RootState, RootState[Key], []>
+    },
+    MemoizeFunction extends UnknownMemoizer = typeof defaultMemoize,
+    ArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
+  >(
+    selectors: InputSelectorsObject,
+    selectorCreator?: CreateSelectorFunction<
+      MemoizeFunction,
+      ArgsMemoizeFunction
+    >
+  ): OutputSelector<
+    ObjectValuesToTuple<InputSelectorsObject>,
+    SelectorsMap<InputSelectorsObject>,
+    MemoizeFunction,
+    ArgsMemoizeFunction
+  >
+}
+
 interface SelectorsObject {
   [key: string]: Selector
 }
@@ -26,8 +66,8 @@ interface SelectorsObject {
 export interface StructuredSelectorCreator {
   /**
    * A convenience function for a common pattern that arises when using Reselect.
-   * The selector passed to a `connect` decorator often just takes the values of its input selectors
-   * and maps them to keys in an object.
+   * The selector passed to a `connect` decorator often just takes the
+   * values of its input selectors and maps them to keys in an object.
    *
    * @param selectorMap - A key value pair consisting of input selectors.
    * @param selectorCreator - A custom selector creator function. It defaults to `createSelector`.
@@ -145,9 +185,7 @@ export interface StructuredSelectorCreator {
     >
   ): OutputSelector<
     ObjectValuesToTuple<InputSelectorsObject>,
-    {
-      [Key in keyof InputSelectorsObject]: ReturnType<InputSelectorsObject[Key]>
-    },
+    SelectorsMap<InputSelectorsObject>,
     MemoizeFunction,
     ArgsMemoizeFunction
   >
@@ -155,25 +193,25 @@ export interface StructuredSelectorCreator {
   /**
    * Second overload
    */
-  <
-    State,
-    Result = State,
-    MemoizeFunction extends UnknownMemoizer = typeof defaultMemoize,
-    ArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
-  >(
-    selectors: {
-      [Key in keyof Result]: Selector<State, Result[Key], never>
-    },
-    selectorCreator?: CreateSelectorFunction<
-      MemoizeFunction,
-      ArgsMemoizeFunction
-    >
-  ): OutputSelector<
-    readonly Selector<State, Result, never>[],
-    Result,
-    MemoizeFunction,
-    ArgsMemoizeFunction
-  >
+  // <
+  //   State,
+  //   Result = State,
+  //   MemoizeFunction extends UnknownMemoizer = typeof defaultMemoize,
+  //   ArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
+  // >(
+  //   selectors: {
+  //     [Key in keyof State]: Selector<State, State[Key], never>
+  //   },
+  //   selectorCreator?: CreateSelectorFunction<
+  //     MemoizeFunction,
+  //     ArgsMemoizeFunction
+  //   >
+  // ): OutputSelector<
+  //   readonly Selector<State, State, []>[],
+  //   Result,
+  //   MemoizeFunction,
+  //   ArgsMemoizeFunction
+  // >
 }
 
 // Manual definition of state and output arguments

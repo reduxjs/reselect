@@ -4,7 +4,7 @@
 // - https://www.pzuraq.com/blog/how-autotracking-works
 // - https://v5.chriskrycho.com/journal/autotracking-elegant-dx-via-cutting-edge-cs/
 import type { EqualityFn } from '@internal/types'
-import { assert } from './utils'
+import { assertIsFunction } from '@internal/utils'
 
 // The global revision clock. Every time state changes, the clock increments.
 export let $REVISION = 0
@@ -133,10 +133,11 @@ export function setValue<T extends Cell<unknown>>(
   storage: T,
   value: CellValue<T>
 ): void {
-  assert(
-    storage instanceof Cell,
-    'setValue must be passed a tracked store created with `createStorage`.'
-  )
+  if (!(storage instanceof Cell)) {
+    throw new TypeError(
+      'setValue must be passed a tracked store created with `createStorage`.'
+    )
+  }
 
   storage.value = storage._lastValue = value
 }
@@ -149,8 +150,8 @@ export function createCell<T = unknown>(
 }
 
 export function createCache<T = unknown>(fn: () => T): TrackingCache {
-  assert(
-    typeof fn === 'function',
+  assertIsFunction(
+    fn,
     'the first parameter to `createCache` must be a function'
   )
 

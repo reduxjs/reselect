@@ -14,12 +14,55 @@ import type {
  * @param  errorMessage - An optional custom error message to use if the assertion fails.
  * @throws A `TypeError` if the assertion fails.
  */
-export function assertIsFunction<Func extends Function>(
+export function assertIsFunction<FunctionType extends Function>(
   func: unknown,
   errorMessage = `expected a function, instead received ${typeof func}`
-): asserts func is Func {
+): asserts func is FunctionType {
   if (typeof func !== 'function') {
     throw new TypeError(errorMessage)
+  }
+}
+
+/**
+ * Assert that the provided value is an object. If the assertion fails,
+ * a `TypeError` is thrown with an optional custom error message.
+ *
+ * @param object - The value to be checked.
+ * @param  errorMessage - An optional custom error message to use if the assertion fails.
+ * @throws A `TypeError` if the assertion fails.
+ */
+export function assertIsObject<ObjectType extends Record<string, unknown>>(
+  object: unknown,
+  errorMessage = `expected an object, instead received ${typeof object}`
+): asserts object is ObjectType {
+  if (typeof object !== 'object') {
+    throw new TypeError(errorMessage)
+  }
+}
+
+/**
+ * Assert that the provided array is an array of functions. If the assertion fails,
+ * a `TypeError` is thrown with an optional custom error message.
+ *
+ * @param array - The array to be checked.
+ * @param  errorMessage - An optional custom error message to use if the assertion fails.
+ * @throws A `TypeError` if the assertion fails.
+ */
+export function assertIsArrayOfFunctions<FunctionType extends Function>(
+  array: unknown[],
+  errorMessage = `expected all items to be functions, instead received the following types: `
+): asserts array is FunctionType[] {
+  if (
+    !array.every((item): item is FunctionType => typeof item === 'function')
+  ) {
+    const itemTypes = array
+      .map(item =>
+        typeof item === 'function'
+          ? `function ${item.name || 'unnamed'}()`
+          : typeof item
+      )
+      .join(', ')
+    throw new TypeError(`${errorMessage}[${itemTypes}]`)
   }
 }
 
@@ -46,21 +89,10 @@ export function getDependencies(createSelectorArgs: unknown[]) {
     ? createSelectorArgs[0]
     : createSelectorArgs
 
-  if (
-    !dependencies.every((dep): dep is Selector => typeof dep === 'function')
-  ) {
-    const dependencyTypes = dependencies
-      .map(dep =>
-        typeof dep === 'function'
-          ? `function ${dep.name || 'unnamed'}()`
-          : typeof dep
-      )
-      .join(', ')
-
-    throw new TypeError(
-      `createSelector expects all input-selectors to be functions, but received the following types: [${dependencyTypes}]`
-    )
-  }
+  assertIsArrayOfFunctions<Selector>(
+    dependencies,
+    `createSelector expects all input-selectors to be functions, but received the following types: `
+  )
 
   return dependencies as SelectorArray
 }
