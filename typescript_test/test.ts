@@ -1,6 +1,5 @@
 /* eslint-disable no-use-before-define */
 
-import type { AnyFunction, ExtractMemoizerFields } from '../src/types'
 import { configureStore, createSlice } from '@reduxjs/toolkit'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { groupBy, isEqual } from 'lodash'
@@ -960,7 +959,7 @@ function testStructuredSelectorTypeParams() {
   // })
 }
 
-function multiArgMemoize<F extends AnyFunction>(
+function multiArgMemoize<F extends (...args: any[]) => any>(
   func: F,
   a: number,
   b: string,
@@ -1757,18 +1756,6 @@ function testCreateStructuredSelectorNew() {
   multiArgsStructuredSelector(state, 2, true).selectedCompletedTodos
   expectExactType<typeof microMemoize>(multiArgsStructuredSelector.argsMemoize)
   expectExactType<typeof microMemoize>(multiArgsStructuredSelector.memoize)
-  expectExactType<ExtractMemoizerFields<typeof microMemoize>['cache']>(
-    multiArgsStructuredSelector.cache
-  )
-  expectExactType<ExtractMemoizerFields<typeof microMemoize>['fn']>(
-    multiArgsStructuredSelector.fn
-  )
-  expectExactType<ExtractMemoizerFields<typeof microMemoize>['isMemoized']>(
-    multiArgsStructuredSelector.isMemoized
-  )
-  expectExactType<ExtractMemoizerFields<typeof microMemoize>['options']>(
-    multiArgsStructuredSelector.options
-  )
   expectExactType<
     [
       (state: State) => State['todos'],
