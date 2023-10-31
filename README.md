@@ -546,6 +546,8 @@ const selectItemsByCategory = createSelector(
 )
 ```
 
+More generally, you can have N arguments passed to the selector, and you can have M input functions extracting values from any of those arguments.  All M extracted values get passed to the output function.
+
 ### Q: The default memoization function is no good, can I use a different one?
 
 A: We think it works great for a lot of use cases, but sure. See [these examples](#customize-equalitycheck-for-defaultmemoize).
