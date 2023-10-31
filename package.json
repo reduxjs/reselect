@@ -27,6 +27,7 @@
     "format": "prettier --write \"{src,test}/**/*.{js,ts}\" \"docs/**/*.md\"",
     "lint": "eslint src test",
     "prepack": "yarn build",
+    "bench": "vitest --run bench",
     "test": "node --expose-gc ./node_modules/vitest/dist/cli-wrapper.js run",
     "test:cov": "vitest run --coverage",
     "test:typescript": "tsc --noEmit -p typescript_test/tsconfig.json"
