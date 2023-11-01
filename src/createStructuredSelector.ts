@@ -3,9 +3,11 @@ import { createSelector } from './createSelectorCreator'
 import type { CreateSelectorFunction } from './createSelectorCreator'
 import type { defaultMemoize } from './defaultMemoize'
 import type {
+  InterruptRecursion,
   ObjectValuesToTuple,
   OutputSelector,
   Selector,
+  Simplify,
   UnknownMemoizer
 } from './types'
 import { assertIsObject } from './utils'
@@ -79,48 +81,18 @@ export interface StructuredSelectorCreator {
    * import { createSelector, createStructuredSelector } from 'reselect'
    *
    * interface State {
-   *   todos: {
-   *     id: number
-   *     title: string
-   *     description: string
-   *     completed: boolean
-   *   }[]
-   *   alerts: {
-   *     id: number
-   *     message: string
-   *     type: 'reminder' | 'notification'
-   *     read: boolean
-   *   }[]
+   *   todos: { id: number; completed: boolean }[]
+   *   alerts: { id: number; read: boolean }[]
    * }
    *
    * const state: State = {
    *   todos: [
-   *     {
-   *       id: 0,
-   *       title: 'Buy groceries',
-   *       description: 'Milk, bread, eggs, and fruits',
-   *       completed: false
-   *     },
-   *     {
-   *       id: 1,
-   *       title: 'Schedule dentist appointment',
-   *       description: 'Check available slots for next week',
-   *       completed: true
-   *     }
+   *     { id: 0, completed: false },
+   *     { id: 1, completed: true }
    *   ],
    *   alerts: [
-   *     {
-   *       id: 0,
-   *       message: 'You have an upcoming meeting at 3 PM.',
-   *       type: 'reminder',
-   *       read: false
-   *     },
-   *     {
-   *       id: 1,
-   *       message: 'New software update available.',
-   *       type: 'notification',
-   *       read: true
-   *     }
+   *     { id: 0, read: false },
+   *     { id: 1, read: true }
    *   ]
    * }
    *
@@ -185,10 +157,11 @@ export interface StructuredSelectorCreator {
     >
   ): OutputSelector<
     ObjectValuesToTuple<InputSelectorsObject>,
-    SelectorsMap<InputSelectorsObject>,
+    Simplify<SelectorsMap<InputSelectorsObject>>,
     MemoizeFunction,
     ArgsMemoizeFunction
-  >
+  > &
+    InterruptRecursion
   // TODO: Do we need this?
   /**
    * Second overload
