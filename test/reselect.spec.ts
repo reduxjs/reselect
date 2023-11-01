@@ -1,21 +1,18 @@
 // TODO: Add test for React Redux connect function
 
-import type { PayloadAction } from '@reduxjs/toolkit'
-import { configureStore, createSlice } from '@reduxjs/toolkit'
 import lodashMemoize from 'lodash/memoize'
 import microMemoize from 'micro-memoize'
 import {
-  unstable_autotrackMemoize,
   createSelector,
   createSelectorCreator,
   defaultMemoize,
+  unstable_autotrackMemoize as autotrackMemoize,
   weakMapMemoize
 } from 'reselect'
 
 import type { OutputSelector, OutputSelectorFields } from 'reselect'
-// Since Node 16 does not support `structuredClone`
-const deepClone = <T extends object>(object: T): T =>
-  JSON.parse(JSON.stringify(object))
+import type { LocalTestContext, RootState } from './testUtils'
+import { addTodo, deepClone, setupStore, toggleCompleted } from './testUtils'
 
 // Construct 1E6 states for perf test outside of the perf test so as to not change the execute time of the test function
 const numOfStates = 1000000
@@ -426,8 +423,7 @@ describe('Customizing selectors', () => {
     selectorOriginal(deepClone(state))
     selectorOriginal(deepClone(state))
     const selectorDefaultParametric = createSelector(
-      (state: State, id: number) => id,
-      (state: State) => state.todos,
+      [(state: State, id: number) => id, (state: State) => state.todos],
       (id, todos) => todos.filter(todo => todo.id === id)
     )
     selectorDefaultParametric(state, 1)
@@ -435,65 +431,22 @@ describe('Customizing selectors', () => {
   })
 })
 
-interface TodoState {
-  todos: {
-    id: number
-    completed: boolean
-  }[]
-}
-
-const initialState: TodoState = {
-  todos: [
-    { id: 0, completed: false },
-    { id: 1, completed: false }
-  ]
-}
-
-const todoSlice = createSlice({
-  name: 'todos',
-  initialState,
-  reducers: {
-    toggleCompleted: (state, action: PayloadAction<number>) => {
-      const todo = state.todos.find(todo => todo.id === action.payload)
-      if (todo) {
-        todo.completed = !todo.completed
-      }
-    },
-
-    addTodo: (state, action: PayloadAction<number>) => {
-      const newTodo = { id: action.payload, completed: false }
-      state.todos.push(newTodo)
-    }
-  }
-})
-
-const store = configureStore({
-  reducer: todoSlice.reducer
-})
-
-const setupStore = () =>
-  configureStore({
-    reducer: todoSlice.reducer
-  })
-
-type LocalTestContext = Record<'store', typeof store>
-
-describe<LocalTestContext>('argsMemoize and memoize', it => {
+describe<LocalTestContext>('argsMemoize and memoize', localTest => {
   beforeEach<LocalTestContext>(context => {
     const store = setupStore()
     context.store = store
+    context.state = store.getState()
   })
 
-  it('passing memoize directly to createSelector', ({ store }) => {
+  localTest('passing memoize directly to createSelector', ({ store }) => {
     const state = store.getState()
     const selectorDefault = createSelector(
-      (state: TodoState) => state.todos,
+      (state: RootState) => state.todos,
       todos => todos.map(({ id }) => id),
       { memoize: defaultMemoize }
     )
     const selectorDefaultParametric = createSelector(
-      (state: TodoState, id: number) => id,
-      (state: TodoState) => state.todos,
+      [(state: RootState, id: number) => id, (state: RootState) => state.todos],
       (id, todos) => todos.filter(todo => todo.id === id),
       { memoize: defaultMemoize }
     )
@@ -505,9 +458,9 @@ describe<LocalTestContext>('argsMemoize and memoize', it => {
     selectorDefaultParametric(deepClone(state), 0)
 
     const selectorAutotrack = createSelector(
-      (state: TodoState) => state.todos,
+      (state: RootState) => state.todos,
       todos => todos.map(({ id }) => id),
-      { memoize: unstable_autotrackMemoize }
+      { memoize: autotrackMemoize }
     )
     const outPutSelectorFields: (keyof OutputSelectorFields)[] = [
       'memoize',
@@ -584,164 +537,201 @@ describe<LocalTestContext>('argsMemoize and memoize', it => {
     expect(selectorAutotrack.lastResult()).toBeUndefined()
     expect(selectorDefault.recomputations()).toBe(0)
     expect(selectorAutotrack.recomputations()).toBe(0)
-    expect(selectorDefault(state)).toStrictEqual([0, 1])
-    expect(selectorAutotrack(state)).toStrictEqual([0, 1])
+    expect(selectorDefault(state)).toStrictEqual(selectorAutotrack(state))
     expect(selectorDefault.recomputations()).toBe(1)
     expect(selectorAutotrack.recomputations()).toBe(1)
-    selectorDefault(deepClone(state))
-    const defaultSelectorLastResult1 = selectorDefault.lastResult()
-    selectorDefault(deepClone(state))
-    const defaultSelectorLastResult2 = selectorDefault.lastResult()
-    selectorAutotrack(deepClone(state))
-    const autotrackSelectorLastResult1 = selectorAutotrack.lastResult()
-    store.dispatch(todoSlice.actions.toggleCompleted(0)) // flipping completed flag does not cause the autotrack memoizer to re-run.
+    // flipping completed flag does not cause the autotrack memoizer to re-run.
+    store.dispatch(toggleCompleted(0))
+    selectorDefault(store.getState())
     selectorAutotrack(store.getState())
+    const defaultSelectorLastResult1 = selectorDefault.lastResult()
+    const autotrackSelectorLastResult1 = selectorAutotrack.lastResult()
+    store.dispatch(toggleCompleted(0))
+    selectorDefault(store.getState())
+    selectorAutotrack(store.getState())
+    const defaultSelectorLastResult2 = selectorDefault.lastResult()
     const autotrackSelectorLastResult2 = selectorAutotrack.lastResult()
     expect(selectorDefault.recomputations()).toBe(3)
+    expect(selectorAutotrack.recomputations()).toBe(1)
+    for (let i = 0; i < 10; i++) {
+      store.dispatch(toggleCompleted(0))
+      selectorDefault(store.getState())
+      selectorAutotrack(store.getState())
+    }
+    expect(selectorDefault.recomputations()).toBe(13)
     expect(selectorAutotrack.recomputations()).toBe(1)
     expect(autotrackSelectorLastResult1).toBe(autotrackSelectorLastResult2)
     expect(defaultSelectorLastResult1).not.toBe(defaultSelectorLastResult2) // Default memoize does not preserve referential equality but autotrack does.
     expect(defaultSelectorLastResult1).toStrictEqual(defaultSelectorLastResult2)
-    store.dispatch(todoSlice.actions.addTodo(2))
+    store.dispatch(
+      addTodo({
+        title: 'Figure out if plants are really plotting world domination.',
+        description: 'They may be.'
+      })
+    )
     selectorAutotrack(store.getState())
     expect(selectorAutotrack.recomputations()).toBe(2)
   })
 
-  it('passing argsMemoize directly to createSelector', ({ store }) => {
-    const state = store.getState()
+  localTest('passing argsMemoize directly to createSelector', ({ store }) => {
     const otherCreateSelector = createSelectorCreator({
       memoize: microMemoize,
       argsMemoize: microMemoize
     })
     const selectorDefault = otherCreateSelector(
-      (state: TodoState) => state.todos,
+      [(state: RootState) => state.todos],
       todos => todos.map(({ id }) => id),
-      {
-        memoize: defaultMemoize,
-        argsMemoize: defaultMemoize,
-        argsMemoizeOptions: {
-          equalityCheck: (a, b) => a === b,
-          resultEqualityCheck: (a, b) => a === b
-        },
-        memoizeOptions: {
-          equalityCheck: (a, b) => a === b,
-          resultEqualityCheck: (a, b) => a === b
-        }
-      }
+      { memoize: defaultMemoize, argsMemoize: defaultMemoize }
     )
     const selectorAutotrack = createSelector(
-      (state: TodoState) => state.todos,
-      todos => todos.map(({ id }) => id)
+      [(state: RootState) => state.todos],
+      todos => todos.map(({ id }) => id),
+      { memoize: autotrackMemoize }
     )
-    expect(selectorDefault({ ...state })).toStrictEqual([0, 1])
-    expect(selectorAutotrack({ ...state })).toStrictEqual([0, 1])
+    expect(selectorDefault(store.getState())).toStrictEqual(
+      selectorAutotrack(store.getState())
+    )
     expect(selectorDefault.recomputations()).toBe(1)
     expect(selectorAutotrack.recomputations()).toBe(1)
-    selectorDefault({
-      todos: [
-        { id: 0, completed: false },
-        { id: 1, completed: false }
-      ]
-    })
-    selectorDefault(state)
-    selectorDefault(state)
-    const defaultSelectorLastResult1 = selectorDefault.lastResult()
-    selectorDefault({
-      todos: [
-        { id: 0, completed: true },
-        { id: 1, completed: true }
-      ]
-    })
-    const defaultSelectorLastResult2 = selectorDefault.lastResult()
-    selectorAutotrack({
-      todos: [
-        { id: 0, completed: false },
-        { id: 1, completed: false }
-      ]
-    })
-    const autotrackSelectorLastResult1 = selectorAutotrack.lastResult()
-    selectorAutotrack({
-      todos: [
-        { id: 0, completed: true },
-        { id: 1, completed: true }
-      ]
-    })
-    const autotrackSelectorLastResult2 = selectorAutotrack.lastResult()
+    selectorDefault(store.getState())
+    selectorAutotrack(store.getState())
+    // toggling the completed flag should force the default memoizer to recalculate but not autotrack.
+    store.dispatch(toggleCompleted(0))
+    selectorDefault(store.getState())
+    selectorAutotrack(store.getState())
+    store.dispatch(toggleCompleted(1))
+    selectorDefault(store.getState())
+    selectorAutotrack(store.getState())
+    store.dispatch(toggleCompleted(2))
+    selectorAutotrack(store.getState())
+    selectorAutotrack(store.getState())
+    selectorAutotrack(store.getState())
+    selectorDefault(store.getState())
+    selectorDefault(store.getState())
+    selectorDefault(store.getState())
+    store.dispatch(toggleCompleted(2))
     expect(selectorDefault.recomputations()).toBe(4)
-    expect(selectorAutotrack.recomputations()).toBe(3)
-    expect(autotrackSelectorLastResult1).not.toBe(autotrackSelectorLastResult2)
+    expect(selectorAutotrack.recomputations()).toBe(1)
+    selectorDefault(store.getState())
+    selectorAutotrack(store.getState())
+    store.dispatch(toggleCompleted(0))
+    const defaultSelectorLastResult1 = selectorDefault.lastResult()
+    selectorDefault(store.getState())
+    store.dispatch(toggleCompleted(0))
+    const defaultSelectorLastResult2 = selectorDefault.lastResult()
+    selectorAutotrack(store.getState())
+    store.dispatch(toggleCompleted(0))
+    const autotrackSelectorLastResult1 = selectorAutotrack.lastResult()
+    selectorAutotrack(store.getState())
+    store.dispatch(toggleCompleted(0))
+    const autotrackSelectorLastResult2 = selectorAutotrack.lastResult()
+    expect(selectorDefault.recomputations()).toBe(6)
+    expect(selectorAutotrack.recomputations()).toBe(1)
+    expect(autotrackSelectorLastResult1).toBe(autotrackSelectorLastResult2)
     expect(defaultSelectorLastResult1).not.toBe(defaultSelectorLastResult2)
     expect(defaultSelectorLastResult1).toStrictEqual(defaultSelectorLastResult2)
-
+    for (let i = 0; i < 10; i++) {
+      store.dispatch(toggleCompleted(0))
+      selectorAutotrack(store.getState())
+    }
+    for (let i = 0; i < 10; i++) {
+      store.dispatch(toggleCompleted(0))
+      selectorDefault(store.getState())
+    }
+    expect(selectorAutotrack.recomputations()).toBe(1)
+    expect(selectorDefault.recomputations()).toBe(16)
     // original options untouched.
     const selectorOriginal = createSelector(
-      (state: TodoState) => state.todos,
-      todos => todos.map(({ id }) => id),
-      {
-        memoizeOptions: { resultEqualityCheck: (a, b) => a === b }
-      }
+      [(state: RootState) => state.todos],
+      todos => todos.map(({ id }) => id)
     )
-    selectorOriginal(state)
+    selectorOriginal(store.getState())
     const start = performance.now()
     for (let i = 0; i < 1_000_000_0; i++) {
-      selectorOriginal(state)
+      selectorOriginal(store.getState())
     }
     const totalTime = performance.now() - start
     expect(totalTime).toBeLessThan(1000)
-    // Call with new reference to force the selector to re-run
-    selectorOriginal(deepClone(state))
-    selectorOriginal(deepClone(state))
-    // Override `argsMemoize` with `unstable_autotrackMemoize`
+    selectorOriginal(store.getState())
+    // Override `argsMemoize` with `autotrackMemoize`
     const selectorOverrideArgsMemoize = createSelector(
-      (state: TodoState) => state.todos,
+      [(state: RootState) => state.todos],
       todos => todos.map(({ id }) => id),
       {
         memoize: defaultMemoize,
-        memoizeOptions: { equalityCheck: (a, b) => a === b },
-        // WARNING!! This is just for testing purposes, do not use `unstable_autotrackMemoize` to memoize the arguments,
+        // WARNING!! This is just for testing purposes, do not use `autotrackMemoize` to memoize the arguments,
         // it can return false positives, since it's not tracking a nested field.
-        argsMemoize: unstable_autotrackMemoize
+        argsMemoize: autotrackMemoize
       }
     )
-    selectorOverrideArgsMemoize(state)
-    // Call with new reference to force the selector to re-run
-    selectorOverrideArgsMemoize(deepClone(state))
-    selectorOverrideArgsMemoize(deepClone(state))
+    selectorOverrideArgsMemoize(store.getState())
+    for (let i = 0; i < 10; i++) {
+      store.dispatch(toggleCompleted(0))
+      selectorOverrideArgsMemoize(store.getState())
+      selectorOriginal(store.getState())
+    }
     expect(selectorOverrideArgsMemoize.recomputations()).toBe(1)
-    expect(selectorOriginal.recomputations()).toBe(3)
+    expect(selectorOriginal.recomputations()).toBe(11)
     const selectorDefaultParametric = createSelector(
-      (state: TodoState, id: number) => id,
-      (state: TodoState) => state.todos,
+      [(state: RootState, id: number) => id, (state: RootState) => state.todos],
       (id, todos) => todos.filter(todo => todo.id === id)
     )
-    selectorDefaultParametric(state, 1)
-    selectorDefaultParametric(state, 1)
+    selectorDefaultParametric(store.getState(), 1)
+    selectorDefaultParametric(store.getState(), 1)
     expect(selectorDefaultParametric.recomputations()).toBe(1)
-    selectorDefaultParametric(state, 2)
-    selectorDefaultParametric(state, 1)
+    selectorDefaultParametric(store.getState(), 2)
+    selectorDefaultParametric(store.getState(), 1)
     expect(selectorDefaultParametric.recomputations()).toBe(3)
-    selectorDefaultParametric(state, 2)
+    selectorDefaultParametric(store.getState(), 2)
     expect(selectorDefaultParametric.recomputations()).toBe(4)
     const selectorDefaultParametricArgsWeakMap = createSelector(
-      (state: TodoState, id: number) => id,
-      (state: TodoState) => state.todos,
+      [(state: RootState, id: number) => id, (state: RootState) => state.todos],
       (id, todos) => todos.filter(todo => todo.id === id),
       { argsMemoize: weakMapMemoize }
     )
-    selectorDefaultParametricArgsWeakMap(state, 1)
-    selectorDefaultParametricArgsWeakMap(state, 1)
+    const selectorDefaultParametricWeakMap = createSelector(
+      [(state: RootState, id: number) => id, (state: RootState) => state.todos],
+      (id, todos) => todos.filter(todo => todo.id === id),
+      { memoize: weakMapMemoize }
+    )
+    selectorDefaultParametricArgsWeakMap(store.getState(), 1)
+    selectorDefaultParametricArgsWeakMap(store.getState(), 1)
     expect(selectorDefaultParametricArgsWeakMap.recomputations()).toBe(1)
-    selectorDefaultParametricArgsWeakMap(state, 2)
-    selectorDefaultParametricArgsWeakMap(state, 1)
+    selectorDefaultParametricArgsWeakMap(store.getState(), 2)
+    selectorDefaultParametricArgsWeakMap(store.getState(), 1)
     expect(selectorDefaultParametricArgsWeakMap.recomputations()).toBe(2)
-    selectorDefaultParametricArgsWeakMap(state, 2)
+    selectorDefaultParametricArgsWeakMap(store.getState(), 2)
     // If we call the selector with 1, then 2, then 1 and back to 2 again,
     // `defaultMemoize` will recompute a total of 4 times,
     // but weakMapMemoize will recompute only twice.
     expect(selectorDefaultParametricArgsWeakMap.recomputations()).toBe(2)
+    for (let i = 0; i < 10; i++) {
+      selectorDefaultParametricArgsWeakMap(store.getState(), 1)
+      selectorDefaultParametricArgsWeakMap(store.getState(), 2)
+      selectorDefaultParametricArgsWeakMap(store.getState(), 3)
+      selectorDefaultParametricArgsWeakMap(store.getState(), 4)
+      selectorDefaultParametricArgsWeakMap(store.getState(), 5)
+    }
+    expect(selectorDefaultParametricArgsWeakMap.recomputations()).toBe(5)
+    for (let i = 0; i < 10; i++) {
+      selectorDefaultParametric(store.getState(), 1)
+      selectorDefaultParametric(store.getState(), 2)
+      selectorDefaultParametric(store.getState(), 3)
+      selectorDefaultParametric(store.getState(), 4)
+      selectorDefaultParametric(store.getState(), 5)
+    }
+    expect(selectorDefaultParametric.recomputations()).toBe(54)
+    for (let i = 0; i < 10; i++) {
+      selectorDefaultParametricWeakMap(store.getState(), 1)
+      selectorDefaultParametricWeakMap(store.getState(), 2)
+      selectorDefaultParametricWeakMap(store.getState(), 3)
+      selectorDefaultParametricWeakMap(store.getState(), 4)
+      selectorDefaultParametricWeakMap(store.getState(), 5)
+    }
+    expect(selectorDefaultParametricWeakMap.recomputations()).toBe(5)
   })
 
-  it('passing argsMemoize to createSelectorCreator', ({ store }) => {
+  localTest('passing argsMemoize to createSelectorCreator', ({ store }) => {
     const state = store.getState()
     const createSelectorMicroMemoize = createSelectorCreator({
       memoize: microMemoize,
@@ -750,7 +740,7 @@ describe<LocalTestContext>('argsMemoize and memoize', it => {
       argsMemoizeOptions: { isEqual: (a, b) => a === b }
     })
     const selectorMicroMemoize = createSelectorMicroMemoize(
-      (state: TodoState) => state.todos,
+      (state: RootState) => state.todos,
       todos => todos.map(({ id }) => id)
     )
     expect(selectorMicroMemoize(state)).to.be.an('array').that.is.not.empty
@@ -775,24 +765,33 @@ describe<LocalTestContext>('argsMemoize and memoize', it => {
     expect(selectorMicroMemoize.lastResult()).to.be.an('array').that.is.not
       .empty
     expect(
-      selectorMicroMemoize.memoizedResultFunc([{ id: 0, completed: true }])
+      selectorMicroMemoize.memoizedResultFunc([
+        {
+          id: 0,
+          completed: true,
+          title: 'Practice telekinesis for 15 minutes',
+          description: 'Just do it'
+        }
+      ])
     ).to.be.an('array').that.is.not.empty
     expect(selectorMicroMemoize.recomputations()).to.be.a('number')
     expect(selectorMicroMemoize.resetRecomputations()).toBe(0)
     expect(selectorMicroMemoize.resultFunc).to.be.a('function')
     expect(
-      selectorMicroMemoize.resultFunc([{ id: 0, completed: true }])
+      selectorMicroMemoize.resultFunc([
+        {
+          id: 0,
+          completed: true,
+          title: 'Practice telekinesis for 15 minutes',
+          description: 'Just do it'
+        }
+      ])
     ).to.be.an('array').that.is.not.empty
 
     const selectorMicroMemoizeOverridden = createSelectorMicroMemoize(
-      (state: TodoState) => state.todos,
+      [(state: RootState) => state.todos],
       todos => todos.map(({ id }) => id),
-      {
-        memoize: defaultMemoize,
-        argsMemoize: defaultMemoize,
-        memoizeOptions: { equalityCheck: (a, b) => a === b, maxSize: 2 },
-        argsMemoizeOptions: { equalityCheck: (a, b) => a === b, maxSize: 3 }
-      }
+      { memoize: defaultMemoize, argsMemoize: defaultMemoize }
     )
     expect(selectorMicroMemoizeOverridden(state)).to.be.an('array').that.is.not
       .empty
@@ -831,18 +830,30 @@ describe<LocalTestContext>('argsMemoize and memoize', it => {
       .is.not.empty
     expect(
       selectorMicroMemoizeOverridden.memoizedResultFunc([
-        { id: 0, completed: true }
+        {
+          id: 0,
+          completed: true,
+          title: 'Practice telekinesis for 15 minutes',
+          description: 'Just do it'
+        }
       ])
     ).to.be.an('array').that.is.not.empty
     expect(selectorMicroMemoizeOverridden.recomputations()).to.be.a('number')
     expect(selectorMicroMemoizeOverridden.resetRecomputations()).toBe(0)
     expect(
-      selectorMicroMemoizeOverridden.resultFunc([{ id: 0, completed: true }])
+      selectorMicroMemoizeOverridden.resultFunc([
+        {
+          id: 0,
+          completed: true,
+          title: 'Practice telekinesis for 15 minutes',
+          description: 'Just do it'
+        }
+      ])
     ).to.be.an('array').that.is.not.empty
 
     const selectorMicroMemoizeOverrideArgsMemoizeOnly =
       createSelectorMicroMemoize(
-        (state: TodoState) => state.todos,
+        (state: RootState) => state.todos,
         todos => todos.map(({ id }) => id),
         {
           argsMemoize: defaultMemoize,
@@ -892,7 +903,12 @@ describe<LocalTestContext>('argsMemoize and memoize', it => {
     ).that.is.not.empty
     expect(
       selectorMicroMemoizeOverrideArgsMemoizeOnly.memoizedResultFunc([
-        { id: 0, completed: true }
+        {
+          id: 0,
+          completed: true,
+          title: 'Practice telekinesis for 15 minutes',
+          description: 'Just do it'
+        }
       ])
     ).to.be.an('array').that.is.not.empty
     expect(
@@ -903,17 +919,19 @@ describe<LocalTestContext>('argsMemoize and memoize', it => {
     ).toBe(0)
     expect(
       selectorMicroMemoizeOverrideArgsMemoizeOnly.resultFunc([
-        { id: 0, completed: true }
+        {
+          id: 0,
+          completed: true,
+          title: 'Practice telekinesis for 15 minutes',
+          description: 'Just do it'
+        }
       ])
     ).to.be.an('array').that.is.not.empty
 
     const selectorMicroMemoizeOverrideMemoizeOnly = createSelectorMicroMemoize(
-      (state: TodoState) => state.todos,
+      [(state: RootState) => state.todos],
       todos => todos.map(({ id }) => id),
-      {
-        memoize: defaultMemoize,
-        memoizeOptions: { resultEqualityCheck: (a, b) => a === b }
-      }
+      { memoize: defaultMemoize }
     )
     expect(selectorMicroMemoizeOverrideMemoizeOnly(state)).to.be.an('array')
       .that.is.not.empty
@@ -955,7 +973,12 @@ describe<LocalTestContext>('argsMemoize and memoize', it => {
     ).that.is.not.empty
     expect(
       selectorMicroMemoizeOverrideMemoizeOnly.memoizedResultFunc([
-        { id: 0, completed: true }
+        {
+          id: 0,
+          completed: true,
+          title: 'Practice telekinesis for 15 minutes',
+          description: 'Just do it'
+        }
       ])
     ).to.be.an('array').that.is.not.empty
     expect(selectorMicroMemoizeOverrideMemoizeOnly.recomputations()).to.be.a(
@@ -966,20 +989,32 @@ describe<LocalTestContext>('argsMemoize and memoize', it => {
     )
     expect(
       selectorMicroMemoizeOverrideMemoizeOnly.resultFunc([
-        { id: 0, completed: true }
+        {
+          id: 0,
+          completed: true,
+          title: 'Practice telekinesis for 15 minutes',
+          description: 'Just do it'
+        }
       ])
     ).to.be.an('array').that.is.not.empty
   })
 
-  it('pass options object to createSelectorCreator ', ({ store }) => {
-    const state = store.getState()
+  localTest('pass options object to createSelectorCreator ', ({ store }) => {
     const createSelectorMicro = createSelectorCreator({
       memoize: microMemoize,
       memoizeOptions: { isEqual: (a, b) => a === b }
     })
     const selectorMicro = createSelectorMicro(
-      (state: TodoState) => state.todos,
+      [(state: RootState) => state.todos],
       todos => todos.map(({ id }) => id)
+    )
+    expect(() =>
+      //@ts-expect-error
+      createSelectorMicro([(state: RootState) => state.todos], 'a')
+    ).toThrowError(
+      TypeError(
+        `createSelector expects an output function after the inputs, but received: [string]`
+      )
     )
   })
 })

@@ -1,7 +1,7 @@
 {
   "env": {
     "browser": true,
-    "node": true,
+    "node": true
   },
   "extends": "eslint:recommended",
   "parserOptions": {
@@ -14,7 +14,11 @@
     "eol-last": 2,
     "no-multiple-empty-lines": 2,
     "object-curly-spacing": [2, "always"],
-    "quotes": [2, "single", {"avoidEscape": true, "allowTemplateLiterals": true}],
+    "quotes": [
+      2,
+      "single",
+      { "avoidEscape": true, "allowTemplateLiterals": true }
+    ],
     "semi": [2, "never"],
     "strict": 0,
     "space-before-blocks": [2, "always"],
@@ -45,8 +49,8 @@
         "@typescript-eslint/no-use-before-define": ["off"],
         "@typescript-eslint/ban-types": "off",
         "prefer-rest-params": "off",
-        "prefer-rest": "off",
-        "prefer-spread": "off"
+        "prefer-spread": "off",
+        "@typescript-eslint/consistent-type-imports": [2]
       }
     },
     {
@@ -61,9 +65,6 @@
         "@typescript-eslint/no-floating-promises": "off",
         "@typescript-eslint/no-non-null-assertion": "off",
         "@typescript-eslint/no-unused-vars": "off",
-        "@typescript-eslint/camelcase": "off",
-        "import/max-dependencies": "off",
-        "sonarjs/no-duplicate-string": "off",
         "@typescript-eslint/no-shadow": "off"
       }
     }

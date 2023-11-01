@@ -87,6 +87,9 @@ function createLruCache(maxSize: number, equals: EqualityFn): Cache {
   return { get, put, getEntries, clear }
 }
 
+/**
+ * @public
+ */
 export const defaultEqualityCheck: EqualityFn = (a, b): boolean => {
   return a === b
 }
@@ -112,16 +115,50 @@ export function createCacheKeyComparator(equalityCheck: EqualityFn) {
   }
 }
 
+/**
+ * @public
+ */
 export interface DefaultMemoizeOptions {
+  /**
+   * Used to compare the individual arguments of the provided calculation function.
+   *
+   * @default defaultEqualityCheck
+   */
   equalityCheck?: EqualityFn
+  /**
+   * If provided, used to compare a newly generated output value against previous values in the cache.
+   * If a match is found, the old value is returned. This addresses the common
+   * ```ts
+   * todos.map(todo => todo.id)
+   * ```
+   * use case, where an update to another field in the original data causes a recalculation
+   * due to changed references, but the output is still effectively the same.
+   */
   resultEqualityCheck?: EqualityFn
+  /**
+   * The cache size for the selector. If greater than 1, the selector will use an LRU cache internally.
+   *
+   * @default 1
+   */
   maxSize?: number
 }
 
 // defaultMemoize now supports a configurable cache size with LRU behavior,
 // and optional comparison of the result value with existing values
-export function defaultMemoize<F extends AnyFunction>(
-  func: F,
+/**
+ * The standard memoize function used by `createSelector`.
+ * @param func - The function to be memoized.
+ * @param equalityCheckOrOptions - Either an equality check function or an options object.
+ * @returns A memoized function with a `.clearCache()` method attached.
+ *
+ * @template Func - The type of the function that is memoized.
+ *
+ * @see {@link https://github.com/reduxjs/reselect#defaultmemoizefunc-equalitycheckoroptions--defaultequalitycheck defaultMemoize}
+ *
+ * @public
+ */
+export function defaultMemoize<Func extends AnyFunction>(
+  func: Func,
   equalityCheckOrOptions?: EqualityFn | DefaultMemoizeOptions
 ) {
   const providedOptions =
@@ -165,7 +202,9 @@ export function defaultMemoize<F extends AnyFunction>(
     return value
   }
 
-  memoized.clearCache = () => cache.clear()
+  memoized.clearCache = () => {
+    cache.clear()
+  }
 
-  return memoized as F & { clearCache: () => void }
+  return memoized as Func & { clearCache: () => void }
 }

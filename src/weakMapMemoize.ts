@@ -31,7 +31,71 @@ function createCacheNode<T>(): CacheNode<T> {
   }
 }
 
-export function weakMapMemoize<F extends AnyFunction>(func: F) {
+/**
+ * Creates a tree of `WeakMap`-based cache nodes based on the identity of the
+ * arguments it's been called with (in this case, the extracted values from your input selectors).
+ * This allows `weakmapMemoize` to have an effectively infinite cache size.
+ * Cache results will be kept in memory as long as references to the arguments still exist,
+ * and then cleared out as the arguments are garbage-collected.
+ *
+ * __Design Tradeoffs for `weakmapMemoize`:__
+ * - Pros:
+ *   - It has an effectively infinite cache size, but you have no control over
+ *   how long values are kept in cache as it's based on garbage collection and `WeakMap`s.
+ * - Cons:
+ *   - There's currently no way to alter the argument comparisons.
+ *   They're based on strict reference equality.
+ *   - It's roughly the same speed as `defaultMemoize`, although likely a fraction slower.
+ *
+ * __Use Cases for `weakmapMemoize`:__
+ * - This memoizer is likely best used for cases where you need to call the
+ * same selector instance with many different arguments, such as a single
+ * selector instance that is used in a list item component and called with
+ * item IDs like:
+ *   ```ts
+ *   useSelector(state => selectSomeData(state, props.category))
+ *   ```
+ * @param func - The function to be memoized.
+ * @returns A memoized function with a `.clearCache()` method attached.
+ *
+ * @example
+ * <caption>Using `createSelector`</caption>
+ * ```ts
+ * import { createSelector, weakMapMemoize } from 'reselect'
+ *
+ * const selectTodoById = createSelector(
+ *   [
+ *     (state: RootState) => state.todos,
+ *     (state: RootState, id: number) => id
+ *   ],
+ *   (todos) => todos[id],
+ *   { memoize: weakMapMemoize }
+ * )
+ * ```
+ *
+ * @example
+ * <caption>Using `createSelectorCreator`</caption>
+ * ```ts
+ * import { createSelectorCreator, weakMapMemoize } from 'reselect'
+ *
+ * const createSelectorWeakmap = createSelectorCreator(weakMapMemoize)
+ *
+ * const selectTodoById = createSelectorWeakmap(
+ *   [
+ *     (state: RootState) => state.todos,
+ *     (state: RootState, id: number) => id
+ *   ],
+ *   (todos) => todos[id]
+ * )
+ * ```
+ *
+ * @template Func - The type of the function that is memoized.
+ *
+ * @since 5.0.0
+ * @public
+ * @experimental
+ */
+export function weakMapMemoize<Func extends AnyFunction>(func: Func) {
   // we reference arguments instead of spreading them for performance reasons
 
   let fnNode = createCacheNode()
@@ -87,5 +151,5 @@ export function weakMapMemoize<F extends AnyFunction>(func: F) {
     fnNode = createCacheNode()
   }
 
-  return memoized as F & { clearCache: () => void }
+  return memoized as Func & { clearCache: () => void }
 }

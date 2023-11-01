@@ -1,4 +1,4 @@
-import { createSelectorCreator, unstable_autotrackMemoize } from 'reselect'
+import { createSelectorCreator, unstable_autotrackMemoize as autotrackMemoize } from 'reselect'
 
 // Construct 1E6 states for perf test outside of the perf test so as to not change the execute time of the test function
 const numOfStates = 1000000
@@ -24,7 +24,7 @@ for (let i = 0; i < numOfStates; i++) {
 }
 
 describe('Basic selector behavior with autotrack', () => {
-  const createSelector = createSelectorCreator(unstable_autotrackMemoize)
+  const createSelector = createSelectorCreator(autotrackMemoize)
 
   test('basic selector', () => {
     // console.log('Selector test')

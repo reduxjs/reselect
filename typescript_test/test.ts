@@ -7,12 +7,13 @@ import memoizeOne from 'memoize-one'
 import microMemoize from 'micro-memoize'
 import type { TypedUseSelectorHook } from 'react-redux'
 import { useSelector } from 'react-redux'
-import {
+import type {
   GetStateFromSelectors,
-  OutputSelector,
   ParametricSelector,
-  Selector,
   SelectorResultArray,
+  TypedStructuredSelectorCreator
+} from 'reselect'
+import {
   createSelector,
   createSelectorCreator,
   createStructuredSelector,
@@ -764,18 +765,20 @@ function testCreateStructuredSelector() {
     bar: (state: StateAB, c: number, d: string) => state.b
   })
 
-  const selector = createStructuredSelector<
-    { foo: string },
-    {
-      foo: string
-      bar: number
-    }
-  >({
+  interface RootState {
+    foo: string
+    bar: number
+  }
+
+  const typedStructuredSelectorCreator: TypedStructuredSelectorCreator<RootState> =
+    createStructuredSelector
+
+  const selector = typedStructuredSelectorCreator({
     foo: state => state.foo,
     bar: state => +state.foo
   })
 
-  const res1 = selector({ foo: '42' })
+  const res1 = selector({ foo: '42', bar: 1 })
   const foo: string = res1.foo
   const bar: number = res1.bar
 
@@ -785,17 +788,17 @@ function testCreateStructuredSelector() {
   // @ts-expect-error
   selector({ foo: '42' }, { bar: 42 })
 
-  createStructuredSelector<{ foo: string }, { bar: number }>({
+  typedStructuredSelectorCreator({
     // @ts-expect-error
     bar: (state: { baz: boolean }) => 1
   })
 
-  createStructuredSelector<{ foo: string }, { bar: number }>({
+  typedStructuredSelectorCreator({
     // @ts-expect-error
     bar: state => state.foo
   })
 
-  createStructuredSelector<{ foo: string }, { bar: number }>({
+  typedStructuredSelectorCreator({
     // @ts-expect-error
     baz: state => state.foo
   })
@@ -825,7 +828,7 @@ function testCreateStructuredSelector() {
 
   const resOneParam = oneParamSelector({ a: 1, b: 2 })
   const resThreeParams = threeParamSelector({ a: 1, b: 2 }, 99, 'blah')
-  const res2: ExpectedResult = selector({ foo: '42' })
+  const res2: ExpectedResult = selector({ foo: '42', bar: 0 })
   const res3: ExpectedResult = selector2({ foo: '42' }, 99, 'test')
   const resGenerics: ExpectedResult = selectorGenerics(
     { foo: '42' },
@@ -837,6 +840,50 @@ function testCreateStructuredSelector() {
   selector2({ bar: '42' })
   // @ts-expect-error
   selectorGenerics({ bar: '42' })
+}
+
+function testTypedCreateStructuredSelector() {
+  type RootState = {
+    foo: string
+    bar: number
+  }
+
+  const selectFoo = (state: RootState) => state.foo
+  const selectBar = (state: RootState) => state.bar
+
+  const typedStructuredSelectorCreator: TypedStructuredSelectorCreator<RootState> =
+    createStructuredSelector as TypedStructuredSelectorCreator<RootState>
+
+  typedStructuredSelectorCreator({
+    foo: selectFoo,
+    bar: selectBar
+  })
+
+  // @ts-expect-error
+  typedStructuredSelectorCreator({
+    foo: selectFoo
+  })
+
+  // This works
+  const selectorGenerics = createStructuredSelector<{
+    foo: typeof selectFoo
+    bar: typeof selectBar
+  }>({
+    foo: state => state.foo,
+    bar: state => +state.foo
+  })
+
+  // This also works
+  const selectorGenerics1 = typedStructuredSelectorCreator<{
+    foo: typeof selectFoo
+    bar: typeof selectBar
+  }>({
+    foo: state => state.foo,
+    bar: state => +state.foo
+  })
+
+  // Their types are the same.
+  expectExactType<typeof selectorGenerics1>(selectorGenerics)
 }
 
 function testDynamicArrayArgument() {
@@ -897,16 +944,19 @@ function testStructuredSelectorTypeParams() {
     // ^^^ because this is missing, an error is thrown
   })
 
+  const typedStructuredSelectorCreator: TypedStructuredSelectorCreator<GlobalState> =
+    createStructuredSelector
+
   // This works
-  createStructuredSelector<GlobalState>({
+  typedStructuredSelectorCreator({
     foo: selectFoo,
     bar: selectBar
   })
 
-  // So does this
-  createStructuredSelector<GlobalState, Omit<GlobalState, 'bar'>>({
-    foo: selectFoo
-  })
+  // // So does this
+  // typedStructuredSelectorCreator<Omit<GlobalState, 'bar'>>({
+  //   foo: selectFoo
+  // })
 }
 
 function multiArgMemoize<F extends (...args: any[]) => any>(
@@ -1332,10 +1382,7 @@ function deepNesting() {
   const selector5 = createSelector(selector4, s => s)
   const selector6 = createSelector(selector5, s => s)
   const selector7 = createSelector(selector6, s => s)
-  const selector8: Selector<State, string, never> = createSelector(
-    selector7,
-    s => s
-  )
+  const selector8 = createSelector(selector7, s => s)
   const selector9 = createSelector(selector8, s => s)
   const selector10 = createSelector(selector9, s => s)
   const selector11 = createSelector(selector10, s => s)
@@ -1344,10 +1391,7 @@ function deepNesting() {
   const selector14 = createSelector(selector13, s => s)
   const selector15 = createSelector(selector14, s => s)
   const selector16 = createSelector(selector15, s => s)
-  const selector17: OutputSelector<
-    [(state: State) => string],
-    ReturnType<typeof selector16>
-  > = createSelector(selector16, s => s)
+  const selector17 = createSelector(selector16, s => s)
   const selector18 = createSelector(selector17, s => s)
   const selector19 = createSelector(selector18, s => s)
   const selector20 = createSelector(selector19, s => s)
@@ -1356,10 +1400,7 @@ function deepNesting() {
   const selector23 = createSelector(selector22, s => s)
   const selector24 = createSelector(selector23, s => s)
   const selector25 = createSelector(selector24, s => s)
-  const selector26: Selector<
-    typeof selector25 extends Selector<infer S> ? S : never,
-    ReturnType<typeof selector25>
-  > = createSelector(selector25, s => s)
+  const selector26 = createSelector(selector25, s => s)
   const selector27 = createSelector(selector26, s => s)
   const selector28 = createSelector(selector27, s => s)
   const selector29 = createSelector(selector28, s => s)
@@ -1661,4 +1702,67 @@ function issue555() {
   const selectorResult1 = someSelector1(state, undefined)
   const selectorResult2 = someSelector2(state, undefined)
   const selectorResult3 = someSelector3(state, null)
+}
+
+function testCreateStructuredSelectorNew() {
+  interface State {
+    todos: {
+      id: number
+      completed: boolean
+    }[]
+  }
+  const state: State = {
+    todos: [
+      { id: 0, completed: false },
+      { id: 1, completed: false }
+    ]
+  }
+
+  const selectorDefaultParametric = createSelector(
+    (state: State, id: number) => id,
+    (state: State) => state.todos,
+    (id, todos) => todos.filter(todo => todo.id === id)
+  )
+  const multiArgsStructuredSelector = createStructuredSelector(
+    {
+      selectedTodos: (state: State) => state.todos,
+      selectedTodoById: (state: State, id: number) => state.todos[id],
+      selectedCompletedTodos: (
+        state: State,
+        id: number,
+        isCompleted: boolean
+      ) => state.todos.filter(({ completed }) => completed === isCompleted)
+    },
+    createSelectorCreator({ memoize: microMemoize, argsMemoize: microMemoize })
+  )
+
+  multiArgsStructuredSelector.resultFunc(
+    [{ id: 2, completed: true }],
+    { id: 0, completed: false },
+    [{ id: 0, completed: false }]
+  ).selectedCompletedTodos
+
+  multiArgsStructuredSelector.memoizedResultFunc(
+    [{ id: 2, completed: true }],
+    { id: 0, completed: false },
+    [{ id: 0, completed: false }]
+  ).selectedCompletedTodos
+
+  multiArgsStructuredSelector.memoizedResultFunc.cache
+  multiArgsStructuredSelector.memoizedResultFunc.fn
+  multiArgsStructuredSelector.memoizedResultFunc.isMemoized
+  multiArgsStructuredSelector.memoizedResultFunc.options
+
+  multiArgsStructuredSelector(state, 2, true).selectedCompletedTodos
+  expectExactType<typeof microMemoize>(multiArgsStructuredSelector.argsMemoize)
+  expectExactType<typeof microMemoize>(multiArgsStructuredSelector.memoize)
+  expectExactType<
+    [
+      (state: State) => State['todos'],
+      (state: State, id: number) => State['todos'][number],
+      (state: State, id: number, isCompleted: boolean) => State['todos']
+    ]
+  >(multiArgsStructuredSelector.dependencies)
+  // @ts-expect-error Wrong number of arguments.
+  multiArgsStructuredSelector(state, 2)
 }
