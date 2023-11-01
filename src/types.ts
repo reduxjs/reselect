@@ -311,6 +311,68 @@ export type GetParamsFromSelectors<Selectors extends SelectorArray> = ArrayTail<
   MergeParameters<Selectors>
 >
 
+/**
+ * Any Memoizer function. A memoizer is a function that accepts another function and returns it.
+ *
+ * @template FunctionType - The type of the function that is memoized.
+ *
+ * @public
+ */
+export type UnknownMemoizer<
+  FunctionType extends UnknownFunction = UnknownFunction
+> = (func: FunctionType, ...options: any[]) => FunctionType
+
+/**
+ * Extracts the options type for a memoization function based on its parameters.
+ * The first parameter of the function is expected to be the function to be memoized,
+ * followed by options for the memoization process.
+ *
+ * @template MemoizeFunction - The type of the memoize function to be checked.
+ *
+ * @public
+ */
+export type MemoizeOptionsFromParameters<
+  MemoizeFunction extends UnknownMemoizer
+> =
+  | (
+      | Simplify<NonFunctionType<DropFirstParameter<MemoizeFunction>[0]>>
+      | FunctionType<DropFirstParameter<MemoizeFunction>[0]>
+    )
+  | (
+      | Simplify<NonFunctionType<DropFirstParameter<MemoizeFunction>[number]>>
+      | FunctionType<DropFirstParameter<MemoizeFunction>[number]>
+    )[]
+
+/**
+ * Derive the type of memoize options object based on whether the memoize function itself was overridden.
+ *
+ * _This type can be used for both `memoizeOptions` and `argsMemoizeOptions`._
+ *
+ * @template MemoizeFunction - The type of the `memoize` or `argsMemoize` function initially passed into `createSelectorCreator`.
+ * @template OverrideMemoizeFunction - The type of the optional `memoize` or `argsMemoize` function passed directly into `createSelector` which then overrides the original `memoize` or `argsMemoize` function passed into `createSelectorCreator`.
+ *
+ * @public
+ */
+export type OverrideMemoizeOptions<
+  MemoizeFunction extends UnknownMemoizer,
+  OverrideMemoizeFunction extends UnknownMemoizer = never
+> = IfNever<
+  OverrideMemoizeFunction,
+  MemoizeOptionsFromParameters<MemoizeFunction>,
+  MemoizeOptionsFromParameters<OverrideMemoizeFunction>
+>
+
+/**
+ * Extracts the additional fields that a memoize function attaches to
+ * the function it memoizes (e.g., `clearCache`).
+ *
+ * @template MemoizeFunction - The type of the memoize function to be checked.
+ *
+ * @public
+ */
+export type ExtractMemoizerFields<MemoizeFunction extends UnknownMemoizer> =
+  Simplify<OmitIndexSignature<ReturnType<MemoizeFunction>>>
+
 /*
  * -----------------------------------------------------------------------------
  * -----------------------------------------------------------------------------
@@ -336,17 +398,6 @@ export type AnyFunction = (...args: any[]) => any
 export type UnknownFunction = (...args: unknown[]) => unknown
 
 /**
- * Any Memoizer function. A memoizer is a function that accepts another function and returns it.
- *
- * @template FunctionType - The type of the function that is memoized.
- *
- * @internal
- */
-export type UnknownMemoizer<
-  FunctionType extends UnknownFunction = UnknownFunction
-> = (func: FunctionType, ...options: any[]) => FunctionType
-
-/**
  * When a generic type parameter is using its default value of `never`, fallback to a different type.
  *
  * @template T - Type to be checked.
@@ -355,25 +406,6 @@ export type UnknownMemoizer<
  * @internal
  */
 export type FallbackIfNever<T, FallbackTo> = IfNever<T, FallbackTo, T>
-
-/**
- * Derive the type of memoize options object based on whether the memoize function itself was overridden.
- *
- * _This type can be used for both `memoizeOptions` and `argsMemoizeOptions`._
- *
- * @template MemoizeFunction - The type of the `memoize` or `argsMemoize` function initially passed into `createSelectorCreator`.
- * @template OverrideMemoizeFunction - The type of the optional `memoize` or `argsMemoize` function passed directly into `createSelector` which then overrides the original `memoize` or `argsMemoize` function passed into `createSelectorCreator`.
- *
- * @internal
- */
-export type OverrideMemoizeOptions<
-  MemoizeFunction extends UnknownMemoizer,
-  OverrideMemoizeFunction extends UnknownMemoizer = never
-> = IfNever<
-  OverrideMemoizeFunction,
-  MemoizeOptionsFromParameters<MemoizeFunction>,
-  MemoizeOptionsFromParameters<OverrideMemoizeFunction>
->
 
 /**
  * Extracts the non-function part of a type.
@@ -392,38 +424,6 @@ export type NonFunctionType<T> = OmitIndexSignature<Exclude<T, AnyFunction>>
  * @internal
  */
 export type FunctionType<T> = Extract<T, AnyFunction>
-
-/**
- * Extracts the options type for a memoization function based on its parameters.
- * The first parameter of the function is expected to be the function to be memoized,
- * followed by options for the memoization process.
- *
- * @template MemoizeFunction - The type of the memoize function to be checked.
- *
- * @internal
- */
-export type MemoizeOptionsFromParameters<
-  MemoizeFunction extends UnknownMemoizer
-> =
-  | (
-      | Simplify<NonFunctionType<DropFirstParameter<MemoizeFunction>[0]>>
-      | FunctionType<DropFirstParameter<MemoizeFunction>[0]>
-    )
-  | (
-      | Simplify<NonFunctionType<DropFirstParameter<MemoizeFunction>[number]>>
-      | FunctionType<DropFirstParameter<MemoizeFunction>[number]>
-    )[]
-
-/**
- * Extracts the additional fields that a memoize function attaches to
- * the function it memoizes (e.g., `clearCache`).
- *
- * @template MemoizeFunction - The type of the memoize function to be checked.
- *
- * @internal
- */
-export type ExtractMemoizerFields<MemoizeFunction extends UnknownMemoizer> =
-  Simplify<OmitIndexSignature<ReturnType<MemoizeFunction>>>
 
 /**
  * Extracts the return type from all functions as a tuple.

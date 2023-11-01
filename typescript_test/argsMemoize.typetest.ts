@@ -776,6 +776,24 @@ function deepNesting() {
   selector20.dependencies[0].dependencies[0].dependencies[0].dependencies[0]
     .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
     .dependencies[0].dependencies[0].memoizedResultFunc.cache
+  const selector21 = createSelector(selector20, s => s)
+  const selector22 = createSelector(selector21, s => s)
+  const selector23 = createSelector(selector22, s => s)
+  const selector24 = createSelector(selector23, s => s)
+  const selector25 = createSelector(selector24, s => s)
+  const selector26 = createSelector(selector25, s => s)
+  const selector27 = createSelector(selector26, s => s)
+  const selector28 = createSelector(selector27, s => s)
+  const selector29 = createSelector(selector28, s => s)
+  const selector30 = createSelector(selector29, s => s)
+  selector30.dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+    .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+    .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+    .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+    .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+    .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+    .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+    .dependencies[0].dependencies[0].memoizedResultFunc.clearCache
 }
 
 function deepNesting1() {
@@ -907,4 +925,122 @@ function deepNesting2() {
   const selector29 = createSelector(selector28, s => s, {
     memoize: defaultMemoize
   })
+}
+
+function parameterLimit() {
+  const selector = createSelector(
+    (state: { testString: string }) => state.testString,
+    (state: { testNumber: number }) => state.testNumber,
+    (state: { testBoolean: boolean }) => state.testBoolean,
+    (state: { testString: string }) => state.testString,
+    (state: { testString: string }) => state.testString,
+    (state: { testString: string }) => state.testString,
+    (state: { testString: string }) => state.testString,
+    (state: { testNumber: number }) => state.testNumber,
+    (state: { testStringArray: string[] }) => state.testStringArray,
+    (state: { testString: string }) => state.testString,
+    (state: { testNumber: number }) => state.testNumber,
+    (state: { testBoolean: boolean }) => state.testBoolean,
+    (state: { testString: string }) => state.testString,
+    (state: { testString: string }) => state.testString,
+    (state: { testString: string }) => state.testString,
+    (state: { testString: string }) => state.testString,
+    (state: { testNumber: number }) => state.testNumber,
+    (state: { testStringArray: string[] }) => state.testStringArray,
+    (state: { testString: string }) => state.testString,
+    (state: { testNumber: number }) => state.testNumber,
+    (state: { testBoolean: boolean }) => state.testBoolean,
+    (state: { testString: string }) => state.testString,
+    (state: { testString: string }) => state.testString,
+    (state: { testString: string }) => state.testString,
+    (state: { testString: string }) => state.testString,
+    (state: { testNumber: number }) => state.testNumber,
+    (state: { testStringArray: string[] }) => state.testStringArray,
+    (state: { testString: string }) => state.testString,
+    (state: { testNumber: number }) => state.testNumber,
+    (state: { testBoolean: boolean }) => state.testBoolean,
+    (state: { testString: string }) => state.testString,
+    (state: { testString: string }) => state.testString,
+    (state: { testString: string }) => state.testString,
+    (state: { testString: string }) => state.testString,
+    (state: { testNumber: number }) => state.testNumber,
+    (state: { testStringArray: string[] }) => state.testStringArray,
+    (
+      foo1: string,
+      foo2: number,
+      foo3: boolean,
+      foo4: string,
+      foo5: string,
+      foo6: string,
+      foo7: string,
+      foo8: number,
+      foo9: string[],
+      foo10: string,
+      foo11: number,
+      foo12: boolean,
+      foo13: string,
+      foo14: string,
+      foo15: string,
+      foo16: string,
+      foo17: number,
+      foo18: string[],
+      foo19: string,
+      foo20: number,
+      foo21: boolean,
+      foo22: string,
+      foo23: string,
+      foo24: string,
+      foo25: string,
+      foo26: number,
+      foo27: string[],
+      foo28: string,
+      foo29: number,
+      foo30: boolean,
+      foo31: string,
+      foo32: string,
+      foo33: string,
+      foo34: string,
+      foo35: number,
+      foo36: string[]
+    ) => {
+      return {
+        foo1,
+        foo2,
+        foo3,
+        foo4,
+        foo5,
+        foo6,
+        foo7,
+        foo8,
+        foo9,
+        foo10,
+        foo11,
+        foo12,
+        foo13,
+        foo14,
+        foo15,
+        foo16,
+        foo17,
+        foo18,
+        foo19,
+        foo20,
+        foo21,
+        foo22,
+        foo23,
+        foo24,
+        foo25,
+        foo26,
+        foo27,
+        foo28,
+        foo29,
+        foo30,
+        foo31,
+        foo32,
+        foo33,
+        foo34,
+        foo35,
+        foo36
+      }
+    }
+  )
 }

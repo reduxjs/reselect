@@ -1,5 +1,6 @@
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { combineReducers, configureStore, createSlice } from '@reduxjs/toolkit'
+import type { AnyFunction, Simplify } from '../src/types'
 
 interface Todo {
   id: number
@@ -172,9 +173,9 @@ const rootReducer = combineReducers({
 
 export const setupStore = () => configureStore({ reducer: rootReducer })
 
-export type AppStore = ReturnType<typeof setupStore>
+export type AppStore = Simplify<ReturnType<typeof setupStore>>
 
-export type RootState = ReturnType<typeof rootReducer>
+export type RootState = Simplify<ReturnType<typeof rootReducer>>
 
 export interface LocalTestContext {
   store: AppStore
@@ -194,3 +195,13 @@ export const {
 // Since Node 16 does not support `structuredClone`
 export const deepClone = <T extends object>(object: T): T =>
   JSON.parse(JSON.stringify(object))
+
+export const setFunctionName = (func: AnyFunction, name: string) => {
+  Object.defineProperty(func, 'name', { value: name })
+}
+
+export const setFunctionNames = (funcObject: Record<string, AnyFunction>) => {
+  Object.entries(funcObject).forEach(([key, value]) =>
+    setFunctionName(value, key)
+  )
+}

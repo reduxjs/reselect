@@ -88,6 +88,9 @@ function createLruCache(maxSize: number, equals: EqualityFn): Cache {
 }
 
 /**
+ * Runs a simple reference equality check.
+ * What {@linkcode defaultMemoize defaultMemoize} uses by default.
+ *
  * @public
  */
 export const defaultEqualityCheck: EqualityFn = (a, b): boolean => {
