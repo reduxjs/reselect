@@ -1525,7 +1525,18 @@ A: Yes. `Reselect` has no dependencies on any other package, so although it was 
 
   <summary>
 
-### How do I create a selector that takes an argument?
+### Q: How do I create a selector that takes an argument?
+
+Conceptually, Reselect works like this internally:
+
+```ts
+const finalSelector = (...args) => {
+  const extractedValues = inputFunctions.map(input => input(...args));
+  return output(...extractedValues);
+}
+```
+
+In other words, all the arguments passed to the selector function are immediately passed to all of the inputs.
 
   </summary>
 
@@ -1577,11 +1588,8 @@ const finalResult =
   items.filter(item => item.category === category && item.id !== id)
 ```
 
-</details>
 
-<details>
-
-  <summary>
+More generally, you can have N arguments passed to the selector, and you can have M input functions extracting values from any of those arguments.  All M extracted values get passed to the output function.
 
 ### The default memoization function is no good, can I use a different one?
 
