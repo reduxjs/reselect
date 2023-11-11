@@ -80,12 +80,12 @@ export interface StructuredSelectorCreator {
    * ```ts
    * import { createSelector, createStructuredSelector } from 'reselect'
    *
-   * interface State {
+   * interface RootState {
    *   todos: { id: number; completed: boolean }[]
    *   alerts: { id: number; read: boolean }[]
    * }
    *
-   * const state: State = {
+   * const state: RootState = {
    *   todos: [
    *     { id: 0, completed: false },
    *     { id: 1, completed: true }
@@ -99,9 +99,9 @@ export interface StructuredSelectorCreator {
    * // This:
    * const structuredSelector = createStructuredSelector(
    *   {
-   *     allTodos: (state: State) => state.todos,
-   *     allAlerts: (state: State) => state.alerts,
-   *     selectedTodo: (state: State, id: number) => state.todos[id]
+   *     allTodos: (state: RootState) => state.todos,
+   *     allAlerts: (state: RootState) => state.alerts,
+   *     selectedTodo: (state: RootState, id: number) => state.todos[id]
    *   },
    *   createSelector
    * )
@@ -109,9 +109,9 @@ export interface StructuredSelectorCreator {
    * // Is essentially the same as this:
    * const selector = createSelector(
    *   [
-   *     (state: State) => state.todos,
-   *     (state: State) => state.alerts,
-   *     (state: State, id: number) => state.todos[id]
+   *     (state: RootState) => state.todos,
+   *     (state: RootState) => state.alerts,
+   *     (state: RootState, id: number) => state.todos[id]
    *   ],
    *   (allTodos, allAlerts, selectedTodo) => {
    *     return {

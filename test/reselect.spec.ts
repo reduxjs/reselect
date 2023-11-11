@@ -11,11 +11,11 @@ import {
 } from 'reselect'
 
 import type { OutputSelector, OutputSelectorFields } from 'reselect'
-import type { LocalTestContext, RootState } from './testUtils'
-import { addTodo, deepClone, setupStore, toggleCompleted } from './testUtils'
+import type { RootState } from './testUtils'
+import { addTodo, deepClone, localTest, toggleCompleted } from './testUtils'
 
 // Construct 1E6 states for perf test outside of the perf test so as to not change the execute time of the test function
-const numOfStates = 1000000
+const numOfStates = 1_000_000
 interface StateA {
   a: number
 }
@@ -395,49 +395,37 @@ describe('Customizing selectors', () => {
     expect(memoizer3Calls).toBeGreaterThan(0)
   })
 
-  test.todo('Test order of execution in a selector', () => {
-    interface State {
-      todos: {
-        id: number
-        completed: boolean
-      }[]
-    }
-    const state: State = {
-      todos: [
-        { id: 0, completed: false },
-        { id: 1, completed: false }
-      ]
-    }
-    // original options untouched.
-    const selectorOriginal = createSelector(
-      (state: State) => state.todos,
-      todos => todos.map(({ id }) => id),
-      {
-        inputStabilityCheck: 'always',
-        memoizeOptions: {
-          equalityCheck: (a, b) => false,
-          resultEqualityCheck: (a, b) => false
+  localTest.todo(
+    'Test order of execution in a selector',
+    ({ store, state }) => {
+      // original options untouched.
+      const selectorOriginal = createSelector(
+        (state: RootState) => state.todos,
+        todos => todos.map(({ id }) => id),
+        {
+          inputStabilityCheck: 'always',
+          memoizeOptions: {
+            equalityCheck: (a, b) => false,
+            resultEqualityCheck: (a, b) => false
+          }
         }
-      }
-    )
-    selectorOriginal(deepClone(state))
-    selectorOriginal(deepClone(state))
-    const selectorDefaultParametric = createSelector(
-      [(state: State, id: number) => id, (state: State) => state.todos],
-      (id, todos) => todos.filter(todo => todo.id === id)
-    )
-    selectorDefaultParametric(state, 1)
-    selectorDefaultParametric(state, 1)
-  })
+      )
+      selectorOriginal(deepClone(state))
+      selectorOriginal(deepClone(state))
+      const selectorDefaultParametric = createSelector(
+        [
+          (state: RootState, id: number) => id,
+          (state: RootState) => state.todos
+        ],
+        (id, todos) => todos.filter(todo => todo.id === id)
+      )
+      selectorDefaultParametric(state, 1)
+      selectorDefaultParametric(state, 1)
+    }
+  )
 })
 
-describe<LocalTestContext>('argsMemoize and memoize', localTest => {
-  beforeEach<LocalTestContext>(context => {
-    const store = setupStore()
-    context.store = store
-    context.state = store.getState()
-  })
-
+describe('argsMemoize and memoize', () => {
   localTest('passing memoize directly to createSelector', ({ store }) => {
     const state = store.getState()
     const selectorDefault = createSelector(
@@ -470,7 +458,9 @@ describe<LocalTestContext>('argsMemoize and memoize', localTest => {
       'lastResult',
       'dependencies',
       'recomputations',
-      'resetRecomputations'
+      'resetRecomputations',
+      'dependencyRecomputations',
+      'resetDependencyRecomputations'
     ]
     const memoizerFields: Exclude<
       keyof OutputSelector,
@@ -951,7 +941,9 @@ describe<LocalTestContext>('argsMemoize and memoize', localTest => {
       'recomputations',
       'resetRecomputations',
       'memoize',
-      'argsMemoize'
+      'argsMemoize',
+      'dependencyRecomputations',
+      'resetDependencyRecomputations'
     ])
     expect(selectorMicroMemoizeOverrideMemoizeOnly.cache).to.be.an('object')
     expect(selectorMicroMemoizeOverrideMemoizeOnly.fn).to.be.a('function')
@@ -999,22 +991,121 @@ describe<LocalTestContext>('argsMemoize and memoize', localTest => {
     ).to.be.an('array').that.is.not.empty
   })
 
-  localTest('pass options object to createSelectorCreator ', ({ store }) => {
-    const createSelectorMicro = createSelectorCreator({
-      memoize: microMemoize,
-      memoizeOptions: { isEqual: (a, b) => a === b }
-    })
-    const selectorMicro = createSelectorMicro(
-      [(state: RootState) => state.todos],
-      todos => todos.map(({ id }) => id)
-    )
-    expect(() =>
-      //@ts-expect-error
-      createSelectorMicro([(state: RootState) => state.todos], 'a')
-    ).toThrowError(
-      TypeError(
-        `createSelector expects an output function after the inputs, but received: [string]`
+  localTest(
+    'pass options object to createSelectorCreator ',
+    ({ store, state }) => {
+      const createSelectorMicro = createSelectorCreator({
+        memoize: microMemoize,
+        memoizeOptions: { isEqual: (a, b) => a === b }
+      })
+      const selectorMicro = createSelectorMicro(
+        [(state: RootState) => state.todos],
+        todos => todos.map(({ id }) => id)
       )
-    )
-  })
+      const selector = createSelector(
+        [(state: RootState) => state.todos],
+        todos => todos.map(({ id }) => id)
+      )
+      const selector1 = createSelector(
+        [(state: RootState) => state.todos],
+        todos => todos.map(({ id }) => id),
+        {
+          memoize: weakMapMemoize
+        }
+      )
+      expect(() =>
+        //@ts-expect-error
+        createSelectorMicro([(state: RootState) => state.todos], 'a')
+      ).toThrowError(
+        TypeError(
+          `createSelector expects an output function after the inputs, but received: [string]`
+        )
+      )
+      const selectorDefault = createSelector(
+        (state: RootState) => state.users,
+        users => users.user.details.preferences.notifications.push.frequency
+      )
+      const selectorDefault1 = createSelector(
+        (state: RootState) => state.users.user,
+        user => user.details.preferences.notifications.push.frequency
+      )
+      let called = 0
+      const selectorDefault2 = createSelector(
+        (state: RootState) => state.users,
+        (state: RootState) => state.users,
+        (state: RootState) => state.users,
+        (state: RootState) => state.users,
+        (state: RootState) => {
+          called++
+          return state.users
+        },
+        (state: RootState) => state.users,
+        (state: RootState) => state.users,
+        (state: RootState) => state.users,
+        (state: RootState) => state.users,
+        (state: RootState) => state.users,
+        (state: RootState) => state.users,
+        (state: RootState) => state.users,
+        (state: RootState) => state.users,
+        (state: RootState) => state.users,
+        (state: RootState) => state.users,
+        (state: RootState) => state.users,
+        (state: RootState) => state.users,
+        (state: RootState) => state.users,
+        (state: RootState) => state.users,
+        (state: RootState) => state.users,
+        (state: RootState) => state.users,
+        (state: RootState) => state.users,
+        (state: RootState) => state.users,
+        (state: RootState, id: number) => state.users,
+        // (state: RootState) => ({ ...state.users }),
+        users => {
+          console.log('run')
+          return users.user.details.preferences.notifications.push.frequency
+        },
+        { inputStabilityCheck: 'never' }
+      )
+      let start = performance.now()
+      for (let i = 0; i < 10_000_000; i++) {
+        selectorDefault(state)
+      }
+      console.log(performance.now() - start)
+      selectorDefault1(state)
+      const element2 = store.getState()
+      selectorDefault2(store.getState(), 0)
+      const element = store.getState()
+      store.dispatch(toggleCompleted(0))
+      const element1 = store.getState()
+      console.log(element === element1)
+      console.log(element.alerts === element1.alerts)
+      console.log(element.todos[1] === element1.todos[1])
+      console.log(element === element2)
+      console.log(element.alerts === element2.alerts)
+      selectorDefault2(store.getState(), 0)
+      selectorDefault2(store.getState(), 0)
+      selectorDefault2(store.getState(), 0)
+      start = performance.now()
+      for (let i = 0; i < 100_000_000; i++) {
+        selector(state)
+      }
+      console.log(selector.memoize.name, performance.now() - start)
+      start = performance.now()
+      for (let i = 0; i < 100_000_000; i++) {
+        selector1(state)
+      }
+      console.log(selector1.memoize.name, performance.now() - start)
+      start = performance.now()
+      for (let i = 0; i < 100; i++) {
+        selectorDefault2(store.getState(), 0)
+        // selectorDefault2({ ...state }, 0)
+        // selectorDefault2({ users: { user: { id: 0, status: '', details: { preferences: { notifications: { push: { frequency: '' } } } } } } })
+      }
+      console.log(
+        selectorDefault2.memoize.name,
+        performance.now() - start,
+        selectorDefault2.recomputations(),
+        called
+      )
+    }
+  )
 })

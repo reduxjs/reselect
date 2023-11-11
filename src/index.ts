@@ -1,5 +1,10 @@
 export { autotrackMemoize as unstable_autotrackMemoize } from './autotrackMemoize/autotrackMemoize'
 export {
+  createCurriedSelector,
+  createCurriedSelectorCreator
+} from './createCurriedSelectorCreator'
+export type { CreateCurriedSelector } from './createCurriedSelectorCreator'
+export {
   createSelector,
   createSelectorCreator,
   setInputStabilityCheckEnabled
@@ -15,6 +20,7 @@ export type { DefaultMemoizeOptions } from './defaultMemoize'
 export type {
   Combiner,
   CreateSelectorOptions,
+  DefaultMemoizeFields,
   EqualityFn,
   ExtractMemoizerFields,
   GetParamsFromSelectors,

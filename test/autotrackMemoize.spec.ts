@@ -1,7 +1,10 @@
-import { createSelectorCreator, unstable_autotrackMemoize as autotrackMemoize } from 'reselect'
+import {
+  createSelectorCreator,
+  unstable_autotrackMemoize as autotrackMemoize
+} from 'reselect'
 
 // Construct 1E6 states for perf test outside of the perf test so as to not change the execute time of the test function
-const numOfStates = 1000000
+const numOfStates = 1_000_000
 interface StateA {
   a: number
 }
@@ -32,6 +35,7 @@ describe('Basic selector behavior with autotrack', () => {
       (state: StateA) => state.a,
       a => a
     )
+    selector.memoizedResultFunc.clearCache
     const firstState = { a: 1 }
     const firstStateNewPointer = { a: 1 }
     const secondState = { a: 2 }

@@ -1,7 +1,7 @@
 import { createSelectorCreator, weakMapMemoize } from 'reselect'
 
 // Construct 1E6 states for perf test outside of the perf test so as to not change the execute time of the test function
-const numOfStates = 1000000
+const numOfStates = 1_000_000
 interface StateA {
   a: number
 }
