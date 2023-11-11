@@ -1531,8 +1531,8 @@ Conceptually, Reselect works like this internally:
 
 ```ts
 const finalSelector = (...args) => {
-  const extractedValues = inputFunctions.map(input => input(...args));
-  return output(...extractedValues);
+  const extractedValues = inputFunctions.map(input => input(...args))
+  return output(...extractedValues)
 }
 ```
 
@@ -1588,8 +1588,7 @@ const finalResult =
   items.filter(item => item.category === category && item.id !== id)
 ```
 
-
-More generally, you can have N arguments passed to the selector, and you can have M input functions extracting values from any of those arguments.  All M extracted values get passed to the output function.
+More generally, you can have N arguments passed to the selector, and you can have M input functions extracting values from any of those arguments. All M extracted values get passed to the output function.
 
 ### The default memoization function is no good, can I use a different one?
 
