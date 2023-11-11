@@ -1527,6 +1527,8 @@ A: Yes. `Reselect` has no dependencies on any other package, so although it was 
 
 ### Q: How do I create a selector that takes an argument?
 
+  </summary>
+
 Conceptually, Reselect works like this internally:
 
 ```ts
@@ -1537,8 +1539,6 @@ const finalSelector = (...args) => {
 ```
 
 In other words, all the arguments passed to the selector function are immediately passed to all of the inputs.
-
-  </summary>
 
 When creating a selector that accepts arguments in `Reselect`, it's important to structure your input and `output selectors` appropriately. Here are key points to consider:
 
