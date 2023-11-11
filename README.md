@@ -1477,6 +1477,8 @@ A: Check that your memoization function is compatible with your state update fun
 
 ### Why is my selector recomputing when the input state stays the same?
 
+  </summary>
+
 A: Make sure you have `inputStabilityCheck` set to either `always` or `once` and that in and of itself should take some weight off of your shoulders by doing some of the debugging for you. Also make sure you use your `output selector fields` like `recomputations`, `resetRecomputations`, `dependencyRecomputations`, `resetDependencyRecomputations` to narrow down the root of the problem to see where it is coming from. Is it coming from the arguments changing reference unexpectedly? then if that is the case your `dependencyRecomputations` should be going up. If `dependencyRecomputations` is incrementing but `recomputations` is not, that means your arguments are changing reference too often. If your `input selectors` return a new reference every time, that will be caught be `inputStabilityCheck`. And if your arguments are changing reference too often, you can narrow it down to see which arguments are changing reference too often by doing this:
 
 ```ts
@@ -1505,8 +1507,6 @@ const selectAlertsByType = createSelector(
 )
 ```
 
-  </summary>
-
 </details>
 
 <details>
@@ -1527,20 +1527,13 @@ A: Yes. `Reselect` has no dependencies on any other package, so although it was 
 
 ### How do I create a selector that takes an argument?
 
+  </summary>
+
 When creating a selector that accepts arguments in `Reselect`, it's important to structure your input and `output selectors` appropriately. Here are key points to consider:
 
 1. **Consistency in Arguments**: Ensure that all positional arguments across `input selectors` are of the same type for consistency.
 
 2. **Selective Argument Usage**: Design each selector to use only its relevant argument(s) and ignore the rest. This is crucial because all `input selectors` receive the same arguments that are passed to the `output selector`.
-
-<!-- There are a couple of things to keep in mind when using arguments:
-
-`Reselect` will call all of the `input selectors` with those exact arguments.
-
-1. You need to make sure all positional arguments are of the same type.
-2. The best course of action is each selector uses a single argument and ignores the rest. Because whatever arguments you pass into your `input selectors`, your `output selector` is going to receive as well. So if you are using a number as the second argument for one of the `input selectors`, the other `input selectors` need to ignore it.
-
-As shown in the API reference section above, provide input selectors that extract the arguments and forward them to the output selector for calculation: -->
 
 Suppose we have the following state structure:
 
@@ -1584,8 +1577,6 @@ const finalResult =
   items.filter(item => item.category === category && item.id !== id)
 ```
 
-  </summary>
-
 </details>
 
 <details>
@@ -1605,6 +1596,8 @@ A: We think it works great for a lot of use cases, but sure. See [these examples
   <summary>
 
 ### How do I test a selector?
+
+  </summary>
 
 A: For a given input, a selector should always produce the same result. For this reason they are simple to unit test.
 
@@ -1646,8 +1639,6 @@ test('selector unit test', () => {
   expect(selectTodoIds.dependencyRecomputations()).toBe(1)
 })
 ```
-
-  </summary>
 
 </details>
 
