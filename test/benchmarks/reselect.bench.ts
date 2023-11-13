@@ -8,112 +8,122 @@ import { bench } from 'vitest'
 import type { RootState } from '../testUtils'
 import { setFunctionNames, setupStore } from '../testUtils'
 
-const options: Options = {
-  // iterations: 10_000_000,
-  // time: 0
-}
-
-describe.skip('bench', () => {
+describe('general benchmark', () => {
+  const commonOptions: Options = {
+    iterations: 10,
+    time: 0
+  }
   const store = setupStore()
   const state = store.getState()
   const selectorDefault = createSelector(
-    (state: RootState) => state.todos,
+    [(state: RootState) => state.todos],
     todos => todos.map(({ id }) => id)
   )
   const selectorAutotrack = createSelector(
-    (state: RootState) => state.todos,
+    [(state: RootState) => state.todos],
     todos => todos.map(({ id }) => id),
     { memoize: autotrackMemoize }
   )
   const selectorWeakMap = createSelector(
-    (state: RootState) => state.todos,
+    [(state: RootState) => state.todos],
     todos => todos.map(({ id }) => id),
     { memoize: weakMapMemoize }
   )
   const selectorArgsAutotrack = createSelector(
-    (state: RootState) => state.todos,
+    [(state: RootState) => state.todos],
     todos => todos.map(({ id }) => id),
     { argsMemoize: autotrackMemoize }
   )
   const nonMemoizedSelector = (state: RootState) => {
     return state.todos.map(({ id }) => id)
   }
-
   const selectorArgsWeakMap = createSelector(
-    (state: RootState) => state.todos,
+    [(state: RootState) => state.todos],
     todos => todos.map(({ id }) => id),
     { argsMemoize: weakMapMemoize }
   )
   const parametricSelector = createSelector(
-    (state: RootState) => state.todos,
-    (state: RootState, id: number) => id,
+    [(state: RootState) => state.todos, (state: RootState, id: number) => id],
     (todos, id) => todos[id]
   )
   const parametricSelectorWeakMapArgs = createSelector(
-    (state: RootState) => state.todos,
-    (state: RootState, id: number) => id,
+    [(state: RootState) => state.todos, (state: RootState, id: number) => id],
     (todos, id) => todos[id],
     { argsMemoize: weakMapMemoize }
   )
+  setFunctionNames({
+    selectorDefault,
+    selectorAutotrack,
+    selectorWeakMap,
+    selectorArgsAutotrack,
+    nonMemoizedSelector,
+    selectorArgsWeakMap,
+    parametricSelector,
+    parametricSelectorWeakMapArgs
+  })
   bench(
-    'selectorDefault',
+    selectorDefault,
     () => {
       selectorDefault(state)
     },
-    options
+    commonOptions
   )
   bench(
-    'selectorAutotrack',
+    selectorAutotrack,
     () => {
       selectorAutotrack(state)
     },
-    options
+    commonOptions
   )
   bench(
-    'selectorWeakMap',
+    selectorWeakMap,
     () => {
       selectorWeakMap(state)
     },
-    options
+    commonOptions
   )
   bench(
-    'selectorArgsAutotrack',
+    selectorArgsAutotrack,
     () => {
       selectorArgsAutotrack(state)
     },
-    options
+    commonOptions
   )
   bench(
-    'selectorArgsWeakMap',
+    selectorArgsWeakMap,
     () => {
       selectorArgsWeakMap(state)
     },
-    options
+    commonOptions
   )
   bench(
-    'non-memoized selector',
+    nonMemoizedSelector,
     () => {
       nonMemoizedSelector(state)
     },
-    options
+    commonOptions
   )
   bench(
-    'parametricSelector',
+    parametricSelector,
     () => {
       parametricSelector(state, 0)
     },
-    options
+    commonOptions
   )
   bench(
-    'parametricSelectorWeakMapArgs',
+    parametricSelectorWeakMapArgs,
     () => {
       parametricSelectorWeakMapArgs(state, 0)
     },
-    options
+    commonOptions
   )
 })
 
-describe.skip('for loops', () => {
+describe('for loops', () => {
+  const commonOptions: Options = {
+    iterations: 10,
+    time: 0
+  }
   const store = setupStore()
   const state = store.getState()
   const { todos } = state
@@ -127,7 +137,7 @@ describe.skip('for loops', () => {
         todos[i].id
       }
     },
-    options
+    commonOptions
   )
   bench(
     'for loop length cached',
@@ -138,7 +148,7 @@ describe.skip('for loops', () => {
         todos[i].id
       }
     },
-    options
+    commonOptions
   )
   bench(
     'for loop length and arg cached',
@@ -150,11 +160,15 @@ describe.skip('for loops', () => {
         arg.id
       }
     },
-    options
+    commonOptions
   )
 })
 
-describe.skip('nested field access', () => {
+describe.todo('nested field access', () => {
+  const commonOptions: Options = {
+    iterations: 10,
+    time: 0
+  }
   const store = setupStore()
   const state = store.getState()
   const selectorDefault = createSelector(
@@ -172,25 +186,29 @@ describe.skip('nested field access', () => {
     () => {
       selectorDefault(state)
     },
-    options
+    commonOptions
   )
   bench(
     'nonMemoizedSelector',
     () => {
       nonMemoizedSelector(state)
     },
-    options
+    commonOptions
   )
   bench(
     'selectorDefault1',
     () => {
       selectorDefault1(state)
     },
-    options
+    commonOptions
   )
 })
 
-describe.skip('simple field access', () => {
+describe.todo('simple field access', () => {
+  const commonOptions: Options = {
+    iterations: 10,
+    time: 0
+  }
   const store = setupStore()
   const state = store.getState()
   const selectorDefault = createSelector(
@@ -236,57 +254,55 @@ describe.skip('simple field access', () => {
     () => {
       selectorDefault(state)
     },
-    options
+    commonOptions
   )
   bench(
     'nonMemoizedSelector',
     () => {
       nonMemoizedSelector(state)
     },
-    options
+    commonOptions
   )
   bench(
     'selectorDefault1',
     () => {
       selectorDefault1(state)
     },
-    options
+    commonOptions
   )
   bench(
     'selectorDefault2',
     () => {
       selectorDefault2(state)
     },
-    options
+    commonOptions
   )
 })
 
-describe.only('field accessors', () => {
+describe.todo('field accessors', () => {
+  const commonOptions: Options = {
+    iterations: 10,
+    time: 0
+  }
   const store = setupStore()
   const selectorDefault = createSelector(
     [(state: RootState) => state.users],
     users => users.appSettings
   )
   const nonMemoizedSelector = (state: RootState) => state.users.appSettings
-
   setFunctionNames({ selectorDefault, nonMemoizedSelector })
-
-  const options: Options = {
-    // iterations: 1000,
-    // time: 0
-  }
   bench(
     selectorDefault,
     () => {
       selectorDefault(store.getState())
     },
-    { ...options }
+    { ...commonOptions }
   )
   bench(
     nonMemoizedSelector,
     () => {
       nonMemoizedSelector(store.getState())
     },
-    { ...options }
+    { ...commonOptions }
   )
 })

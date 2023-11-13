@@ -14,12 +14,12 @@ const store = setupStore()
 const state = store.getState()
 const arr = Array.from({ length: 30 }, (e, i) => i)
 
-const options: Options = {
-  // iterations: 100_000,
-  // time: 0
+const commonOptions: Options = {
+  iterations: 10,
+  time: 0
 }
 
-describe.only('weakMapMemoize vs defaultMemoize', () => {
+describe('weakMapMemoize vs defaultMemoize', () => {
   const selectorDefault = createSelector(
     [(state: RootState) => state.todos, (state: RootState, id: number) => id],
     (todos, id) => todos.map(todo => todo.id === id)
@@ -104,7 +104,7 @@ describe.only('weakMapMemoize vs defaultMemoize', () => {
       runSelector(selectorDefault)
     },
     {
-      ...options,
+      ...commonOptions,
       setup: (task, mode) => {
         if (mode === 'warmup') return
         selectorDefault.clearCache()
@@ -127,7 +127,7 @@ describe.only('weakMapMemoize vs defaultMemoize', () => {
       runSelector(selectorDefaultWithCacheSize)
     },
     {
-      ...options,
+      ...commonOptions,
       setup: (task, mode) => {
         if (mode === 'warmup') return
         selectorDefaultWithCacheSize.clearCache()
@@ -150,7 +150,7 @@ describe.only('weakMapMemoize vs defaultMemoize', () => {
       runSelector(selectorDefaultWithArgsCacheSize)
     },
     {
-      ...options,
+      ...commonOptions,
       setup: (task, mode) => {
         if (mode === 'warmup') return
         selectorDefaultWithArgsCacheSize.clearCache()
@@ -173,7 +173,7 @@ describe.only('weakMapMemoize vs defaultMemoize', () => {
       runSelector(selectorDefaultWithBothCacheSize)
     },
     {
-      ...options,
+      ...commonOptions,
       setup: (task, mode) => {
         if (mode === 'warmup') return
         selectorDefaultWithBothCacheSize.clearCache()
@@ -196,7 +196,7 @@ describe.only('weakMapMemoize vs defaultMemoize', () => {
       runSelector(selectorWeakMap)
     },
     {
-      ...options,
+      ...commonOptions,
       setup: (task, mode) => {
         if (mode === 'warmup') return
         selectorWeakMap.clearCache()
@@ -220,7 +220,7 @@ describe.only('weakMapMemoize vs defaultMemoize', () => {
       runSelector(selectorArgsWeakMap)
     },
     {
-      ...options,
+      ...commonOptions,
       setup: (task, mode) => {
         if (mode === 'warmup') return
         selectorArgsWeakMap.clearCache()
@@ -244,7 +244,7 @@ describe.only('weakMapMemoize vs defaultMemoize', () => {
       runSelector(selectorBothWeakMap)
     },
     {
-      ...options,
+      ...commonOptions,
       setup: (task, mode) => {
         if (mode === 'warmup') return
         selectorBothWeakMap.clearCache()
@@ -267,7 +267,7 @@ describe.only('weakMapMemoize vs defaultMemoize', () => {
       runSelector(selectorAutotrack)
     },
     {
-      ...options,
+      ...commonOptions,
       setup: (task, mode) => {
         if (mode === 'warmup') return
         selectorAutotrack.clearCache()
@@ -290,7 +290,7 @@ describe.only('weakMapMemoize vs defaultMemoize', () => {
       runSelector(selectorArgsAutotrack)
     },
     {
-      ...options,
+      ...commonOptions,
       setup: (task, mode) => {
         if (mode === 'warmup') return
         selectorArgsAutotrack.clearCache()
@@ -313,7 +313,7 @@ describe.only('weakMapMemoize vs defaultMemoize', () => {
       runSelector(selectorBothAutotrack)
     },
     {
-      ...options,
+      ...commonOptions,
       setup: (task, mode) => {
         if (mode === 'warmup') return
         selectorBothAutotrack.clearCache()
@@ -335,11 +335,11 @@ describe.only('weakMapMemoize vs defaultMemoize', () => {
     () => {
       runSelector(nonMemoizedSelector)
     },
-    { ...options }
+    { ...commonOptions }
   )
 })
 
-describe.skip('weakMapMemoize simple examples', () => {
+describe('weakMapMemoize simple examples', () => {
   const selectorDefault = createSelector(
     [(state: RootState) => state.todos],
     todos => todos.map(({ id }) => id)
@@ -367,16 +367,13 @@ describe.skip('weakMapMemoize simple examples', () => {
       selectorDefault(store.getState())
     },
     {
-      ...options,
+      ...commonOptions,
       setup: (task, mode) => {
         if (mode === 'warmup') return
         selectorDefault.clearCache()
         selectorDefault.resetRecomputations()
         selectorDefault.memoizedResultFunc.clearCache()
         task.opts = {
-          // beforeEach: () => {
-          //   store.dispatch(toggleCompleted(0))
-          // },
           afterAll: () => {
             console.log(
               `${selectorDefault.name} recomputations after:`,
@@ -393,16 +390,13 @@ describe.skip('weakMapMemoize simple examples', () => {
       selectorWeakMap(store.getState())
     },
     {
-      ...options,
+      ...commonOptions,
       setup: (task, mode) => {
         if (mode === 'warmup') return
         selectorWeakMap.clearCache()
         selectorWeakMap.resetRecomputations()
         selectorWeakMap.memoizedResultFunc.clearCache()
         task.opts = {
-          // beforeEach: () => {
-          //   store.dispatch(toggleCompleted(0))
-          // },
           afterAll: () => {
             console.log(
               `${selectorWeakMap.name} recomputations after:`,
@@ -419,16 +413,13 @@ describe.skip('weakMapMemoize simple examples', () => {
       selectorAutotrack(store.getState())
     },
     {
-      ...options,
+      ...commonOptions,
       setup: (task, mode) => {
         if (mode === 'warmup') return
         selectorAutotrack.clearCache()
         selectorAutotrack.resetRecomputations()
         selectorAutotrack.memoizedResultFunc.clearCache()
         task.opts = {
-          // beforeEach: () => {
-          //   store.dispatch(toggleCompleted(0))
-          // },
           afterAll: () => {
             console.log(
               `${selectorAutotrack.name} recomputations after:`,

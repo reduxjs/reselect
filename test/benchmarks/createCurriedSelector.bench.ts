@@ -4,10 +4,10 @@ import { bench } from 'vitest'
 import type { RootState } from '../testUtils'
 import { setFunctionNames, setupStore } from '../testUtils'
 
-describe.only('curriedSelector vs parametric selector', () => {
-  const options: Options = {
-    // iterations: 10_000_000,
-    // time: 0
+describe('curriedSelector vs parametric selector', () => {
+  const commonOptions: Options = {
+    iterations: 10,
+    time: 0
   }
   const store = setupStore()
   const state = store.getState()
@@ -26,7 +26,7 @@ describe.only('curriedSelector vs parametric selector', () => {
       parametricSelector(state, 0)
     },
     {
-      ...options,
+      ...commonOptions,
       setup: (task, mode) => {
         if (mode === 'warmup') return
         parametricSelector.clearCache()
@@ -41,7 +41,7 @@ describe.only('curriedSelector vs parametric selector', () => {
       curriedSelector(0)(state)
     },
     {
-      ...options,
+      ...commonOptions,
       setup: (task, mode) => {
         if (mode === 'warmup') return
         curriedSelector.clearCache()

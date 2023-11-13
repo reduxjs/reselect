@@ -1,5 +1,5 @@
-import type { Selector } from 'reselect'
-import { createSelector } from 'reselect'
+import type { OutputSelector, Selector } from 'reselect'
+import { createSelector, defaultMemoize } from 'reselect'
 import type { Options } from 'tinybench'
 import { bench } from 'vitest'
 import type { RootState } from '../testUtils'
@@ -10,9 +10,8 @@ import {
   toggleCompleted
 } from '../testUtils'
 
-describe.only('less in input selectors vs more in input selectors', () => {
+describe('less in input selectors vs more in input selectors', () => {
   const store = setupStore()
-  const state = store.getState()
   const arr = Array.from({ length: 1_000_000 }, (e, i) => i)
   const runSelector = (selector: Selector) => {
     arr.forEach((e, i) => {
@@ -39,28 +38,18 @@ describe.only('less in input selectors vs more in input selectors', () => {
     called++
     return state.todos.find(todo => todo.id === id)?.completed
   }
-  const options: Options = {
-    // warmupIterations: 0,
-    // warmupTime: 0,
+  const commonOptions: Options = {
     iterations: 10,
     time: 0
   }
   setFunctionNames({ selectorGood, selectorBad, nonMemoized })
-  const createOptions = <
-    S extends Selector & {
-      recomputations: () => number
-      dependencyRecomputations: () => number
-    }
-  >(
-    selector: S
-  ) => {
+  const createOptions = <S extends OutputSelector>(selector: S) => {
     const options: Options = {
       setup: (task, mode) => {
         if (mode === 'warmup') return
         task.opts = {
           beforeEach: () => {
             store.dispatch(toggleCompleted(1))
-            // store.dispatch(toggleRead(0))
           },
           afterAll: () => {
             logRecomputations(selector)
@@ -76,7 +65,7 @@ describe.only('less in input selectors vs more in input selectors', () => {
       selectorGood(store.getState(), 0)
     },
     {
-      ...options,
+      ...commonOptions,
       ...createOptions(selectorGood)
     }
   )
@@ -86,7 +75,7 @@ describe.only('less in input selectors vs more in input selectors', () => {
       selectorBad(store.getState(), 0)
     },
     {
-      ...options,
+      ...commonOptions,
       ...createOptions(selectorBad)
     }
   )
@@ -96,7 +85,7 @@ describe.only('less in input selectors vs more in input selectors', () => {
       nonMemoized(store.getState(), 0)
     },
     {
-      ...options,
+      ...commonOptions,
       setup: (task, mode) => {
         if (mode === 'warmup') {
           called = 0
@@ -104,11 +93,78 @@ describe.only('less in input selectors vs more in input selectors', () => {
         }
         task.opts = {
           beforeEach: () => {
-            // store.dispatch(toggleRead(0))
             store.dispatch(toggleCompleted(1))
           },
           afterAll: () => {
             console.log(`${nonMemoized.name} called:`, called, `time(s)`)
+          }
+        }
+      }
+    }
+  )
+})
+
+describe('using standalone memoization methods vs createSelector', () => {
+  const store = setupStore()
+  const commonOptions: Options = {
+    iterations: 10,
+    time: 0
+  }
+  const fieldAccessor = createSelector(
+    [(state: RootState) => state.users],
+    users => users.appSettings
+  )
+  let called = 0
+  const fieldAccessor1 = defaultMemoize((state: RootState) => {
+    called++
+    return state.users.appSettings
+  })
+  setFunctionNames({ fieldAccessor, fieldAccessor1 })
+  const createOptions = <
+    S extends Selector & {
+      recomputations: () => number
+      dependencyRecomputations: () => number
+    }
+  >(
+    selector: S
+  ) => {
+    const options: Options = {
+      setup: (task, mode) => {
+        if (mode === 'warmup') return
+        task.opts = {
+          beforeEach: () => {
+            store.dispatch(toggleCompleted(1))
+          },
+          afterAll: () => {
+            logRecomputations(selector)
+          }
+        }
+      }
+    }
+    return options
+  }
+  bench(
+    fieldAccessor,
+    () => {
+      fieldAccessor(store.getState())
+    },
+    { ...commonOptions, ...createOptions(fieldAccessor) }
+  )
+  bench(
+    fieldAccessor1,
+    () => {
+      fieldAccessor1(store.getState())
+    },
+    {
+      ...commonOptions,
+      setup: (task, mode) => {
+        if (mode === 'warmup') return
+        task.opts = {
+          beforeEach: () => {
+            store.dispatch(toggleCompleted(1))
+          },
+          afterAll: () => {
+            console.log(fieldAccessor1.name, called)
           }
         }
       }

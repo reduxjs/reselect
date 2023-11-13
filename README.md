@@ -1665,7 +1665,12 @@ const MyComponent: FC<Props> = ({ id }) => {
 You can create a custom typed version of [`createSelector`] by defining a utility type that extends the original [`createSelector`] function. Here's an example:
 
 ```ts
-import type { SelectorsArray, Selector } from 'reselect'
+import type {
+  OutputSelector,
+  Selector,
+  SelectorArray,
+  UnknownMemoizer
+} from 'reselect'
 import { createSelector } from 'reselect'
 
 interface RootState {
