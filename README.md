@@ -1656,6 +1656,44 @@ const MyComponent: FC<Props> = ({ id }) => {
 }
 ```
 
+We're also exporting a `createCurriedSelectorCreator` function for ease of use:
+
+```ts
+import {
+  createCurriedSelectorCreator,
+  createSelector,
+  weakMapMemoize
+} from 'reselect'
+
+const parametricSelector = createSelector(
+  [(state: RootState) => state.todos, (state: RootState, id: number) => id],
+  (todos, id) => todos.filter(todo => todo.id === id),
+  { memoize: weakMapMemoize, argsMemoize: weakMapMemoize }
+)
+
+const createCurriedSelectorWeakMap = createCurriedSelectorCreator({
+  memoize: weakMapMemoize,
+  argsMemoize: weakMapMemoize
+})
+
+const curriedSelector = createCurriedSelectorWeakMap(
+  [(state: RootState) => state.todos, (state: RootState, id: number) => id],
+  (todos, id) => todos.filter(todo => todo.id === id)
+)
+
+// This:
+parametricSelector(state, 0)
+
+// Is the same as this:
+curriedSelector(0)(state)
+
+// Inside your component you can replace this:
+const selectTodo = useSelector(state => parametricSelector(state, id))
+
+// With this:
+const selectTodo = useSelector(curriedSelector(id))
+```
+
 </details>
 
 ### How can I make pre-typed version of [`createSelector`](#createselectorinputselectors--inputselectors-resultfunc-createselectoroptions) for my root state?
