@@ -20,6 +20,7 @@ export type { DefaultMemoizeOptions } from './defaultMemoize'
 export type {
   Combiner,
   CreateSelectorOptions,
+  CurriedOutputSelector,
   DefaultMemoizeFields,
   EqualityFn,
   ExtractMemoizerFields,
