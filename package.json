@@ -31,7 +31,8 @@
     "test": "node --expose-gc ./node_modules/vitest/dist/cli-wrapper.js run",
     "test:cov": "vitest run --coverage",
     "type-check": "vitest --run typecheck",
-    "test:typescript": "tsc --noEmit -p typescript_test/tsconfig.json --generateTrace trace && npx @typescript/analyze-trace trace && rimraf trace"
+    "type-check:trace": "vitest --run typecheck && tsc --noEmit -p typescript_test/tsconfig.json --generateTrace trace && npx @typescript/analyze-trace trace && rimraf trace",
+    "test:typescript": "tsc --noEmit -p typescript_test/tsconfig.json"
   },
   "keywords": [
     "react",
