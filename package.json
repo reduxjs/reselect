@@ -31,7 +31,7 @@
     "test": "node --expose-gc ./node_modules/vitest/dist/cli-wrapper.js run",
     "test:cov": "vitest run --coverage",
     "type-check": "vitest --run typecheck",
-    "test:typescript": "tsc --noEmit -p typescript_test/tsconfig.json"
+    "test:typescript": "tsc --noEmit -p typescript_test/tsconfig.json --generateTrace trace && npx @typescript/analyze-trace trace && rimraf trace"
   },
   "keywords": [
     "react",
@@ -55,6 +55,7 @@
     "@typescript-eslint/eslint-plugin": "5.1.0",
     "@typescript-eslint/eslint-plugin-tslint": "5.1.0",
     "@typescript-eslint/parser": "5.1.0",
+    "@typescript/analyze-trace": "^0.10.1",
     "eslint": "^8.0.1",
     "eslint-plugin-react": "^7.26.1",
     "eslint-plugin-typescript": "0.14.0",
