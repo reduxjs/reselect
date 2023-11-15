@@ -198,7 +198,6 @@ export type OutputSelectorFields<
 
   /**
    * The memoized version of {@linkcode OutputSelectorFields.resultFunc resultFunc}.
-   *
    */
   memoizedResultFunc: Combiner<InputSelectors, Result> &
     ExtractMemoizerFields<MemoizeFunction>
@@ -216,13 +215,11 @@ export type OutputSelectorFields<
 
   /**
    * Counts the number of times {@linkcode OutputSelectorFields.memoizedResultFunc memoizedResultFunc} has been recalculated.
-   *
    */
   recomputations: () => number
 
   /**
    * Resets the count of {@linkcode OutputSelectorFields.recomputations recomputations} count to 0.
-   *
    */
   resetRecomputations: () => 0
 
@@ -297,30 +294,6 @@ export type Combiner<InputSelectors extends SelectorArray, Result> = Distribute<
    */
   (...resultFuncArgs: SelectorResultArray<InputSelectors>) => Result
 >
-
-/**
- * A selector that is assumed to have one additional argument, such as
- * the props from a React component.
- *
- * @public
- */
-export type ParametricSelector<State, Props, Result> = Selector<
-  State,
-  Result,
-  [Props, ...any]
->
-
-/**
- * A generated selector that is assumed to have one additional argument.
- *
- * @public
- */
-export type OutputParametricSelector<State, Props, Result> = ParametricSelector<
-  State,
-  Props,
-  Result
-> &
-  OutputSelectorFields<SelectorArray, Result>
 
 /**
  * A standard function returning true if two values are considered equal.

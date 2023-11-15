@@ -1145,6 +1145,10 @@ const selectCompletedTodosLength = createSelector(
 
 These updates aim to enhance flexibility, performance, and developer experience. For detailed usage and examples, refer to the updated documentation sections for each feature.
 
+- **Breaking Changes**:
+
+  - Removed `ParametricSelector` and `OutputParametricSelector` types. Their functionalities are now integrated into `Selector` and `OutputSelector` respectively, which inherently support additional parameters.
+
 </details>
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
