@@ -625,7 +625,7 @@ A memoized function with a `.clearCache()` method attached.
 
 <details><summary><b>Examples</b></summary>
 
-###### Using [`createSelector`]
+###### Using `defaultMemoize` with [`createSelector`]
 
 ```ts
 import { shallowEqual } from 'react-redux'
@@ -649,7 +649,7 @@ const selectTodoIds = createSelector(
 )
 ```
 
-###### Using [`createSelectorCreator`]
+###### Using `defaultMemoize` with [`createSelectorCreator`]
 
 ```ts
 import { shallowEqual } from 'react-redux'
@@ -874,7 +874,7 @@ A memoized function with a `.clearCache()` method attached.
 
 <details><summary><b>Examples</b></summary>
 
-###### Using [`createSelector`]
+###### Using `weakMapMemoize` with [`createSelector`]
 
 ```ts
 import { createSelector, weakMapMemoize } from 'reselect'
@@ -897,7 +897,7 @@ selectItemsByCategory(state, 'Stationery') // Selector runs
 selectItemsByCategory(state, 'Electronics')
 ```
 
-###### Using [`createSelectorCreator`]
+###### Using `weakMapMemoize` with [`createSelectorCreator`]
 
 ```ts
 import { createSelectorCreator, weakMapMemoize } from 'reselect'
@@ -984,7 +984,7 @@ A memoized function with a `.clearCache()` method attached.
 
 <details><summary><b>Examples</b></summary>
 
-###### Using [`createSelector`]
+###### Using `unstable_autotrackMemoize` with [`createSelector`]
 
 ```ts
 import { unstable_autotrackMemoize, createSelector } from 'reselect'
@@ -996,7 +996,7 @@ const selectTodoIds = createSelector(
 )
 ```
 
-###### Using [`createSelectorCreator`]
+###### Using `unstable_autotrackMemoize` with [`createSelectorCreator`]
 
 ```ts
 import { unstable_autotrackMemoize, createSelectorCreator } from 'reselect'
