@@ -907,9 +907,7 @@ const selector = customSelectorCreator(
 
 <b>Description</b>
 
-A convenience function for a common pattern that arises when using Reselect.
-The selector passed to a `connect` decorator often just takes the values of its [input selectors]
-and maps them to keys in an object.
+A convenience function that simplifies returning an object made up of selector results.
 
 <b>Parameters</b>
 
