@@ -119,7 +119,7 @@ In addition to skipping unnecessary recalculations, `memoizedSelectCompletedTodo
 - [How Does Reselect Work?](#how-does-reselect-work)
   - [Cascading Memoization](#cascading-memoization)
   - [Reselect Vs Standard Memoization](#reselect-vs-standard-memoization)
-  - [Why Reselect Is Often Used With [Redux]](#why-reselect-is-often-used-with-redux)
+  - [Why Reselect Is Often Used With Redux](#why-reselect-is-often-used-with-redux)
 - [API](#api)
   - [**`createSelector`**][`createSelector`]
   - [**`defaultMemoize`**][`defaultMemoize`]
@@ -134,7 +134,7 @@ In addition to skipping unnecessary recalculations, `memoizedSelectCompletedTodo
 - [FAQ](#faq)
   - [Why isn’t my selector recomputing when the input state changes?](#why-isnt-my-selector-recomputing-when-the-input-state-changes)
   - [Why is my selector recomputing when the input state stays the same?](#why-is-my-selector-recomputing-when-the-input-state-stays-the-same)
-  - [Can I use Reselect without [Redux]?](#can-i-use-reselect-without-redux)
+  - [Can I use Reselect without Redux?](#can-i-use-reselect-without-redux)
   - [How do I create a selector that takes an argument?](#how-do-i-create-a-selector-that-takes-an-argument)
   - [The default memoization function is no good, can I use a different one?](#the-default-memoization-function-is-no-good-can-i-use-a-different-one)
   - [How do I test a selector?](#how-do-i-test-a-selector)
@@ -194,7 +194,7 @@ The way Reselect works can be broken down into multiple parts:
 
      - If they're the same, it returns the cached result without running the [input selectors] or the [result function].
 
-     - If they differ, it proceeds to the second level.
+     - If they differ, it proceeds ("cascades") to the second level.
 
    - **Second Level**: It runs the [input selectors] and compares their current results with the previous ones (done by `memoize`).
      > [!NOTE]
@@ -295,15 +295,13 @@ Even when the overall `state` changes, Reselect ensures efficient memoization th
 
 ### createSelector(...inputSelectors | [inputSelectors], resultFunc, createSelectorOptions?)
 
-<details><summary><b>Description</b></summary>
+<b>Description</b>
 
 Accepts one or more "[input selectors]" (either as separate arguments or a single array),
 a single "[result function]", and an optional options object, and
 generates a memoized selector function.
 
-</details>
-
-<details><summary><b>Parameters</b></summary>
+<b>Parameters</b>
 
 | Name                     | Description                                                                       |
 | :----------------------- | :-------------------------------------------------------------------------------- |
@@ -311,13 +309,9 @@ generates a memoized selector function.
 | `resultFunc`             | A function that takes the results of the [input selectors] as separate arguments. |
 | `createSelectorOptions?` | An optional options object that allows for further customization per selector.    |
 
-</details>
-
-<details><summary><b>Returns</b></summary>
+<b>Returns</b>
 
 A memoized [output selector].
-
-</details>
 
 <details><summary><b>Type parameters</b></summary>
 
@@ -340,13 +334,13 @@ A memoized [output selector].
 
 #### defaultMemoize(func, equalityCheckOrOptions = defaultEqualityCheck)
 
-<details><summary><b>Description</b></summary>
+<b>Description</b>
 
 The standard memoize function used by [`createSelector`].
 
-It has a default cache size of 1. This means it always recalculates when the value of an argument changes. However, this can be customized as needed with a specific max cache size (**`Since`** 4.1.0).
+It has a default cache size of 1. This means it always recalculates when the value of an argument changes. However, this can be customized as needed with a specific max cache size (since 4.1.0).
 
-It determines if an argument has changed by calling the `equalityCheck` function. As `defaultMemoize` is designed to be used with immutable data, the default `equalityCheck` function checks for changes using [`reference equality`][Reference Equality Check]:
+It determines if an argument has changed by calling the `equalityCheck` function. As `defaultMemoize` is designed to be used with immutable data, the default `equalityCheck` function checks for changes using [reference equality][Reference Equality Check]:
 
 ```ts
 const defaultEqualityCheck = (previousValue: any, currentValue: any) => {
@@ -354,16 +348,14 @@ const defaultEqualityCheck = (previousValue: any, currentValue: any) => {
 }
 ```
 
-</details>
-
-<details><summary><b>Parameters</b></summary>
+<b>Parameters</b>
 
 | Name                     | Description                                                 |
 | :----------------------- | :---------------------------------------------------------- |
 | `func`                   | The function to be memoized.                                |
 | `equalityCheckOrOptions` | Either an `equality check` function or an `options` object. |
 
-**`Since`** 4.1.0, `defaultMemoize` also accepts an options object as its first argument instead of an `equalityCheck` function. The `options` object may contain:
+Since 4.1.0, `defaultMemoize` also accepts an options object as its first argument instead of an `equalityCheck` function. The `options` object may contain:
 
 ```ts
 type EqualityFn = (a: any, b: any) => boolean
@@ -384,13 +376,9 @@ interface DefaultMemoizeOptions {
 > [!WARNING]
 > If `resultEqualityCheck` is used inside `argsMemoizeOptions` it has no effect.
 
-</details>
-
-<details><summary><b>Returns</b></summary>
+<b>Returns</b>
 
 A memoized function with a `.clearCache()` method attached.
-
-</details>
 
 <details><summary><b>Type parameters</b></summary>
 
@@ -400,7 +388,7 @@ A memoized function with a `.clearCache()` method attached.
 
 </details>
 
-<details><summary><b><code>Examples</code></b></summary>
+<details><summary><b>Examples</b></summary>
 
 ###### Using [`createSelector`]
 
@@ -461,15 +449,13 @@ const selectTodoIds = createSelectorShallowEqual(
 
 <a id="weakmapmemoize"></a>
 
-#### weakMapMemoize(func) - (**`Since`** 5.0.0)
+#### weakMapMemoize(func) - (since 5.0.0)
 
-<details><summary><b>Description</b></summary>
+<b>Description</b>
 
 [`defaultMemoize`] has to be explicitly configured to have a cache size larger than 1, and uses an LRU cache internally.
 
 `weakMapMemoize` creates a tree of [`WeakMap`]-based cache nodes based on the identity of the arguments it's been called with (in this case, the extracted values from your input selectors). **This allows `weakMapMemoize` to have an effectively infinite cache size**. Cache results will be kept in memory as long as references to the arguments still exist, and then cleared out as the arguments are garbage-collected.
-
-</details>
 
 <details><summary><b>Design Tradeoffs</b></summary>
 
@@ -494,19 +480,15 @@ useSelector(state => selectSomeData(state, id))
 
 </details>
 
-<details><summary><b>Parameters</b></summary>
+<b>Parameters</b>
 
 | Name   | Description                  |
 | :----- | :--------------------------- |
 | `func` | The function to be memoized. |
 
-</details>
-
-<details><summary><b>Returns</b></summary>
+<b>Returns</b>
 
 A memoized function with a `.clearCache()` method attached.
-
-</details>
 
 <details><summary><b>Type parameters</b></summary>
 
@@ -516,20 +498,27 @@ A memoized function with a `.clearCache()` method attached.
 
 </details>
 
-<details><summary><b><code>Examples</code></b></summary>
+<details><summary><b>Examples</b></summary>
 
 Prior to `weakMapMemoize`, you had this problem:
 
 ```ts
-const parametricSelector = createSelector(
-  [(state: RootState) => state.todos, (state: RootState, id: number) => id],
-  (todos, id) => todos.filter(todo => todo.id === id)
+interface RootState {
+  items: { id: number; category: string; name: string }[]
+}
+
+const selectItemsByCategory = createSelector(
+  [
+    (state: RootState) => state.items,
+    (state: RootState, category: string) => category
+  ],
+  (items, category) => items.filter(item => item.category === category)
 )
 
-parametricSelector(state, 0) // Selector runs
-parametricSelector(state, 0)
-parametricSelector(state, 1) // Selector runs
-parametricSelector(state, 0) // Selector runs again!
+selectItemsByCategory(state, 'Electronics') // Selector runs
+selectItemsByCategory(state, 'Electronics')
+selectItemsByCategory(state, 'Stationery') // Selector runs
+selectItemsByCategory(state, 'Electronics') // Selector runs again!
 ```
 
 Before you could solve this in a number of different ways:
@@ -537,9 +526,12 @@ Before you could solve this in a number of different ways:
 1. Set the `maxSize` with [`defaultMemoize`]:
 
 ```ts
-const parametricSelector = createSelector(
-  [(state: RootState) => state.todos, (state: RootState, id: number) => id],
-  (todos, id) => todos.filter(todo => todo.id === id),
+const selectItemsByCategory = createSelector(
+  [
+    (state: RootState) => state.items,
+    (state: RootState, category: string) => category
+  ],
+  (items, category) => items.filter(item => item.category === category),
   {
     memoizeOptions: {
       maxSize: 10
@@ -553,20 +545,27 @@ But this required having to know the cache size ahead of time.
 2. Create unique selector instances using [`useMemo`].
 
 ```tsx
-const parametricSelector = (id: number) =>
-  createSelector([(state: RootState) => state.todos], todos =>
-    todos.filter(todo => todo.id === id)
+const makeSelectItemsByCategory = (category: string) =>
+  createSelector([(state: RootState) => state.items], items =>
+    items.filter(item => item.category === category)
   )
 
-const MyComponent: FC<Props> = ({ id }) => {
-  const selectTodosById = useMemo(() => parametricSelector(id), [id])
+interface Props {
+  category: string
+}
 
-  const todosById = useSelector(selectTodosById)
+const MyComponent: FC<Props> = ({ category }) => {
+  const selectItemsByCategory = useMemo(
+    () => makeSelectItemsByCategory(category),
+    [category]
+  )
+
+  const itemsByCategory = useSelector(selectItemsByCategory)
 
   return (
     <div>
-      {todosById.map(todo => (
-        <div key={todo.id}>{todo.title}</div>
+      {itemsByCategory.map(item => (
+        <div key={item.id}>{item.name}</div>
       ))}
     </div>
   )
@@ -576,15 +575,18 @@ const MyComponent: FC<Props> = ({ id }) => {
 3. Using [`useCallback`].
 
 ```tsx
-const parametricSelector = createSelector(
-  [(state: RootState) => state.todos, (state: RootState, id: number) => id],
-  (todos, id) => todos.filter(todo => todo.id === id)
+const selectItemsByCategory = createSelector(
+  [
+    (state: RootState) => state.items,
+    (state: RootState, category: string) => category
+  ],
+  (items, category) => items.filter(item => item.category === category)
 )
 
 const MyComponent: FC<Props> = ({ id }) => {
-  const selectTodosById = useCallback(parametricSelector, [])
+  const selectTodosById = useCallback(selectItemsByCategory, [])
 
-  const todosById = useSelector(state => selectTodosById(state, id))
+  const todosById = useSelector(state => selectItemsByCategory(state, id))
 
   return (
     <div>
@@ -601,7 +603,7 @@ const MyComponent: FC<Props> = ({ id }) => {
 ```ts
 import { createCachedSelector } from 're-reselect'
 
-const parametricSelector = createCachedSelector(
+const selectItemsByCategory = createCachedSelector(
   [(state: RootState) => state.todos, (state: RootState, id: number) => id],
   (todos, id) => todos.filter(todo => todo.id === id)
 )((state: RootState, id: number) => id)
@@ -612,7 +614,7 @@ Starting in 5.0.0, you can eliminate this problem using `weakMapMemoize`.
 ###### Using [`createSelector`]
 
 ```ts
-const parametricSelector = createSelector(
+const selectItemsByCategory = createSelector(
   [(state: RootState) => state.todos, (state: RootState, id: number) => id],
   (todos, id) => todos.filter(todo => todo.id === id),
   {
@@ -621,10 +623,10 @@ const parametricSelector = createSelector(
   }
 )
 
-parametricSelector(state, 0) // Selector runs
-parametricSelector(state, 0)
-parametricSelector(state, 1) // Selector runs
-parametricSelector(state, 0)
+selectItemsByCategory(state, 0) // Selector runs
+selectItemsByCategory(state, 0)
+selectItemsByCategory(state, 1) // Selector runs
+selectItemsByCategory(state, 0)
 ```
 
 ###### Using [`createSelectorCreator`]
@@ -658,16 +660,13 @@ This solves the problem of having to know and set the cache size prior to creati
 
 <a id="autotrackmemoize"></a>
 
-#### autotrackMemoize(func) - (**`Since`** 5.0.0)
+#### autotrackMemoize(func) - (since 5.0.0)
 
-<details><summary><b>Description</b></summary>
+<b>Description</b>
 
 Uses an "auto-tracking" approach inspired by the work of the Ember Glimmer team. It uses a Proxy to wrap arguments and track accesses to nested fields in your selector on first read. Later, when the selector is called with new arguments, it identifies which accessed fields have changed and only recalculates the result if one or more of those accessed fields have changed. This allows it to be more precise than the shallow equality checks in defaultMemoize.
 
-</details>
-
-<details>
-<summary><b>Design Tradeoffs</b></summary>
+<details><summary><b>Design Tradeoffs</b></summary>
 
 - Pros:
   - It is likely to avoid excess calculations and recalculate fewer times than defaultMemoize will, which may also result in fewer component re-renders.
@@ -685,26 +684,21 @@ Uses an "auto-tracking" approach inspired by the work of the Ember Glimmer team.
 
 </details>
 
-<details>
-<summary><b>Use Cases</b></summary>
+<details><summary><b>Use Cases</b></summary>
 
 - It is likely best used for cases where you need to access specific nested fields in data, and avoid recalculating if other fields in the same data objects are immutably updated.
 
 </details>
 
-<details><summary><b>Parameters</b></summary>
+<b>Parameters</b>
 
 | Name   | Description                  |
 | :----- | :--------------------------- |
 | `func` | The function to be memoized. |
 
-</details>
-
-<details><summary><b>Returns</b></summary>
+<b>Returns</b>
 
 A memoized function with a `.clearCache()` method attached.
-
-</details>
 
 <details><summary><b>Type parameters</b></summary>
 
@@ -714,7 +708,7 @@ A memoized function with a `.clearCache()` method attached.
 
 </details>
 
-<details><summary><b><code>Examples</code></b></summary>
+<details><summary><b>Examples</b></summary>
 
 ###### Using [`createSelector`]
 
@@ -767,7 +761,7 @@ const selectTodoIds = createSelectorAutotrack(
 
 - It is likely best used for cases where you need to access specific nested fields in data, and avoid recalculating if other fields in the same data objects are immutably updated.
 
-</details> -->
+</details>
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
@@ -777,39 +771,31 @@ const selectTodoIds = createSelectorAutotrack(
 
 ### createSelectorCreator(memoize | options, ...memoizeOptions)
 
-<details><summary><b>Description</b></summary>
+<b>Description</b>
 
-Accepts either a `memoize` function and `...memoizeOptions` rest parameter, or **`Since`** 5.0.0 an `options` object containing a `memoize` function and creates a custom selector creator function.
+Accepts either a `memoize` function and `...memoizeOptions` rest parameter, or since 5.0.0 an `options` object containing a `memoize` function and creates a custom selector creator function.
 
-</details>
+<b>Parameters (since 5.0.0)</b>
 
-<details><summary><b>Parameters (<code>Since</code> 5.0.0)</b></summary>
+| Name                           | Description                                                                                                                                                                                                                                                                                                         |
+| :----------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `options`                      | An options object containing the `memoize` function responsible for memoizing the `resultFunc` inside [`createSelector`] (e.g., `defaultMemoize` or `weakMapMemoize`). It also provides additional options for customizing memoization. While the `memoize` property is mandatory, the rest are optional.           |
+| `options.argsMemoize?`         | The optional memoize function that is used to memoize the arguments passed into the [output selector] generated by [`createSelector`] (e.g., `defaultMemoize` or `weakMapMemoize`). <br /> **`Default`** `defaultMemoize`                                                                                           |
+| `options.argsMemoizeOptions?`  | Optional configuration options for the `argsMemoize` function. These options are passed to the `argsMemoize` function as the second argument. <br /> since 5.0.0                                                                                                                                                    |
+| `options.inputStabilityCheck?` | Overrides the global input stability check for the selector. Possible values are: <br /> `once` - Run only the first time the selector is called. <br /> `always` - Run every time the selector is called. <br /> `never` - Never run the input stability check. <br /> **`Default`** = `'once'` <br /> since 5.0.0 |
+| `options.memoize`              | The memoize function that is used to memoize the `resultFunc` inside [`createSelector`] (e.g., `defaultMemoize` or `weakMapMemoize`). since 5.0.0                                                                                                                                                                   |
+| `options.memoizeOptions?`      | Optional configuration options for the `memoize` function. These options are passed to the `memoize` function as the second argument. <br /> since 5.0.0                                                                                                                                                            |
 
-| Name                           | Description                                                                                                                                                                                                                                                                                                               |
-| :----------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `options`                      | An options object containing the `memoize` function responsible for memoizing the `resultFunc` inside [`createSelector`] (e.g., `defaultMemoize` or `weakMapMemoize`). It also provides additional options for customizing memoization. While the `memoize` property is mandatory, the rest are optional.                 |
-| `options.argsMemoize?`         | The optional memoize function that is used to memoize the arguments passed into the [output selector] generated by [`createSelector`] (e.g., `defaultMemoize` or `weakMapMemoize`). <br /> **`Default`** `defaultMemoize`                                                                                                 |
-| `options.argsMemoizeOptions?`  | Optional configuration options for the `argsMemoize` function. These options are passed to the `argsMemoize` function as the second argument. <br /> **`Since`** 5.0.0                                                                                                                                                    |
-| `options.inputStabilityCheck?` | Overrides the global input stability check for the selector. Possible values are: <br /> `once` - Run only the first time the selector is called. <br /> `always` - Run every time the selector is called. <br /> `never` - Never run the input stability check. <br /> **`Default`** = `'once'` <br /> **`Since`** 5.0.0 |
-| `options.memoize`              | The memoize function that is used to memoize the `resultFunc` inside [`createSelector`] (e.g., `defaultMemoize` or `weakMapMemoize`). **`Since`** 5.0.0                                                                                                                                                                   |
-| `options.memoizeOptions?`      | Optional configuration options for the `memoize` function. These options are passed to the `memoize` function as the second argument. <br /> **`Since`** 5.0.0                                                                                                                                                            |
-
-</details>
-
-<details><summary><b>Parameters</b></summary>
+<b>Parameters</b>
 
 | Name                        | Description                                                                                                                                        |
 | :-------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `memoize`                   | The `memoize` function responsible for memoizing the `resultFunc` inside [`createSelector`] (e.g., `defaultMemoize` or `weakMapMemoize`).          |
 | `...memoizeOptionsFromArgs` | Optional configuration options for the memoization function. These options are then passed to the memoize function as the second argument onwards. |
 
-</details>
-
-<details><summary><b>Returns</b></summary>
+<b>Returns</b>
 
 A customized [`createSelector`] function.
-
-</details>
 
 <details><summary><b>Type parameters</b></summary>
 
@@ -820,9 +806,9 @@ A customized [`createSelector`] function.
 
 </details>
 
-<details><summary><b><code>Examples</code></b></summary>
+<details><summary><b>Examples</b></summary>
 
-##### Using `options` (**`Since`** 5.0.0)
+##### Using `options` (since 5.0.0)
 
 ```ts
 const customCreateSelector = createSelectorCreator({
@@ -919,28 +905,22 @@ const selector = customSelectorCreator(
 
 ### createStructuredSelector({ inputSelectors }, selectorCreator = createSelector)
 
-<details><summary><b>Description</b></summary>
+<b>Description</b>
 
 A convenience function for a common pattern that arises when using Reselect.
 The selector passed to a `connect` decorator often just takes the values of its [input selectors]
 and maps them to keys in an object.
 
-</details>
-
-<details><summary><b>Parameters</b></summary>
+<b>Parameters</b>
 
 | Name               | Description                                                            |
 | :----------------- | :--------------------------------------------------------------------- |
 | `selectorMap`      | A key value pair consisting of input selectors.                        |
 | `selectorCreator?` | A custom selector creator function. It defaults to [`createSelector`]. |
 
-</details>
-
-<details><summary><b>Returns</b></summary>
+<b>Returns</b>
 
 A memoized structured selector.
-
-</details>
 
 <details><summary><b>Type parameters</b></summary>
 
@@ -952,7 +932,7 @@ A memoized structured selector.
 
 </details>
 
-<details><summary><b><code>Examples</code></b></summary>
+<details><summary><b>Examples</b></summary>
 
 ##### Modern Use Case
 
@@ -1030,7 +1010,7 @@ const result = structuredSelector({ a: 1, b: 2 }) // will produce { x: 1, y: 2 }
 
 <a id="developmentonlychecks"></a>
 
-<details><summary><b>Development-only Checks - (<code>Since</code> 5.0.0)</b></summary>
+<details><summary><b>Development-only Checks - (since 5.0.0)</b></summary>
 
 <a id="inputstabilitycheck"></a>
 
@@ -1059,10 +1039,10 @@ type StabilityCheckFrequency = 'always' | 'once' | 'never'
 | :-------------- | :---------------------------------------------- |
 | `once`          | Run only the first time the selector is called. |
 | `always`        | Run every time the selector is called.          |
-| `never`         | Never run the `input stability check`.          |
+| `never`         | Never run the input stability check.            |
 
 > [!IMPORTANT]
-> The `input stability check` is automatically disabled in production environments.
+> The input stability check is automatically disabled in production environments.
 
 You can configure this behavior in two ways:
 
@@ -1102,7 +1082,7 @@ const selectCompletedTodosLength = createSelector(
 ```
 
 > [!WARNING]
-> This will override the global `input stability check` set by calling `setInputStabilityCheckEnabled`.
+> This will override the global input stability check set by calling `setInputStabilityCheckEnabled`.
 
 </details>
 
@@ -1116,7 +1096,7 @@ const selectCompletedTodosLength = createSelector(
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `resultFunc`                    | The final function passed to [`createSelector`].                                                                                                                                              |
 | `memoizedResultFunc`            | The memoized version of `resultFunc`.                                                                                                                                                         |
-| `lastResult`                    | Returns The last result calculated by `memoizedResultFunc`.                                                                                                                                   |
+| `lastResult`                    | Returns the last result calculated by `memoizedResultFunc`.                                                                                                                                   |
 | `dependencies`                  | The array of the input selectors used by [`createSelector`] to compose `resultFunc`.                                                                                                          |
 | `recomputations`                | Counts the number of times `memoizedResultFunc` has been recalculated.                                                                                                                        |
 | `resetRecomputations`           | Resets the count of `recomputations` count to 0.                                                                                                                                              |
