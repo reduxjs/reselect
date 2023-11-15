@@ -87,13 +87,20 @@ function createCacheNode<T>(): CacheNode<T> {
  * ```ts
  * import { createSelector, weakMapMemoize } from 'reselect'
  *
- * const selectTodosById = createSelector(
+ * interface RootState {
+ *   items: { id: number; category: string; name: string }[]
+ * }
+ *
+ * const selectItemsByCategory = createSelector(
  *   [
- *     (state: RootState) => state.todos,
- *     (state: RootState, id: number) => id
+ *     (state: RootState) => state.items,
+ *     (state: RootState, category: string) => category
  *   ],
- *   (todos, id) => todos.filter(todo => todo.id === id),
- *   { memoize: weakMapMemoize }
+ *   (items, category) => items.filter(item => item.category === category),
+ *   {
+ *     memoize: weakMapMemoize,
+ *     argsMemoize: weakMapMemoize
+ *   }
  * )
  * ```
  *
@@ -104,12 +111,12 @@ function createCacheNode<T>(): CacheNode<T> {
  *
  * const createSelectorWeakMap = createSelectorCreator({ memoize: weakMapMemoize, argsMemoize: weakMapMemoize })
  *
- * const selectTodosById = createSelectorWeakMap(
+ * const selectItemsByCategory = createSelectorWeakMap(
  *   [
- *     (state: RootState) => state.todos,
- *     (state: RootState, id: number) => id
+ *     (state: RootState) => state.items,
+ *     (state: RootState, category: string) => category
  *   ],
- *   (todos, id) => todos.filter(todo => todo.id === id)
+ *   (items, category) => items.filter(item => item.category === category)
  * )
  * ```
  *

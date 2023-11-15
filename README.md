@@ -877,6 +877,8 @@ A memoized function with a `.clearCache()` method attached.
 ###### Using [`createSelector`]
 
 ```ts
+import { createSelector, weakMapMemoize } from 'reselect'
+
 const selectItemsByCategory = createSelector(
   [
     (state: RootState) => state.items,
@@ -1270,7 +1272,7 @@ There are a few details that will help you skip running as many functions as pos
 This:
 
 ```ts
-// ✔️ This is optimal because we have less calculations in [`input selectors`][Input Selectors] and more in the `result function`.
+// ✔️ This is optimal because we have less calculations in input selectors and more in the result function.
 const selectorGood = createSelector(
   [(state: RootState) => state.todos],
   todos => someExpensiveComputation(todos)
