@@ -9,7 +9,7 @@ import type { TypedUseSelectorHook } from 'react-redux'
 import { useSelector } from 'react-redux'
 import type {
   GetStateFromSelectors,
-  ParametricSelector,
+  Selector,
   SelectorResultArray,
   TypedStructuredSelectorCreator
 } from 'reselect'
@@ -142,7 +142,7 @@ function testSelectorAsCombiner() {
 type Component<P> = (props: P) => any
 
 declare function connect<S, P, R>(
-  selector: ParametricSelector<S, P, R>
+  selector: Selector<S, R, [P]>
 ): (component: Component<P & R>) => Component<P>
 
 function testConnect() {
@@ -830,14 +830,14 @@ function testTypedCreateStructuredSelector() {
   const selectBar = (state: RootState) => state.bar
 
   const typedStructuredSelectorCreator: TypedStructuredSelectorCreator<RootState> =
-    createStructuredSelector as TypedStructuredSelectorCreator<RootState>
+    createStructuredSelector
 
   typedStructuredSelectorCreator({
     foo: selectFoo,
     bar: selectBar
   })
 
-  // @ts-expect-error
+  // @ts-expect-error Because `bar` is missing.
   typedStructuredSelectorCreator({
     foo: selectFoo
   })
