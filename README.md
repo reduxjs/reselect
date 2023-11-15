@@ -695,10 +695,12 @@ const selectTodoIds = createSelectorShallowEqual(
 <details><summary><b>Design Tradeoffs</b></summary>
 
 - Pros:
+
   - It has an effectively infinite cache size, but you have no control over
     how long values are kept in cache as it's based on garbage collection and [`WeakMap`]s.
+
 - Cons:
-  - There's currently no way to alter the argument comparisons. They're based on strict reference equality.
+  - There's currently no way to alter the argument comparisons. They're based on [strict reference equality][Reference Equality Check].
 
 </details>
 
@@ -712,28 +714,6 @@ const selectTodoIds = createSelectorShallowEqual(
 ```ts
 useSelector(state => selectSomeData(state, id))
 ```
-
-</details>
-
-<b>Parameters</b>
-
-| Name   | Description                  |
-| :----- | :--------------------------- |
-| `func` | The function to be memoized. |
-
-<b>Returns</b>
-
-A memoized function with a `.clearCache()` method attached.
-
-<details><summary><b>Type parameters</b></summary>
-
-| Name   | Description                                |
-| :----- | :----------------------------------------- |
-| `Func` | The type of the function that is memoized. |
-
-</details>
-
-<details><summary><b>Examples</b></summary>
 
 Prior to `weakMapMemoize`, you had this problem:
 
@@ -818,15 +798,17 @@ const selectItemsByCategory = createSelector(
   (items, category) => items.filter(item => item.category === category)
 )
 
-const MyComponent: FC<Props> = ({ id }) => {
-  const selectTodosById = useCallback(selectItemsByCategory, [])
+const MyComponent: FC<Props> = ({ category }) => {
+  const selectItemsByCategoryMemoized = useCallback(selectItemsByCategory, [])
 
-  const todosById = useSelector(state => selectItemsByCategory(state, id))
+  const itemsByCategory = useSelector(state =>
+    selectItemsByCategoryMemoized(state, category)
+  )
 
   return (
     <div>
-      {todosById.map(todo => (
-        <div key={todo.id}> {todo.title}</div>
+      {itemsByCategory.map(item => (
+        <div key={item.id}>{item.name}</div>
       ))}
     </div>
   )
@@ -839,29 +821,78 @@ const MyComponent: FC<Props> = ({ id }) => {
 import { createCachedSelector } from 're-reselect'
 
 const selectItemsByCategory = createCachedSelector(
-  [(state: RootState) => state.todos, (state: RootState, id: number) => id],
-  (todos, id) => todos.filter(todo => todo.id === id)
-)((state: RootState, id: number) => id)
+  [
+    (state: RootState) => state.items,
+    (state: RootState, category: string) => category
+  ],
+  (items, category) => items.filter(item => item.category === category)
+)((state: RootState, category: string) => category)
 ```
 
 Starting in 5.0.0, you can eliminate this problem using `weakMapMemoize`.
 
-###### Using [`createSelector`]
-
 ```ts
 const selectItemsByCategory = createSelector(
-  [(state: RootState) => state.todos, (state: RootState, id: number) => id],
-  (todos, id) => todos.filter(todo => todo.id === id),
+  [
+    (state: RootState) => state.items,
+    (state: RootState, category: string) => category
+  ],
+  (items, category) => items.filter(item => item.category === category),
   {
     memoize: weakMapMemoize,
     argsMemoize: weakMapMemoize
   }
 )
 
-selectItemsByCategory(state, 0) // Selector runs
-selectItemsByCategory(state, 0)
-selectItemsByCategory(state, 1) // Selector runs
-selectItemsByCategory(state, 0)
+selectItemsByCategory(state, 'Electronics') // Selector runs
+selectItemsByCategory(state, 'Electronics')
+selectItemsByCategory(state, 'Stationery') // Selector runs
+selectItemsByCategory(state, 'Electronics')
+```
+
+This solves the problem of having to know and set the cache size prior to creating a memoized selector. Because `weakMapMemoize` essentially provides a dynamic cache size out of the box.
+
+</details>
+
+<b>Parameters</b>
+
+| Name   | Description                  |
+| :----- | :--------------------------- |
+| `func` | The function to be memoized. |
+
+<b>Returns</b>
+
+A memoized function with a `.clearCache()` method attached.
+
+<details><summary><b>Type parameters</b></summary>
+
+| Name   | Description                                |
+| :----- | :----------------------------------------- |
+| `Func` | The type of the function that is memoized. |
+
+</details>
+
+<details><summary><b>Examples</b></summary>
+
+###### Using [`createSelector`]
+
+```ts
+const selectItemsByCategory = createSelector(
+  [
+    (state: RootState) => state.items,
+    (state: RootState, category: string) => category
+  ],
+  (items, category) => items.filter(item => item.category === category),
+  {
+    memoize: weakMapMemoize,
+    argsMemoize: weakMapMemoize
+  }
+)
+
+selectItemsByCategory(state, 'Electronics') // Selector runs
+selectItemsByCategory(state, 'Electronics')
+selectItemsByCategory(state, 'Stationery') // Selector runs
+selectItemsByCategory(state, 'Electronics')
 ```
 
 ###### Using [`createSelectorCreator`]
@@ -874,18 +905,19 @@ const createSelectorWeakMap = createSelectorCreator({
   argsMemoize: weakMapMemoize
 })
 
-const parametricSelector = createSelector(
-  [(state: RootState) => state.todos, (state: RootState, id: number) => id],
-  (todos, id) => todos.filter(todo => todo.id === id)
+const selectItemsByCategory = createSelectorWeakMap(
+  [
+    (state: RootState) => state.items,
+    (state: RootState, category: string) => category
+  ],
+  (items, category) => items.filter(item => item.category === category)
 )
 
-parametricSelector(state, 0) // Selector runs
-parametricSelector(state, 0)
-parametricSelector(state, 1) // Selector runs
-parametricSelector(state, 0)
+selectItemsByCategory(state, 'Electronics') // Selector runs
+selectItemsByCategory(state, 'Electronics')
+selectItemsByCategory(state, 'Stationery') // Selector runs
+selectItemsByCategory(state, 'Electronics')
 ```
-
-This solves the problem of having to know and set the cache size prior to creating a memoized selector.
 
 </details>
 
