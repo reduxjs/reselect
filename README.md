@@ -948,28 +948,22 @@ A memoized function with a `.clearCache()` method attached.
 ###### Using [`createSelector`]
 
 ```ts
-import {
-  unstable_autotrackMemoize as autotrackMemoize,
-  createSelector
-} from 'reselect'
+import { unstable_autotrackMemoize, createSelector } from 'reselect'
 
 const selectTodoIds = createSelector(
   [(state: RootState) => state.todos],
   todos => todos.map(todo => todo.id),
-  { memoize: autotrackMemoize }
+  { memoize: unstable_autotrackMemoize }
 )
 ```
 
 ###### Using [`createSelectorCreator`]
 
 ```ts
-import {
-  unstable_autotrackMemoize as autotrackMemoize,
-  createSelectorCreator
-} from 'reselect'
+import { unstable_autotrackMemoize, createSelectorCreator } from 'reselect'
 
 const createSelectorAutotrack = createSelectorCreator({
-  memoize: autotrackMemoize
+  memoize: unstable_autotrackMemoize
 })
 
 const selectTodoIds = createSelectorAutotrack(
