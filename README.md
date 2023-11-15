@@ -124,7 +124,7 @@ In addition to skipping unnecessary recalculations, `memoizedSelectCompletedTodo
   - [**`createSelector`**][`createSelector`]
   - [**`defaultMemoize`**][`defaultMemoize`]
   - [**`weakMapMemoize`**][`weakMapMemoize`]
-  - [**`autotrackMemoize`**][`autotrackMemoize`]
+  - [**`unstable_autotrackMemoize`**][`unstable_autotrackMemoize`]
   - [**`createSelectorCreator`**][`createSelectorCreator`]
   - [**`createStructuredSelector`**][`createStructuredSelector`]
   - [**`createCurriedSelector`**][`createCurriedSelector`]
@@ -893,18 +893,23 @@ This solves the problem of having to know and set the cache size prior to creati
 
 ---
 
-<a id="autotrackmemoize"></a>
+<a id="unstable_autotrackMemoize"></a>
 
-#### autotrackMemoize(func) - (since 5.0.0)
+#### unstable_autotrackMemoize(func) - (since 5.0.0)
 
 <b>Description</b>
 
-Uses an "auto-tracking" approach inspired by the work of the Ember Glimmer team. It uses a Proxy to wrap arguments and track accesses to nested fields in your selector on first read. Later, when the selector is called with new arguments, it identifies which accessed fields have changed and only recalculates the result if one or more of those accessed fields have changed. This allows it to be more precise than the shallow equality checks in defaultMemoize.
+Uses an "auto-tracking" approach inspired by the work of the Ember Glimmer team. It uses a Proxy to wrap arguments and track accesses to nested fields in your selector on first read. Later, when the selector is called with new arguments, it identifies which accessed fields have changed and only recalculates the result if one or more of those accessed fields have changed. This allows it to be more precise than the shallow equality checks in `defaultMemoize`.
+
+> [!WARNING]
+> This API is still experimental and undergoing testing.
 
 <details><summary><b>Design Tradeoffs</b></summary>
 
 - Pros:
+
   - It is likely to avoid excess calculations and recalculate fewer times than `defaultMemoize` will, which may also result in fewer component re-renders.
+
 - Cons:
 
   - It only has a cache size of 1.
@@ -1098,7 +1103,7 @@ const selectCompletedTodosLength = createSelector(
 
 - **Memoization Functions**:
 
-  - Introduced new experimental memoization functions: `weakMapMemoize` and `autotrackMemoize`.
+  - Introduced new experimental memoization functions: `weakMapMemoize` and `unstable_autotrackMemoize`.
   - Incorporated `memoize` and `argsMemoize` into the [output selector fields] for debugging purposes.
 
 - **TypeScript Support and Performance**:
@@ -1819,7 +1824,7 @@ Originally inspired by getters in [NuclearJS](https://github.com/optimizely/nucl
 [`createSelectorCreator`]: #createselectorcreatormemoize--options-memoizeoptions 'createSelectorCreator'
 [`defaultMemoize`]: #defaultmemoizefunc-equalitycheckoroptions--defaultequalitycheck 'defaultMemoize'
 [`weakMapMemoize`]: #weakmapmemoizefunc---since-500 'weakMapMemoize'
-[`autotrackMemoize`]: #autotrackmemoizefunc---since-500 'autotrackMemoize'
+[`unstable_autotrackMemoize`]: #unstable_autotrackmemoizefunc---since-500 'unstable_autotrackMemoize'
 [`createStructuredSelector`]: #createstructuredselector-inputselectors--selectorcreator--createselector 'createStructuredSelector'
 [`createCurriedSelector`]: #createcurriedselectorinputselectors--inputselectors-resultfunc-createselectoroptions 'createCurriedSelector'
 
