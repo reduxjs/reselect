@@ -4,17 +4,17 @@
 
 A library for creating memoized "selector" functions. Commonly used with Redux, but usable with any plain JS immutable data as well.
 
-- Selectors can compute derived data, allowing `Redux` to store the minimal possible state.
+- Selectors can compute derived data, allowing [Redux] to store the minimal possible state.
 - Selectors are efficient. A selector is not recomputed unless one of its arguments changes.
 - Selectors are composable. They can be used as input to other selectors.
 
-The **Redux docs usage page on [Deriving Data with Selectors](https://redux.js.org/usage/deriving-data-selectors)** covers the purpose and motivation for selectors, why memoized selectors are useful, typical `Reselect` usage patterns, and using selectors with `React-Redux`.
+The **Redux docs usage page on [Deriving Data with Selectors](https://redux.js.org/usage/deriving-data-selectors)** covers the purpose and motivation for selectors, why memoized selectors are useful, typical Reselect usage patterns, and using selectors with [React-Redux].
 
 ## Installation
 
 ### Redux Toolkit
 
-While `Reselect` is not exclusive to `Redux`, it is already included by default in [the official Redux Toolkit package](https://redux-toolkit.js.org) - no further installation needed.
+While Reselect is not exclusive to [Redux], it is already included by default in [the official Redux Toolkit package](https://redux-toolkit.js.org) - no further installation needed.
 
 ```ts
 import { createSelector } from '@reduxjs/toolkit'
@@ -22,7 +22,7 @@ import { createSelector } from '@reduxjs/toolkit'
 
 ### Standalone
 
-For standalone usage, install the `Reselect` package:
+For standalone usage, install the `reselect` package:
 
 #### Using `npm`
 
@@ -52,7 +52,7 @@ pnpm add reselect
 
 ## Basic Usage
 
-`Reselect` exports a [`createSelector`] API, which generates memoized selector functions. [`createSelector`] accepts one or more [`input selectors`], which extract values from arguments, and a [`combiner`] function that receives the extracted values and should return a derived value. If the generated [`output selector`] is called multiple times, the output will only be recalculated when the extracted values have changed.
+Reselect exports a [`createSelector`] API, which generates memoized selector functions. [`createSelector`] accepts one or more [input selectors], which extract values from arguments, and a [result function] function that receives the extracted values and should return a derived value. If the generated [output selector] is called multiple times, the output will only be recalculated when the extracted values have changed.
 
 You can play around with the following **example** in [this CodeSandbox](https://codesandbox.io/s/reselect-example-g3k9gf?file=/src/index.js):
 
@@ -105,7 +105,7 @@ console.log(
 
 As you can see from the example above, `memoizedSelectCompletedTodos` does not run the second or third time, but we still get the same return value as last time.
 
-Another difference is that with `memoizedSelectCompletedTodos` the referential integrity of the return value is also maintained through multiple calls of the selector, but the same cannot be said about the first example.
+In addition to skipping unnecessary recalculations, `memoizedSelectCompletedTodos` returns the existing result reference if there is no recalculation. This is important for libraries like [React-Redux] or [React] that often rely on reference equality checks to optimize UI updates.
 
 ---
 
@@ -116,10 +116,10 @@ Another difference is that with `memoizedSelectCompletedTodos` the referential i
   - [Standalone](#standalone)
 - [Basic Usage](#basic-usage)
 - [Terminology](#terminology)
-- [How Does `Reselect` Work?](#how-does-reselect-work)
+- [How Does Reselect Work?](#how-does-reselect-work)
   - [Cascading Memoization](#cascading-memoization)
-  - [`Reselect` Vs Standard Memoization](#reselect-vs-standard-memoization)
-  - [Why `Reselect` Is Often Used With `Redux`](#why-reselect-is-often-used-with-redux)
+  - [Reselect Vs Standard Memoization](#reselect-vs-standard-memoization)
+  - [Why Reselect Is Often Used With [Redux]](#why-reselect-is-often-used-with-redux)
 - [API](#api)
   - [**`createSelector`**][`createSelector`]
   - [**`defaultMemoize`**][`defaultMemoize`]
@@ -130,11 +130,11 @@ Another difference is that with `memoizedSelectCompletedTodos` the referential i
   - [**`createCurriedSelector`**][`createCurriedSelector`]
 - [Debugging Tools](#debuggingtools)
 - [What's New in 5.0.0?](#v5summary)
-- [Optimizing `Reselect`](#optimizing-reselect)
+- [Optimizing Reselect](#optimizing-reselect)
 - [FAQ](#faq)
   - [Why isn’t my selector recomputing when the input state changes?](#why-isnt-my-selector-recomputing-when-the-input-state-changes)
   - [Why is my selector recomputing when the input state stays the same?](#why-is-my-selector-recomputing-when-the-input-state-stays-the-same)
-  - [Can I use `Reselect` without `Redux`?](#can-i-use-reselect-without-redux)
+  - [Can I use Reselect without [Redux]?](#can-i-use-reselect-without-redux)
   - [How do I create a selector that takes an argument?](#how-do-i-create-a-selector-that-takes-an-argument)
   - [The default memoization function is no good, can I use a different one?](#the-default-memoization-function-is-no-good-can-i-use-a-different-one)
   - [How do I test a selector?](#how-do-i-test-a-selector)
@@ -155,19 +155,18 @@ Another difference is that with `memoizedSelectCompletedTodos` the referential i
 
 <details><summary><b>Click to expand</b></summary>
 
-- <a name="selector-function"></a>[**`Selector Function`**](#selector-function): A function that takes the `Redux` store state (or a part of it) as an argument and returns data derived from that state.
-- <a name="input-selectors"></a>[**`input selectors`**](#input-selectors): Basic selector functions used as building blocks for creating a memoized selector. They are passed as the first argument(s) to [`createSelector`].
-- <a name="output-selector"></a>[**`Output Selector`**](#output-selector): The actual memoized selectors created by [`createSelector`].
-- <a name="result-function"></a>[**`Result Function (Combiner)`**](#result-function): The function that comes after the [`input selectors`]. It takes the [`input selectors`]' return values as arguments and returns a result. Otherwise known as the `combiner`.
-- <a name="combiner"></a>[**`Combiner`**](#combiner): A function that takes [`input selectors`]' return values as arguments and returns a result (This function comes after the [`input selectors`] inside [`createSelector`]). This term is somewhat interchangeably used with `Result Function` or `resultFunc`. But `combiner` is more of a general term and `resultFunc` is more specific to `Reselect`. So the `resultFunc` is a `combiner` but a `combiner` is not necessarily the same as `resultFunc`. For the sake of simplicity, they are used synonymously throughout this documentation.
-- <a name="dependencies"></a>[**`Dependencies`**](#dependencies): Same as [`input selectors`]. They are what the [`output selector`] "depends" on.
+- <a name="selector-function"></a>[**Selector Function**](#selector-function): A function that accepts one or more JavaScript values as arguments, and derives a result. When used with [Redux], the first argument is typically the entire Redux store state.
+- <a name="input-selectors"></a>[**input selectors**](#input-selectors): Basic selector functions used as building blocks for creating a memoized selector. They are passed as the first argument(s) to [`createSelector`], and are called with all selector arguments. They are responsible for extracting and providing necessary values to the [result function].
+- <a name="output-selector"></a>[**Output Selector**](#output-selector): The actual memoized selectors created by [`createSelector`].
+- <a name="result-function"></a>[**Result Function**](#result-function): The function that comes after the [input selectors]. It takes the [input selectors]' return values as arguments and returns a result.
+- <a name="dependencies"></a>[**`Dependencies`**](#dependencies): Same as [input selectors]. They are what the [output selector] "depends" on.
 
 The below example serves as a visual aid:
 
 ```ts
 const outputSelector = createSelector(
   [inputSelector1, inputSelector2, inputSelector3], // synonymous with `dependencies`.
-  combiner // synonymous with `Result Function` or `resultFunc`.
+  resultFunc // Result function
 )
 ```
 
@@ -177,7 +176,7 @@ const outputSelector = createSelector(
 
 ---
 
-## How Does `Reselect` Work?
+## How Does Reselect Work?
 
 <a id="cascadingmemoization"></a>
 
@@ -185,29 +184,29 @@ const outputSelector = createSelector(
 
 <details><summary><b>Click to expand</b></summary>
 
-The way `Reselect` works can be broken down into multiple parts:
+The way Reselect works can be broken down into multiple parts:
 
-1. **Initial Run**: On the first call, `Reselect` runs all the [`input selectors`], gathers their results, and passes them to the [`result function`].
+1. **Initial Run**: On the first call, Reselect runs all the [input selectors], gathers their results, and passes them to the [result function].
 
-2. **Subsequent Runs**: For subsequent calls, `Reselect` performs two levels of checks:
+2. **Subsequent Runs**: For subsequent calls, Reselect performs two levels of checks:
 
    - **First Level**: It compares the current arguments with the previous ones (done by `argsMemoize`).
 
-     - If they're the same, it returns the cached result without running the [`input selectors`] or the [`result function`].
+     - If they're the same, it returns the cached result without running the [input selectors] or the [result function].
 
      - If they differ, it proceeds to the second level.
 
-   - **Second Level**: It runs the [`input selectors`] and compares their current results with the previous ones (done by `memoize`).
+   - **Second Level**: It runs the [input selectors] and compares their current results with the previous ones (done by `memoize`).
      > [!NOTE]
-     > If any one of the [`input selectors`] return a different result, all [`input selectors`] will recalculate.
-     - If the results are the same, it returns the cached result without running the [`result function`].
-     - If the results differ, it runs the [`result function`].
+     > If any one of the [input selectors] return a different result, all [input selectors] will recalculate.
+     - If the results are the same, it returns the cached result without running the [result function].
+     - If the results differ, it runs the [result function].
 
 This behavior is what we call **_Cascading Double-Layer Memoization_**.
 
 </details>
 
-### `Reselect` Vs Standard Memoization
+### Reselect Vs Standard Memoization
 
 <details><summary><b>Click to expand</b></summary>
 
@@ -217,20 +216,20 @@ This behavior is what we call **_Cascading Double-Layer Memoization_**.
 
 _Standard memoization only compares arguments. If they're the same, it returns the cached result._
 
-##### Memoization with `Reselect`
+##### Memoization with Reselect
 
 ![reselect-memoization](docs/assets//reselect-memoization.png)
 
-_`Reselect` adds a second layer of checks with the [`input selectors`]. This is crucial in `Redux` applications where state references change frequently._
+_Reselect adds a second layer of checks with the [input selectors]. This is crucial in [Redux] applications where state references change frequently._
 
-A normal [memoization] function will compare the arguments, and if they are the same as last time, it will skip running the function and return the cached result. However, `Reselect` enhances this by introducing a second tier of checks via its [`input selectors`]. It's possible that the arguments passed to these [`input selectors`] may change, yet their results remain the same. When this occurs, `Reselect` avoids re-executing the [`result function`], and returns the cached result.
+A normal [memoization] function will compare the arguments, and if they are the same as last time, it will skip running the function and return the cached result. However, Reselect enhances this by introducing a second tier of checks via its [input selectors]. It's possible that the arguments passed to these [input selectors] may change, yet their results remain the same. When this occurs, Reselect avoids re-executing the [result function], and returns the cached result.
 
-This feature becomes crucial in `Redux` applications, where the `state` changes its reference anytime an `action` is dispatched.
+This feature becomes crucial in [Redux] applications, where the `state` changes its reference anytime an `action` is dispatched.
 
 > [!NOTE]
-> The [`input selectors`] take the same arguments as the [`output selector`].
+> The [input selectors] take the same arguments as the [output selector].
 
-### Why `Reselect` Is Often Used With `Redux`
+### Why Reselect Is Often Used With [Redux]
 
 Imagine you have a selector like this:
 
@@ -262,9 +261,9 @@ store.dispatch(toggleRead(0))
 selectCompletedTodos(store.getState()) // It recalculates.
 ```
 
-But why? `selectCompletedTodos` only needs to access `state.todos`, and has nothing to do with `state.alerts`, so why have we broken memoization? Well that's because in `Redux` anytime you make a change to the root `state`, it gets shallowly updated, which means its reference changes, therefore a normal memoization function will always fail the comparison check on the arguments.
+But why? `selectCompletedTodos` only needs to access `state.todos`, and has nothing to do with `state.alerts`, so why have we broken memoization? Well that's because in [Redux] anytime you make a change to the root `state`, it gets shallowly updated, which means its reference changes, therefore a normal memoization function will always fail the comparison check on the arguments.
 
-But with `Reselect`, we can do something like this:
+But with Reselect, we can do something like this:
 
 ```ts
 const selectCompletedTodos = createSelector(
@@ -282,7 +281,7 @@ store.dispatch(toggleRead(0))
 selectCompletedTodos(store.getState()) // The `input selectors` will run, But the `result function` is skipped and the cached result will be returned.
 ```
 
-Even when the overall `state` changes, `Reselect` ensures efficient memoization through its unique approach. The [`result function`] doesn't re-run if the relevant part of the `state` (in this case `state.todos`), remains unchanged. This is due to `Reselect`'s [**_Cascading Double-Layer Memoization_**][**_Cascading Memoization_**]. The first layer checks the entire `state`, and the second layer checks the results of the [`input selectors`]. If the first layer fails (due to a change in the overall `state`) but the second layer succeeds (because `state.todos` is unchanged), `Reselect` skips recalculating the [`result function`]. This dual-check mechanism makes `Reselect` particularly effective in `Redux` applications, ensuring computations are only done when truly necessary.
+Even when the overall `state` changes, Reselect ensures efficient memoization through its unique approach. The [result function] doesn't re-run if the relevant part of the `state` (in this case `state.todos`), remains unchanged. This is due to Reselect's [**_Cascading Double-Layer Memoization_**][**_Cascading Memoization_**]. The first layer checks the entire `state`, and the second layer checks the results of the [input selectors]. If the first layer fails (due to a change in the overall `state`) but the second layer succeeds (because `state.todos` is unchanged), Reselect skips recalculating the [result function]. This dual-check mechanism makes Reselect particularly effective in [Redux] applications, ensuring computations are only done when truly necessary.
 
 </details>
 
@@ -298,25 +297,25 @@ Even when the overall `state` changes, `Reselect` ensures efficient memoization 
 
 <details><summary><b>Description</b></summary>
 
-Accepts one or more ["input selectors"][`input selectors`] (either as separate arguments or a single array),
-a single ["result function"][`result function`] / ["combiner"][`combiner`], and an optional options object, and
+Accepts one or more "[input selectors]" (either as separate arguments or a single array),
+a single "[result function]", and an optional options object, and
 generates a memoized selector function.
 
 </details>
 
 <details><summary><b>Parameters</b></summary>
 
-| Name                     | Description                                                                                      |
-| :----------------------- | :----------------------------------------------------------------------------------------------- |
-| `inputSelectors`         | An array of [`input selectors`], can also be passed as separate arguments.                       |
-| `combiner`               | A [`combiner`] function that takes the results of the [`input selectors`] as separate arguments. |
-| `createSelectorOptions?` | An optional options object that allows for further customization per selector.                   |
+| Name                     | Description                                                                       |
+| :----------------------- | :-------------------------------------------------------------------------------- |
+| `inputSelectors`         | An array of [input selectors], can also be passed as separate arguments.          |
+| `resultFunc`             | A function that takes the results of the [input selectors] as separate arguments. |
+| `createSelectorOptions?` | An optional options object that allows for further customization per selector.    |
 
 </details>
 
 <details><summary><b>Returns</b></summary>
 
-A memoized [`output selector`].
+A memoized [output selector].
 
 </details>
 
@@ -324,8 +323,8 @@ A memoized [`output selector`].
 
 | Name                          | Description                                                                                                                                                                                            |
 | :---------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `InputSelectors`              | The type of the [`input selectors`] array.                                                                                                                                                             |
-| `Result`                      | The return type of the [`combiner`] as well as the [`output selector`].                                                                                                                                |
+| `InputSelectors`              | The type of the [input selectors] array.                                                                                                                                                               |
+| `Result`                      | The return type of the [result function] as well as the [output selector].                                                                                                                             |
 | `OverrideMemoizeFunction`     | The type of the optional `memoize` function that could be passed into the options object to override the original `memoize` function that was initially passed into [`createSelectorCreator`].         |
 | `OverrideArgsMemoizeFunction` | The type of the optional `argsMemoize` function that could be passed into the options object to override the original `argsMemoize` function that was initially passed into [`createSelectorCreator`]. |
 
@@ -789,7 +788,7 @@ Accepts either a `memoize` function and `...memoizeOptions` rest parameter, or *
 | Name                           | Description                                                                                                                                                                                                                                                                                                               |
 | :----------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `options`                      | An options object containing the `memoize` function responsible for memoizing the `resultFunc` inside [`createSelector`] (e.g., `defaultMemoize` or `weakMapMemoize`). It also provides additional options for customizing memoization. While the `memoize` property is mandatory, the rest are optional.                 |
-| `options.argsMemoize?`         | The optional memoize function that is used to memoize the arguments passed into the `output selector` generated by [`createSelector`] (e.g., `defaultMemoize` or `weakMapMemoize`). <br /> **`Default`** `defaultMemoize`                                                                                                 |
+| `options.argsMemoize?`         | The optional memoize function that is used to memoize the arguments passed into the [output selector] generated by [`createSelector`] (e.g., `defaultMemoize` or `weakMapMemoize`). <br /> **`Default`** `defaultMemoize`                                                                                                 |
 | `options.argsMemoizeOptions?`  | Optional configuration options for the `argsMemoize` function. These options are passed to the `argsMemoize` function as the second argument. <br /> **`Since`** 5.0.0                                                                                                                                                    |
 | `options.inputStabilityCheck?` | Overrides the global input stability check for the selector. Possible values are: <br /> `once` - Run only the first time the selector is called. <br /> `always` - Run every time the selector is called. <br /> `never` - Never run the input stability check. <br /> **`Default`** = `'once'` <br /> **`Since`** 5.0.0 |
 | `options.memoize`              | The memoize function that is used to memoize the `resultFunc` inside [`createSelector`] (e.g., `defaultMemoize` or `weakMapMemoize`). **`Since`** 5.0.0                                                                                                                                                                   |
@@ -814,10 +813,10 @@ A customized [`createSelector`] function.
 
 <details><summary><b>Type parameters</b></summary>
 
-| Name                  | Description                                                                                                                                                                                                                                                  |
-| :-------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `MemoizeFunction`     | The type of the memoize function that is used to memoize the `resultFunc` inside [`createSelector`] (e.g., `defaultMemoize` or `weakMapMemoize`).                                                                                                            |
-| `ArgsMemoizeFunction` | The type of the optional memoize function that is used to memoize the arguments passed into the output selector generated by [`createSelector`] (e.g., `defaultMemoize` or `weakMapMemoize`). If none is explicitly provided, `defaultMemoize` will be used. |
+| Name                  | Description                                                                                                                                                                                                                                                    |
+| :-------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `MemoizeFunction`     | The type of the memoize function that is used to memoize the `resultFunc` inside [`createSelector`] (e.g., `defaultMemoize` or `weakMapMemoize`).                                                                                                              |
+| `ArgsMemoizeFunction` | The type of the optional memoize function that is used to memoize the arguments passed into the [output selector] generated by [`createSelector`] (e.g., `defaultMemoize` or `weakMapMemoize`). If none is explicitly provided, `defaultMemoize` will be used. |
 
 </details>
 
@@ -922,8 +921,8 @@ const selector = customSelectorCreator(
 
 <details><summary><b>Description</b></summary>
 
-A convenience function for a common pattern that arises when using `Reselect`.
-The selector passed to a `connect` decorator often just takes the values of its [`input selectors`]
+A convenience function for a common pattern that arises when using Reselect.
+The selector passed to a `connect` decorator often just takes the values of its [input selectors]
 and maps them to keys in an object.
 
 </details>
@@ -947,7 +946,7 @@ A memoized structured selector.
 
 | Name                   | Description                                                                                                                                                   |
 | :--------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `InputSelectorsObject` | The shape of the [`input selectors`] object.                                                                                                                  |
+| `InputSelectorsObject` | The shape of the [input selectors] object.                                                                                                                    |
 | `MemoizeFunction`      | The type of the memoize function that is used to create the structured selector. It defaults to `defaultMemoize`.                                             |
 | `ArgsMemoizeFunction`  | The type of the of the memoize function that is used to memoize the arguments passed into the generated structured selector. It defaults to `defaultMemoize`. |
 
@@ -1037,7 +1036,7 @@ const result = structuredSelector({ a: 1, b: 2 }) // will produce { x: 1, y: 2 }
 
 #### `inputStabilityCheck`
 
-Due to how [`Cascading Memoization`][**_Cascading Memoization_**] works in `Reselect`, it is crucial that your [`input selectors`] do not return a new reference on each run. If an [`input selector`][`input selectors`] always returns a new reference, like
+Due to how [**_Cascading Memoization_**] works in Reselect, it is crucial that your [input selectors] do not return a new reference on each run. If an [input selector][input selectors] always returns a new reference, like
 
 ```ts
 state => ({ a: state.a, b: state.b })
@@ -1050,7 +1049,7 @@ state => state.todos.map(todo => todo.id)
 ```
 
 that will cause the selector to never memoize properly.
-Since this is a common mistake, we've added a development mode check to catch this. By default, [`createSelector`] will now run the [`input selectors`] twice during the first call to the selector. If the result appears to be different for the same call, it will log a warning with the arguments and the two different sets of extracted input values.
+Since this is a common mistake, we've added a development mode check to catch this. By default, [`createSelector`] will now run the [input selectors] twice during the first call to the selector. If the result appears to be different for the same call, it will log a warning with the arguments and the two different sets of extracted input values.
 
 ```ts
 type StabilityCheckFrequency = 'always' | 'once' | 'never'
@@ -1071,7 +1070,7 @@ You can configure this behavior in two ways:
 
 ##### 1. Globally through `setInputStabilityCheckEnabled`:
 
-A `setInputStabilityCheckEnabled` function is exported from `Reselect`, which should be called with the desired setting.
+A `setInputStabilityCheckEnabled` function is exported from Reselect, which should be called with the desired setting.
 
 ```ts
 import { setInputStabilityCheckEnabled } from 'reselect'
@@ -1111,20 +1110,20 @@ const selectCompletedTodosLength = createSelector(
 
 ### Output Selector Fields
 
-<details><summary><b>The <code>output selectors</code> created by <code>createSelector</code> have several additional properties attached to them:</b></summary>
+<details><summary><b>The output selectors created by <code>createSelector</code> have several additional properties attached to them:</b></summary>
 
-| Name                            | Description                                                                                                                                                                                       |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `resultFunc`                    | The final function passed to [`createSelector`]. Otherwise known as the `combiner`.                                                                                                               |
-| `memoizedResultFunc`            | The memoized version of `resultFunc`.                                                                                                                                                             |
-| `lastResult`                    | Returns The last result calculated by `memoizedResultFunc`.                                                                                                                                       |
-| `dependencies`                  | The array of the input selectors used by [`createSelector`] to compose the combiner (`memoizedResultFunc`).                                                                                       |
-| `recomputations`                | Counts the number of times `memoizedResultFunc` has been recalculated.                                                                                                                            |
-| `resetRecomputations`           | Resets the count of `recomputations` count to 0.                                                                                                                                                  |
-| `dependencyRecomputations`      | Counts the number of times the [`input selectors`] ([`dependencies`]) have been recalculated. This is distinct from `recomputations`, which tracks the recalculations of the [`result function`]. |
-| `resetDependencyRecomputations` | Resets the `dependencyRecomputations` count to 0.                                                                                                                                                 |
-| `memoize`                       | Function used to memoize the `resultFunc`.                                                                                                                                                        |
-| `argsMemoize`                   | Function used to memoize the arguments passed into the [`output selector`].                                                                                                                       |
+| Name                            | Description                                                                                                                                                                                   |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `resultFunc`                    | The final function passed to [`createSelector`].                                                                                                                                              |
+| `memoizedResultFunc`            | The memoized version of `resultFunc`.                                                                                                                                                         |
+| `lastResult`                    | Returns The last result calculated by `memoizedResultFunc`.                                                                                                                                   |
+| `dependencies`                  | The array of the input selectors used by [`createSelector`] to compose `resultFunc`.                                                                                                          |
+| `recomputations`                | Counts the number of times `memoizedResultFunc` has been recalculated.                                                                                                                        |
+| `resetRecomputations`           | Resets the count of `recomputations` count to 0.                                                                                                                                              |
+| `dependencyRecomputations`      | Counts the number of times the [input selectors] ([`dependencies`]) have been recalculated. This is distinct from `recomputations`, which tracks the recalculations of the [result function]. |
+| `resetDependencyRecomputations` | Resets the `dependencyRecomputations` count to 0.                                                                                                                                             |
+| `memoize`                       | Function used to memoize the `resultFunc`.                                                                                                                                                    |
+| `argsMemoize`                   | Function used to memoize the arguments passed into the [output selector].                                                                                                                     |
 
 </details>
 
@@ -1146,12 +1145,12 @@ const selectCompletedTodosLength = createSelector(
 - **Memoization Functions**:
 
   - Introduced new experimental memoization functions: `weakMapMemoize` and `autotrackMemoize`.
-  - Incorporated `memoize` and `argsMemoize` into the [`output selector fields`] for debugging purposes.
+  - Incorporated `memoize` and `argsMemoize` into the [output selector fields] for debugging purposes.
 
 - **TypeScript Support and Performance**:
 
-  - Discontinued support for `TypeScript` versions below 4.7, aligning with modern `TypeScript` features.
-  - Significantly improved `TypeScript` performance for nesting `output selectors`. The nesting limit has increased from approximately 8 to around 30 `output selectors`, greatly reducing the occurrence of the infamous `Type instantiation is excessively deep and possibly infinite` error.
+  - Discontinued support for TypeScript versions below 4.7, aligning with modern TypeScript features.
+  - Significantly improved TypeScript performance for nesting [output selector]s. The nesting limit has increased from approximately 8 to around 30 [output selector]s, greatly reducing the occurrence of the infamous `Type instantiation is excessively deep and possibly infinite` error.
 
 - **Selector API Enhancements**:
 
@@ -1161,8 +1160,8 @@ const selectCompletedTodosLength = createSelector(
 
 - **Additional Functionalities**:
 
-  - Added `dependencyRecomputations` and `resetDependencyRecomputations` to the [`output selector fields`]. These additions provide greater control and insight over [`input selectors`], complementing the new `argsMemoize` API.
-  - Introduced `inputStabilityCheck`, a development tool that runs the [`input selectors`] twice using the same arguments and triggers a warning If they return differing results for the same call.
+  - Added `dependencyRecomputations` and `resetDependencyRecomputations` to the [output selector fields]. These additions provide greater control and insight over [input selectors], complementing the new `argsMemoize` API.
+  - Introduced `inputStabilityCheck`, a development tool that runs the [input selectors] twice using the same arguments and triggers a warning If they return differing results for the same call.
 
 These updates aim to enhance flexibility, performance, and developer experience. For detailed usage and examples, refer to the updated documentation sections for each feature.
 
@@ -1174,13 +1173,13 @@ These updates aim to enhance flexibility, performance, and developer experience.
 
 <a id="optimizingreselect"></a>
 
-## Optimizing `Reselect`
+## Optimizing Reselect
 
 ### Common Mistakes
 
 <details><summary><b>Click to expand</b></summary>
 
-A somewhat common mistake is to write an [`input selector`][`input selectors`] that extracts a value or does some derivation, and a [`result function`] that just returns its result:
+A somewhat common mistake is to write an [input selector][input selectors] that extracts a value or does some derivation, and a [result function] that just returns its result:
 
 ```ts
 // ❌ BROKEN: this will not memoize correctly, and does nothing useful!
@@ -1190,7 +1189,7 @@ const brokenSelector = createSelector(
 )
 ```
 
-Any [`result function`] that just returns its inputs is incorrect! The [`result function`] should always have the transformation logic.
+Any [result function] that just returns its inputs is incorrect! The [result function] should always have the transformation logic.
 
 Similarly:
 
@@ -1250,7 +1249,7 @@ const selectCompletedTodos = createSelector(
 )
 ```
 
-This way if the [`result function`] returns an empty array twice in a row, your component will not re-render due to a stable empty array reference:
+This way if the [result function] returns an empty array twice in a row, your component will not re-render due to a stable empty array reference:
 
 ```ts
 const completedTodos = selectCompletedTodos(store.getState())
@@ -1266,12 +1265,12 @@ console.log(completedTodos === selectCompletedTodos(store.getState())) //=> true
 
 <details><summary><b>Click to expand</b></summary>
 
-There are a few details that will help you skip running as many functions as possible and get the best possible performance out of `Reselect`:
+There are a few details that will help you skip running as many functions as possible and get the best possible performance out of Reselect:
 
-- Due to the [`Cascading Memoization`][**_Cascading Memoization_**] in `Reselect`, The first layer of checks is upon the arguments that are passed to the [`output selector`], therefore it's best to maintain the same reference for the arguments as much as possible.
-- In `Redux`, your state will change reference when updated. But it's best to keep the additional arguments as simple as possible, you can pass in objects or array as long as their reference does not change. Or you can pass in primitives like numbers for ids.
-- Keep your [`input selectors`] as simple as possible. It's best if they mostly consist of field accessors like `state => state.todos` or argument providers like `(state, id) => id`. You should not be doing any sort of calculation inside [`input selectors`], and you should definitely not be returning an object or array with a new reference each time.
-- The [`result function`] is only re-run as a last resort. So make sure to put any and all calculations inside your [`result function`]. That way, `Reselect` will only run those calculations if all other checks fail.
+- Due to the [**_Cascading Memoization_**] in Reselect, The first layer of checks is upon the arguments that are passed to the [output selector], therefore it's best to maintain the same reference for the arguments as much as possible.
+- In [Redux], your state will change reference when updated. But it's best to keep the additional arguments as simple as possible, you can pass in objects or array as long as their reference does not change. Or you can pass in primitives like numbers for ids.
+- Keep your [input selectors] as simple as possible. It's best if they mostly consist of field accessors like `state => state.todos` or argument providers like `(state, id) => id`. You should not be doing any sort of calculation inside [input selectors], and you should definitely not be returning an object or array with a new reference each time.
+- The [result function] is only re-run as a last resort. So make sure to put any and all calculations inside your [result function]. That way, Reselect will only run those calculations if all other checks fail.
 
 This:
 
@@ -1346,7 +1345,7 @@ const selectCompletedTodos = createSelector(
 
 <details><summary><b>Answer</b></summary>
 
-Check that your memoization function is compatible with your state update function (i.e. the reducer if you are using `Redux`). For example, a selector created with [`createSelector`] will not work with a state update function that mutates an existing object instead of creating a new one each time. [`createSelector`] uses an identity check (`===`) to detect that an input has changed, so mutating an existing object will not trigger the selector to recompute because mutating an object does not change its identity. Note that if you are using `Redux`, mutating the state object is [almost certainly a mistake](http://redux.js.org/docs/Troubleshooting.html).
+Check that your memoization function is compatible with your state update function (i.e. the reducer if you are using [Redux]). For example, a selector created with [`createSelector`] will not work with a state update function that mutates an existing object instead of creating a new one each time. [`createSelector`] uses an identity check (`===`) to detect that an input has changed, so mutating an existing object will not trigger the selector to recompute because mutating an object does not change its identity. Note that if you are using [Redux], mutating the state object is [almost certainly a mistake](http://redux.js.org/docs/Troubleshooting.html).
 
 </details>
 
@@ -1354,9 +1353,9 @@ Check that your memoization function is compatible with your state update functi
 
 <details><summary><b>Answer</b></summary>
 
-To address unexpected recomputations in your selector, first ensure that `inputStabilityCheck` is set to either `'always'` or `'once'`. This setting aids in debugging by monitoring the stability of your inputs. Additionally, utilize [`output selector fields`] such as `recomputations`, `resetRecomputations`, `dependencyRecomputations`, and `resetDependencyRecomputations`. These tools help identify the source of the issue.
+To address unexpected recomputations in your selector, first ensure that `inputStabilityCheck` is set to either `'always'` or `'once'`. This setting aids in debugging by monitoring the stability of your inputs. Additionally, utilize [output selector fields] such as `recomputations`, `resetRecomputations`, `dependencyRecomputations`, and `resetDependencyRecomputations`. These tools help identify the source of the issue.
 
-Keep an eye on the `dependencyRecomputations` count. If it increases while `recomputations` remains the same, it suggests that your arguments are changing references but your [`input selectors`] are stable which is typically the desired behavior.
+Keep an eye on the `dependencyRecomputations` count. If it increases while `recomputations` remains the same, it suggests that your arguments are changing references but your [input selectors] are stable which is typically the desired behavior.
 
 To delve deeper, you can determine which arguments are changing references too frequently by using the `argsMemoizeOptions` and `equalityCheck`. Consider the following example:
 
@@ -1374,7 +1373,7 @@ const selectAlertsByType = createSelector(
   (alerts, type) => alerts.filter(todo => todo.type === type),
   {
     argsMemoizeOptions: {
-      // This will check the arguments passed to the `output selector`.
+      // This will check the arguments passed to the output selector.
       equalityCheck: (a, b) => {
         if (a !== b) {
           console.log('Changed argument:', a, 'to', b)
@@ -1388,11 +1387,11 @@ const selectAlertsByType = createSelector(
 
 </details>
 
-### Can I use `Reselect` without `Redux`?
+### Can I use Reselect without [Redux]?
 
 <details><summary><b>Answer</b></summary>
 
-Yes. `Reselect` has no dependencies on any other package, so although it was designed to be used with `Redux` it can be used independently. It can be used with any plain JS data, such as typical `React` state values, as long as that data is being updated immutably.
+Yes. Reselect has no dependencies on any other package, so although it was designed to be used with [Redux] it can be used independently. It can be used with any plain JS data, such as typical [React] state values, as long as that data is being updated immutably.
 
 </details>
 
@@ -1400,11 +1399,11 @@ Yes. `Reselect` has no dependencies on any other package, so although it was des
 
 <details><summary><b>Answer</b></summary>
 
-When creating a selector that accepts arguments in `Reselect`, it's important to structure your input and [`output selectors`][Output Selectors] appropriately. Here are key points to consider:
+When creating a selector that accepts arguments in Reselect, it's important to structure your input and [output selector]s appropriately. Here are key points to consider:
 
-1. **Consistency in Arguments**: Ensure that all positional arguments across [`input selectors`] are of the same type for consistency.
+1. **Consistency in Arguments**: Ensure that all positional arguments across [input selectors] are of the same type for consistency.
 
-2. **Selective Argument Usage**: Design each selector to use only its relevant argument(s) and ignore the rest. This is crucial because all [`input selectors`] receive the same arguments that are passed to the [`output selector`][Output Selectors].
+2. **Selective Argument Usage**: Design each selector to use only its relevant argument(s) and ignore the rest. This is crucial because all [input selectors] receive the same arguments that are passed to the [output selector].
 
 Suppose we have the following state structure:
 
@@ -1437,7 +1436,7 @@ const selectAvailableItems = createSelector(
 )
 ```
 
-Internally `Reselect` is doing this:
+Internally Reselect is doing this:
 
 ```ts
 // Input selector #1
@@ -1446,9 +1445,9 @@ const items = (state: RootState, category: string, id: number) => state.items
 const category = (state: RootState, category: string, id: number) => category
 // Input selector #3
 const id = (state: RootState, category: string, id: number) => id
-// result of `output selector`
+// result of output selector
 const finalResult =
-  // The `Result Function`
+  // The result function
   items.filter(item => item.category === category && item.id !== id)
 ```
 
@@ -1566,7 +1565,7 @@ Yes, as of 5.0.0 you can use [`weakMapMemoize`](#weakmapmemoizefunc---since-500)
 
 <details><summary><b>Answer</b></summary>
 
-Yes! `Reselect` is now written in `TypeScript` itself, so they should Just Work™.
+Yes! Reselect is now written in TypeScript itself, so they should Just Work™.
 
 </details>
 
@@ -1624,7 +1623,7 @@ Now you can do this:
 const selectTodo = useSelector(curriedSelector(id))
 ```
 
-Another thing you can do if you are using `React-Redux` is create a custom hook factory function:
+Another thing you can do if you are using [React-Redux] is create a custom hook factory function:
 
 ```ts
 import type { GetParamsFromSelectors, Selector } from 'reselect'
@@ -1746,7 +1745,7 @@ export type TypedCreateSelector<
 export const createAppSelector: TypedCreateSelector<RootState> = createSelector
 ```
 
-> [!WARNING]: This approach currently only supports [`input selectors`] provided as a single array.
+> [!WARNING]: This approach currently only supports [input selectors] provided as a single array.
 
 </details>
 
@@ -1788,7 +1787,7 @@ const createNonMemoizedSelector = createSelectorCreator({
 
 ### [re-reselect](https://github.com/toomuchdesign/re-reselect)
 
-Enhances `Reselect` selectors by wrapping [`createSelector`] and returning a memoized collection of selectors indexed with the cache key returned by a custom resolver function.
+Enhances Reselect selectors by wrapping [`createSelector`] and returning a memoized collection of selectors indexed with the cache key returned by a custom resolver function.
 
 Useful to reduce selectors recalculation when the same selector is repeatedly called with one/few different arguments.
 
@@ -1802,7 +1801,7 @@ Useful to reduce selectors recalculation when the same selector is repeatedly ca
 
 [Flipper plugin](https://github.com/vlanemcev/flipper-plugin-reselect-debugger) and [and the connect app](https://github.com/vlanemcev/reselect-debugger-flipper) for debugging selectors in **React Native Apps**.
 
-Inspired by `Reselect Tools`, so it also has all functionality from this library and more, but only for React Native and Flipper.
+Inspired by Reselect Tools, so it also has all functionality from this library and more, but only for React Native and Flipper.
 
 - Selectors Recomputations count in live time across the App for identify performance bottlenecks
 - Highlight most recomputed selectors
@@ -1845,17 +1844,19 @@ Originally inspired by getters in [NuclearJS](https://github.com/optimizely/nucl
 [`useMemo`]: https://react.dev/reference/react/useMemo#usememo 'useMemo'
 [`useCallback`]: https://react.dev/reference/react/useCallback#usecallback 'useCallback'
 [`re-reselect`]: https://github.com/toomuchdesign/re-reselect 're-reselect'
+[Redux]: https://redux.js.org 'Redux'
+[React]: https://react.dev 'React'
+[React-Redux]: https://react-redux.js.org 'React-Redux'
 
 <!-- Internal Links -->
 
-[`selector`]: #selector-function 'Selector Function'
-[`input selectors`]: #input-selectors 'Input Selectors'
-[`output selector`]: #output-selector 'Output Selector'
-[`result function`]: #result-function 'Result Function'
-[`combiner`]: #combiner 'Combiner'
+[selector]: #selector-function 'Selector Function'
+[input selectors]: #input-selectors 'Input Selectors'
+[output selector]: #output-selector 'Output Selector'
+[result function]: #result-function 'Result Function'
 [`dependencies`]: #dependencies 'Dependencies'
 [**_Cascading Memoization_**]: #cascading-memoization 'Cascading Memoization'
-[`output selector fields`]: #output-selector-fields 'Output Selector Fields'
+[output selector fields]: #output-selector-fields 'Output Selector Fields'
 [`createSelector`]: #createselectorinputselectors--inputselectors-resultfunc-createselectoroptions 'createSelector'
 [`createSelectorCreator`]: #createselectorcreatormemoize--options-memoizeoptions 'createSelectorCreator'
 [`defaultMemoize`]: #defaultmemoizefunc-equalitycheckoroptions--defaultequalitycheck 'defaultMemoize'
