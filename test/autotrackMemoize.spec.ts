@@ -35,7 +35,6 @@ describe('Basic selector behavior with autotrack', () => {
       (state: StateA) => state.a,
       a => a
     )
-    selector.memoizedResultFunc.clearCache
     const firstState = { a: 1 }
     const firstStateNewPointer = { a: 1 }
     const secondState = { a: 2 }

@@ -127,7 +127,6 @@ In addition to skipping unnecessary recalculations, `memoizedSelectCompletedTodo
   - [**`unstable_autotrackMemoize`**][`unstable_autotrackMemoize`]
   - [**`createSelectorCreator`**][`createSelectorCreator`]
   - [**`createStructuredSelector`**][`createStructuredSelector`]
-  - [**`createCurriedSelector`**][`createCurriedSelector`]
 - [Debugging Tools](#debuggingtools)
 - [What's New in 5.0.0?](#v5summary)
 - [Optimizing Reselect](#optimizing-reselect)
@@ -1147,7 +1146,6 @@ const selectCompletedTodosLength = createSelector(
 
 - **Selector API Enhancements**:
 
-  - Introduced experimental APIs: `createCurriedSelector` and `createCurriedSelectorCreator`, for more advanced selector patterns.
   - Removed the second overload of `createStructuredSelector` due to its susceptibility to runtime errors.
   - Added the `TypedStructuredSelectorCreator` utility type (_currently a work-in-progress_) to facilitate the creation of a pre-typed version of `createStructuredSelector` for your root state.
 
@@ -1580,44 +1578,60 @@ relating to nested selectors.
 
 <details><summary><b>Answer</b></summary>
 
-You can try this new experimental API:
+You can try this pattern:
 
-<a id="createcurriedselector"></a>
+```ts
+const currySelector = <
+  State,
+  Result,
+  Params extends readonly any[],
+  AdditionalFields
+>(
+  selector: ((state: State, ...args: Params) => Result) & AdditionalFields
+) => {
+  const curriedSelector = (...args: Params) => {
+    return (state: State) => {
+      return selector(state, ...args)
+    }
+  }
+  return Object.assign(curriedSelector, selector)
+}
 
-#### createCurriedSelector(...inputSelectors | [inputSelectors], resultFunc, createSelectorOptions?)
+const selectTodoByIdCurried = currySelector(
+  createSelector(
+    [(state: RootState) => state.todos, (state: RootState, id: number) => id],
+    (todos, id) => todos.find(todo => todo.id === id)
+  )
+)
+```
 
 This:
 
 ```ts
-const parametricSelector = createSelector(
+const selectTodoById = createSelector(
   [(state: RootState) => state.todos, (state: RootState, id: number) => id],
-  (todos, id) => todos.filter(todo => todo.id === id)
+  (todos, id) => todos.find(todo => todo.id === id)
 )
 
-parametricSelector(state, 0)
+selectTodoById(state, 0)
 ```
 
 Is the same as this:
 
 ```ts
-const curriedSelector = createCurriedSelector(
-  [(state: RootState) => state.todos, (state: RootState, id: number) => id],
-  (todos, id) => todos.filter(todo => todo.id === id)
-)
-
-curriedSelector(0)(state)
+selectTodoByIdCurried(0)(state)
 ```
 
 As before you had to do this:
 
 ```ts
-const selectTodo = useSelector(state => parametricSelector(state, id))
+const todoById = useSelector(state => selectTodoById(state, id))
 ```
 
 Now you can do this:
 
 ```ts
-const selectTodo = useSelector(curriedSelector(id))
+const todoById = useSelector(selectTodoByIdCurried(id))
 ```
 
 Another thing you can do if you are using [React-Redux] is create a custom hook factory function:
@@ -1650,44 +1664,6 @@ const MyComponent: FC<Props> = ({ id }) => {
   const todo = useSelectTodo(id)
   return <div>{todo.title}</div>
 }
-```
-
-We're also exporting a `createCurriedSelectorCreator` function for ease of use:
-
-```ts
-import {
-  createCurriedSelectorCreator,
-  createSelector,
-  weakMapMemoize
-} from 'reselect'
-
-const parametricSelector = createSelector(
-  [(state: RootState) => state.todos, (state: RootState, id: number) => id],
-  (todos, id) => todos.filter(todo => todo.id === id),
-  { memoize: weakMapMemoize, argsMemoize: weakMapMemoize }
-)
-
-const createCurriedSelectorWeakMap = createCurriedSelectorCreator({
-  memoize: weakMapMemoize,
-  argsMemoize: weakMapMemoize
-})
-
-const curriedSelector = createCurriedSelectorWeakMap(
-  [(state: RootState) => state.todos, (state: RootState, id: number) => id],
-  (todos, id) => todos.filter(todo => todo.id === id)
-)
-
-// This:
-parametricSelector(state, 0)
-
-// Is the same as this:
-curriedSelector(0)(state)
-
-// Inside your component you can replace this:
-const selectTodo = useSelector(state => parametricSelector(state, id))
-
-// With this:
-const selectTodo = useSelector(curriedSelector(id))
 ```
 
 </details>
@@ -1860,7 +1836,6 @@ Originally inspired by getters in [NuclearJS](https://github.com/optimizely/nucl
 [`weakMapMemoize`]: #weakmapmemoizefunc---since-500 'weakMapMemoize'
 [`unstable_autotrackMemoize`]: #unstable_autotrackmemoizefunc---since-500 'unstable_autotrackMemoize'
 [`createStructuredSelector`]: #createstructuredselector-inputselectors--selectorcreator--createselector 'createStructuredSelector'
-[`createCurriedSelector`]: #createcurriedselectorinputselectors--inputselectors-resultfunc-createselectoroptions 'createCurriedSelector'
 
 </details>
 
