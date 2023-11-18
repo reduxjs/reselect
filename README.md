@@ -167,6 +167,19 @@ const outputSelector = createSelector(
 
 ## How Does Reselect Work?
 
+Reselect, at its core, is a library for creating memoized selectors in JavaScript applications. Its primary role is to efficiently compute derived data based on provided inputs. A key aspect of Reselect's internal mechanism is how it orchestrates the flow of arguments from the final selector to its constituent [input selectors].
+
+```ts
+const finalSelector = (...args) => {
+  const extractedValues = inputSelectors.map(inputSelector =>
+    inputSelector(...args)
+  )
+  return resultFunc(...extractedValues)
+}
+```
+
+In this pattern, the `finalSelector` is composed of several [input selectors], **all receiving the same arguments as the final selector**. Each input selector processes its part of the data, and the results are then combined and further processed by the [result function]. Understanding this argument flow is crucial for appreciating how Reselect optimizes data computation and minimizes unnecessary recalculations.
+
 <a id="cascadingmemoization"></a>
 
 ### Cascading Memoization
@@ -575,6 +588,8 @@ const result = structuredSelector({ a: 1, b: 2 }) // will produce { x: 1, y: 2 }
 ---
 
 ### Memoization Functions
+
+Reselect comes with a selection of memoization functions, each uniquely designed to address different scenarios and performance requirements. By effectively leveraging these functions, you can significantly enhance the efficiency and responsiveness of your applications.
 
 <a id="defaultmemoize"></a>
 
