@@ -466,7 +466,7 @@ const selector = customSelectorCreator(
 
 <a id="createstructuredselector"></a>
 
-### createStructuredSelector({ inputSelectors }, selectorCreator = createSelector)
+### createStructuredSelector({ inputSelectorsObject }, selectorCreator = createSelector)
 
 <b>Description</b>
 
@@ -476,7 +476,7 @@ A convenience function that simplifies returning an object made up of selector r
 
 | Name               | Description                                                            |
 | :----------------- | :--------------------------------------------------------------------- |
-| `selectorMap`      | A key value pair consisting of input selectors.                        |
+| `inputSelectorsObject`      | A key value pair consisting of input selectors.                        |
 | `selectorCreator?` | A custom selector creator function. It defaults to [`createSelector`]. |
 
 <b>Returns</b>
