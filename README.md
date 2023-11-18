@@ -1640,10 +1640,13 @@ Another thing you can do if you are using [React-Redux] is create a custom hook 
 import type { GetParamsFromSelectors, Selector } from 'reselect'
 import { useSelector } from 'react-redux'
 
-export const createParametricSelectorHook = <S extends Selector>(
-  selector: S
+export const createParametricSelectorHook = <
+  Result,
+  Params extends readonly unknown[]
+>(
+  selector: (state: RootState, ...params: Params) => Result
 ) => {
-  return (...args: GetParamsFromSelectors<[S]>) => {
+  return (...args: Params) => {
     return useSelector(state => selector(state, ...args))
   }
 }
