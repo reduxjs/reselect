@@ -488,27 +488,21 @@ A memoized structured selector.
 import { createSelector, createStructuredSelector } from 'reselect'
 
 interface RootState {
-  todos: { id: number; completed: boolean }[]
+  todos: {
+    id: number
+    completed: boolean
+    title: string
+    description: string
+  }[]
   alerts: { id: number; read: boolean }[]
-}
-
-const state: RootState = {
-  todos: [
-    { id: 0, completed: false },
-    { id: 1, completed: true }
-  ],
-  alerts: [
-    { id: 0, read: false },
-    { id: 1, read: true }
-  ]
 }
 
 // This:
 const structuredSelector = createStructuredSelector(
   {
-    allTodos: (state: RootState) => state.todos,
-    allAlerts: (state: RootState) => state.alerts,
-    selectedTodo: (state: RootState, id: number) => state.todos[id]
+    todos: (state: RootState) => state.todos,
+    alerts: (state: RootState) => state.alerts,
+    todoById: (state: RootState, id: number) => state.todos[id]
   },
   createSelector
 )
@@ -520,14 +514,42 @@ const selector = createSelector(
     (state: RootState) => state.alerts,
     (state: RootState, id: number) => state.todos[id]
   ],
-  (allTodos, allAlerts, selectedTodo) => {
+  (todos, alerts, todoById) => {
     return {
-      allTodos,
-      allAlerts,
-      selectedTodo
+      todos,
+      alerts,
+      todoById
     }
   }
 )
+```
+
+In your component:
+
+```tsx
+interface Props {
+  id: number
+}
+
+const MyComponent: FC<Props> = ({ id }) => {
+  const { todos, alerts, todoById } = useSelector(state =>
+    structuredSelector(state, id)
+  )
+
+  return (
+    <div>
+      Next to do is:
+      <h2>{todoById.title}</h2>
+      <p>Description: {todoById.description}</p>
+      <ul>
+        <h3>All other to dos:</h3>
+        {todos.map(todo => (
+          <li key={todo.id}>{todo.title}</li>
+        ))}
+      </ul>
+    </div>
+  )
+}
 ```
 
 ##### Simple Use Case
