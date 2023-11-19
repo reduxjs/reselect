@@ -256,30 +256,6 @@ export type Combiner<InputSelectors extends SelectorArray, Result> = Distribute<
 >
 
 /**
- * A selector that is assumed to have one additional argument, such as
- * the props from a React component.
- *
- * @public
- */
-export type ParametricSelector<State, Props, Result> = Selector<
-  State,
-  Result,
-  [Props, ...any]
->
-
-/**
- * A generated selector that is assumed to have one additional argument.
- *
- * @public
- */
-export type OutputParametricSelector<State, Props, Result> = ParametricSelector<
-  State,
-  Props,
-  Result
-> &
-  OutputSelectorFields<SelectorArray, Result>
-
-/**
  * A standard function returning true if two values are considered equal.
  *
  * @public
