@@ -5,11 +5,7 @@ import {
   createCacheKeyComparator,
   defaultEqualityCheck
 } from '@internal/defaultMemoize'
-import type {
-  AnyFunction,
-  DefaultMemoizeFields,
-  Simplify
-} from '@internal/types'
+import type { AnyFunction } from '@internal/types'
 import { createCache } from './autotracking'
 
 /**
@@ -59,7 +55,7 @@ import { createCache } from './autotracking'
  * ```ts
  * import { unstable_autotrackMemoize as autotrackMemoize, createSelectorCreator } from 'reselect'
  *
- * const createSelectorAutotrack = createSelectorCreator({ memoize: autotrackMemoize })
+ * const createSelectorAutotrack = createSelectorCreator(autotrackMemoize)
  *
  * const selectTodoIds = createSelectorAutotrack(
  *   [(state: RootState) => state.todos],
@@ -97,9 +93,7 @@ export function autotrackMemoize<Func extends AnyFunction>(func: Func) {
     return cache.value
   }
 
-  memoized.clearCache = () => {
-    return cache.clear()
-  }
+  memoized.clearCache = () => cache.clear()
 
-  return memoized as Func & Simplify<DefaultMemoizeFields>
+  return memoized as Func & { clearCache: () => void }
 }

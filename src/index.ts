@@ -15,19 +15,16 @@ export type { DefaultMemoizeOptions } from './defaultMemoize'
 export type {
   Combiner,
   CreateSelectorOptions,
-  DefaultMemoizeFields,
   EqualityFn,
-  ExtractMemoizerFields,
   GetParamsFromSelectors,
   GetStateFromSelectors,
-  MemoizeOptionsFromParameters,
+  OutputParametricSelector,
   OutputSelector,
   OutputSelectorFields,
-  OverrideMemoizeOptions,
+  ParametricSelector,
   Selector,
   SelectorArray,
   SelectorResultArray,
-  StabilityCheckFrequency,
-  UnknownMemoizer
+  StabilityCheckFrequency
 } from './types'
 export { weakMapMemoize } from './weakMapMemoize'

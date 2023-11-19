@@ -1,10 +1,7 @@
-import {
-  createSelectorCreator,
-  unstable_autotrackMemoize as autotrackMemoize
-} from 'reselect'
+import { createSelectorCreator, unstable_autotrackMemoize as autotrackMemoize } from 'reselect'
 
 // Construct 1E6 states for perf test outside of the perf test so as to not change the execute time of the test function
-const numOfStates = 1_000_000
+const numOfStates = 1000000
 interface StateA {
   a: number
 }

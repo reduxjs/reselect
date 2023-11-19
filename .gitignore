@@ -12,7 +12,7 @@ typescript_test/common.js
 flow_test/should_fail/flow-typed/index.js.flow
 flow_test/should_pass/flow-typed/index.js.flow
 reselect-builds/
-trace
+
 
 typesversions
 .cache

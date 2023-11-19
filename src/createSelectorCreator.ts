@@ -1,3 +1,4 @@
+import type { OutputSelector, Selector, SelectorArray } from 'reselect'
 import { defaultMemoize } from './defaultMemoize'
 
 import type {
@@ -8,11 +9,6 @@ import type {
   GetParamsFromSelectors,
   GetStateFromSelectors,
   InterruptRecursion,
-  OutputSelector,
-  Selector,
-  SelectorArray,
-  SetRequired,
-  Simplify,
   StabilityCheckFrequency,
   UnknownMemoizer
 } from './types'
@@ -86,7 +82,7 @@ export interface CreateSelectorFunction<
     ...createSelectorArgs: [
       ...inputSelectors: InputSelectors,
       combiner: Combiner<InputSelectors, Result>,
-      createSelectorOptions: Simplify<
+      createSelectorOptions: Partial<
         CreateSelectorOptions<
           MemoizeFunction,
           ArgsMemoizeFunction,
@@ -126,7 +122,7 @@ export interface CreateSelectorFunction<
   >(
     inputSelectors: [...InputSelectors],
     combiner: Combiner<InputSelectors, Result>,
-    createSelectorOptions?: Simplify<
+    createSelectorOptions?: Partial<
       CreateSelectorOptions<
         MemoizeFunction,
         ArgsMemoizeFunction,
@@ -224,16 +220,11 @@ export function createSelectorCreator<
   MemoizeFunction extends UnknownMemoizer,
   ArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
 >(
-  options: Simplify<
-    SetRequired<
-      CreateSelectorOptions<
-        typeof defaultMemoize,
-        typeof defaultMemoize,
-        MemoizeFunction,
-        ArgsMemoizeFunction
-      >,
-      'memoize'
-    >
+  options: CreateSelectorOptions<
+    typeof defaultMemoize,
+    typeof defaultMemoize,
+    MemoizeFunction,
+    ArgsMemoizeFunction
   >
 ): CreateSelectorFunction<MemoizeFunction, ArgsMemoizeFunction>
 
@@ -285,29 +276,27 @@ export function createSelectorCreator<
   ArgsMemoizeFunction extends UnknownMemoizer,
   MemoizeOrOptions extends
     | MemoizeFunction
-    | SetRequired<
-        CreateSelectorOptions<MemoizeFunction, ArgsMemoizeFunction>,
-        'memoize'
-      >
+    | CreateSelectorOptions<MemoizeFunction, ArgsMemoizeFunction>
 >(
   memoizeOrOptions: MemoizeOrOptions,
-  ...memoizeOptionsFromArgs: MemoizeOrOptions extends SetRequired<
-    CreateSelectorOptions<MemoizeFunction, ArgsMemoizeFunction>,
-    'memoize'
+  ...memoizeOptionsFromArgs: MemoizeOrOptions extends CreateSelectorOptions<
+    MemoizeFunction,
+    ArgsMemoizeFunction
   >
     ? never
     : DropFirstParameter<MemoizeFunction>
 ) {
   /** options initially passed into `createSelectorCreator`. */
-  const createSelectorCreatorOptions: SetRequired<
-    CreateSelectorOptions<MemoizeFunction, ArgsMemoizeFunction>,
-    'memoize'
-  > = typeof memoizeOrOptions === 'function'
-    ? {
-        memoize: memoizeOrOptions as MemoizeFunction,
-        memoizeOptions: memoizeOptionsFromArgs
-      }
-    : memoizeOrOptions
+  const createSelectorCreatorOptions: CreateSelectorOptions<
+    MemoizeFunction,
+    ArgsMemoizeFunction
+  > =
+    typeof memoizeOrOptions === 'function'
+      ? {
+          memoize: memoizeOrOptions as MemoizeFunction,
+          memoizeOptions: memoizeOptionsFromArgs
+        }
+      : memoizeOrOptions
 
   const createSelector = <
     InputSelectors extends SelectorArray,
@@ -318,36 +307,41 @@ export function createSelectorCreator<
     ...createSelectorArgs: [
       ...inputSelectors: [...InputSelectors],
       combiner: Combiner<InputSelectors, Result>,
-      createSelectorOptions?: CreateSelectorOptions<
+      createSelectorOptions?: Partial<
+        CreateSelectorOptions<
+          MemoizeFunction,
+          ArgsMemoizeFunction,
+          OverrideMemoizeFunction,
+          OverrideArgsMemoizeFunction
+        >
+      >
+    ]
+  ) => {
+    let recomputations = 0
+    let lastResult: Result
+
+    // Due to the intricacies of rest params, we can't do an optional arg after `...funcs`.
+    // So, start by declaring the default value here.
+    // (And yes, the words 'memoize' and 'options' appear too many times in this next sequence.)
+    let directlyPassedOptions: Partial<
+      CreateSelectorOptions<
         MemoizeFunction,
         ArgsMemoizeFunction,
         OverrideMemoizeFunction,
         OverrideArgsMemoizeFunction
       >
-    ]
-  ) => {
-    let recomputations = 0
-    let dependencyRecomputations = 0
-    let lastResult: Result
-
-    // Due to the intricacies of rest params, we can't do an optional arg after `...createSelectorArgs`.
-    // So, start by declaring the default value here.
-    // (And yes, the words 'memoize' and 'options' appear too many times in this next sequence.)
-    let directlyPassedOptions: CreateSelectorOptions<
-      MemoizeFunction,
-      ArgsMemoizeFunction,
-      OverrideMemoizeFunction,
-      OverrideArgsMemoizeFunction
     > = {}
 
     // Normally, the result func or "combiner" is the last arg
     let resultFunc = createSelectorArgs.pop() as
       | Combiner<InputSelectors, Result>
-      | CreateSelectorOptions<
-          MemoizeFunction,
-          ArgsMemoizeFunction,
-          OverrideMemoizeFunction,
-          OverrideArgsMemoizeFunction
+      | Partial<
+          CreateSelectorOptions<
+            MemoizeFunction,
+            ArgsMemoizeFunction,
+            OverrideMemoizeFunction,
+            OverrideArgsMemoizeFunction
+          >
         >
 
     // If the result func is actually an _object_, assume it's our options object
@@ -401,7 +395,6 @@ export function createSelectorCreator<
 
     // If a selector is called with the exact same arguments we don't need to traverse our dependencies again.
     const selector = argsMemoize(function dependenciesChecker() {
-      dependencyRecomputations++
       /** Return values of input selectors which the `resultFunc` takes as arguments. */
       const inputSelectorResults = collectInputSelectorResults(
         dependencies,
@@ -443,8 +436,6 @@ export function createSelectorCreator<
       resultFunc,
       memoizedResultFunc,
       dependencies,
-      dependencyRecomputations: () => dependencyRecomputations,
-      resetDependencyRecomputations: () => (dependencyRecomputations = 0),
       lastResult: () => lastResult,
       recomputations: () => recomputations,
       resetRecomputations: () => (recomputations = 0),

@@ -1,5 +1,4 @@
 import { createSelector } from 'reselect'
-import type { StateA, StateAB } from 'testTypes'
 
 describe('createSelector exposed utils', () => {
   test('resetRecomputations', () => {

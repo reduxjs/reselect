@@ -3,11 +3,9 @@ import { createSelector } from './createSelectorCreator'
 import type { CreateSelectorFunction } from './createSelectorCreator'
 import type { defaultMemoize } from './defaultMemoize'
 import type {
-  InterruptRecursion,
   ObjectValuesToTuple,
   OutputSelector,
   Selector,
-  Simplify,
   UnknownMemoizer
 } from './types'
 import { assertIsObject } from './utils'
@@ -67,10 +65,11 @@ interface SelectorsObject {
  */
 export interface StructuredSelectorCreator {
   /**
-   * A convenience function that simplifies returning an object
-   * made up of selector results.
+   * A convenience function for a common pattern that arises when using Reselect.
+   * The selector passed to a `connect` decorator often just takes the
+   * values of its input selectors and maps them to keys in an object.
    *
-   * @param inputSelectorsObject - A key value pair consisting of input selectors.
+   * @param selectorMap - A key value pair consisting of input selectors.
    * @param selectorCreator - A custom selector creator function. It defaults to `createSelector`.
    * @returns A memoized structured selector.
    *
@@ -79,22 +78,58 @@ export interface StructuredSelectorCreator {
    * ```ts
    * import { createSelector, createStructuredSelector } from 'reselect'
    *
-   * interface RootState {
+   * interface State {
    *   todos: {
    *     id: number
-   *     completed: boolean
    *     title: string
    *     description: string
+   *     completed: boolean
    *   }[]
-   *   alerts: { id: number; read: boolean }[]
+   *   alerts: {
+   *     id: number
+   *     message: string
+   *     type: 'reminder' | 'notification'
+   *     read: boolean
+   *   }[]
+   * }
+   *
+   * const state: State = {
+   *   todos: [
+   *     {
+   *       id: 0,
+   *       title: 'Buy groceries',
+   *       description: 'Milk, bread, eggs, and fruits',
+   *       completed: false
+   *     },
+   *     {
+   *       id: 1,
+   *       title: 'Schedule dentist appointment',
+   *       description: 'Check available slots for next week',
+   *       completed: true
+   *     }
+   *   ],
+   *   alerts: [
+   *     {
+   *       id: 0,
+   *       message: 'You have an upcoming meeting at 3 PM.',
+   *       type: 'reminder',
+   *       read: false
+   *     },
+   *     {
+   *       id: 1,
+   *       message: 'New software update available.',
+   *       type: 'notification',
+   *       read: true
+   *     }
+   *   ]
    * }
    *
    * // This:
    * const structuredSelector = createStructuredSelector(
    *   {
-   *     todos: (state: RootState) => state.todos,
-   *     alerts: (state: RootState) => state.alerts,
-   *     todoById: (state: RootState, id: number) => state.todos[id]
+   *     allTodos: (state: State) => state.todos,
+   *     allAlerts: (state: State) => state.alerts,
+   *     selectedTodo: (state: State, id: number) => state.todos[id]
    *   },
    *   createSelector
    * )
@@ -102,15 +137,15 @@ export interface StructuredSelectorCreator {
    * // Is essentially the same as this:
    * const selector = createSelector(
    *   [
-   *     (state: RootState) => state.todos,
-   *     (state: RootState) => state.alerts,
-   *     (state: RootState, id: number) => state.todos[id]
+   *     (state: State) => state.todos,
+   *     (state: State) => state.alerts,
+   *     (state: State, id: number) => state.todos[id]
    *   ],
-   *   (todos, alerts, todoById) => {
+   *   (allTodos, allAlerts, selectedTodo) => {
    *     return {
-   *       todos,
-   *       alerts,
-   *       todoById
+   *       allTodos,
+   *       allAlerts,
+   *       selectedTodo
    *     }
    *   }
    * )
@@ -143,64 +178,60 @@ export interface StructuredSelectorCreator {
     MemoizeFunction extends UnknownMemoizer = typeof defaultMemoize,
     ArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
   >(
-    inputSelectorsObject: InputSelectorsObject,
+    selectorMap: InputSelectorsObject,
     selectorCreator?: CreateSelectorFunction<
       MemoizeFunction,
       ArgsMemoizeFunction
     >
   ): OutputSelector<
     ObjectValuesToTuple<InputSelectorsObject>,
-    Simplify<SelectorsMap<InputSelectorsObject>>,
+    SelectorsMap<InputSelectorsObject>,
     MemoizeFunction,
     ArgsMemoizeFunction
-  > &
-    InterruptRecursion
+  >
+  // TODO: Do we need this?
+  /**
+   * Second overload
+   */
+  // <
+  //   State,
+  //   Result = State,
+  //   MemoizeFunction extends UnknownMemoizer = typeof defaultMemoize,
+  //   ArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
+  // >(
+  //   selectors: {
+  //     [Key in keyof State]: Selector<State, State[Key], never>
+  //   },
+  //   selectorCreator?: CreateSelectorFunction<
+  //     MemoizeFunction,
+  //     ArgsMemoizeFunction
+  //   >
+  // ): OutputSelector<
+  //   readonly Selector<State, State, []>[],
+  //   Result,
+  //   MemoizeFunction,
+  //   ArgsMemoizeFunction
+  // >
 }
 
+// Manual definition of state and output arguments
 /**
- * A convenience function that simplifies returning an object
- * made up of selector results.
+ * A convenience function for a common pattern that arises when using Reselect.
+ * The selector passed to a `connect` decorator often just takes the values of its input selectors
+ * and maps them to keys in an object.
  *
  * @example
- * <caption>Modern Use Case</caption>
+ * <caption>Simple Use Case</caption>
  * ```ts
- * import { createSelector, createStructuredSelector } from 'reselect'
+ * const selectA = state => state.a
+ * const selectB = state => state.b
  *
- * interface RootState {
- *   todos: {
- *     id: number
- *     completed: boolean
- *     title: string
- *     description: string
- *   }[]
- *   alerts: { id: number; read: boolean }[]
- * }
- *
- * // This:
- * const structuredSelector = createStructuredSelector(
- *   {
- *     todos: (state: RootState) => state.todos,
- *     alerts: (state: RootState) => state.alerts,
- *     todoById: (state: RootState, id: number) => state.todos[id]
- *   },
- *   createSelector
- * )
- *
- * // Is essentially the same as this:
- * const selector = createSelector(
- *   [
- *     (state: RootState) => state.todos,
- *     (state: RootState) => state.alerts,
- *     (state: RootState, id: number) => state.todos[id]
- *   ],
- *   (todos, alerts, todoById) => {
- *     return {
- *       todos,
- *       alerts,
- *       todoById
- *     }
- *   }
- * )
+ * // The result function in the following selector
+ * // is simply building an object from the input selectors
+ * const structuredSelector = createSelector(selectA, selectB, (a, b) => ({
+ *   a,
+ *   b
+ * }))
  * ```
  *
  * @see {@link https://github.com/reduxjs/reselect#createstructuredselectorinputselectors-selectorcreator--createselector createStructuredSelector}

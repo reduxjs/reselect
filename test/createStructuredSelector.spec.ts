@@ -128,45 +128,4 @@ describe<LocalTestContext>('structured selector created with createStructuredSel
       )
     }
   )
-
-  localTest(
-    'structured selector invalid args can throw runtime errors',
-    ({ state }) => {
-      const structuredSelector = createStructuredSelector(
-        {
-          allTodos: (state: RootState) => state.todos,
-          allAlerts: (state: RootState) => state.alerts,
-          selectedTodo: (
-            state: RootState,
-            id: number,
-            field: keyof RootState['todos'][number]
-          ) => state.todos[id][field]
-        },
-        createSelector
-      )
-      const selector = createSelector(
-        [
-          (state: RootState) => state.todos,
-          (state: RootState) => state.alerts,
-          (
-            state: RootState,
-            id: number,
-            field: keyof RootState['todos'][number]
-          ) => state.todos[id][field]
-        ],
-        (allTodos, allAlerts, selectedTodo) => {
-          return {
-            allTodos,
-            allAlerts,
-            selectedTodo
-          }
-        }
-      )
-      // These two cases are the same.
-      // @ts-expect-error
-      expect(() => structuredSelector(state)).toThrowError(TypeError)
-      // @ts-expect-error
-      expect(() => selector(state)).toThrowError(TypeError)
-    }
-  )
 })

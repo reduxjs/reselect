@@ -73,7 +73,7 @@ export function assertIsArrayOfFunctions<FunctionType extends Function>(
  * @param item - The item to be checked.
  * @returns An array containing the input item. If the input is already an array, it's returned without modification.
  */
-export const ensureIsArray = (item: unknown) => {
+export const ensureIsArray = <T>(item: T | T[]) => {
   return Array.isArray(item) ? item : [item]
 }
 
