@@ -1,4 +1,9 @@
-import type { AnyFunction, EqualityFn } from './types'
+import type {
+  AnyFunction,
+  DefaultMemoizeFields,
+  EqualityFn,
+  Simplify
+} from './types'
 
 // Cache implementation based on Erik Rasmussen's `lru-memoize`:
 // https://github.com/erikras/lru-memoize
@@ -206,5 +211,5 @@ export function defaultMemoize<Func extends AnyFunction>(
     cache.clear()
   }
 
-  return memoized as Func & { clearCache: () => void }
+  return memoized as Func & Simplify<DefaultMemoizeFields>
 }

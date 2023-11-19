@@ -5,7 +5,11 @@ import {
   createCacheKeyComparator,
   defaultEqualityCheck
 } from '@internal/defaultMemoize'
-import type { AnyFunction } from '@internal/types'
+import type {
+  AnyFunction,
+  DefaultMemoizeFields,
+  Simplify
+} from '@internal/types'
 import { createCache } from './autotracking'
 
 /**
@@ -95,7 +99,9 @@ export function autotrackMemoize<Func extends AnyFunction>(func: Func) {
     return cache.value
   }
 
-  memoized.clearCache = () => cache.clear()
+  memoized.clearCache = () => {
+    return cache.clear()
+  }
 
-  return memoized as Func & { clearCache: () => void }
+  return memoized as Func & Simplify<DefaultMemoizeFields>
 }

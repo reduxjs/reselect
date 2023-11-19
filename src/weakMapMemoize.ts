@@ -1,7 +1,7 @@
 // Original source:
 // - https://github.com/facebook/react/blob/0b974418c9a56f6c560298560265dcf4b65784bc/packages/react/src/ReactCache.js
 
-import type { AnyFunction } from './types'
+import type { AnyFunction, DefaultMemoizeFields, Simplify } from './types'
 
 const UNTERMINATED = 0
 const TERMINATED = 1
@@ -98,14 +98,12 @@ function createCacheNode<T>(): CacheNode<T> {
  * @experimental
  */
 export function weakMapMemoize<Func extends AnyFunction>(func: Func) {
-  // we reference arguments instead of spreading them for performance reasons
-
   let fnNode = createCacheNode()
 
   function memoized() {
     let cacheNode = fnNode
-
-    for (let i = 0, l = arguments.length; i < l; i++) {
+    const { length } = arguments
+    for (let i = 0, l = length; i < l; i++) {
       const arg = arguments[i]
       if (
         typeof arg === 'function' ||
@@ -153,5 +151,5 @@ export function weakMapMemoize<Func extends AnyFunction>(func: Func) {
     fnNode = createCacheNode()
   }
 
-  return memoized as Func & { clearCache: () => void }
+  return memoized as Func & Simplify<DefaultMemoizeFields>
 }

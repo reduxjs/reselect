@@ -3,9 +3,11 @@ import { createSelector } from './createSelectorCreator'
 import type { CreateSelectorFunction } from './createSelectorCreator'
 import type { defaultMemoize } from './defaultMemoize'
 import type {
+  InterruptRecursion,
   ObjectValuesToTuple,
   OutputSelector,
   Selector,
+  Simplify,
   UnknownMemoizer
 } from './types'
 import { assertIsObject } from './utils'
@@ -185,36 +187,13 @@ export interface StructuredSelectorCreator {
     >
   ): OutputSelector<
     ObjectValuesToTuple<InputSelectorsObject>,
-    SelectorsMap<InputSelectorsObject>,
+    Simplify<SelectorsMap<InputSelectorsObject>>,
     MemoizeFunction,
     ArgsMemoizeFunction
-  >
-  // TODO: Do we need this?
-  /**
-   * Second overload
-   */
-  // <
-  //   State,
-  //   Result = State,
-  //   MemoizeFunction extends UnknownMemoizer = typeof defaultMemoize,
-  //   ArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
-  // >(
-  //   selectors: {
-  //     [Key in keyof State]: Selector<State, State[Key], never>
-  //   },
-  //   selectorCreator?: CreateSelectorFunction<
-  //     MemoizeFunction,
-  //     ArgsMemoizeFunction
-  //   >
-  // ): OutputSelector<
-  //   readonly Selector<State, State, []>[],
-  //   Result,
-  //   MemoizeFunction,
-  //   ArgsMemoizeFunction
-  // >
+  > &
+    InterruptRecursion
 }
 
-// Manual definition of state and output arguments
 /**
  * A convenience function for a common pattern that arises when using Reselect.
  * The selector passed to a `connect` decorator often just takes the values of its input selectors
