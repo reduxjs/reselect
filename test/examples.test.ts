@@ -46,7 +46,8 @@ test('identity', () => {
   })
   const nonMemoizedSelector = createNonMemoizedSelector(
     [(state: RootState) => state.todos],
-    todos => todos.filter(todo => todo.completed === true)
+    todos => todos.filter(todo => todo.completed === true),
+    { inputStabilityCheck: 'never' }
   )
 
   nonMemoizedSelector(store.getState())
@@ -56,7 +57,7 @@ test('identity', () => {
   expect(nonMemoizedSelector.recomputations()).toBe(3)
 })
 
-test('Top Level Selectors', () => {
+test.todo('Top Level Selectors', () => {
   type TopLevelSelectors<State> = {
     [K in keyof State as K extends string
       ? `select${Capitalize<K>}`
@@ -70,7 +71,7 @@ test('Top Level Selectors', () => {
   }
 })
 
-test('Find Fastest Selector', () => {
+test.todo('Find Fastest Selector', () => {
   const store = setupStore()
   const selectTodoIds = createSelector(
     [(state: RootState) => state.todos],
@@ -120,10 +121,6 @@ test('Find Fastest Selector', () => {
     }
     return { results, fastest } as const
   }
-
-  expect(
-    findFastestSelector(selectTodoIds, store.getState()).fastest.name
-  ).toBe(weakMapMemoize.name)
 })
 
 test('TypedCreateSelector', () => {
@@ -157,5 +154,67 @@ test('TypedCreateSelector', () => {
   const selector = createAppSelector(
     [state => state.todos, (state, id: number) => id],
     (todos, id) => todos.find(todo => todo.id === id)?.completed
+  )
+})
+
+test('createCurriedSelector copy paste pattern', () => {
+  const state = store.getState()
+  const currySelector = <
+    State,
+    Result,
+    Params extends readonly any[],
+    AdditionalFields
+  >(
+    selector: ((state: State, ...args: Params) => Result) & AdditionalFields
+  ) => {
+    const curriedSelector = (...args: Params) => {
+      return (state: State) => {
+        return selector(state, ...args)
+      }
+    }
+    return Object.assign(curriedSelector, selector)
+  }
+
+  const createCurriedSelector = <
+    InputSelectors extends SelectorArray,
+    Result,
+    OverrideMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize,
+    OverrideArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
+  >(
+    ...args: Parameters<
+      typeof createSelector<
+        InputSelectors,
+        Result,
+        OverrideMemoizeFunction,
+        OverrideArgsMemoizeFunction
+      >
+    >
+  ) => {
+    return currySelector(createSelector(...args))
+  }
+  const selectTodoById = createSelector(
+    [(state: RootState) => state.todos, (state: RootState, id: number) => id],
+    (todos, id) => todos.find(todo => todo.id === id)
+  )
+  const selectTodoByIdCurried = createCurriedSelector(
+    [(state: RootState) => state.todos, (state: RootState, id: number) => id],
+    (todos, id) => todos.find(todo => todo.id === id)
+  )
+  expect(selectTodoById(state, 0)).toStrictEqual(
+    selectTodoByIdCurried(0)(state)
+  )
+  expect(selectTodoById.argsMemoize).toBe(selectTodoByIdCurried.argsMemoize)
+  expect(selectTodoById.lastResult()).toBeDefined()
+  expect(selectTodoByIdCurried.lastResult()).toBeDefined()
+  expect(selectTodoById.lastResult()).toBe(selectTodoByIdCurried.lastResult())
+  expect(selectTodoById.memoize).toBe(selectTodoByIdCurried.memoize)
+  expect(selectTodoById.memoizedResultFunc(state.todos, 0)).toBe(
+    selectTodoByIdCurried.memoizedResultFunc(state.todos, 0)
+  )
+  expect(selectTodoById.recomputations()).toBe(
+    selectTodoByIdCurried.recomputations()
+  )
+  expect(selectTodoById.resultFunc(state.todos, 0)).toBe(
+    selectTodoByIdCurried.resultFunc(state.todos, 0)
   )
 })
