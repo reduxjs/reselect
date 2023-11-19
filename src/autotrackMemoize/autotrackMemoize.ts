@@ -59,7 +59,7 @@ import { createCache } from './autotracking'
  * ```ts
  * import { unstable_autotrackMemoize as autotrackMemoize, createSelectorCreator } from 'reselect'
  *
- * const createSelectorAutotrack = createSelectorCreator(autotrackMemoize)
+ * const createSelectorAutotrack = createSelectorCreator({ memoize: autotrackMemoize })
  *
  * const selectTodoIds = createSelectorAutotrack(
  *   [(state: RootState) => state.todos],
