@@ -441,7 +441,7 @@ const selectSum = createDeepEqualSelector(
 )
 ```
 
-###### Use memoize function from `Lodash` for an unbounded cache
+###### Use memoize function from Lodash for an unbounded cache
 
 ```js
 import { createSelectorCreator } from 'reselect'
@@ -474,10 +474,10 @@ A convenience function that simplifies returning an object made up of selector r
 
 <b>Parameters</b>
 
-| Name               | Description                                                            |
-| :----------------- | :--------------------------------------------------------------------- |
-| `inputSelectorsObject`      | A key value pair consisting of input selectors.                        |
-| `selectorCreator?` | A custom selector creator function. It defaults to [`createSelector`]. |
+| Name                   | Description                                                            |
+| :--------------------- | :--------------------------------------------------------------------- |
+| `inputSelectorsObject` | A key value pair consisting of input selectors.                        |
+| `selectorCreator?`     | A custom selector creator function. It defaults to [`createSelector`]. |
 
 <b>Returns</b>
 
@@ -1632,6 +1632,31 @@ const selectTodoByIdCurried = currySelector(
 )
 ```
 
+Or for reusability you can do this:
+
+```ts
+import type { defaultMemoize, SelectorArray, UnknownMemoizer } from 'reselect'
+import { createSelector } from 'reselect'
+
+export const createCurriedSelector = <
+  InputSelectors extends SelectorArray,
+  Result,
+  OverrideMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize,
+  OverrideArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
+>(
+  ...args: Parameters<
+    typeof createSelector<
+      InputSelectors,
+      Result,
+      OverrideMemoizeFunction,
+      OverrideArgsMemoizeFunction
+    >
+  >
+) => {
+  return currySelector(createSelector(...args))
+}
+```
+
 This:
 
 ```ts
@@ -1664,7 +1689,6 @@ const todoById = useSelector(selectTodoByIdCurried(id))
 Another thing you can do if you are using [React-Redux] is create a custom hook factory function:
 
 ```ts
-import type { GetParamsFromSelectors, Selector } from 'reselect'
 import { useSelector } from 'react-redux'
 
 export const createParametricSelectorHook = <
@@ -1678,7 +1702,7 @@ export const createParametricSelectorHook = <
   }
 }
 
-const useSelectTodo = createParametricSelectorHook(parametricSelector)
+const useSelectTodo = createParametricSelectorHook(selectTodoById)
 ```
 
 And then inside your component:
@@ -1865,7 +1889,7 @@ Originally inspired by getters in [NuclearJS](https://github.com/optimizely/nucl
 [`defaultMemoize`]: #defaultmemoizefunc-equalitycheckoroptions--defaultequalitycheck 'defaultMemoize'
 [`weakMapMemoize`]: #weakmapmemoizefunc---since-500 'weakMapMemoize'
 [`unstable_autotrackMemoize`]: #unstable_autotrackmemoizefunc---since-500 'unstable_autotrackMemoize'
-[`createStructuredSelector`]: #createstructuredselector-inputselectors--selectorcreator--createselector 'createStructuredSelector'
+[`createStructuredSelector`]: #createstructuredselector-inputSelectorsObject--selectorcreator--createselector 'createStructuredSelector'
 
 </details>
 
