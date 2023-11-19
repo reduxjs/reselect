@@ -23,7 +23,7 @@ for (let i = 0; i < numOfStates; i++) {
   states.push({ a: 1, b: 2 })
 }
 
-describe('Basic selector behavior with autotrack', () => {
+describe('Basic selector behavior with weakMapMemoize', () => {
   const createSelector = createSelectorCreator(weakMapMemoize)
 
   test('basic selector', () => {
