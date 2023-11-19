@@ -8,6 +8,7 @@
     "skipLibCheck": true,
     "allowJs": true,
     "jsx": "react",
+    "noErrorTruncation": true,
     "declaration": true,
     "emitDeclarationOnly": true,
     "outDir": "./es",
@@ -19,7 +20,7 @@
     "baseUrl": ".",
     "paths": {
       "reselect": ["src/index.ts"], // @remap-prod-remove-line
-      "@internal/*": ["src/*"],
+      "@internal/*": ["src/*"]
     }
   },
   "include": ["./src/**/*"],
