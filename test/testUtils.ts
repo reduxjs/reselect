@@ -144,10 +144,6 @@ export const pushToTodos = (howMany: number) => {
 
 pushToTodos(200)
 
-// for (let i = todoStateLength; i < 200; i++) {
-//   todoState.push(createTodoItem(i))
-// }
-
 const alertState = [
   {
     id: 0,
@@ -419,19 +415,17 @@ export const localTest = test.extend<LocalTestContext>({
   state
 })
 
-export const resetSelector = <S extends OutputSelector<SelectorArray, any>>(
-  selector: Pick<S, 'clearCache' | 'memoizedResultFunc' | 'resetRecomputations'>
+export const resetSelector = <S extends OutputSelector>(
+  selector: S
 ) => {
   selector.clearCache()
   selector.resetRecomputations()
+  selector.resetDependencyRecomputations()
   selector.memoizedResultFunc.clearCache()
 }
 
 export const logRecomputations = <
-  S extends Selector & {
-    recomputations: () => number
-    dependencyRecomputations: () => number
-  }
+  S extends OutputSelector
 >(
   selector: S
 ) => {

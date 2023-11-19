@@ -481,7 +481,9 @@ describe('argsMemoize and memoize', () => {
         'lastResult' in selector &&
         'dependencies' in selector &&
         'recomputations' in selector &&
+        'dependencyRecomputations' in selector &&
         'resetRecomputations' in selector &&
+        'resetDependencyRecomputations' in selector &&
         'memoize' in selector &&
         'argsMemoize' in selector &&
         typeof selector.resultFunc === 'function' &&
@@ -489,7 +491,9 @@ describe('argsMemoize and memoize', () => {
         typeof selector.lastResult === 'function' &&
         Array.isArray(selector.dependencies) &&
         typeof selector.recomputations === 'function' &&
+        typeof selector.dependencyRecomputations === 'function' &&
         typeof selector.resetRecomputations === 'function' &&
+        typeof selector.resetDependencyRecomputations === 'function' &&
         typeof selector.memoize === 'function' &&
         typeof selector.argsMemoize === 'function' &&
         selector.dependencies.length >= 1 &&
@@ -519,7 +523,9 @@ describe('argsMemoize and memoize', () => {
     expect(selectorDefault.lastResult).to.be.a('function')
     expect(selectorDefault.dependencies).to.be.an('array').that.is.not.empty
     expect(selectorDefault.recomputations).to.be.a('function')
+    expect(selectorDefault.dependencyRecomputations).to.be.a('function')
     expect(selectorDefault.resetRecomputations).to.be.a('function')
+    expect(selectorDefault.resetDependencyRecomputations).to.be.a('function')
     expect(selectorDefault.memoize).to.be.a('function')
     expect(selectorDefault.argsMemoize).to.be.a('function')
     expect(selectorDefault.clearCache).to.be.a('function')
@@ -529,7 +535,9 @@ describe('argsMemoize and memoize', () => {
     expect(selectorAutotrack.recomputations()).toBe(0)
     expect(selectorDefault(state)).toStrictEqual(selectorAutotrack(state))
     expect(selectorDefault.recomputations()).toBe(1)
+    expect(selectorDefault.dependencyRecomputations()).toBe(1)
     expect(selectorAutotrack.recomputations()).toBe(1)
+    expect(selectorAutotrack.dependencyRecomputations()).toBe(1)
     // flipping completed flag does not cause the autotrack memoizer to re-run.
     store.dispatch(toggleCompleted(0))
     selectorDefault(store.getState())
@@ -542,14 +550,18 @@ describe('argsMemoize and memoize', () => {
     const defaultSelectorLastResult2 = selectorDefault.lastResult()
     const autotrackSelectorLastResult2 = selectorAutotrack.lastResult()
     expect(selectorDefault.recomputations()).toBe(3)
+    expect(selectorDefault.dependencyRecomputations()).toBe(3)
     expect(selectorAutotrack.recomputations()).toBe(1)
+    expect(selectorAutotrack.dependencyRecomputations()).toBe(3)
     for (let i = 0; i < 10; i++) {
       store.dispatch(toggleCompleted(0))
       selectorDefault(store.getState())
       selectorAutotrack(store.getState())
     }
     expect(selectorDefault.recomputations()).toBe(13)
+    expect(selectorDefault.dependencyRecomputations()).toBe(13)
     expect(selectorAutotrack.recomputations()).toBe(1)
+    expect(selectorAutotrack.dependencyRecomputations()).toBe(13)
     expect(autotrackSelectorLastResult1).toBe(autotrackSelectorLastResult2)
     expect(defaultSelectorLastResult1).not.toBe(defaultSelectorLastResult2) // Default memoize does not preserve referential equality but autotrack does.
     expect(defaultSelectorLastResult1).toStrictEqual(defaultSelectorLastResult2)
@@ -561,6 +573,7 @@ describe('argsMemoize and memoize', () => {
     )
     selectorAutotrack(store.getState())
     expect(selectorAutotrack.recomputations()).toBe(2)
+    expect(selectorAutotrack.dependencyRecomputations()).toBe(14)
   })
 
   localTest('passing argsMemoize directly to createSelector', ({ store }) => {
@@ -583,6 +596,8 @@ describe('argsMemoize and memoize', () => {
     )
     expect(selectorDefault.recomputations()).toBe(1)
     expect(selectorAutotrack.recomputations()).toBe(1)
+    expect(selectorDefault.dependencyRecomputations()).toBe(1)
+    expect(selectorAutotrack.dependencyRecomputations()).toBe(1)
     selectorDefault(store.getState())
     selectorAutotrack(store.getState())
     // toggling the completed flag should force the default memoizer to recalculate but not autotrack.
@@ -602,6 +617,8 @@ describe('argsMemoize and memoize', () => {
     store.dispatch(toggleCompleted(2))
     expect(selectorDefault.recomputations()).toBe(4)
     expect(selectorAutotrack.recomputations()).toBe(1)
+    expect(selectorDefault.dependencyRecomputations()).toBe(4)
+    expect(selectorAutotrack.dependencyRecomputations()).toBe(4)
     selectorDefault(store.getState())
     selectorAutotrack(store.getState())
     store.dispatch(toggleCompleted(0))
@@ -617,6 +634,8 @@ describe('argsMemoize and memoize', () => {
     const autotrackSelectorLastResult2 = selectorAutotrack.lastResult()
     expect(selectorDefault.recomputations()).toBe(6)
     expect(selectorAutotrack.recomputations()).toBe(1)
+    expect(selectorDefault.dependencyRecomputations()).toBe(6)
+    expect(selectorAutotrack.dependencyRecomputations()).toBe(7)
     expect(autotrackSelectorLastResult1).toBe(autotrackSelectorLastResult2)
     expect(defaultSelectorLastResult1).not.toBe(defaultSelectorLastResult2)
     expect(defaultSelectorLastResult1).toStrictEqual(defaultSelectorLastResult2)
@@ -630,6 +649,8 @@ describe('argsMemoize and memoize', () => {
     }
     expect(selectorAutotrack.recomputations()).toBe(1)
     expect(selectorDefault.recomputations()).toBe(16)
+    expect(selectorAutotrack.dependencyRecomputations()).toBe(17)
+    expect(selectorDefault.dependencyRecomputations()).toBe(16)
     // original options untouched.
     const selectorOriginal = createSelector(
       [(state: RootState) => state.todos],
@@ -662,6 +683,8 @@ describe('argsMemoize and memoize', () => {
     }
     expect(selectorOverrideArgsMemoize.recomputations()).toBe(1)
     expect(selectorOriginal.recomputations()).toBe(11)
+    expect(selectorOverrideArgsMemoize.dependencyRecomputations()).toBe(1)
+    expect(selectorOriginal.dependencyRecomputations()).toBe(11)
     const selectorDefaultParametric = createSelector(
       [(state: RootState, id: number) => id, (state: RootState) => state.todos],
       (id, todos) => todos.filter(todo => todo.id === id)
@@ -669,11 +692,14 @@ describe('argsMemoize and memoize', () => {
     selectorDefaultParametric(store.getState(), 1)
     selectorDefaultParametric(store.getState(), 1)
     expect(selectorDefaultParametric.recomputations()).toBe(1)
+    expect(selectorDefaultParametric.dependencyRecomputations()).toBe(1)
     selectorDefaultParametric(store.getState(), 2)
     selectorDefaultParametric(store.getState(), 1)
     expect(selectorDefaultParametric.recomputations()).toBe(3)
+    expect(selectorDefaultParametric.dependencyRecomputations()).toBe(3)
     selectorDefaultParametric(store.getState(), 2)
     expect(selectorDefaultParametric.recomputations()).toBe(4)
+    expect(selectorDefaultParametric.dependencyRecomputations()).toBe(4)
     const selectorDefaultParametricArgsWeakMap = createSelector(
       [(state: RootState, id: number) => id, (state: RootState) => state.todos],
       (id, todos) => todos.filter(todo => todo.id === id),
@@ -687,14 +713,23 @@ describe('argsMemoize and memoize', () => {
     selectorDefaultParametricArgsWeakMap(store.getState(), 1)
     selectorDefaultParametricArgsWeakMap(store.getState(), 1)
     expect(selectorDefaultParametricArgsWeakMap.recomputations()).toBe(1)
+    expect(
+      selectorDefaultParametricArgsWeakMap.dependencyRecomputations()
+    ).toBe(1)
     selectorDefaultParametricArgsWeakMap(store.getState(), 2)
     selectorDefaultParametricArgsWeakMap(store.getState(), 1)
     expect(selectorDefaultParametricArgsWeakMap.recomputations()).toBe(2)
+    expect(
+      selectorDefaultParametricArgsWeakMap.dependencyRecomputations()
+    ).toBe(2)
     selectorDefaultParametricArgsWeakMap(store.getState(), 2)
     // If we call the selector with 1, then 2, then 1 and back to 2 again,
     // `defaultMemoize` will recompute a total of 4 times,
     // but weakMapMemoize will recompute only twice.
     expect(selectorDefaultParametricArgsWeakMap.recomputations()).toBe(2)
+    expect(
+      selectorDefaultParametricArgsWeakMap.dependencyRecomputations()
+    ).toBe(2)
     for (let i = 0; i < 10; i++) {
       selectorDefaultParametricArgsWeakMap(store.getState(), 1)
       selectorDefaultParametricArgsWeakMap(store.getState(), 2)
@@ -703,6 +738,9 @@ describe('argsMemoize and memoize', () => {
       selectorDefaultParametricArgsWeakMap(store.getState(), 5)
     }
     expect(selectorDefaultParametricArgsWeakMap.recomputations()).toBe(5)
+    expect(
+      selectorDefaultParametricArgsWeakMap.dependencyRecomputations()
+    ).toBe(5)
     for (let i = 0; i < 10; i++) {
       selectorDefaultParametric(store.getState(), 1)
       selectorDefaultParametric(store.getState(), 2)
@@ -711,6 +749,7 @@ describe('argsMemoize and memoize', () => {
       selectorDefaultParametric(store.getState(), 5)
     }
     expect(selectorDefaultParametric.recomputations()).toBe(54)
+    expect(selectorDefaultParametric.dependencyRecomputations()).toBe(54)
     for (let i = 0; i < 10; i++) {
       selectorDefaultParametricWeakMap(store.getState(), 1)
       selectorDefaultParametricWeakMap(store.getState(), 2)
@@ -719,6 +758,7 @@ describe('argsMemoize and memoize', () => {
       selectorDefaultParametricWeakMap(store.getState(), 5)
     }
     expect(selectorDefaultParametricWeakMap.recomputations()).toBe(5)
+    expect(selectorDefaultParametricWeakMap.dependencyRecomputations()).toBe(50)
   })
 
   localTest('passing argsMemoize to createSelectorCreator', ({ store }) => {
@@ -765,7 +805,9 @@ describe('argsMemoize and memoize', () => {
       ])
     ).to.be.an('array').that.is.not.empty
     expect(selectorMicroMemoize.recomputations()).to.be.a('number')
+    expect(selectorMicroMemoize.dependencyRecomputations()).to.be.a('number')
     expect(selectorMicroMemoize.resetRecomputations()).toBe(0)
+    expect(selectorMicroMemoize.resetDependencyRecomputations()).toBe(0)
     expect(selectorMicroMemoize.resultFunc).to.be.a('function')
     expect(
       selectorMicroMemoize.resultFunc([
@@ -829,7 +871,13 @@ describe('argsMemoize and memoize', () => {
       ])
     ).to.be.an('array').that.is.not.empty
     expect(selectorMicroMemoizeOverridden.recomputations()).to.be.a('number')
+    expect(selectorMicroMemoizeOverridden.dependencyRecomputations()).to.be.a(
+      'number'
+    )
     expect(selectorMicroMemoizeOverridden.resetRecomputations()).toBe(0)
+    expect(selectorMicroMemoizeOverridden.resetDependencyRecomputations()).toBe(
+      0
+    )
     expect(
       selectorMicroMemoizeOverridden.resultFunc([
         {
@@ -905,7 +953,13 @@ describe('argsMemoize and memoize', () => {
       selectorMicroMemoizeOverrideArgsMemoizeOnly.recomputations()
     ).to.be.a('number')
     expect(
+      selectorMicroMemoizeOverrideArgsMemoizeOnly.dependencyRecomputations()
+    ).to.be.a('number')
+    expect(
       selectorMicroMemoizeOverrideArgsMemoizeOnly.resetRecomputations()
+    ).toBe(0)
+    expect(
+      selectorMicroMemoizeOverrideArgsMemoizeOnly.resetDependencyRecomputations()
     ).toBe(0)
     expect(
       selectorMicroMemoizeOverrideArgsMemoizeOnly.resultFunc([
@@ -976,9 +1030,15 @@ describe('argsMemoize and memoize', () => {
     expect(selectorMicroMemoizeOverrideMemoizeOnly.recomputations()).to.be.a(
       'number'
     )
+    expect(
+      selectorMicroMemoizeOverrideMemoizeOnly.dependencyRecomputations()
+    ).to.be.a('number')
     expect(selectorMicroMemoizeOverrideMemoizeOnly.resetRecomputations()).toBe(
       0
     )
+    expect(
+      selectorMicroMemoizeOverrideMemoizeOnly.resetDependencyRecomputations()
+    ).toBe(0)
     expect(
       selectorMicroMemoizeOverrideMemoizeOnly.resultFunc([
         {
@@ -1009,9 +1069,7 @@ describe('argsMemoize and memoize', () => {
       const selector1 = createSelector(
         [(state: RootState) => state.todos],
         todos => todos.map(({ id }) => id),
-        {
-          memoize: weakMapMemoize
-        }
+        { memoize: weakMapMemoize }
       )
       expect(() =>
         //@ts-expect-error
@@ -1058,54 +1116,27 @@ describe('argsMemoize and memoize', () => {
         (state: RootState) => state.users,
         (state: RootState) => state.users,
         (state: RootState, id: number) => state.users,
-        // (state: RootState) => ({ ...state.users }),
         users => {
-          console.log('run')
           return users.user.details.preferences.notifications.push.frequency
         },
         { inputStabilityCheck: 'never' }
       )
-      let start = performance.now()
+      const start = performance.now()
       for (let i = 0; i < 10_000_000; i++) {
         selectorDefault(state)
       }
-      console.log(performance.now() - start)
+      expect(performance.now() - start).toBeLessThan(1000)
       selectorDefault1(state)
-      const element2 = store.getState()
+      const stateBeforeChange = store.getState()
       selectorDefault2(store.getState(), 0)
-      const element = store.getState()
+      const stateBeforeChange1 = store.getState()
       store.dispatch(toggleCompleted(0))
-      const element1 = store.getState()
-      console.log(element === element1)
-      console.log(element.alerts === element1.alerts)
-      console.log(element.todos[1] === element1.todos[1])
-      console.log(element === element2)
-      console.log(element.alerts === element2.alerts)
-      selectorDefault2(store.getState(), 0)
-      selectorDefault2(store.getState(), 0)
-      selectorDefault2(store.getState(), 0)
-      start = performance.now()
-      for (let i = 0; i < 100_000_000; i++) {
-        selector(state)
-      }
-      console.log(selector.memoize.name, performance.now() - start)
-      start = performance.now()
-      for (let i = 0; i < 100_000_000; i++) {
-        selector1(state)
-      }
-      console.log(selector1.memoize.name, performance.now() - start)
-      start = performance.now()
-      for (let i = 0; i < 100; i++) {
-        selectorDefault2(store.getState(), 0)
-        // selectorDefault2({ ...state }, 0)
-        // selectorDefault2({ users: { user: { id: 0, status: '', details: { preferences: { notifications: { push: { frequency: '' } } } } } } })
-      }
-      console.log(
-        selectorDefault2.memoize.name,
-        performance.now() - start,
-        selectorDefault2.recomputations(),
-        called
-      )
+      const stateAfterChange = store.getState()
+      expect(stateBeforeChange1).not.toBe(stateAfterChange)
+      expect(stateBeforeChange1.alerts).toBe(stateAfterChange.alerts)
+      expect(stateBeforeChange1.todos[1]).toBe(stateAfterChange.todos[1])
+      expect(stateBeforeChange1).toBe(stateBeforeChange)
+      expect(stateBeforeChange1.alerts).toBe(stateBeforeChange.alerts)
     }
   )
 })
