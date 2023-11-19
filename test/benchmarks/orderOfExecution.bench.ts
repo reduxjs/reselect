@@ -43,7 +43,10 @@ describe('less in input selectors vs more in input selectors', () => {
     time: 0
   }
   setFunctionNames({ selectorGood, selectorBad, nonMemoized })
-  const createOptions = <S extends OutputSelector>(selector: S) => {
+  const createOptions = <S extends OutputSelector>(
+    selector: S,
+    commonOptions: Options = {}
+  ) => {
     const options: Options = {
       setup: (task, mode) => {
         if (mode === 'warmup') return
@@ -57,27 +60,21 @@ describe('less in input selectors vs more in input selectors', () => {
         }
       }
     }
-    return options
+    return { ...commonOptions, ...options }
   }
   bench(
     selectorGood,
     () => {
       selectorGood(store.getState(), 0)
     },
-    {
-      ...commonOptions,
-      ...createOptions(selectorGood)
-    }
+    createOptions(selectorGood, commonOptions)
   )
   bench(
     selectorBad,
     () => {
       selectorBad(store.getState(), 0)
     },
-    {
-      ...commonOptions,
-      ...createOptions(selectorBad)
-    }
+    createOptions(selectorBad, commonOptions)
   )
   bench(
     nonMemoized,
@@ -120,13 +117,9 @@ describe('using standalone memoization methods vs createSelector', () => {
     return state.users.appSettings
   })
   setFunctionNames({ fieldAccessor, fieldAccessor1 })
-  const createOptions = <
-    S extends Selector & {
-      recomputations: () => number
-      dependencyRecomputations: () => number
-    }
-  >(
-    selector: S
+  const createOptions = <S extends OutputSelector>(
+    selector: S,
+    commonOptions: Options = {}
   ) => {
     const options: Options = {
       setup: (task, mode) => {
@@ -141,14 +134,14 @@ describe('using standalone memoization methods vs createSelector', () => {
         }
       }
     }
-    return options
+    return { ...commonOptions, ...options }
   }
   bench(
     fieldAccessor,
     () => {
       fieldAccessor(store.getState())
     },
-    { ...commonOptions, ...createOptions(fieldAccessor) }
+    createOptions(fieldAccessor, commonOptions)
   )
   bench(
     fieldAccessor1,

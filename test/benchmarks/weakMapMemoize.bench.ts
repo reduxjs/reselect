@@ -1,4 +1,4 @@
-import type { Selector } from 'reselect'
+import type { OutputSelector, Selector } from 'reselect'
 import {
   createSelector,
   unstable_autotrackMemoize as autotrackMemoize,
@@ -6,20 +6,23 @@ import {
 } from 'reselect'
 import { bench } from 'vitest'
 import type { RootState } from '../testUtils'
-import { setFunctionNames, setupStore } from '../testUtils'
+import {
+  logRecomputations,
+  resetSelector,
+  setFunctionNames,
+  setupStore
+} from '../testUtils'
 
 import type { Options } from 'tinybench'
 
-const store = setupStore()
-const state = store.getState()
-const arr = Array.from({ length: 30 }, (e, i) => i)
-
-const commonOptions: Options = {
-  iterations: 10,
-  time: 0
-}
-
-describe('weakMapMemoize vs defaultMemoize', () => {
+describe('weakMapMemoize vs others', () => {
+  const store = setupStore()
+  const state = store.getState()
+  const arr = Array.from({ length: 30 }, (e, i) => i)
+  const commonOptions: Options = {
+    iterations: 10,
+    time: 0
+  }
   const selectorDefault = createSelector(
     [(state: RootState) => state.todos, (state: RootState, id: number) => id],
     (todos, id) => todos.map(todo => todo.id === id)
@@ -90,7 +93,7 @@ describe('weakMapMemoize vs defaultMemoize', () => {
     selectorBothAutotrack,
     nonMemoizedSelector
   })
-  const runSelector = (selector: Selector) => {
+  const runSelector = <S extends Selector>(selector: S) => {
     arr.forEach((e, i) => {
       selector(state, e)
     })
@@ -98,237 +101,102 @@ describe('weakMapMemoize vs defaultMemoize', () => {
       selector(state, e)
     })
   }
+
+  const createOptions = <S extends OutputSelector>(
+    selector: S,
+    commonOptions: Options = {}
+  ) => {
+    const options: Options = {
+      setup: (task, mode) => {
+        if (mode === 'warmup') return
+        resetSelector(selector)
+        task.opts = {
+          afterAll: () => {
+            logRecomputations(selector)
+          }
+        }
+      }
+    }
+    return { ...commonOptions, ...options }
+  }
   bench(
     selectorDefault,
     () => {
       runSelector(selectorDefault)
     },
-    {
-      ...commonOptions,
-      setup: (task, mode) => {
-        if (mode === 'warmup') return
-        selectorDefault.clearCache()
-        selectorDefault.resetRecomputations()
-        selectorDefault.memoizedResultFunc.clearCache()
-        task.opts = {
-          afterAll: () => {
-            console.log(
-              `${selectorDefault.name} recomputations after:`,
-              selectorDefault.recomputations() - 1
-            )
-          }
-        }
-      }
-    }
+    createOptions(selectorDefault, commonOptions)
   )
   bench(
     selectorDefaultWithCacheSize,
     () => {
       runSelector(selectorDefaultWithCacheSize)
     },
-    {
-      ...commonOptions,
-      setup: (task, mode) => {
-        if (mode === 'warmup') return
-        selectorDefaultWithCacheSize.clearCache()
-        selectorDefaultWithCacheSize.resetRecomputations()
-        selectorDefaultWithCacheSize.memoizedResultFunc.clearCache()
-        task.opts = {
-          afterAll: () => {
-            console.log(
-              `${selectorDefaultWithCacheSize.name} recomputations after:`,
-              selectorDefaultWithCacheSize.recomputations() - 1
-            )
-          }
-        }
-      }
-    }
+    createOptions(selectorDefaultWithCacheSize, commonOptions)
+
   )
   bench(
     selectorDefaultWithArgsCacheSize,
     () => {
       runSelector(selectorDefaultWithArgsCacheSize)
     },
-    {
-      ...commonOptions,
-      setup: (task, mode) => {
-        if (mode === 'warmup') return
-        selectorDefaultWithArgsCacheSize.clearCache()
-        selectorDefaultWithArgsCacheSize.resetRecomputations()
-        selectorDefaultWithArgsCacheSize.memoizedResultFunc.clearCache()
-        task.opts = {
-          afterAll: () => {
-            console.log(
-              `${selectorDefaultWithArgsCacheSize.name} recomputations after:`,
-              selectorDefaultWithArgsCacheSize.recomputations() - 1
-            )
-          }
-        }
-      }
-    }
+    createOptions(selectorDefaultWithArgsCacheSize, commonOptions)
+
   )
   bench(
     selectorDefaultWithBothCacheSize,
     () => {
       runSelector(selectorDefaultWithBothCacheSize)
     },
-    {
-      ...commonOptions,
-      setup: (task, mode) => {
-        if (mode === 'warmup') return
-        selectorDefaultWithBothCacheSize.clearCache()
-        selectorDefaultWithBothCacheSize.resetRecomputations()
-        selectorDefaultWithBothCacheSize.memoizedResultFunc.clearCache()
-        task.opts = {
-          afterAll: () => {
-            console.log(
-              `${selectorDefaultWithBothCacheSize.name} recomputations after:`,
-              selectorDefaultWithBothCacheSize.recomputations() - 1
-            )
-          }
-        }
-      }
-    }
+    createOptions(selectorDefaultWithBothCacheSize, commonOptions)
+
   )
   bench(
     selectorWeakMap,
     () => {
       runSelector(selectorWeakMap)
     },
-    {
-      ...commonOptions,
-      setup: (task, mode) => {
-        if (mode === 'warmup') return
-        selectorWeakMap.clearCache()
-        selectorWeakMap.resetRecomputations()
-        selectorWeakMap.memoizedResultFunc.clearCache()
-        task.opts = {
-          afterAll: () => {
-            console.log(
-              `${selectorWeakMap.name} recomputations after:`,
-              selectorWeakMap.recomputations() - 1,
-              selectorWeakMap.dependencyRecomputations()
-            )
-          }
-        }
-      }
-    }
+    createOptions(selectorWeakMap, commonOptions)
+
   )
   bench(
     selectorArgsWeakMap,
     () => {
       runSelector(selectorArgsWeakMap)
     },
-    {
-      ...commonOptions,
-      setup: (task, mode) => {
-        if (mode === 'warmup') return
-        selectorArgsWeakMap.clearCache()
-        selectorArgsWeakMap.resetRecomputations()
-        selectorArgsWeakMap.memoizedResultFunc.clearCache()
-        task.opts = {
-          afterAll: () => {
-            console.log(
-              `${selectorArgsWeakMap.name} recomputations after:`,
-              selectorArgsWeakMap.recomputations() - 1,
-              selectorArgsWeakMap.dependencyRecomputations()
-            )
-          }
-        }
-      }
-    }
+    createOptions(selectorArgsWeakMap, commonOptions)
+
   )
   bench(
     selectorBothWeakMap,
     () => {
       runSelector(selectorBothWeakMap)
     },
-    {
-      ...commonOptions,
-      setup: (task, mode) => {
-        if (mode === 'warmup') return
-        selectorBothWeakMap.clearCache()
-        selectorBothWeakMap.resetRecomputations()
-        selectorBothWeakMap.memoizedResultFunc.clearCache()
-        task.opts = {
-          afterAll: () => {
-            console.log(
-              `${selectorBothWeakMap.name} recomputations after:`,
-              selectorBothWeakMap.recomputations() - 1
-            )
-          }
-        }
-      }
-    }
+    createOptions(selectorBothWeakMap, commonOptions)
+
   )
   bench(
     selectorAutotrack,
     () => {
       runSelector(selectorAutotrack)
     },
-    {
-      ...commonOptions,
-      setup: (task, mode) => {
-        if (mode === 'warmup') return
-        selectorAutotrack.clearCache()
-        selectorAutotrack.resetRecomputations()
-        selectorAutotrack.memoizedResultFunc.clearCache()
-        task.opts = {
-          afterAll: () => {
-            console.log(
-              `${selectorAutotrack.name} recomputations after:`,
-              selectorAutotrack.recomputations() - 1
-            )
-          }
-        }
-      }
-    }
+    createOptions(selectorAutotrack, commonOptions)
+
   )
   bench(
     selectorArgsAutotrack,
     () => {
       runSelector(selectorArgsAutotrack)
     },
-    {
-      ...commonOptions,
-      setup: (task, mode) => {
-        if (mode === 'warmup') return
-        selectorArgsAutotrack.clearCache()
-        selectorArgsAutotrack.resetRecomputations()
-        selectorArgsAutotrack.memoizedResultFunc.clearCache()
-        task.opts = {
-          afterAll: () => {
-            console.log(
-              `${selectorArgsAutotrack.name} recomputations after:`,
-              selectorArgsAutotrack.recomputations() - 1
-            )
-          }
-        }
-      }
-    }
+    createOptions(selectorArgsAutotrack, commonOptions)
+
   )
   bench(
     selectorBothAutotrack,
     () => {
       runSelector(selectorBothAutotrack)
     },
-    {
-      ...commonOptions,
-      setup: (task, mode) => {
-        if (mode === 'warmup') return
-        selectorBothAutotrack.clearCache()
-        selectorBothAutotrack.resetRecomputations()
-        selectorBothAutotrack.memoizedResultFunc.clearCache()
-        task.opts = {
-          afterAll: () => {
-            console.log(
-              `${selectorBothAutotrack.name} recomputations after:`,
-              selectorBothAutotrack.recomputations() - 1
-            )
-          }
-        }
-      }
-    }
+    createOptions(selectorBothAutotrack, commonOptions)
+
   )
   bench(
     nonMemoizedSelector,
@@ -340,6 +208,15 @@ describe('weakMapMemoize vs defaultMemoize', () => {
 })
 
 describe('weakMapMemoize simple examples', () => {
+  const store = setupStore()
+  const state = store.getState()
+  const arr = Array.from({ length: 30 }, (e, i) => i)
+  const commonOptions: Options = {
+    warmupIterations: 0,
+    warmupTime: 0,
+    iterations: 1,
+    time: 0
+  }
   const selectorDefault = createSelector(
     [(state: RootState) => state.todos],
     todos => todos.map(({ id }) => id)
@@ -361,73 +238,100 @@ describe('weakMapMemoize simple examples', () => {
     selectorAutotrack
   })
 
+  const createOptions = <S extends OutputSelector>(selector: S) => {
+    const options: Options = {
+      setup: (task, mode) => {
+        if (mode === 'warmup') return
+        resetSelector(selector)
+        task.opts = {
+          afterAll: () => {
+            logRecomputations(selector)
+          }
+        }
+      }
+    }
+    return { ...commonOptions, ...options }
+  }
+
   bench(
     selectorDefault,
     () => {
       selectorDefault(store.getState())
     },
-    {
-      ...commonOptions,
-      setup: (task, mode) => {
-        if (mode === 'warmup') return
-        selectorDefault.clearCache()
-        selectorDefault.resetRecomputations()
-        selectorDefault.memoizedResultFunc.clearCache()
-        task.opts = {
-          afterAll: () => {
-            console.log(
-              `${selectorDefault.name} recomputations after:`,
-              selectorDefault.recomputations() - 1
-            )
-          }
-        }
-      }
-    }
+    createOptions(selectorDefault)
   )
   bench(
     selectorWeakMap,
     () => {
       selectorWeakMap(store.getState())
     },
-    {
-      ...commonOptions,
-      setup: (task, mode) => {
-        if (mode === 'warmup') return
-        selectorWeakMap.clearCache()
-        selectorWeakMap.resetRecomputations()
-        selectorWeakMap.memoizedResultFunc.clearCache()
-        task.opts = {
-          afterAll: () => {
-            console.log(
-              `${selectorWeakMap.name} recomputations after:`,
-              selectorWeakMap.recomputations() - 1
-            )
-          }
-        }
-      }
-    }
+    createOptions(selectorWeakMap)
   )
   bench(
     selectorAutotrack,
     () => {
       selectorAutotrack(store.getState())
     },
-    {
-      ...commonOptions,
+    createOptions(selectorAutotrack)
+  )
+})
+
+describe.skip('weakMapMemoize vs defaultMemoize memory leak', () => {
+  const store = setupStore()
+  const state = store.getState()
+  const arr = Array.from({ length: 2_000_000 }, (e, i) => i)
+  const commonOptions: Options = {
+    warmupIterations: 0,
+    warmupTime: 0,
+    iterations: 1,
+    time: 0
+  }
+  const selectorDefault = createSelector(
+    [(state: RootState) => state.todos, (state: RootState, id: number) => id],
+    todos => todos.map(({ id }) => id)
+  )
+  const selectorWeakMap = createSelector(
+    [(state: RootState) => state.todos, (state: RootState, id: number) => id],
+    todos => todos.map(({ id }) => id),
+    { argsMemoize: weakMapMemoize, memoize: weakMapMemoize }
+  )
+  const runSelector = <S extends Selector>(selector: S) => {
+    arr.forEach((e, i) => {
+      selector(state, e)
+    })
+    arr.forEach((e, i) => {
+      selector(state, e)
+    })
+  }
+  setFunctionNames({ selectorDefault, selectorWeakMap })
+  const createOptions = <S extends OutputSelector>(
+    selector: S,
+    commonOptions: Options = {}
+  ) => {
+    const options: Options = {
       setup: (task, mode) => {
         if (mode === 'warmup') return
-        selectorAutotrack.clearCache()
-        selectorAutotrack.resetRecomputations()
-        selectorAutotrack.memoizedResultFunc.clearCache()
         task.opts = {
           afterAll: () => {
-            console.log(
-              `${selectorAutotrack.name} recomputations after:`,
-              selectorAutotrack.recomputations() - 1
-            )
+            logRecomputations(selector)
           }
         }
       }
     }
+    return { ...commonOptions, ...options }
+  }
+  bench(
+    selectorDefault,
+    () => {
+      runSelector(selectorDefault)
+    },
+    createOptions(selectorDefault, commonOptions)
+  )
+  bench(
+    selectorWeakMap,
+    () => {
+      runSelector(selectorWeakMap)
+    },
+    createOptions(selectorWeakMap, commonOptions)
   )
 })
