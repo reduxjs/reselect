@@ -18,7 +18,7 @@
     "types": ["vitest/globals"],
     "paths": {
       "reselect": ["../src/index.ts"], // @remap-prod-remove-line
-      "@internal/*": ["src/*"]
+      "@internal/*": ["../src/*"]
     }
   },
   "include": ["**/*.ts"]
