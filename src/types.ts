@@ -432,7 +432,7 @@ export type ExtractMemoizerFields<MemoizeFunction extends UnknownMemoizer> =
  */
 export type ExtractReturnType<FunctionsArray extends readonly AnyFunction[]> = {
   [Index in keyof FunctionsArray]: FunctionsArray[Index] extends FunctionsArray[number]
-    ? ReturnType<FunctionsArray[Index]>
+    ? FallbackIfUnknown<ReturnType<FunctionsArray[Index]>, any>
     : never
 }
 
@@ -611,6 +611,28 @@ export type ObjectValuesToTuple<
 > = KS extends [infer K, ...infer KT]
   ? ObjectValuesToTuple<T, KT, [...R, T[K & keyof T]]>
   : R
+
+/**
+ * An if-else-like type that resolves depending on whether the given type is `unknown`.
+ * @see {@link https://github.com/sindresorhus/type-fest/blob/main/source/if-unknown.d.ts Source}
+ *
+ * @internal
+ */
+export type IfUnknown<T, TypeIfUnknown, TypeIfNotUnknown> = unknown extends T // `T` can be `unknown` or `any`
+  ? [T] extends [null] // `any` can be `null`, but `unknown` can't be
+    ? TypeIfNotUnknown
+    : TypeIfUnknown
+  : TypeIfNotUnknown
+
+/**
+ * When a type is resolves to `unknown`, fallback to a different type.
+ *
+ * @template T - Type to be checked.
+ * @template FallbackTo - Type to fallback to if `T` resolves to `unknown`.
+ *
+ * @internal
+ */
+export type FallbackIfUnknown<T, FallbackTo> = IfUnknown<T, FallbackTo, T>
 
 /**
  *
