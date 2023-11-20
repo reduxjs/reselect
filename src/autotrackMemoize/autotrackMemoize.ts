@@ -65,6 +65,8 @@ import { createCache } from './autotracking'
  *
  * @template Func - The type of the function that is memoized.
  *
+ * @see {@link https://github.com/reduxjs/reselect#unstable_autotrackmemoizefunc---since-500 autotrackMemoize}
+ *
  * @since 5.0.0
  * @public
  * @experimental
