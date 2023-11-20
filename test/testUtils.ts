@@ -415,10 +415,63 @@ export const resetSelector = <S extends OutputSelector>(selector: S) => {
   selector.memoizedResultFunc.clearCache()
 }
 
-export const logRecomputations = <S extends OutputSelector>(selector: S) => {
+export const logSelectorRecomputations = <S extends OutputSelector>(
+  selector: S
+) => {
   console.log(
-    `${selector.name} result function recalculated:`,
+    `\x1B[32m\x1B[1m${selector.name}\x1B[0m result function recalculated:`,
     selector.recomputations(),
-    `time(s)`
+    'time(s)'
   )
+}
+
+export const logFunctionInfo = (func: AnyFunction, recomputations: number) => {
+  console.log(
+    `\x1B[32m\x1B[1m${func.name}\x1B[0m was called:`,
+    recomputations,
+    'time(s)'
+  )
+}
+
+export const safeApply = <Params extends any[], Result>(
+  func: (...args: Params) => Result,
+  args: Params
+) => func.apply<null, Params, Result>(null, args)
+
+export const countRecomputations = <
+  Params extends any[],
+  Result,
+  AdditionalFields
+>(
+  func: ((...args: Params) => Result) & AdditionalFields
+) => {
+  let recomputations = 0
+  const wrapper = (...args: Params) => {
+    recomputations++
+    return safeApply(func, args)
+  }
+  return Object.assign(
+    wrapper,
+    {
+      recomputations: () => recomputations,
+      resetRecomputations: () => (recomputations = 0)
+    },
+    func
+  )
+}
+
+export const runMultipleTimes = <Params extends any[]>(
+  func: (...args: Params) => any,
+  times: number,
+  ...args: Params
+) => {
+  for (let i = 0; i < times; i++) {
+    safeApply(func, args)
+  }
+}
+
+export const expensiveComputation = (times = 1_000_000) => {
+  for (let i = 0; i < times; i++) {
+    // Do nothing
+  }
 }

@@ -4,11 +4,11 @@ import {
   weakMapMemoize
 } from 'reselect'
 import type { Options } from 'tinybench'
-import { bench } from 'vitest'
+import { bench, describe } from 'vitest'
 import type { RootState } from '../testUtils'
 import { setFunctionNames, setupStore } from '../testUtils'
 
-describe('general benchmark', () => {
+describe('Memoize methods comparison', () => {
   const commonOptions: Options = {
     iterations: 10,
     time: 0
@@ -19,47 +19,46 @@ describe('general benchmark', () => {
     [(state: RootState) => state.todos],
     todos => todos.map(({ id }) => id)
   )
+  const selectorWeakMap = createSelector(
+    [(state: RootState) => state.todos],
+    todos => todos.map(({ id }) => id),
+    { memoize: weakMapMemoize }
+  )
   const selectorAutotrack = createSelector(
     [(state: RootState) => state.todos],
     todos => todos.map(({ id }) => id),
     { memoize: autotrackMemoize }
   )
-  const selectorWeakMap = createSelector(
+  const selectorArgsWeakMap = createSelector(
     [(state: RootState) => state.todos],
     todos => todos.map(({ id }) => id),
-    { memoize: weakMapMemoize }
+    { argsMemoize: weakMapMemoize }
   )
   const selectorArgsAutotrack = createSelector(
     [(state: RootState) => state.todos],
     todos => todos.map(({ id }) => id),
     { argsMemoize: autotrackMemoize }
   )
+  const selectorBothWeakMap = createSelector(
+    [(state: RootState) => state.todos],
+    todos => todos.map(({ id }) => id),
+    { argsMemoize: weakMapMemoize, memoize: weakMapMemoize }
+  )
+  const selectorBothAutotrack = createSelector(
+    [(state: RootState) => state.todos],
+    todos => todos.map(({ id }) => id),
+    { argsMemoize: autotrackMemoize, memoize: autotrackMemoize }
+  )
   const nonMemoizedSelector = (state: RootState) => {
     return state.todos.map(({ id }) => id)
   }
-  const selectorArgsWeakMap = createSelector(
-    [(state: RootState) => state.todos],
-    todos => todos.map(({ id }) => id),
-    { argsMemoize: weakMapMemoize }
-  )
-  const parametricSelector = createSelector(
-    [(state: RootState) => state.todos, (state: RootState, id: number) => id],
-    (todos, id) => todos[id]
-  )
-  const parametricSelectorWeakMapArgs = createSelector(
-    [(state: RootState) => state.todos, (state: RootState, id: number) => id],
-    (todos, id) => todos[id],
-    { argsMemoize: weakMapMemoize }
-  )
   setFunctionNames({
     selectorDefault,
     selectorAutotrack,
     selectorWeakMap,
     selectorArgsAutotrack,
     nonMemoizedSelector,
-    selectorArgsWeakMap,
-    parametricSelector,
-    parametricSelectorWeakMapArgs
+    selectorArgsWeakMap
   })
   bench(
     selectorDefault,
@@ -97,29 +96,29 @@ describe('general benchmark', () => {
     commonOptions
   )
   bench(
+    selectorBothWeakMap,
+    () => {
+      selectorBothWeakMap(state)
+    },
+    commonOptions
+  )
+  bench(
+    selectorBothAutotrack,
+    () => {
+      selectorBothAutotrack(state)
+    },
+    commonOptions
+  )
+  bench(
     nonMemoizedSelector,
     () => {
       nonMemoizedSelector(state)
     },
     commonOptions
   )
-  bench(
-    parametricSelector,
-    () => {
-      parametricSelector(state, 0)
-    },
-    commonOptions
-  )
-  bench(
-    parametricSelectorWeakMapArgs,
-    () => {
-      parametricSelectorWeakMapArgs(state, 0)
-    },
-    commonOptions
-  )
 })
 
-describe('for loops', () => {
+describe('Cached vs non-cached length in for loops', () => {
   const commonOptions: Options = {
     iterations: 10,
     time: 0
@@ -129,10 +128,9 @@ describe('for loops', () => {
   const { todos } = state
   const { length } = todos
   bench(
-    'for loop length not cached',
+    'length not cached',
     () => {
       for (let i = 0; i < todos.length; i++) {
-        //
         todos[i].completed
         todos[i].id
       }
@@ -140,10 +138,9 @@ describe('for loops', () => {
     commonOptions
   )
   bench(
-    'for loop length cached',
+    'length cached',
     () => {
       for (let i = 0; i < length; i++) {
-        //
         todos[i].completed
         todos[i].id
       }
@@ -151,10 +148,9 @@ describe('for loops', () => {
     commonOptions
   )
   bench(
-    'for loop length and arg cached',
+    'length and arg cached',
     () => {
       for (let i = 0; i < length; i++) {
-        //
         const arg = todos[i]
         arg.completed
         arg.id
