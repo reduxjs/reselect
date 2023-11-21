@@ -108,16 +108,17 @@ In addition to skipping unnecessary recalculations, `memoizedSelectCompletedTodo
 - [Terminology](#terminology)
 - [How Does Reselect Work?](#how-does-reselect-work)
   - [Cascading Memoization](#cascading-memoization)
-  - [Reselect Vs Standard Memoization](#reselect-vs-standard-memoization)
   - [Why Reselect Is Often Used With Redux](#why-reselect-is-often-used-with-redux)
 - [API](#api)
   - [**`createSelector`**][`createSelector`]
+  - [**`createSelectorCreator`**][`createSelectorCreator`]
+  - [**`createStructuredSelector`**][`createStructuredSelector`]
   - [**`defaultMemoize`**][`defaultMemoize`]
   - [**`weakMapMemoize`**][`weakMapMemoize`]
   - [**`unstable_autotrackMemoize`**][`unstable_autotrackMemoize`]
-  - [**`createSelectorCreator`**][`createSelectorCreator`]
-  - [**`createStructuredSelector`**][`createStructuredSelector`]
 - [Debugging Tools](#debuggingtools)
+  - [Development-Only Stability Checks](#development-only-stability-checks)
+  - [Output Selector Fields](#output-selector-fields)
 - [What's New in 5.0.0?](#v5summary)
 - [Optimizing Reselect](#optimizing-reselect)
 - [FAQ](#faq)
@@ -1053,6 +1054,10 @@ const selectTodoIds = createSelectorAutotrack(
 ## Debugging Tools
 
 <a id="developmentonlychecks"></a>
+
+### Development-Only Stability Checks
+
+Reselect includes extra checks in development mode to help catch and warn about mistakes in selector behavior.
 
 <a id="inputstabilitycheck"></a>
 
