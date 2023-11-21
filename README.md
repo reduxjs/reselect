@@ -1324,47 +1324,6 @@ const selectorBad = createSelector(
 
 ---
 
-## Additional Tips & Tricks
-
-<details><summary><b>Top Level Selectors Pattern</b></summary>
-
-This pattern simplifies the creation of selectors in your application. Start by defining a generic type for your top-level selectors:
-
-```ts
-import type { Selector } from 'reselect'
-
-export type TopLevelSelectors<State> = {
-  [K in keyof State as K extends string
-    ? `select${Capitalize<K>}`
-    : never]: Selector<State, State[K], never>
-}
-```
-
-With this setup, you can easily create top-level selectors for your application's state:
-
-```ts
-const topLevelSelectors: TopLevelSelectors<RootState> = {
-  selectAlerts: state => state.alerts,
-  selectTodos: state => state.todos,
-  selectUsers: state => state.users
-}
-```
-
-This approach allows for more streamlined and readable selector creation. For example:
-
-```ts
-const selectCompletedTodos = createSelector(
-  [topLevelSelectors.selectTodos],
-  todos => todos.filter(todo => todo.completed === true)
-)
-```
-
-</details>
-
-<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
-
----
-
 ## FAQ
 
 ### Why isn’t my selector recomputing when the input state changes?
