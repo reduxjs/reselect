@@ -28,6 +28,7 @@
     "lint": "eslint src test",
     "prepack": "yarn build",
     "bench": "vitest --run bench",
+    "codemod": "",
     "test": "node --expose-gc ./node_modules/vitest/dist/cli-wrapper.js run",
     "test:cov": "vitest run --coverage",
     "test:typescript": "tsc --noEmit -p typescript_test/tsconfig.json"
@@ -49,6 +50,7 @@
   "license": "MIT",
   "devDependencies": {
     "@reduxjs/toolkit": "^1.9.3",
+    "@types/jscodeshift": "^0.11.10",
     "@types/lodash": "^4.14.175",
     "@types/shelljs": "^0.8.11",
     "@typescript-eslint/eslint-plugin": "5.1.0",
@@ -69,5 +71,8 @@
     "tsup": "^6.7.0",
     "typescript": "^4.9",
     "vitest": "^0.34"
+  },
+  "dependencies": {
+    "jscodeshift": "^0.15.1"
   }
 }
