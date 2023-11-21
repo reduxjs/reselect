@@ -125,7 +125,7 @@ In addition to skipping unnecessary recalculations, `memoizedSelectCompletedTodo
   - [Why is my selector recomputing when the input state stays the same?](#why-is-my-selector-recomputing-when-the-input-state-stays-the-same)
   - [Can I use Reselect without Redux?](#can-i-use-reselect-without-redux)
   - [How do I create a selector that takes an argument?](#how-do-i-create-a-selector-that-takes-an-argument)
-  - [The default memoization function is no good, can I use a different one?](#the-default-memoization-function-is-no-good-can-i-use-a-different-one)
+  - [Can the memoization behavior be customized?](#can-the-memoization-behavior-be-customized)
   - [How do I test a selector?](#how-do-i-test-a-selector)
   - [Can I share a selector across multiple component instances?](#can-i-share-a-selector-across-multiple-component-instances)
   - [Are there TypeScript Typings?](#are-there-typescript-typings)
@@ -142,8 +142,6 @@ In addition to skipping unnecessary recalculations, `memoizedSelectCompletedTodo
 
 ## Terminology
 
-<details><summary><b>Click to expand</b></summary>
-
 - <a name="selector-function"></a>[**Selector Function**](#selector-function): A function that accepts one or more JavaScript values as arguments, and derives a result. When used with [Redux], the first argument is typically the entire Redux store state.
 - <a name="input-selectors"></a>[**input selectors**](#input-selectors): Basic selector functions used as building blocks for creating a memoized selector. They are passed as the first argument(s) to [`createSelector`], and are called with all selector arguments. They are responsible for extracting and providing necessary values to the [result function].
 - <a name="output-selector"></a>[**Output Selector**](#output-selector): The actual memoized selectors created by [`createSelector`].
@@ -158,8 +156,6 @@ const outputSelector = createSelector(
   resultFunc // Result function
 )
 ```
-
-</details>
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
@@ -184,7 +180,9 @@ In this pattern, the `finalSelector` is composed of several [input selectors], *
 
 ### Cascading Memoization
 
-<details><summary><b>Click to expand</b></summary>
+Reselect uses a two-stage "cascading" approach to memoizing functions:
+
+<details><summary><b>Detailed Explanation: Cascading Memoization</b></summary>
 
 The way Reselect works can be broken down into multiple parts:
 
@@ -206,11 +204,7 @@ The way Reselect works can be broken down into multiple parts:
 
 This behavior is what we call **_Cascading Double-Layer Memoization_**.
 
-</details>
-
-### Reselect Vs Standard Memoization
-
-<details><summary><b>Click to expand</b></summary>
+#### Reselect Vs Standard Memoization
 
 ##### Standard Memoization
 
@@ -231,7 +225,13 @@ This feature becomes crucial in [Redux] applications, where the `state` changes 
 > [!NOTE]
 > The [input selectors] take the same arguments as the [output selector].
 
+</details>
+
 ### Why Reselect Is Often Used With [Redux]
+
+While Reselect can be used independently from Redux, it is a standard tool used in most Redux applications to help optimize calculations and UI updates:
+
+<details><summary><b>Detailed Explanation: Reselect and Redux Optimization</b></summary>
 
 Imagine you have a selector like this:
 
@@ -258,9 +258,11 @@ Now when you call `selectCompletedTodos`, it re-runs, because we have effectivel
 
 ```ts
 selectCompletedTodos(store.getState())
-selectCompletedTodos(store.getState()) // Will not run, and the cached result will be returned.
+// Will not run, and the cached result will be returned.
+selectCompletedTodos(store.getState())
 store.dispatch(toggleRead(0))
-selectCompletedTodos(store.getState()) // It recalculates.
+// It recalculates.
+selectCompletedTodos(store.getState())
 ```
 
 But why? `selectCompletedTodos` only needs to access `state.todos`, and has nothing to do with `state.alerts`, so why have we broken memoization? Well that's because in [Redux] anytime you make a change to the root `state`, it gets shallowly updated, which means its reference changes, therefore a normal memoization function will always fail the comparison check on the arguments.
@@ -278,9 +280,12 @@ And now we have achieved memoization:
 
 ```ts
 selectCompletedTodos(store.getState())
-selectCompletedTodos(store.getState()) // Will not run, and the cached result will be returned.
+// Will not run, and the cached result will be returned.
+selectCompletedTodos(store.getState())
 store.dispatch(toggleRead(0))
-selectCompletedTodos(store.getState()) // The `input selectors` will run, But the `result function` is skipped and the cached result will be returned.
+// The `input selectors` will run, but the `result function` is
+// skipped and the cached result will be returned.
+selectCompletedTodos(store.getState())
 ```
 
 Even when the overall `state` changes, Reselect ensures efficient memoization through its unique approach. The [result function] doesn't re-run if the relevant part of the `state` (in this case `state.todos`), remains unchanged. This is due to Reselect's [**_Cascading Double-Layer Memoization_**][**_Cascading Memoization_**]. The first layer checks the entire `state`, and the second layer checks the results of the [input selectors]. If the first layer fails (due to a change in the overall `state`) but the second layer succeeds (because `state.todos` is unchanged), Reselect skips recalculating the [result function]. This dual-check mechanism makes Reselect particularly effective in [Redux] applications, ensuring computations are only done when truly necessary.
@@ -871,9 +876,9 @@ const selectItemsByCategory = createSelector(
 )
 
 selectItemsByCategory(state, 'Electronics') // Selector runs
-selectItemsByCategory(state, 'Electronics')
+selectItemsByCategory(state, 'Electronics') // Cached
 selectItemsByCategory(state, 'Stationery') // Selector runs
-selectItemsByCategory(state, 'Electronics')
+selectItemsByCategory(state, 'Electronics') // Still cached!
 ```
 
 This solves the problem of having to know and set the cache size prior to creating a memoized selector. Because `weakMapMemoize` essentially provides a dynamic cache size out of the box.
@@ -1049,8 +1054,6 @@ const selectTodoIds = createSelectorAutotrack(
 
 <a id="developmentonlychecks"></a>
 
-<details><summary><b>Development-only Checks - (since 5.0.0)</b></summary>
-
 <a id="inputstabilitycheck"></a>
 
 #### `inputStabilityCheck`
@@ -1123,13 +1126,11 @@ const selectCompletedTodosLength = createSelector(
 > [!WARNING]
 > This will override the global input stability check set by calling `setInputStabilityCheckEnabled`.
 
-</details>
-
 <a id="outputselectorfields"></a>
 
 ### Output Selector Fields
 
-<details><summary><b>The output selectors created by <code>createSelector</code> have several additional properties attached to them:</b></summary>
+The output selectors created by <code>createSelector</code> have several additional properties attached to them:
 
 | Name                            | Description                                                                                                                                                                                   |
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -1144,8 +1145,6 @@ const selectCompletedTodosLength = createSelector(
 | `memoize`                       | Function used to memoize the `resultFunc`.                                                                                                                                                    |
 | `argsMemoize`                   | Function used to memoize the arguments passed into the [output selector].                                                                                                                     |
 
-</details>
-
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
 ---
@@ -1154,7 +1153,7 @@ const selectCompletedTodosLength = createSelector(
 
 ## What's New in 5.0.0?
 
-<details><summary><b>Version 5.0.0 introduces several new features and improvements:</b></summary>
+Version 5.0.0 introduces several new features and improvements:
 
 - **Customization Enhancements**:
 
@@ -1365,19 +1364,15 @@ const selectCompletedTodos = createSelector(
 
 ### Why isn’t my selector recomputing when the input state changes?
 
-<details><summary><b>Answer</b></summary>
-
 Check that your memoization function is compatible with your state update function (i.e. the reducer if you are using [Redux]). For example, a selector created with [`createSelector`] will not work with a state update function that mutates an existing object instead of creating a new one each time. [`createSelector`] uses an identity check (`===`) to detect that an input has changed, so mutating an existing object will not trigger the selector to recompute because mutating an object does not change its identity. Note that if you are using [Redux], mutating the state object is [almost certainly a mistake](http://redux.js.org/docs/Troubleshooting.html).
 
-</details>
-
 ### Why is my selector recomputing when the input state stays the same?
-
-<details><summary><b>Answer</b></summary>
 
 To address unexpected recomputations in your selector, first ensure that `inputStabilityCheck` is set to either `'always'` or `'once'`. This setting aids in debugging by monitoring the stability of your inputs. Additionally, utilize [output selector fields] such as `recomputations`, `resetRecomputations`, `dependencyRecomputations`, and `resetDependencyRecomputations`. These tools help identify the source of the issue.
 
 Keep an eye on the `dependencyRecomputations` count. If it increases while `recomputations` remains the same, it suggests that your arguments are changing references but your [input selectors] are stable which is typically the desired behavior.
+
+<details><summary><b>Detailed Explanation: Selector Recomputations</b></summary>
 
 To delve deeper, you can determine which arguments are changing references too frequently by using the `argsMemoizeOptions` and `equalityCheck`. Consider the following example:
 
@@ -1411,15 +1406,22 @@ const selectAlertsByType = createSelector(
 
 ### Can I use Reselect without [Redux]?
 
-<details><summary><b>Answer</b></summary>
-
 Yes. Reselect has no dependencies on any other package, so although it was designed to be used with [Redux] it can be used independently. It can be used with any plain JS data, such as typical [React] state values, as long as that data is being updated immutably.
-
-</details>
 
 ### How do I create a selector that takes an argument?
 
-<details><summary><b>Answer</b></summary>
+Each of the [input selectors] you provide will be called with all of the selector's arguments. You can add additional input selectors to extract arguments and forward them to the [result function], like this:
+
+```ts
+const selectTodosByCategory = createSelector(
+  (state: RootState) => state.todos,
+  // Extract the second argument to pass it on
+  (state: RootState, category: string) => category,
+  (todos, category) => todos.filter(t => t.category === category)
+)
+```
+
+<details><summary><b>Detailed Explanation: Selectors and Arguments</b></summary>
 
 When creating a selector that accepts arguments in Reselect, it's important to structure your input and [output selector]s appropriately. Here are key points to consider:
 
@@ -1473,7 +1475,7 @@ const finalResult =
   items.filter(item => item.category === category && item.id !== id)
 ```
 
-<details><summary><b>Additional Examples</b></summary>
+In this example, `selectItemId` expects that its second argument will be some simple value, while `selectVendorName` expects that the second argument is an object. If you call `selectItemById(state, 42)`, `selectVendorName` will break because it's trying to access `42.name`. Reselect's TS types should detect this and prevent compilation:
 
 ```ts
 const selectItems = (state: RootState) => state.items
@@ -1493,25 +1495,17 @@ const selectItemById = createSelector(
 )
 ```
 
-In this example, `selectItemId` expects that its second argument will be some simple value, while `selectVendorName` expects that the second argument is an object. If you call `selectItemById(state, 42)`, `selectVendorName` will break because it's trying to access `42.name`.
-
 </details>
 
-</details>
+### Can the memoization behavior be customized?
 
-### The default memoization function is no good, can I use a different one?
-
-<details><summary><b>Answer</b></summary>
-
-We think it works great for a lot of use cases, but sure. See [these examples](#customize-equalitycheck-for-defaultmemoize).
-
-</details>
+Yes. The built-in `defaultMemoize` memoizer works great for a lot of use cases, but it can be customized or swapped out for a different memoizer. See [these examples](#customize-equalitycheck-for-defaultmemoize).
 
 ### How do I test a selector?
 
-<details><summary><b>Answer</b></summary>
+Selectors are pure functions - for a given input, a selector should always produce the same result. For this reason they are simple to unit test: call the selector with a set of inputs, and assert that the result value matches an expected shape.
 
-For a given input, a selector should always produce the same result. For this reason they are simple to unit test.
+<details><summary><b>Detailed Explanation: Testing Selectors</b></summary>
 
 ```ts
 interface RootState {
@@ -1577,33 +1571,36 @@ test('selector unit test', () => {
 
 ### Can I share a selector across multiple component instances?
 
-<details><summary><b>Answer</b></summary>
+Yes, although if they pass in different arguments, you will need to handle that in order for memoization to work consistently:
 
-Yes, as of 5.0.0 you can use [`weakMapMemoize`](#weakmapmemoizefunc---since-500) to achieve this.
-
-</details>
+- Pass a larger `maxSize` if using `defaultMemoize` ( as of 4.1.0+)
+- Use [`weakMapMemoize`](#weakmapmemoize) (as of 5.0.0+)
 
 ### Are there TypeScript Typings?
 
-<details><summary><b>Answer</b></summary>
-
 Yes! Reselect is now written in TypeScript itself, so they should Just Work™.
 
-</details>
-
 ### I am seeing a TypeScript error: `Type instantiation is excessively deep and possibly infinite`
-
-<details><summary><b>Answer</b></summary>
 
 Starting in 5.0.0 you should be able to nest up to 30 selectors, but in case you still run into this issue, you can refer to [this
 comment](https://github.com/reduxjs/reselect/issues/534#issuecomment-956708953) for a discussion of the problem, as
 relating to nested selectors.
 
-</details>
-
 ### How can I make a [curried](https://github.com/hemanth/functional-programming-jargon#currying) selector?
 
-<details><summary><b>Answer</b></summary>
+Selectors that take arguments are commonly used inside of React-Redux's `useSelector` by using a closure to pass along the extra arguments:
+
+```ts
+function TodosList({ category }) {
+  const filteredTodos = useSelector(state =>
+    selectTodosByCategory(state, category)
+  )
+}
+```
+
+If you prefer to use a curried form instead, you can create a curried selector with this recipe:
+
+<details><summary><b>Detailed Explanation: Creating Curried Selectors</b></summary>
 
 You can try this pattern:
 
@@ -1722,9 +1719,11 @@ const MyComponent: FC<Props> = ({ id }) => {
 
 </details>
 
-### How can I make pre-typed version of [`createSelector`](#createselectorinputselectors--inputselectors-resultfunc-createselectoroptions) for my root state?
+### How can I make pre-typed version of [`createSelector`](#createselector) for my root state?
 
-<details><summary><b>Answer</b></summary>
+When used with Redux, it's typical to have all input selectors take `(state: RootState)` as their first argument. Creating a pre-typed version of `createSelector` can shorten that repetition.
+
+<details><summary><b>Detailed Explanation: Pre-Typed `createSelector`</b></summary>
 
 You can create a custom typed version of [`createSelector`] by defining a utility type that extends the original [`createSelector`] function. Here's an example:
 
@@ -1776,11 +1775,9 @@ export const createAppSelector: TypedCreateSelector<RootState> = createSelector
 
 </details>
 
-### What if I want to use [`createSelector`](#createselectorinputselectors--inputselectors-resultfunc-createselectoroptions) without memoization?
+### What if I want to use [`createSelector`](#createselector) without memoization?
 
-<details><summary><b>Answer</b></summary>
-
-Create an [`identity function`][Identity Function]:
+There may be rare cases when you might want to use `createSelector` for its composition syntax, but without any memoization applied. In that case, create an [`identity function`][Identity Function] and use it as the memoizers:
 
 ```ts
 const identity = <Func extends (...args: any[]) => any>(func: Func) => func
@@ -1790,8 +1787,6 @@ const createNonMemoizedSelector = createSelectorCreator({
   argsMemoize: identity
 })
 ```
-
-</details>
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
@@ -1809,8 +1804,6 @@ const createNonMemoizedSelector = createSelectorCreator({
 </details>
 
 ## Related Projects
-
-<details><summary><b>Click to expand</b></summary>
 
 ### [re-reselect](https://github.com/toomuchdesign/re-reselect)
 
@@ -1837,8 +1830,6 @@ Inspired by Reselect Tools, so it also has all functionality from this library a
 - Selectors Inputs
 - Selectors Output (In case if selector not dependent from external arguments)
 - Shows "Not Memoized (NM)" selectors
-
-</details>
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
