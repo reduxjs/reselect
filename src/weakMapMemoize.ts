@@ -91,6 +91,8 @@ function createCacheNode<T>(): CacheNode<T> {
  *
  * @template Func - The type of the function that is memoized.
  *
+ * @see {@link https://github.com/reduxjs/reselect#weakmapmemoizefunc---since-500 weakMapMemoize}
+ *
  * @since 5.0.0
  * @public
  * @experimental

@@ -59,7 +59,7 @@ interface SelectorsObject {
  * The structured selector can take multiple input selectors
  * and map their output to an object with specific keys.
  *
- * @see {@link https://github.com/reduxjs/reselect#createstructuredselectorinputselectors-selectorcreator--createselector createStructuredSelector}
+ * @see {@link https://github.com/reduxjs/reselect#createstructuredselector-inputselectorsobject--selectorcreator--createselector createStructuredSelector}
  *
  * @public
  */
@@ -171,7 +171,7 @@ export interface StructuredSelectorCreator {
    * @template MemoizeFunction - The type of the memoize function that is used to create the structured selector. It defaults to `defaultMemoize`.
    * @template ArgsMemoizeFunction - The type of the of the memoize function that is used to memoize the arguments passed into the generated structured selector. It defaults to `defaultMemoize`.
    *
-   * @see {@link https://github.com/reduxjs/reselect#createstructuredselectorinputselectors-selectorcreator--createselector createStructuredSelector}
+   * @see {@link https://github.com/reduxjs/reselect#createstructuredselector-inputselectorsobject--selectorcreator--createselector createStructuredSelector}
    */
   <
     InputSelectorsObject extends SelectorsObject,
@@ -234,7 +234,7 @@ export interface StructuredSelectorCreator {
  * }))
  * ```
  *
- * @see {@link https://github.com/reduxjs/reselect#createstructuredselectorinputselectors-selectorcreator--createselector createStructuredSelector}
+ * @see {@link https://github.com/reduxjs/reselect#createstructuredselector-inputselectorsobject--selectorcreator--createselector createStructuredSelector}
  *
  * @public
  */

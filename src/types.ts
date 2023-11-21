@@ -75,9 +75,9 @@ export interface CreateSelectorOptions<
    *
    * @default 'once'
    *
-   * @see {@link https://github.com/reduxjs/reselect#development-only-checks development-only-checks}
+   * @see {@link https://github.com/reduxjs/reselect#debugging-tools debugging-tools}
    * @see {@link https://github.com/reduxjs/reselect#inputstabilitycheck inputStabilityCheck}
-   * @see {@link https://github.com/reduxjs/reselect#per-selector-configuration per-selector-configuration}
+   * @see {@link https://github.com/reduxjs/reselect#2-per-selector-by-passing-an-inputstabilitycheck-option-directly-to-createselector per-selector-configuration}
    *
    * @since 5.0.0
    */
