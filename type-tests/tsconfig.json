@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "strict": true,
+    "target": "ES2015",
+    "declaration": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "paths": {
+      "reselect": ["../src/index"], // @remap-prod-remove-line
+      "@internal/*": ["../src/*"]
+    }
+  }
+}

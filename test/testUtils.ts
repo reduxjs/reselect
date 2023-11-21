@@ -1,5 +1,13 @@
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { combineReducers, configureStore, createSlice } from '@reduxjs/toolkit'
+import { test } from 'vitest'
+import type {
+  AnyFunction,
+  OutputSelector,
+  Selector,
+  SelectorArray,
+  Simplify
+} from '../src/types'
 
 interface Todo {
   id: number
@@ -15,6 +23,63 @@ interface Alert {
   read: boolean
 }
 
+interface BillingAddress {
+  street: string
+  city: string
+  state: string
+  zip: string
+}
+
+interface Address extends BillingAddress {
+  billing: BillingAddress
+}
+
+interface PushNotification {
+  enabled: boolean
+  frequency: string
+}
+
+interface Notifications {
+  email: boolean
+  sms: boolean
+  push: PushNotification
+}
+
+interface Preferences {
+  newsletter: boolean
+  notifications: Notifications
+}
+
+interface Login {
+  lastLogin: string
+  loginCount: number
+}
+
+interface UserDetails {
+  name: string
+  email: string
+  address: Address
+  preferences: Preferences
+}
+
+interface User {
+  id: number
+  details: UserDetails
+  status: string
+  login: Login
+}
+
+interface AppSettings {
+  theme: string
+  language: string
+}
+
+interface UserState {
+  user: User
+  appSettings: AppSettings
+}
+
+// For long arrays
 const todoState = [
   {
     id: 0,
@@ -60,6 +125,25 @@ const todoState = [
   }
 ]
 
+export const createTodoItem = (id: number) => {
+  return {
+    id,
+    title: `Task ${id}`,
+    description: `Description for task ${id}`,
+    completed: false
+  }
+}
+
+export const pushToTodos = (howMany: number) => {
+  const { length: todoStateLength } = todoState
+  const limit = howMany + todoStateLength
+  for (let i = todoStateLength; i < limit; i++) {
+    todoState.push(createTodoItem(i))
+  }
+}
+
+pushToTodos(200)
+
 const alertState = [
   {
     id: 0,
@@ -102,6 +186,49 @@ const alertState = [
     read: false
   }
 ]
+
+// For nested fields tests
+const userState: UserState = {
+  user: {
+    id: 0,
+    details: {
+      name: 'John Doe',
+      email: 'john.doe@example.com',
+      address: {
+        street: '123 Main St',
+        city: 'AnyTown',
+        state: 'CA',
+        zip: '12345',
+        billing: {
+          street: '456 Main St',
+          city: 'AnyTown',
+          state: 'CA',
+          zip: '12345'
+        }
+      },
+      preferences: {
+        newsletter: true,
+        notifications: {
+          email: true,
+          sms: false,
+          push: {
+            enabled: true,
+            frequency: 'daily'
+          }
+        }
+      }
+    },
+    status: 'active',
+    login: {
+      lastLogin: '2023-04-30T12:34:56Z',
+      loginCount: 123
+    }
+  },
+  appSettings: {
+    theme: 'dark',
+    language: 'en-US'
+  }
+}
 
 const todoSlice = createSlice({
   name: 'todos',
@@ -151,6 +278,13 @@ const alertSlice = createSlice({
       }
     },
 
+    toggleRead: (state, action: PayloadAction<number>) => {
+      const alert = state.find(alert => alert.id === action.payload)
+      if (alert) {
+        alert.read = !alert.read
+      }
+    },
+
     addAlert: (state, action: PayloadAction<Omit<Alert, 'id'>>) => {
       const newId = state.length > 0 ? state[state.length - 1].id + 1 : 0
       state.push({
@@ -165,14 +299,79 @@ const alertSlice = createSlice({
   }
 })
 
-const rootReducer = combineReducers({
-  [todoSlice.name]: todoSlice.reducer,
-  [alertSlice.name]: alertSlice.reducer
+const userSlice = createSlice({
+  name: 'users',
+  initialState: userState,
+  reducers: {
+    setUserName: (state, action: PayloadAction<string>) => {
+      state.user.details.name = action.payload
+    },
+
+    setUserEmail: (state, action: PayloadAction<string>) => {
+      state.user.details.email = action.payload
+    },
+
+    setAppTheme: (state, action: PayloadAction<string>) => {
+      state.appSettings.theme = action.payload
+    },
+
+    updateUserStatus: (state, action: PayloadAction<string>) => {
+      state.user.status = action.payload
+    },
+
+    updateLoginDetails: (
+      state,
+      action: PayloadAction<{ lastLogin: string; loginCount: number }>
+    ) => {
+      state.user.login = { ...state.user.login, ...action.payload }
+    },
+
+    updateUserAddress: (state, action: PayloadAction<Address>) => {
+      state.user.details.address = {
+        ...state.user.details.address,
+        ...action.payload
+      }
+    },
+
+    updateBillingAddress: (state, action: PayloadAction<BillingAddress>) => {
+      state.user.details.address.billing = {
+        ...state.user.details.address.billing,
+        ...action.payload
+      }
+    },
+
+    toggleNewsletterSubscription: state => {
+      state.user.details.preferences.newsletter =
+        !state.user.details.preferences.newsletter
+    },
+
+    setNotificationPreferences: (
+      state,
+      action: PayloadAction<Notifications>
+    ) => {
+      state.user.details.preferences.notifications = {
+        ...state.user.details.preferences.notifications,
+        ...action.payload
+      }
+    },
+
+    updateAppLanguage: (state, action: PayloadAction<string>) => {
+      state.appSettings.language = action.payload
+    }
+  }
 })
 
-export const setupStore = () => configureStore({ reducer: rootReducer })
+const rootReducer = combineReducers({
+  [todoSlice.name]: todoSlice.reducer,
+  [alertSlice.name]: alertSlice.reducer,
+  [userSlice.name]: userSlice.reducer
+})
 
-export type AppStore = ReturnType<typeof setupStore>
+export const setupStore = (preloadedState?: Partial<RootState>) => {
+  return configureStore({ reducer: rootReducer, preloadedState })
+}
+
+export type AppStore = Simplify<ReturnType<typeof setupStore>>
 
 export type RootState = ReturnType<typeof rootReducer>
 
@@ -181,7 +380,8 @@ export interface LocalTestContext {
   state: RootState
 }
 
-export const { markAsRead, addAlert, removeAlert } = alertSlice.actions
+export const { markAsRead, addAlert, removeAlert, toggleRead } =
+  alertSlice.actions
 
 export const {
   toggleCompleted,
@@ -191,6 +391,50 @@ export const {
   clearCompleted
 } = todoSlice.actions
 
+export const { setUserName, setUserEmail, setAppTheme } = userSlice.actions
+
 // Since Node 16 does not support `structuredClone`
 export const deepClone = <T extends object>(object: T): T =>
   JSON.parse(JSON.stringify(object))
+
+export const setFunctionName = (func: AnyFunction, name: string) => {
+  Object.defineProperty(func, 'name', { value: name })
+}
+
+export const setFunctionNames = (funcObject: Record<string, AnyFunction>) => {
+  Object.entries(funcObject).forEach(([key, value]) =>
+    setFunctionName(value, key)
+  )
+}
+
+const store = setupStore()
+const state = store.getState()
+
+export const localTest = test.extend<LocalTestContext>({
+  store,
+  state
+})
+
+export const resetSelector = <S extends OutputSelector>(
+  selector: S
+) => {
+  selector.clearCache()
+  selector.resetRecomputations()
+  selector.resetDependencyRecomputations()
+  selector.memoizedResultFunc.clearCache()
+}
+
+export const logRecomputations = <
+  S extends OutputSelector
+>(
+  selector: S
+) => {
+  console.log(
+    `${selector.name} result function recalculated:`,
+    selector.recomputations(),
+    `time(s)`,
+    `input selectors recalculated:`,
+    selector.dependencyRecomputations(),
+    `time(s)`
+  )
+}

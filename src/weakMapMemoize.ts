@@ -1,22 +1,46 @@
 // Original source:
 // - https://github.com/facebook/react/blob/0b974418c9a56f6c560298560265dcf4b65784bc/packages/react/src/ReactCache.js
 
-import type { AnyFunction } from './types'
+import type { AnyFunction, DefaultMemoizeFields, Simplify } from './types'
 
 const UNTERMINATED = 0
 const TERMINATED = 1
 
 interface UnterminatedCacheNode<T> {
+  /**
+   * Status, represents whether the cached computation returned a value or threw an error.
+   */
   s: 0
+  /**
+   * Value, either the cached result or an error, depending on status.
+   */
   v: void
+  /**
+   * Object cache, a `WeakMap` where non-primitive arguments are stored.
+   */
   o: null | WeakMap<Function | Object, CacheNode<T>>
+  /**
+   * Primitive cache, a regular Map where primitive arguments are stored.
+   */
   p: null | Map<string | number | null | void | symbol | boolean, CacheNode<T>>
 }
 
 interface TerminatedCacheNode<T> {
+  /**
+   * Status, represents whether the cached computation returned a value or threw an error.
+   */
   s: 1
+  /**
+   * Value, either the cached result or an error, depending on status.
+   */
   v: T
+  /**
+   * Object cache, a `WeakMap` where non-primitive arguments are stored.
+   */
   o: null | WeakMap<Function | Object, CacheNode<T>>
+  /**
+   * Primitive cache, a regular `Map` where primitive arguments are stored.
+   */
   p: null | Map<string | number | null | void | symbol | boolean, CacheNode<T>>
 }
 
@@ -24,21 +48,21 @@ type CacheNode<T> = TerminatedCacheNode<T> | UnterminatedCacheNode<T>
 
 function createCacheNode<T>(): CacheNode<T> {
   return {
-    s: UNTERMINATED, // status, represents whether the cached computation returned a value or threw an error
-    v: undefined, // value, either the cached result or an error, depending on s
-    o: null, // object cache, a WeakMap where non-primitive arguments are stored
-    p: null // primitive cache, a regular Map where primitive arguments are stored.
+    s: UNTERMINATED,
+    v: undefined,
+    o: null,
+    p: null
   }
 }
 
 /**
  * Creates a tree of `WeakMap`-based cache nodes based on the identity of the
  * arguments it's been called with (in this case, the extracted values from your input selectors).
- * This allows `weakmapMemoize` to have an effectively infinite cache size.
+ * This allows `weakMapMemoize` to have an effectively infinite cache size.
  * Cache results will be kept in memory as long as references to the arguments still exist,
  * and then cleared out as the arguments are garbage-collected.
  *
- * __Design Tradeoffs for `weakmapMemoize`:__
+ * __Design Tradeoffs for `weakMapMemoize`:__
  * - Pros:
  *   - It has an effectively infinite cache size, but you have no control over
  *   how long values are kept in cache as it's based on garbage collection and `WeakMap`s.
@@ -47,7 +71,7 @@ function createCacheNode<T>(): CacheNode<T> {
  *   They're based on strict reference equality.
  *   - It's roughly the same speed as `defaultMemoize`, although likely a fraction slower.
  *
- * __Use Cases for `weakmapMemoize`:__
+ * __Use Cases for `weakMapMemoize`:__
  * - This memoizer is likely best used for cases where you need to call the
  * same selector instance with many different arguments, such as a single
  * selector instance that is used in a list item component and called with
@@ -63,13 +87,20 @@ function createCacheNode<T>(): CacheNode<T> {
  * ```ts
  * import { createSelector, weakMapMemoize } from 'reselect'
  *
- * const selectTodoById = createSelector(
+ * interface RootState {
+ *   items: { id: number; category: string; name: string }[]
+ * }
+ *
+ * const selectItemsByCategory = createSelector(
  *   [
- *     (state: RootState) => state.todos,
- *     (state: RootState, id: number) => id
+ *     (state: RootState) => state.items,
+ *     (state: RootState, category: string) => category
  *   ],
- *   (todos) => todos[id],
- *   { memoize: weakMapMemoize }
+ *   (items, category) => items.filter(item => item.category === category),
+ *   {
+ *     memoize: weakMapMemoize,
+ *     argsMemoize: weakMapMemoize
+ *   }
  * )
  * ```
  *
@@ -78,14 +109,14 @@ function createCacheNode<T>(): CacheNode<T> {
  * ```ts
  * import { createSelectorCreator, weakMapMemoize } from 'reselect'
  *
- * const createSelectorWeakmap = createSelectorCreator(weakMapMemoize)
+ * const createSelectorWeakMap = createSelectorCreator({ memoize: weakMapMemoize, argsMemoize: weakMapMemoize })
  *
- * const selectTodoById = createSelectorWeakmap(
+ * const selectItemsByCategory = createSelectorWeakMap(
  *   [
- *     (state: RootState) => state.todos,
- *     (state: RootState, id: number) => id
+ *     (state: RootState) => state.items,
+ *     (state: RootState, category: string) => category
  *   ],
- *   (todos) => todos[id]
+ *   (items, category) => items.filter(item => item.category === category)
  * )
  * ```
  *
@@ -98,14 +129,12 @@ function createCacheNode<T>(): CacheNode<T> {
  * @experimental
  */
 export function weakMapMemoize<Func extends AnyFunction>(func: Func) {
-  // we reference arguments instead of spreading them for performance reasons
-
   let fnNode = createCacheNode()
 
   function memoized() {
     let cacheNode = fnNode
-
-    for (let i = 0, l = arguments.length; i < l; i++) {
+    const { length } = arguments
+    for (let i = 0, l = length; i < l; i++) {
       const arg = arguments[i]
       if (
         typeof arg === 'function' ||
@@ -153,5 +182,5 @@ export function weakMapMemoize<Func extends AnyFunction>(func: Func) {
     fnNode = createCacheNode()
   }
 
-  return memoized as Func & { clearCache: () => void }
+  return memoized as Func & Simplify<DefaultMemoizeFields>
 }

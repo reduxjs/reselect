@@ -9,7 +9,7 @@ import type { TypedUseSelectorHook } from 'react-redux'
 import { useSelector } from 'react-redux'
 import type {
   GetStateFromSelectors,
-  ParametricSelector,
+  Selector,
   SelectorResultArray,
   TypedStructuredSelectorCreator
 } from 'reselect'
@@ -20,10 +20,7 @@ import {
   defaultEqualityCheck,
   defaultMemoize
 } from 'reselect'
-
-export function expectType<T>(t: T): T {
-  return t
-}
+import { expectExactType } from './typesTestUtils'
 
 type Exact<A, B> = (<T>() => T extends A ? 1 : 0) extends <T>() => T extends B
   ? 1
@@ -34,25 +31,6 @@ type Exact<A, B> = (<T>() => T extends A ? 1 : 0) extends <T>() => T extends B
       : never
     : never
   : never
-
-export declare type IsAny<T, True, False = never> = true | false extends (
-  T extends never ? true : false
-)
-  ? True
-  : False
-
-export declare type IsUnknown<T, True, False = never> = unknown extends T
-  ? IsAny<T, False, True>
-  : False
-
-type Equals<T, U> = IsAny<
-  T,
-  never,
-  IsAny<U, never, [T] extends [U] ? ([U] extends [T] ? any : never) : never>
->
-export function expectExactType<T>(t: T) {
-  return <U extends Equals<T, U>>(u: U) => {}
-}
 
 interface StateA {
   a: number
@@ -164,7 +142,7 @@ function testSelectorAsCombiner() {
 type Component<P> = (props: P) => any
 
 declare function connect<S, P, R>(
-  selector: ParametricSelector<S, P, R>
+  selector: Selector<S, R, [P]>
 ): (component: Component<P & R>) => Component<P>
 
 function testConnect() {
@@ -852,14 +830,14 @@ function testTypedCreateStructuredSelector() {
   const selectBar = (state: RootState) => state.bar
 
   const typedStructuredSelectorCreator: TypedStructuredSelectorCreator<RootState> =
-    createStructuredSelector as TypedStructuredSelectorCreator<RootState>
+    createStructuredSelector
 
   typedStructuredSelectorCreator({
     foo: selectFoo,
     bar: selectBar
   })
 
-  // @ts-expect-error
+  // @ts-expect-error Because `bar` is missing.
   typedStructuredSelectorCreator({
     foo: selectFoo
   })
