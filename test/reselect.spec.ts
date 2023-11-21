@@ -806,8 +806,6 @@ describe('argsMemoize and memoize', () => {
     ).to.be.an('array').that.is.not.empty
     expect(selectorMicroMemoize.recomputations()).to.be.a('number')
     expect(selectorMicroMemoize.dependencyRecomputations()).to.be.a('number')
-    expect(selectorMicroMemoize.resetRecomputations()).toBe(0)
-    expect(selectorMicroMemoize.resetDependencyRecomputations()).toBe(0)
     expect(selectorMicroMemoize.resultFunc).to.be.a('function')
     expect(
       selectorMicroMemoize.resultFunc([

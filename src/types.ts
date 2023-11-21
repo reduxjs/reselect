@@ -216,7 +216,7 @@ export type OutputSelectorFields<
   /**
    * Resets the count of {@linkcode OutputSelectorFields.recomputations recomputations} count to 0.
    */
-  resetRecomputations: () => 0
+  resetRecomputations: () => void
 
   /**
    * Counts the number of times the input selectors ({@linkcode OutputSelectorFields.dependencies dependencies})
@@ -234,7 +234,7 @@ export type OutputSelectorFields<
    *
    * @since 5.0.0
    */
-  resetDependencyRecomputations: () => 0
+  resetDependencyRecomputations: () => void
 } & Simplify<
   Required<
     Pick<
