@@ -25,3 +25,9 @@ typesversions
 !.yarn/versions
 .pnp.*
 *.tgz
+
+website/translated_docs
+website/build/
+website/node_modules
+website/i18n/*
+website/.yarn/
