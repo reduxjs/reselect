@@ -1,0 +1,65 @@
+---
+id: basic-usage
+title: Basic Usage
+sidebar_label: Basic Usage
+sidebar_position: 2
+---
+
+# Basic Usage
+
+Reselect exports a `createSelector` API, which generates memoized selector functions. `createSelector` accepts one or more input selectors, which extract values from arguments, and a result function function that receives the extracted values and should return a derived value. If the generated output selector is called multiple times, the output will only be recalculated when the extracted values have changed.
+
+You can play around with the following **example** in [this CodeSandbox](https://codesandbox.io/s/reselect-example-g3k9gf?file=/src/index.js):
+
+```ts title="basic-usage.js"
+import { createSelector } from 'reselect'
+
+interface RootState {
+  todos: { id: number; completed: boolean }[]
+  alerts: { id: number; read: boolean }[]
+}
+
+const state: RootState = {
+  todos: [
+    { id: 0, completed: false },
+    { id: 1, completed: true }
+  ],
+  alerts: [
+    { id: 0, read: false },
+    { id: 1, read: true }
+  ]
+}
+
+const selectCompletedTodos = (state: RootState) => {
+  console.log('selector ran')
+  return state.todos.filter(todo => todo.completed === true)
+}
+
+selectCompletedTodos(state) // selector ran
+selectCompletedTodos(state) // selector ran
+selectCompletedTodos(state) // selector ran
+
+const memoizedSelectCompletedTodos = createSelector(
+  [(state: RootState) => state.todos],
+  todos => {
+    console.log('memoized selector ran')
+    return todos.filter(todo => todo.completed === true)
+  }
+)
+
+memoizedSelectCompletedTodos(state) // memoized selector ran
+memoizedSelectCompletedTodos(state)
+memoizedSelectCompletedTodos(state)
+
+console.log(selectCompletedTodos(state) === selectCompletedTodos(state)) //=> false
+
+console.log(
+  memoizedSelectCompletedTodos(state) === memoizedSelectCompletedTodos(state)
+) //=> true
+```
+
+As you can see from the example above, `memoizedSelectCompletedTodos` does not run the second or third time, but we still get the same return value as last time.
+
+In addition to skipping unnecessary recalculations, `memoizedSelectCompletedTodos` returns the existing result reference if there is no recalculation. This is important for libraries like React-Redux or React that often rely on reference equality checks to optimize UI updates.
+
+---

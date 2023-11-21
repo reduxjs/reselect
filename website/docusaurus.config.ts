@@ -1,6 +1,7 @@
-import * as Preset from '@docusaurus/preset-classic'
 import type { Config } from '@docusaurus/types'
+import { resolve } from 'node:path'
 import { themes as prismThemes } from 'prism-react-renderer'
+import { linkDocblocks, transpileCodeblocks } from 'remark-typescript-tools'
 
 const config: Config = {
   title: 'Reselect',
@@ -35,6 +36,31 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
+          routeBasePath: '/',
+          include: [
+            '{api,assets,introduction,migrations,rtk-query,tutorials,usage}/**/*.{md,mdx}'
+          ],
+          remarkPlugins: [
+            [
+              linkDocblocks,
+              {
+                extractorSettings: {
+                  tsconfig: resolve(__dirname, '../examples/tsconfig.json'),
+                  basedir: resolve(__dirname, '../src'),
+                  rootFiles: ['index.ts']
+                }
+              }
+            ],
+            [
+              transpileCodeblocks,
+              {
+                compilerSettings: {
+                  tsconfig: resolve(__dirname, '../examples/tsconfig.json'),
+                  externalResolutions: {}
+                }
+              }
+            ]
+          ],
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl: 'https://github.com/reduxjs/reselect/edit/master/website'
@@ -42,7 +68,7 @@ const config: Config = {
         theme: {
           customCss: './src/css/custom.css'
         }
-      } satisfies Preset.Options
+      }
     ]
   ],
 
@@ -111,7 +137,7 @@ const config: Config = {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula
     }
-  } satisfies Preset.ThemeConfig
+  }
 }
 
 export default config
