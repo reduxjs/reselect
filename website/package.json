@@ -10,6 +10,8 @@
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
+    "clean:examples": "rimraf ../examples/**/*.js",
+    "build:examples": "npm run clean:examples && gulp compile-ts && gulp insert-md",
     "typecheck": "tsc"
   },
   "dependencies": {
@@ -17,15 +19,19 @@
     "@docusaurus/preset-classic": "3.0.0",
     "@mdx-js/react": "^3.0.0",
     "clsx": "^1.2.1",
+    "gulp": "^4.0.2",
+    "gulp-preserve-typescript-whitespace": "^1.0.3",
+    "gulp-typescript": "^6.0.0-alpha.1",
+    "markdown-magic": "^2.6.1",
     "prism-react-renderer": "^2.1.0",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "remark-typescript-tools": "^1.1.0"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "3.0.0",
     "@docusaurus/tsconfig": "3.0.0",
     "@docusaurus/types": "3.0.0",
+    "@types/gulp": "^4.0.17",
     "typescript": "~5.2.2"
   },
   "browserslist": {

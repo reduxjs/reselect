@@ -1,7 +1,6 @@
+import { Options, ThemeConfig } from '@docusaurus/preset-classic'
 import type { Config } from '@docusaurus/types'
-import { resolve } from 'node:path'
 import { themes as prismThemes } from 'prism-react-renderer'
-import { linkDocblocks, transpileCodeblocks } from 'remark-typescript-tools'
 
 const config: Config = {
   title: 'Reselect',
@@ -35,31 +34,12 @@ const config: Config = {
       'classic',
       {
         docs: {
+          path: 'docs',
           sidebarPath: './sidebars.ts',
+          showLastUpdateTime: true,
           routeBasePath: '/',
           include: [
             '{api,assets,introduction,migrations,rtk-query,tutorials,usage}/**/*.{md,mdx}'
-          ],
-          remarkPlugins: [
-            [
-              linkDocblocks,
-              {
-                extractorSettings: {
-                  tsconfig: resolve(__dirname, '../examples/tsconfig.json'),
-                  basedir: resolve(__dirname, '../src'),
-                  rootFiles: ['index.ts']
-                }
-              }
-            ],
-            [
-              transpileCodeblocks,
-              {
-                compilerSettings: {
-                  tsconfig: resolve(__dirname, '../examples/tsconfig.json'),
-                  externalResolutions: {}
-                }
-              }
-            ]
           ],
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
@@ -68,7 +48,7 @@ const config: Config = {
         theme: {
           customCss: './src/css/custom.css'
         }
-      }
+      } satisfies Options
     ]
   ],
 
@@ -88,7 +68,6 @@ const config: Config = {
           position: 'left',
           label: 'Tutorial'
         },
-        { to: '/blog', label: 'Blog', position: 'left' },
         {
           href: 'https://www.github.com/reduxjs/reselect',
           label: 'GitHub',
@@ -99,15 +78,6 @@ const config: Config = {
     footer: {
       style: 'dark',
       links: [
-        {
-          title: 'Docs',
-          items: [
-            {
-              label: 'Tutorial',
-              to: '/docs/intro'
-            }
-          ]
-        },
         {
           title: 'Community',
           items: [
@@ -137,7 +107,7 @@ const config: Config = {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula
     }
-  }
+  } satisfies ThemeConfig
 }
 
 export default config

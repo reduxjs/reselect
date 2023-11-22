@@ -27,13 +27,17 @@
     "format": "prettier --write \"{src,test}/**/*.{js,ts}\" \"docs/**/*.md\"",
     "lint": "eslint src test",
     "prepack": "yarn build",
-    "start:docs": "npm start --prefix website",
     "bench": "vitest --run bench --mode production",
     "test": "node --expose-gc ./node_modules/vitest/dist/cli-wrapper.js run",
     "test:cov": "vitest run --coverage",
     "type-check": "vitest --run typecheck",
     "type-check:trace": "vitest --run typecheck && tsc --noEmit -p typescript_test/tsconfig.json --generateTrace trace && npx @typescript/analyze-trace trace && rimraf trace",
-    "test:typescript": "tsc --noEmit -p typescript_test/tsconfig.json"
+    "test:typescript": "tsc --noEmit -p typescript_test/tsconfig.json",
+    "start:docs": "npm run build:examples && prettier --write \"website/docs/**/*.{md,mdx}\" && npm start --prefix website",
+    "build:docs": "npm run build:examples && npm run build --prefix website",
+    "clear:docs": "npm run clear --prefix website",
+    "serve:docs": "npm run serve --prefix website",
+    "build:examples": "npm run build:examples --prefix website && eslint --fix examples"
   },
   "keywords": [
     "react",
