@@ -31,3 +31,5 @@ website/build/
 website/node_modules
 website/i18n/*
 website/.yarn/
+
+examples/**/*.js
