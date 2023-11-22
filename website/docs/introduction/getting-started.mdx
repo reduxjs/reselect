@@ -1,0 +1,201 @@
+---
+id: getting-started
+title: Getting Started
+sidebar_label: Getting Started
+hide_title: true
+description: 'Getting Started'
+---
+
+import { InternalLinks } from '../../src/components/InternalLinks'
+import { ExternalLinks } from '../../src/components/ExternalLinks'
+import PackageTabs from '../../src/components/PackageManagerTabs'
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+
+# Getting Started with Reselect
+
+A library for creating memoized "selector" functions. Commonly used with Redux, but usable with any plain JS immutable data as well.
+
+- Selectors can compute derived data, allowing <ExternalLinks.Redux /> to store the minimal possible state.
+- Selectors are efficient. A selector is not recomputed unless one of its arguments changes.
+- Selectors are composable. They can be used as input to other selectors.
+
+The **Redux docs usage page on [Deriving Data with Selectors](https://redux.js.org/usage/deriving-data-selectors)** covers the purpose and motivation for selectors, why memoized selectors are useful, typical Reselect usage patterns, and using selectors with <ExternalLinks.ReactRedux />.
+
+## Installation
+
+### Redux Toolkit
+
+While Reselect is not exclusive to <ExternalLinks.Redux />, it is already included by default in [the official Redux Toolkit package](https://redux-toolkit.js.org) - no further installation needed.
+
+```ts
+import { createSelector } from '@reduxjs/toolkit'
+```
+
+### Standalone
+
+For standalone usage, install the `reselect` package:
+
+<PackageTabs />
+
+---
+
+## Basic Usage
+
+Reselect exports a `createSelector` API, which generates memoized selector functions. `createSelector` accepts one or more input selectors, which extract values from arguments, and a result function function that receives the extracted values and should return a derived value. If the generated output selector is called multiple times, the output will only be recalculated when the extracted values have changed.
+
+You can play around with the following **example** in [this CodeSandbox](https://codesandbox.io/s/reselect-example-g3k9gf?file=/src/index.js):
+
+<!-- START: basic-usage.ts -->
+
+<Tabs
+  groupId='language'
+  defaultValue='ts'
+  values={[
+    {label: 'TypeScript', value: 'ts'},
+    {label: 'JavaScript', value: 'js'},
+  ]}>
+  <TabItem value='ts'>
+
+```ts title="basic-usage.ts"
+import { createSelector } from 'reselect'
+
+interface RootState {
+  todos: { id: number; completed: boolean }[]
+  alerts: { id: number; read: boolean }[]
+}
+
+const state: RootState = {
+  todos: [
+    { id: 0, completed: false },
+    { id: 1, completed: true }
+  ],
+  alerts: [
+    { id: 0, read: false },
+    { id: 1, read: true }
+  ]
+}
+
+const selectCompletedTodos = (state: RootState) => {
+  console.log('selector ran')
+  return state.todos.filter(todo => todo.completed === true)
+}
+
+selectCompletedTodos(state) // selector ran
+selectCompletedTodos(state) // selector ran
+selectCompletedTodos(state) // selector ran
+
+const memoizedSelectCompletedTodos = createSelector(
+  [(state: RootState) => state.todos],
+  todos => {
+    console.log('memoized selector ran')
+    return todos.filter(todo => todo.completed === true)
+  }
+)
+
+memoizedSelectCompletedTodos(state) // memoized selector ran
+memoizedSelectCompletedTodos(state)
+memoizedSelectCompletedTodos(state)
+
+console.log(selectCompletedTodos(state) === selectCompletedTodos(state)) //=> false
+
+console.log(
+  memoizedSelectCompletedTodos(state) === memoizedSelectCompletedTodos(state)
+) //=> true
+```
+
+  </TabItem>
+  <TabItem value='js'>
+
+```js title="basic-usage.js"
+import { createSelector } from 'reselect'
+
+const state = {
+  todos: [
+    { id: 0, completed: false },
+    { id: 1, completed: true }
+  ],
+  alerts: [
+    { id: 0, read: false },
+    { id: 1, read: true }
+  ]
+}
+
+const selectCompletedTodos = state => {
+  console.log('selector ran')
+  return state.todos.filter(todo => todo.completed === true)
+}
+
+selectCompletedTodos(state) // selector ran
+selectCompletedTodos(state) // selector ran
+selectCompletedTodos(state) // selector ran
+
+const memoizedSelectCompletedTodos = createSelector(
+  [state => state.todos],
+  todos => {
+    console.log('memoized selector ran')
+    return todos.filter(todo => todo.completed === true)
+  }
+)
+
+memoizedSelectCompletedTodos(state) // memoized selector ran
+memoizedSelectCompletedTodos(state)
+memoizedSelectCompletedTodos(state)
+
+console.log(selectCompletedTodos(state) === selectCompletedTodos(state)) //=> false
+
+console.log(
+  memoizedSelectCompletedTodos(state) === memoizedSelectCompletedTodos(state)
+) //=> true
+```
+
+  </TabItem>
+</Tabs>
+
+  <!-- END: basic-usage.ts -->
+
+As you can see from the example above, `memoizedSelectCompletedTodos` does not run the second or third time, but we still get the same return value as last time.
+
+In addition to skipping unnecessary recalculations, `memoizedSelectCompletedTodos` returns the existing result reference if there is no recalculation. This is important for libraries like React-Redux or React that often rely on reference equality checks to optimize UI updates.
+
+---
+
+## Terminology
+
+- <b>
+    <InternalLinks.Selector text="Selector Function" />
+  </b>
+  : A function that accepts one or more JavaScript values as arguments, and derives
+  a result. When used with <ExternalLinks.Redux />, the first argument is typically
+  the entire Redux store state.
+- <b>
+    <InternalLinks.InputSelectors text="Input Selectors" />
+  </b>
+  : Basic selector functions used as building blocks for creating a memoized selector.
+  They are passed as the first argument(s) to <InternalLinks.CreateSelector />, and
+  are called with all selector arguments. They are responsible for extracting and
+  providing necessary values to the <InternalLinks.ResultFunction />.
+- <b>
+    <InternalLinks.OutputSelector text="Output Selector" />
+  </b>
+  : The actual memoized selectors created by <InternalLinks.CreateSelector />.
+- <b>
+    <InternalLinks.ResultFunction text="Result Function" />
+  </b>
+  : The function that comes after the <InternalLinks.InputSelectors />
+  . It takes the <InternalLinks.InputSelectors />' return values as arguments
+  and returns a result.
+- <b>
+    <InternalLinks.Dependencies text="Dependencies" />
+  </b>
+  : Same as <InternalLinks.InputSelectors />
+  . They are what the <InternalLinks.OutputSelector /> "depends" on.
+
+The below example serves as a visual aid:
+
+```ts
+const outputSelector = createSelector(
+  [inputSelector1, inputSelector2, inputSelector3], // synonymous with `dependencies`.
+  resultFunc // Result function
+)
+```

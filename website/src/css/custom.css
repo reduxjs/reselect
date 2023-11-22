@@ -6,25 +6,250 @@
 
 /* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #2e8555;
-  --ifm-color-primary-dark: #29784c;
-  --ifm-color-primary-darker: #277148;
-  --ifm-color-primary-darkest: #205d3b;
-  --ifm-color-primary-light: #33925d;
-  --ifm-color-primary-lighter: #359962;
-  --ifm-color-primary-lightest: #3cad6e;
+  --ifm-color-primary: #764abc;
+  --ifm-color-primary-dark: #6a43a9;
+  --ifm-color-primary-darker: #5e3b96;
+  --ifm-color-primary-darkest: #533484;
+  --ifm-color-primary-light: #845cc3;
+  --ifm-color-primary-lighter: #916ec9;
+  --ifm-color-primary-lightest: #9f80d0;
   --ifm-code-font-size: 95%;
+  --ifm-code-border-radius: 3px;
+  --ifm-code-background: rgba(27, 31, 35, 0.05);
+
+  --ifm-blockquote-color: #ecf4f9;
+  --ifm-blockquote-color-dark: #cbddea;
+  --blockquote-text-color: var(--ifm-font-base-color);
+
+  --ifm-code-padding-vertical: 0.1rem;
+  --ifm-code-padding-horizontal: 0.2rem;
+
+  --ifm-tabs-padding-vertical: 0.2rem;
+  --ifm-tabs-padding-horizontal: 0.4rem;
+
+  --ifm-pre-background: rgb(39, 40, 34);
+  --ifm-alert-color: black;
+
+  --ifm-menu-color-active: var(--ifm-blockquote-color);
+
+  --ra-admonition-color: #ecf4f9;
+  --ra-admonition-color-dark: #2a98b9;
+
+  --ra-admonition-color-important: #2a98b9;
+
+  --ra-admonition-color-success: #f1fdf9;
+  --ra-admonition-color-success-dark: #00bf88;
+
+  --ra-admonition-color-caution: #fffbf5;
+  --ra-admonition-color-caution-dark: #f0ad4e;
+
+  --ra-admonition-color-error: #fff2f2;
+  --ra-admonition-color-error-dark: #d9534f;
+
+  --ra-admonition-icon-color: black !important;
+
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme='dark'] {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
+  --ifm-color-primary: #ba8fff;
+  --ifm-color-primary-dark: #7431ca;
+  --ifm-color-primary-darker: #6d1cac;
+  --ifm-color-primary-darkest: #730c9a;
+  --ifm-color-primary-light: #b97cfd;
+  --ifm-color-primary-lighter: #cc8ffc;
+  --ifm-color-primary-lightest: #fcf2ff;
+  --ifm-blockquote-color: #ecf4f9;
+  --ifm-blockquote-color-dark: #6d1cac;
+  --ifm-menu-color-active: black;
+  --blockquote-text-color: black;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+:root[data-theme='dark'] .hero.hero--primary {
+  --ifm-hero-background-color: #593d88;
+  --ifm-hero-text-color: #ffffff;
+}
+
+.admonition a,
+blockquote a {
+  color: var(--ifm-color-primary-darkest);
+  text-decoration: none;
+}
+.admonition a:hover,
+blockquote a:hover {
+  color: var(--blockquote-text-color);
+}
+
+blockquote {
+  color: var(--blockquote-text-color);
+  background-color: var(--ifm-blockquote-color);
+  border-left: 6px solid var(--ifm-blockquote-color-dark);
+  border-radius: var(--ifm-global-radius);
+}
+
+.docusaurus-highlight-code-line {
+  background-color: rgb(72, 77, 91);
+  display: block;
+  margin: 0 calc(-1 * var(--ifm-pre-padding));
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: calc(-0.25em + var(--ifm-pre-padding));
+  padding-right: var(--ifm-pre-padding);
+  border-left: 0.25em solid #1976d2;
+}
+div[class*='codeBlockTitle'] {
+  padding: 0.15rem var(--ifm-pre-padding);
+}
+
+:root[data-theme='dark'] .admonition code {
+  color: var(--ifm-blockquote-color);
+}
+
+:root[data-theme='dark'] blockquote code {
+  color: var(--ifm-blockquote-color);
+}
+
+code {
+  background-color: var(--ifm-color-emphasis-300);
+  border-radius: 0.2rem;
+}
+
+a code,
+code a {
+  background-color: var(--ifm-color-emphasis-200);
+  color: inherit;
+}
+
+a.contents__link > code {
+  color: inherit;
+}
+
+a.contents__link.contents__link--active {
+  font-weight: 600;
+}
+
+a:visited {
+  color: var(--ifm-color-primary);
+}
+.navbar .navbar__inner {
+  flex-wrap: nowrap;
+}
+.navbar .navbar__items {
+  flex: 1 1 auto;
+}
+.footer__logo {
+  width: 50px;
+  height: 50px;
+}
+
+.menu__link {
+  font-weight: normal;
+}
+
+.menu__link--sublist {
+  color: var(--ifm-font-base-color);
+  font-weight: var(--ifm-font-weight-semibold);
+}
+
+.menu__link--active:not(.menu__link--sublist) {
+  background-color: var(--ifm-color-primary);
+}
+
+.menu__link--active:not(.menu__link--sublist) {
+  color: var(--ifm-menu-color-active);
+}
+
+.menu .menu__link.menu__link--sublist:after {
+  transform: rotateZ(180deg);
+  -webkit-transition: -webkit-transform 0.2s linear;
+  transition: -webkit-transform 0.2s linear;
+  transition-property: transform, -webkit-transform;
+  transition-duration: 0.2s, 0.2s;
+  transition-timing-function: linear, linear;
+  transition-delay: 0s, 0s;
+  transition: transform 0.2s linear, -webkit-transform 0.2s linear;
+  color: var(--ifm-font-base-color);
+}
+
+.menu .menu__list-item.menu__list-item--collapsed .menu__link--sublist:after {
+  transform: rotateZ(90deg);
+}
+
+.codesandbox {
+  width: 100%;
+  height: 500px;
+  border: 0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.admonition {
+  color: black;
+  border-radius: var(--ifm-global-radius);
+  border-left: 6px solid var(--ra-admonition-color-dark);
+}
+
+.admonition.admonition-note,
+.admonition.admonition-info,
+.admonition.admonition-important,
+.admonition.admonition-secondary {
+  --ra-admonition-color: #ecf4f9;
+  background-color: var(--ra-admonition-color);
+}
+
+.admonition.admonition-success,
+.admonition.admonition-tip {
+  background-color: var(--ra-admonition-color-success);
+  border-left-color: var(--ra-admonition-color-success-dark);
+}
+
+.admonition.admonition-caution {
+  background-color: var(--ra-admonition-color-caution);
+  border-left-color: var(--ra-admonition-color-caution-dark);
+}
+
+.admonition.admonition-warning,
+.admonition.admonition-danger {
+  background-color: var(--ra-admonition-color-error);
+  border-left-color: var(--ra-admonition-color-error-dark);
+}
+
+.admonition .admonition-icon svg {
+  fill: black;
+  stroke: black;
+}
+
+table.checkbox-table tbody td {
+  text-align: center;
+  vertical-align: center;
+}
+
+.diagonal-cell {
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' preserveAspectRatio='none' viewBox='0 0 100 100'><line x1='0' y1='0' x2='100' y2='100' stroke='rgb(218,221,225)' vector-effect='non-scaling-stroke'/></svg>");
+  background-size: 100% 100%;
+}
+
+.diagonal-cell--content {
+  display: grid;
+  width: max-content;
+  justify-content: space-between;
+  grid-template-columns: repeat(2, 1fr);
+  grid-auto-rows: 1fr;
+}
+
+.diagonal-cell--topRight {
+  grid-column-start: 2;
+  text-align: right;
+}
+
+.diagonal-cell--bottomLeft {
+  grid-column-start: 1;
+}
+
+.migration-guide .typescript-only h4:after {
+  content: ' TYPESCRIPT';
+  color: var(--ifm-color-info);
+  position: relative;
 }

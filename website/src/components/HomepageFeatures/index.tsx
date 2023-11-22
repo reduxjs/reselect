@@ -1,6 +1,6 @@
 import Heading from '@theme/Heading'
 import clsx from 'clsx'
-import type { ComponentProps, ComponentType, FC } from 'react'
+import type { ComponentProps, ComponentType, FC, JSX } from 'react'
 import styles from './styles.module.css'
 
 interface FeatureItem {
