@@ -10,7 +10,7 @@
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
-    "clean:examples": "rimraf ../examples/**/*.js",
+    "clean:examples": "rimraf ../examples/**/*.{js,jsx}",
     "build:examples": "npm run clean:examples && gulp compile-ts && gulp insert-md",
     "typecheck": "tsc"
   },
