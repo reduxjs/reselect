@@ -9,7 +9,7 @@ gulp.task('compile-ts', () => {
     rootDir: '../'
   })
   return gulp
-    .src('../examples/**/*.ts')
+    .src('../examples/**/*.{ts,tsx}')
     .pipe(preserveWhitespace.saveWhitespace()) // Encodes whitespaces/newlines so TypeScript compiler won't remove them
     .pipe(tsProject()) // TypeScript compiler must be run with "removeComments: false" option
     .js.pipe(preserveWhitespace.restoreWhitespace()) // Restores encoded whitespaces/newlines
@@ -18,7 +18,7 @@ gulp.task('compile-ts', () => {
 
 const collectMarkdownFiles = (
   directory: string,
-  markdownFilesPaths: { path: string; content: string }[] = []
+  markdownFilesPaths: string[] = []
 ) => {
   const placeholderRegex = /<!-- START: (.*?) -->([\s\S]*?)<!-- END: \1 -->/g
   const markdownFiles = readdirSync(directory)
@@ -33,7 +33,7 @@ const collectMarkdownFiles = (
       ['.md', '.mdx'].includes(path.extname(markdownFile)) &&
       placeholderRegex.test(readFileSync(markdownFilePath, 'utf-8'))
     ) {
-      markdownFilesPaths.push({ path: markdownFilePath, content: markdownFile })
+      markdownFilesPaths.push(markdownFilePath)
     }
   })
   return markdownFilesPaths
@@ -42,7 +42,7 @@ const collectMarkdownFiles = (
 gulp.task('insert-md', done => {
   const placeholderRegex = /<!-- START: (.*?) -->([\s\S]*?)<!-- END: \1 -->/g
   const markdownFilesPaths = collectMarkdownFiles('docs')
-  markdownFilesPaths.forEach(({ path: markdownFilePath }) => {
+  markdownFilesPaths.forEach(markdownFilePath => {
     let markdownContent = readFileSync(markdownFilePath, 'utf-8')
     const frontMatterRegex = /---\s*[\s\S]*?---/
 
@@ -56,12 +56,13 @@ gulp.task('insert-md', done => {
       frontMatterRegex,
       match => `${match}\n${importTabs}${importTabItem}`
     )
-    const TS = 'ts'
-    const JS = 'js'
 
     markdownContent = markdownContent.replace(
       placeholderRegex,
       (match, filePath: string) => {
+        const TSX = path.extname(filePath) === '.tsx' ? 'x' : ''
+        const TS = `ts${TSX}`
+        const JS = `js${TSX}`
         const tsFilePath = path.join('../examples', filePath)
         const jsFilePath = tsFilePath.replace(`.${TS}`, `.${JS}`)
 
