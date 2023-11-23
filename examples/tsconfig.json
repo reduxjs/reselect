@@ -24,5 +24,6 @@
       "reselect": ["../src/index"], // @remap-prod-remove-line
       "@internal/*": ["../src/*"]
     }
-  }
+  },
+  "include": ["**/*.ts", "**/*.tsx"]
 }
