@@ -7,42 +7,42 @@ interface Props {
 
 export const InternalLinks = {
   Selector: ({ text = 'selector' }) => (
-    <Link to="#selector-function" title="Selector Function">{text}</Link>
+    <Link to="/introduction/getting-started#selector-function" title="Selector Function">{text}</Link>
   ),
   InputSelectors: ({ text = 'input selectors' }) => (
-    <Link to="#input-selectors" title="Input Selectors">{text}</Link>
+    <Link to="/introduction/getting-started#input-selectors" title="Input Selectors">{text}</Link>
   ),
   OutputSelector: ({ text = 'output selector' }) => (
-    <Link to="#output-selector" title="Output Selector">{text}</Link>
+    <Link to="/introduction/getting-started#output-selector" title="Output Selector">{text}</Link>
   ),
   ResultFunction: ({ text = 'result function' }) => (
-    <Link to="#result-function" title="Result Function">{text}</Link>
+    <Link to="/introduction/getting-started#result-function" title="Result Function">{text}</Link>
   ),
   Dependencies: ({ text = 'dependencies' }) => (
-    <Link to="#dependencies" title="Dependencies">{text}</Link>
+    <Link to="/introduction/getting-started#dependencies" title="Dependencies">{text}</Link>
   ),
   CascadingMemoization: ({ text = 'Cascading Memoization' }) => (
-    <Link to="#cascading-memoization" title="Cascading Memoization"><b><i>{text}</i></b></Link>
+    <Link to="/introduction/how-does-reselect-work#cascading-memoization" title="Cascading Memoization"><b><i>{text}</i></b></Link>
   ),
   OutputSelectorFields: ({ text = 'Output Selector Fields' }) => (
-    <Link to="#output-selector-fields" title="Output Selector Fields">{text}</Link>
+    <Link to="/debugging-tools/output-selector-fields" title="Output Selector Fields">{text}</Link>
   ),
   CreateSelector: () => (
-    <Link to="#createselectorinputselectors--inputselectors-resultfunc-createselectoroptions" title="createSelector"><code>createSelector</code></Link>
+    <Link to="/api/createSelector" title="createSelector"><code>createSelector</code></Link>
   ),
   CreateSelectorCreator: () => (
-    <Link to="#createselectorcreatormemoize--options-memoizeoptions" title="createSelectorCreator"><code>createSelectorCreator</code></Link>
+    <Link to="/api/createSelectorCreator" title="createSelectorCreator"><code>createSelectorCreator</code></Link>
   ),
   DefaultMemoize: () => (
-    <Link to="#defaultmemoizefunc-equalitycheckoroptions--defaultequalitycheck" title="defaultMemoize"><code>defaultMemoize</code></Link>
+    <Link to="/api/memoization-functions/defaultMemoize" title="defaultMemoize"><code>defaultMemoize</code></Link>
   ),
   WeakMapMemoize: () => (
-    <Link to="#weakmapmemoizefunc---since-500" title="weakMapMemoize"><code>weakMapMemoize</code></Link>
+    <Link to="/api/memoization-functions/weakMapMemoize" title="weakMapMemoize"><code>weakMapMemoize</code></Link>
   ),
   UnstableAutotrackMemoize: () => (
-    <Link to="#unstable_autotrackmemoizefunc---since-500" title="unstable_autotrackMemoize"><code>unstable_autotrackMemoize</code></Link>
+    <Link to="/api/memoization-functions/unstable_autotrackMemoize" title="unstable_autotrackMemoize"><code>unstable_autotrackMemoize</code></Link>
   ),
   CreateStructuredSelector: () => (
-    <Link to="#createstructuredselector-inputSelectorsObject--selectorcreator--createselector" title="createStructuredSelector"><code>createStructuredSelector</code></Link>
+    <Link to="/api/createStructuredSelector" title="createStructuredSelector"><code>createStructuredSelector</code></Link>
   )
 } as const satisfies Record<string, FC<Props>>
