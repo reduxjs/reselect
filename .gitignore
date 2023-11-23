@@ -33,3 +33,4 @@ website/i18n/*
 website/.yarn/
 
 examples/**/*.js
+examples/**/*.jsx

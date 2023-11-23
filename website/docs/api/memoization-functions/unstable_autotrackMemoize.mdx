@@ -1,0 +1,153 @@
+---
+id: unstable_autotrackMemoize
+title: unstable_autotrackMemoize
+sidebar_label: unstable_autotrackMemoize
+hide_title: true
+description: 'unstable_autotrackMemoize'
+---
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+
+# `unstable_autotrackMemoize`
+
+Uses an "auto-tracking" approach inspired by the work of the Ember Glimmer team. It uses a Proxy to wrap arguments and track accesses to nested fields in your selector on first read. Later, when the selector is called with new arguments, it identifies which accessed fields have changed and only recalculates the result if one or more of those accessed fields have changed. This allows it to be more precise than the shallow equality checks in `defaultMemoize`.
+
+:::danger
+
+This API is still experimental and undergoing testing.
+
+:::
+
+## Design Tradeoffs
+
+- Pros:
+
+  - It is likely to avoid excess calculations and recalculate fewer times than `defaultMemoize` will, which may also result in fewer component re-renders.
+
+- Cons:
+
+  - It only has a cache size of 1.
+  - It is slower than `defaultMemoize`, because it has to do more work. (How much slower is dependent on the number of accessed fields in a selector, number of calls, frequency of input changes, etc)
+  - It can have some unexpected behavior. Because it tracks nested field accesses, cases where you don't access a field will not recalculate properly. For example, a badly-written selector like:
+
+  ```ts
+  createSelector([state => state.todos], todos => todos)
+  ```
+
+  that just immediately returns the extracted value will never update, because it doesn't see any field accesses to check.
+
+## Use Cases
+
+- It is likely best used for cases where you need to access specific nested fields in data, and avoid recalculating if other fields in the same data objects are immutably updated.
+
+## Parameters
+
+| Name   | Description                  |
+| :----- | :--------------------------- |
+| `func` | The function to be memoized. |
+
+## Returns
+
+A memoized function with a `.clearCache()` method attached.
+
+## Type Parameters
+
+| Name   | Description                                |
+| :----- | :----------------------------------------- |
+| `Func` | The type of the function that is memoized. |
+
+## Examples
+
+### Using `unstable_autotrackMemoize` with [`createSelector`]
+
+<!-- START: unstable_autotrackMemoize/usingWithCreateSelector.ts -->
+
+<Tabs
+  groupId='language'
+  defaultValue='ts'
+  values={[
+    {label: 'TypeScript', value: 'ts'},
+    {label: 'JavaScript', value: 'js'},
+  ]}>
+  <TabItem value='ts'>
+
+```ts title="unstable_autotrackMemoize/usingWithCreateSelector.ts"
+import { createSelector, unstable_autotrackMemoize } from 'reselect'
+
+export interface RootState {
+  todos: { id: number; completed: boolean }[]
+  alerts: { id: number; read: boolean }[]
+}
+
+const selectTodoIds = createSelector(
+  [(state: RootState) => state.todos],
+  todos => todos.map(todo => todo.id),
+  { memoize: unstable_autotrackMemoize }
+)
+```
+
+  </TabItem>
+  <TabItem value='js'>
+
+```js title="unstable_autotrackMemoize/usingWithCreateSelector.js"
+import { createSelector, unstable_autotrackMemoize } from 'reselect'
+
+const selectTodoIds = createSelector(
+  [state => state.todos],
+  todos => todos.map(todo => todo.id),
+  { memoize: unstable_autotrackMemoize }
+)
+```
+
+  </TabItem>
+</Tabs>
+
+  <!-- END: unstable_autotrackMemoize/usingWithCreateSelector.ts -->
+
+### Using `unstable_autotrackMemoize` with [`createSelectorCreator`]
+
+<!-- START: unstable_autotrackMemoize/usingWithCreateSelectorCreator.ts -->
+
+<Tabs
+  groupId='language'
+  defaultValue='ts'
+  values={[
+    {label: 'TypeScript', value: 'ts'},
+    {label: 'JavaScript', value: 'js'},
+  ]}>
+  <TabItem value='ts'>
+
+```ts title="unstable_autotrackMemoize/usingWithCreateSelectorCreator.ts"
+import { createSelectorCreator, unstable_autotrackMemoize } from 'reselect'
+import type { RootState } from './usingWithCreateSelector'
+
+const createSelectorAutotrack = createSelectorCreator({
+  memoize: unstable_autotrackMemoize
+})
+
+const selectTodoIds = createSelectorAutotrack(
+  [(state: RootState) => state.todos],
+  todos => todos.map(todo => todo.id)
+)
+```
+
+  </TabItem>
+  <TabItem value='js'>
+
+```js title="unstable_autotrackMemoize/usingWithCreateSelectorCreator.js"
+import { createSelectorCreator, unstable_autotrackMemoize } from 'reselect'
+
+const createSelectorAutotrack = createSelectorCreator({
+  memoize: unstable_autotrackMemoize
+})
+
+const selectTodoIds = createSelectorAutotrack([state => state.todos], todos =>
+  todos.map(todo => todo.id)
+)
+```
+
+  </TabItem>
+</Tabs>
+
+  <!-- END: unstable_autotrackMemoize/usingWithCreateSelectorCreator.ts -->

@@ -1,0 +1,34 @@
+---
+id: createSelector
+title: createSelector
+sidebar_label: createSelector
+hide_title: true
+description: 'createSelector'
+---
+
+# `createSelector`
+
+Accepts one or more "[input selectors]" (either as separate arguments or a single array),
+a single "[result function]", and an optional options object, and
+generates a memoized selector function.
+
+## Parameters
+
+| Name                     | Description                                                                       |
+| :----------------------- | :-------------------------------------------------------------------------------- |
+| `inputSelectors`         | An array of [input selectors], can also be passed as separate arguments.          |
+| `resultFunc`             | A function that takes the results of the [input selectors] as separate arguments. |
+| `createSelectorOptions?` | An optional options object that allows for further customization per selector.    |
+
+## Returns
+
+A memoized [output selector].
+
+## Type Parameters
+
+| Name                          | Description                                                                                                                                                                                            |
+| :---------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `InputSelectors`              | The type of the [input selectors] array.                                                                                                                                                               |
+| `Result`                      | The return type of the [result function] as well as the [output selector].                                                                                                                             |
+| `OverrideMemoizeFunction`     | The type of the optional `memoize` function that could be passed into the options object to override the original `memoize` function that was initially passed into [`createSelectorCreator`].         |
+| `OverrideArgsMemoizeFunction` | The type of the optional `argsMemoize` function that could be passed into the options object to override the original `argsMemoize` function that was initially passed into [`createSelectorCreator`]. |

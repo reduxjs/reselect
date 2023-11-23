@@ -1,0 +1,31 @@
+---
+id: common-mistakes
+title: Common Mistakes
+sidebar_label: Common Mistakes
+hide_title: true
+description: Common Mistakes
+---
+
+# Common Mistakes
+
+A somewhat common mistake is to write an [input selector][input selectors] that extracts a value or does some derivation, and a [result function] that just returns its result:
+
+```ts
+// ❌ BROKEN: this will not memoize correctly, and does nothing useful!
+const brokenSelector = createSelector(
+  [(state: RootState) => state.todos],
+  todos => todos
+)
+```
+
+Any [result function] that just returns its inputs is incorrect! The [result function] should always have the transformation logic.
+
+Similarly:
+
+```ts
+// ❌ BROKEN: this will not memoize correctly!
+const brokenSelector = createSelector(
+  [(state: RootState) => state],
+  state => state.todos
+)
+```

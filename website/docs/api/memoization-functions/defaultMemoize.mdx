@@ -1,0 +1,248 @@
+---
+id: defaultMemoize
+title: defaultMemoize
+sidebar_label: defaultMemoize
+hide_title: true
+description: 'defaultMemoize'
+---
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+
+# `defaultMemoize`
+
+The standard memoize function used by [`createSelector`].
+
+It has a default cache size of 1. This means it always recalculates when the value of an argument changes. However, this can be customized as needed with a specific max cache size (since 4.1.0).
+
+It determines if an argument has changed by calling the `equalityCheck` function. As `defaultMemoize` is designed to be used with immutable data, the default `equalityCheck` function checks for changes using [reference equality][Reference Equality Check]:
+
+<!-- START: defaultMemoize/defaultEqualityCheck.ts -->
+
+<Tabs
+  groupId='language'
+  defaultValue='ts'
+  values={[
+    {label: 'TypeScript', value: 'ts'},
+    {label: 'JavaScript', value: 'js'},
+  ]}>
+  <TabItem value='ts'>
+
+```ts title="defaultMemoize/defaultEqualityCheck.ts"
+const defaultEqualityCheck = (previousValue: any, currentValue: any) => {
+  return previousValue === currentValue
+}
+```
+
+  </TabItem>
+  <TabItem value='js'>
+
+```js title="defaultMemoize/defaultEqualityCheck.js"
+const defaultEqualityCheck = (previousValue, currentValue) => {
+  return previousValue === currentValue
+}
+```
+
+  </TabItem>
+</Tabs>
+
+  <!-- END: defaultMemoize/defaultEqualityCheck.ts -->
+
+## Parameters
+
+| Name                     | Description                                                 |
+| :----------------------- | :---------------------------------------------------------- |
+| `func`                   | The function to be memoized.                                |
+| `equalityCheckOrOptions` | Either an `equality check` function or an `options` object. |
+
+Since 4.1.0, `defaultMemoize` also accepts an options object as its first argument instead of an `equalityCheck` function. The `options` object may contain:
+
+```ts
+type EqualityFn = (a: any, b: any) => boolean
+
+interface DefaultMemoizeOptions {
+  equalityCheck?: EqualityFn
+  resultEqualityCheck?: EqualityFn
+  maxSize?: number
+}
+```
+
+| Name                  | Description                                                                                                                                                                                                                                                                                                                                                                         |
+| :-------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `equalityCheck`       | Used to compare the individual arguments of the provided calculation function. <br /> **`Default`** = `defaultEqualityCheck`                                                                                                                                                                                                                                                        |
+| `resultEqualityCheck` | If provided, used to compare a newly generated output value against previous values in the cache. If a match is found, the old value is returned. This addresses the common <code>todos.map(todo => todo.id)</code> use case, where an update to another field in the original data causes a recalculation due to changed references, but the output is still effectively the same. |
+| `maxSize`             | The cache size for the selector. If greater than 1, the selector will use an LRU cache internally. <br /> **`Default`** = 1                                                                                                                                                                                                                                                         |
+
+:::warning
+
+If `resultEqualityCheck` is used inside `argsMemoizeOptions` it has no effect.
+
+:::
+
+## Returns
+
+A memoized function with a `.clearCache()` method attached.
+
+## Type Parameters
+
+| Name   | Description                                |
+| :----- | :----------------------------------------- |
+| `Func` | The type of the function that is memoized. |
+
+## Examples
+
+### Using `defaultMemoize` with [`createSelector`]
+
+<!-- START: defaultMemoize/usingWithCreateSelector.ts -->
+
+<Tabs
+  groupId='language'
+  defaultValue='ts'
+  values={[
+    {label: 'TypeScript', value: 'ts'},
+    {label: 'JavaScript', value: 'js'},
+  ]}>
+  <TabItem value='ts'>
+
+```ts title="defaultMemoize/usingWithCreateSelector.ts"
+import { shallowEqual } from 'react-redux'
+import { createSelector } from 'reselect'
+
+export interface RootState {
+  todos: {
+    id: number
+    completed: boolean
+    title: string
+    description: string
+  }[]
+  alerts: { id: number; read: boolean }[]
+}
+
+const selectTodoIds = createSelector(
+  [(state: RootState) => state.todos],
+  todos => todos.map(todo => todo.id),
+  {
+    memoizeOptions: {
+      equalityCheck: shallowEqual,
+      resultEqualityCheck: shallowEqual,
+      maxSize: 10
+    },
+    argsMemoizeOptions: {
+      equalityCheck: shallowEqual,
+      resultEqualityCheck: shallowEqual,
+      maxSize: 10
+    }
+  }
+)
+```
+
+  </TabItem>
+  <TabItem value='js'>
+
+```js title="defaultMemoize/usingWithCreateSelector.js"
+import { shallowEqual } from 'react-redux'
+import { createSelector } from 'reselect'
+
+const selectTodoIds = createSelector(
+  [state => state.todos],
+  todos => todos.map(todo => todo.id),
+  {
+    memoizeOptions: {
+      equalityCheck: shallowEqual,
+      resultEqualityCheck: shallowEqual,
+      maxSize: 10
+    },
+    argsMemoizeOptions: {
+      equalityCheck: shallowEqual,
+      resultEqualityCheck: shallowEqual,
+      maxSize: 10
+    }
+  }
+)
+```
+
+  </TabItem>
+</Tabs>
+
+  <!-- END: defaultMemoize/usingWithCreateSelector.ts -->
+
+### Using `defaultMemoize` with [`createSelectorCreator`]
+
+<!-- START: defaultMemoize/usingWithCreateSelectorCreator.ts -->
+
+<Tabs
+  groupId='language'
+  defaultValue='ts'
+  values={[
+    {label: 'TypeScript', value: 'ts'},
+    {label: 'JavaScript', value: 'js'},
+  ]}>
+  <TabItem value='ts'>
+
+```ts title="defaultMemoize/usingWithCreateSelectorCreator.ts"
+import { shallowEqual } from 'react-redux'
+import { createSelectorCreator, defaultMemoize } from 'reselect'
+
+export interface RootState {
+  todos: {
+    id: number
+    completed: boolean
+    title: string
+    description: string
+  }[]
+  alerts: { id: number; read: boolean }[]
+}
+
+const createSelectorShallowEqual = createSelectorCreator({
+  memoize: defaultMemoize,
+  memoizeOptions: {
+    equalityCheck: shallowEqual,
+    resultEqualityCheck: shallowEqual,
+    maxSize: 10
+  },
+  argsMemoize: defaultMemoize,
+  argsMemoizeOptions: {
+    equalityCheck: shallowEqual,
+    resultEqualityCheck: shallowEqual,
+    maxSize: 10
+  }
+})
+
+const selectTodoIds = createSelectorShallowEqual(
+  [(state: RootState) => state.todos],
+  todos => todos.map(todo => todo.id)
+)
+```
+
+  </TabItem>
+  <TabItem value='js'>
+
+```js title="defaultMemoize/usingWithCreateSelectorCreator.js"
+import { shallowEqual } from 'react-redux'
+import { createSelectorCreator, defaultMemoize } from 'reselect'
+
+const createSelectorShallowEqual = createSelectorCreator({
+  memoize: defaultMemoize,
+  memoizeOptions: {
+    equalityCheck: shallowEqual,
+    resultEqualityCheck: shallowEqual,
+    maxSize: 10
+  },
+  argsMemoize: defaultMemoize,
+  argsMemoizeOptions: {
+    equalityCheck: shallowEqual,
+    resultEqualityCheck: shallowEqual,
+    maxSize: 10
+  }
+})
+
+const selectTodoIds = createSelectorShallowEqual(
+  [state => state.todos],
+  todos => todos.map(todo => todo.id)
+)
+```
+
+  </TabItem>
+</Tabs>
+
+  <!-- END: defaultMemoize/usingWithCreateSelectorCreator.ts -->

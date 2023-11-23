@@ -1,0 +1,130 @@
+---
+id: development-only-stability-checks
+title: Development-Only Stability Checks
+sidebar_label: Development-Only Stability Checks
+sidebar_position: 1
+hide_title: true
+description: Development-Only Stability Checks
+---
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+
+# Development-Only Stability Checks
+
+Reselect includes extra checks in development mode to help catch and warn about mistakes in selector behavior.
+
+## `inputStabilityCheck`
+
+Due to how [**_Cascading Memoization_**] works in Reselect, it is crucial that your [input selectors] do not return a new reference on each run. If an [input selector][input selectors] always returns a new reference, like
+
+```ts
+state => ({ a: state.a, b: state.b })
+```
+
+or
+
+```ts
+state => state.todos.map(todo => todo.id)
+```
+
+that will cause the selector to never memoize properly.
+Since this is a common mistake, we've added a development mode check to catch this. By default, [`createSelector`] will now run the [input selectors] twice during the first call to the selector. If the result appears to be different for the same call, it will log a warning with the arguments and the two different sets of extracted input values.
+
+```ts
+type StabilityCheckFrequency = 'always' | 'once' | 'never'
+```
+
+| Possible Values | Description                                     |
+| :-------------- | :---------------------------------------------- |
+| `once`          | Run only the first time the selector is called. |
+| `always`        | Run every time the selector is called.          |
+| `never`         | Never run the input stability check.            |
+
+:::info
+
+The input stability check is automatically disabled in production environments.
+
+:::
+
+You can configure this behavior in two ways:
+
+### 1. Globally through `setInputStabilityCheckEnabled`:
+
+A `setInputStabilityCheckEnabled` function is exported from Reselect, which should be called with the desired setting.
+
+```ts
+import { setInputStabilityCheckEnabled } from 'reselect'
+
+// Run only the first time the selector is called. (default)
+setInputStabilityCheckEnabled('once')
+
+// Run every time the selector is called.
+setInputStabilityCheckEnabled('always')
+
+// Never run the input stability check.
+setInputStabilityCheckEnabled('never')
+```
+
+### 2. Per selector by passing an `inputStabilityCheck` option directly to [`createSelector`]:
+
+  <!-- START: development-only-stability-checks/per-selector.ts -->
+
+<Tabs
+  groupId='language'
+  defaultValue='ts'
+  values={[
+    {label: 'TypeScript', value: 'ts'},
+    {label: 'JavaScript', value: 'js'},
+  ]}>
+  <TabItem value='ts'>
+
+```ts title="development-only-stability-checks/per-selector.ts"
+import { createSelector } from 'reselect'
+
+interface RootState {
+  todos: { id: number; completed: boolean }[]
+  alerts: { id: number; read: boolean }[]
+}
+
+// Create a selector that double-checks the results of input selectors every time it runs.
+const selectCompletedTodosLength = createSelector(
+  [
+    // This input selector will not be memoized properly since it always returns a new reference.
+    (state: RootState) =>
+      state.todos.filter(({ completed }) => completed === true)
+  ],
+  completedTodos => completedTodos.length,
+  // Will override the global setting.
+  { inputStabilityCheck: 'always' }
+)
+```
+
+  </TabItem>
+  <TabItem value='js'>
+
+```js title="development-only-stability-checks/per-selector.js"
+import { createSelector } from 'reselect'
+
+// Create a selector that double-checks the results of input selectors every time it runs.
+const selectCompletedTodosLength = createSelector(
+  [
+    // This input selector will not be memoized properly since it always returns a new reference.
+    state => state.todos.filter(({ completed }) => completed === true)
+  ],
+  completedTodos => completedTodos.length,
+  // Will override the global setting.
+  { inputStabilityCheck: 'always' }
+)
+```
+
+  </TabItem>
+</Tabs>
+
+  <!-- END: development-only-stability-checks/per-selector.ts -->
+
+:::warning
+
+This will override the global input stability check set by calling `setInputStabilityCheckEnabled`.
+
+:::

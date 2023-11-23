@@ -38,9 +38,6 @@ const config: Config = {
           sidebarPath: './sidebars.ts',
           showLastUpdateTime: true,
           routeBasePath: '/',
-          include: [
-            '{api,assets,introduction,migrations,rtk-query,tutorials,usage}/**/*.{md,mdx}'
-          ],
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl: 'https://github.com/reduxjs/reselect/edit/master/website'
@@ -65,8 +62,14 @@ const config: Config = {
         {
           type: 'docSidebar',
           sidebarId: 'tutorialSidebar',
-          position: 'left',
-          label: 'Tutorial'
+          position: 'right',
+          label: 'Getting Started'
+        },
+        {
+          type: 'docSidebar',
+          sidebarId: 'tutorialSidebar',
+          position: 'right',
+          label: 'API'
         },
         {
           href: 'https://www.github.com/reduxjs/reselect',
