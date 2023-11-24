@@ -33,11 +33,11 @@
     "type-check": "vitest --run typecheck",
     "type-check:trace": "vitest --run typecheck && tsc --noEmit -p typescript_test/tsconfig.json --generateTrace trace && npx @typescript/analyze-trace trace && rimraf trace",
     "test:typescript": "tsc --noEmit -p typescript_test/tsconfig.json",
-    "start:docs": "npm run build:examples && prettier --write \"website/docs/**/*.{md,mdx}\" && npm start --prefix website",
-    "build:docs": "npm run build:examples && npm run build --prefix website",
-    "clear:docs": "npm run clear --prefix website",
-    "serve:docs": "npm run serve --prefix website",
-    "build:examples": "npm run build:examples --prefix website && eslint --fix examples"
+    "docs:start": "yarn examples:build && prettier --write \"website/docs/**/*.{md,mdx}\" && yarn --cwd website start",
+    "docs:build": "yarn examples:build && yarn --cwd website build",
+    "docs:clear": "yarn website clear",
+    "docs:serve": "yarn --cwd website serve",
+    "examples:build": "yarn run --cwd website examples:build && eslint --fix docs/examples"
   },
   "keywords": [
     "react",
