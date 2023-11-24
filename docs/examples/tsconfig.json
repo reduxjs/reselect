@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "allowUnusedLabels": true,
+    "isolatedModules": true,
+    "removeComments": false,
+    "checkJs": true,
+    "alwaysStrict": false,
+    "baseUrl": ".",
+    "strict": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "jsx": "preserve",
+    "noErrorTruncation": true,
+    "forceConsistentCasingInFileNames": true,
+    "experimentalDecorators": true,
+    "paths": {
+      "reselect": ["../../src/index"], // @remap-prod-remove-line
+      "@internal/*": ["../../src/*"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx"],
+}

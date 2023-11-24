@@ -70,7 +70,7 @@
     },
     {
       "parser": "@typescript-eslint/parser",
-      "files": ["./examples/**/*.{js,ts,jsx,tsx}"],
+      "files": ["./docs/examples/**/*.{js,ts,jsx,tsx}"],
       "parserOptions": {
         "ecmaVersion": 2023,
         "sourceType": "module",

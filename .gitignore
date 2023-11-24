@@ -32,5 +32,5 @@ website/node_modules
 website/i18n/*
 website/.yarn/
 
-examples/**/*.js
-examples/**/*.jsx
+docs/examples/**/*.js
+docs/examples/**/*.jsx
