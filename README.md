@@ -1808,7 +1808,7 @@ Useful to reduce selectors recalculation when the same selector is repeatedly ca
 
 ### [reselect-debugger](https://github.com/vlanemcev/reselect-debugger-flipper)
 
-[Flipper plugin](https://github.com/vlanemcev/flipper-plugin-reselect-debugger) and [and the connect app](https://github.com/vlanemcev/reselect-debugger-flipper) for debugging selectors in **React Native Apps**.
+[Flipper plugin](https://github.com/vlanemcev/flipper-plugin-reselect-debugger) and [the connect app](https://github.com/vlanemcev/reselect-debugger-flipper) for debugging selectors in **React Native Apps**.
 
 Inspired by Reselect Tools, so it also has all functionality from this library and more, but only for React Native and Flipper.
 
