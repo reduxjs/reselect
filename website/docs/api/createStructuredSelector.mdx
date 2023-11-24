@@ -8,6 +8,7 @@ description: 'createStructuredSelector'
 
 import Tabs from '@theme/Tabs'
 import TabItem from '@theme/TabItem'
+import { InternalLinks } from '@site/src/components/InternalLinks'
 
 # `createStructuredSelector`
 
@@ -15,10 +16,10 @@ A convenience function that simplifies returning an object made up of selector r
 
 ## Parameters
 
-| Name                   | Description                                                            |
-| :--------------------- | :--------------------------------------------------------------------- |
-| `inputSelectorsObject` | A key value pair consisting of input selectors.                        |
-| `selectorCreator?`     | A custom selector creator function. It defaults to [`createSelector`]. |
+| Name                   | Description                                                                          |
+| :--------------------- | :----------------------------------------------------------------------------------- |
+| `inputSelectorsObject` | A key value pair consisting of input selectors.                                      |
+| `selectorCreator?`     | A custom selector creator function. It defaults to <InternalLinks.CreateSelector />. |
 
 ## Returns
 
@@ -28,7 +29,7 @@ A memoized structured selector.
 
 | Name                   | Description                                                                                                                                                   |
 | :--------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `InputSelectorsObject` | The shape of the [input selectors] object.                                                                                                                    |
+| `InputSelectorsObject` | The shape of the <InternalLinks.InputSelectors /> object.                                                                                                     |
 | `MemoizeFunction`      | The type of the memoize function that is used to create the structured selector. It defaults to `defaultMemoize`.                                             |
 | `ArgsMemoizeFunction`  | The type of the of the memoize function that is used to memoize the arguments passed into the generated structured selector. It defaults to `defaultMemoize`. |
 

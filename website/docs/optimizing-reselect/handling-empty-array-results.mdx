@@ -8,6 +8,7 @@ description: Handling Empty Array Results
 
 import Tabs from '@theme/Tabs'
 import TabItem from '@theme/TabItem'
+import { InternalLinks } from '@site/src/components/InternalLinks'
 
 # Handling Empty Array Results
 
@@ -121,7 +122,7 @@ const selectCompletedTodos = createSelector([state => state.todos], todos => {
 
   <!-- END: handling-empty-array-results/fallbackToEmptyArray.ts -->
 
-This way if the [result function] returns an empty array twice in a row, your component will not re-render due to a stable empty array reference:
+This way if the <InternalLinks.ResultFunction /> returns an empty array twice in a row, your component will not re-render due to a stable empty array reference:
 
 ```ts
 const completedTodos = selectCompletedTodos(store.getState())

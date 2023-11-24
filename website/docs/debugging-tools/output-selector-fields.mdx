@@ -6,19 +6,21 @@ hide_title: true
 description: Output Selector Fields
 ---
 
+import { InternalLinks } from '@site/src/components/InternalLinks'
+
 # Output Selector Fields
 
 The output selectors created by `createSelector` have several additional properties attached to them:
 
-| Name                            | Description                                                                                                                                                                                   |
-| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `resultFunc`                    | The final function passed to [`createSelector`].                                                                                                                                              |
-| `memoizedResultFunc`            | The memoized version of `resultFunc`.                                                                                                                                                         |
-| `lastResult`                    | Returns the last result calculated by `memoizedResultFunc`.                                                                                                                                   |
-| `dependencies`                  | The array of the input selectors used by [`createSelector`] to compose `resultFunc`.                                                                                                          |
-| `recomputations`                | Counts the number of times `memoizedResultFunc` has been recalculated.                                                                                                                        |
-| `resetRecomputations`           | Resets the count of `recomputations` count to 0.                                                                                                                                              |
-| `dependencyRecomputations`      | Counts the number of times the [input selectors] ([`dependencies`]) have been recalculated. This is distinct from `recomputations`, which tracks the recalculations of the [result function]. |
-| `resetDependencyRecomputations` | Resets the `dependencyRecomputations` count to 0.                                                                                                                                             |
-| `memoize`                       | Function used to memoize the `resultFunc`.                                                                                                                                                    |
-| `argsMemoize`                   | Function used to memoize the arguments passed into the [output selector].                                                                                                                     |
+| Name                            | Description                                                                                                                                                                                                                                 |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `resultFunc`                    | The final function passed to <InternalLinks.CreateSelector />.                                                                                                                                                                              |
+| `memoizedResultFunc`            | The memoized version of `resultFunc`.                                                                                                                                                                                                       |
+| `lastResult`                    | Returns the last result calculated by `memoizedResultFunc`.                                                                                                                                                                                 |
+| `dependencies`                  | The array of the input selectors used by <InternalLinks.CreateSelector /> to compose `resultFunc`.                                                                                                                                          |
+| `recomputations`                | Counts the number of times `memoizedResultFunc` has been recalculated.                                                                                                                                                                      |
+| `resetRecomputations`           | Resets the count of `recomputations` count to 0.                                                                                                                                                                                            |
+| `dependencyRecomputations`      | Counts the number of times the <InternalLinks.InputSelectors /> (`<InternalLinks.Dependencies />`) have been recalculated. This is distinct from `recomputations`, which tracks the recalculations of the <InternalLinks.ResultFunction />. |
+| `resetDependencyRecomputations` | Resets the `dependencyRecomputations` count to 0.                                                                                                                                                                                           |
+| `memoize`                       | Function used to memoize the `resultFunc`.                                                                                                                                                                                                  |
+| `argsMemoize`                   | Function used to memoize the arguments passed into the <InternalLinks.OutputSelector />.                                                                                                                                                    |

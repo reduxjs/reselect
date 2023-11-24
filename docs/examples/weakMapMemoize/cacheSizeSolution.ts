@@ -1,5 +1,5 @@
 import { createSelector, weakMapMemoize } from 'reselect'
-import type { RootState } from './weakMapMemoize-problem'
+import type { RootState } from './cacheSizeProblem'
 
 const state: RootState = {
   items: [

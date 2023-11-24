@@ -12,7 +12,7 @@
     "write-heading-ids": "docusaurus write-heading-ids",
     "prestart": "yarn examples:build",
     "examples:clean": "rimraf \"../docs/examples/**/*.{js,jsx}\"",
-    "examples:build": "yarn examples:clean && ts-node compileExamples.ts",
+    "examples:build": "yarn examples:clean && ts-node compileExamples.ts && ts-node insertCodeExamples.ts",
     "typecheck": "tsc"
   },
   "dependencies": {

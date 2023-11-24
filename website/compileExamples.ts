@@ -362,7 +362,11 @@ const saveWhitespace = (file: string) => {
   return metadataObj.serialize() + file
 }
 
-const examplesDirectory = '../docs/examples'
+export const EXAMPLES_DIRECTORY = '../docs/examples'
+
+export const tsExtensionRegex = /\.tsx?$/
+
+export const hasTSXExtension = (fileName: string) => /\.tsx$/.test(fileName)
 
 /**
  * Compiles a single TypeScript file to JavaScript, preserving whitespaces.
@@ -375,12 +379,12 @@ const examplesDirectory = '../docs/examples'
  */
 const compileTSFile = (filePath: string) => {
   const fileContents = readFileSync(filePath, 'utf8')
-  const isTSX = filePath.match(/\.tsx$/)
+  const isTSX = hasTSXExtension(filePath)
   const outputFileExtension = isTSX ? '.jsx' : '.js'
   const jsx = isTSX ? ts.JsxEmit.Preserve : ts.JsxEmit.None
 
   const savedWhitespaceContents = saveWhitespace(fileContents)
-  const tsconfigPath = path.join(examplesDirectory, 'tsconfig.json')
+  const tsconfigPath = path.join(EXAMPLES_DIRECTORY, 'tsconfig.json')
   const { config } = ts.readConfigFile(tsconfigPath, ts.sys.readFile) as {
     config: Pick<ts.TranspileOptions, 'compilerOptions'>
   }
@@ -391,7 +395,7 @@ const compileTSFile = (filePath: string) => {
     }
   })
 
-  const outputFilePath = filePath.replace(/\.tsx?$/, outputFileExtension)
+  const outputFilePath = filePath.replace(tsExtensionRegex, outputFileExtension)
   const restoredWhitespaceContents = restoreWhitespace(result.outputText)
   writeFileSync(outputFilePath, restoredWhitespaceContents, 'utf8')
 }
@@ -409,10 +413,10 @@ const compileTSWithWhitespace = (directory: string) => {
     const filePath = path.join(directory, entry.name)
     if (entry.isDirectory()) {
       compileTSWithWhitespace(filePath)
-    } else if (/\.(ts|tsx)$/.test(entry.name)) {
+    } else if (tsExtensionRegex.test(entry.name)) {
       compileTSFile(filePath)
     }
   })
 }
 
-compileTSWithWhitespace(examplesDirectory)
+compileTSWithWhitespace(EXAMPLES_DIRECTORY)

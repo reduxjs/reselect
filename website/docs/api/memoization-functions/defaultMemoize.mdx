@@ -8,14 +8,16 @@ description: 'defaultMemoize'
 
 import Tabs from '@theme/Tabs'
 import TabItem from '@theme/TabItem'
+import { InternalLinks } from '@site/src/components/InternalLinks'
+import { ExternalLinks } from '@site/src/components/ExternalLinks'
 
 # `defaultMemoize`
 
-The standard memoize function used by [`createSelector`].
+The standard memoize function used by <InternalLinks.CreateSelector />.
 
 It has a default cache size of 1. This means it always recalculates when the value of an argument changes. However, this can be customized as needed with a specific max cache size (since 4.1.0).
 
-It determines if an argument has changed by calling the `equalityCheck` function. As `defaultMemoize` is designed to be used with immutable data, the default `equalityCheck` function checks for changes using [reference equality][Reference Equality Check]:
+It determines if an argument has changed by calling the `equalityCheck` function. As `defaultMemoize` is designed to be used with immutable data, the default `equalityCheck` function checks for changes using <ExternalLinks.ReferenceEqualityCheck text="reference equality" />:
 
 <!-- START: defaultMemoize/defaultEqualityCheck.ts -->
 
@@ -91,7 +93,7 @@ A memoized function with a `.clearCache()` method attached.
 
 ## Examples
 
-### Using `defaultMemoize` with [`createSelector`]
+### Using `defaultMemoize` with <InternalLinks.CreateSelector />
 
 <!-- START: defaultMemoize/usingWithCreateSelector.ts -->
 
@@ -166,7 +168,7 @@ const selectTodoIds = createSelector(
 
   <!-- END: defaultMemoize/usingWithCreateSelector.ts -->
 
-### Using `defaultMemoize` with [`createSelectorCreator`]
+### Using `defaultMemoize` with <InternalLinks.CreateSelectorCreator />
 
 <!-- START: defaultMemoize/usingWithCreateSelectorCreator.ts -->
 

@@ -9,6 +9,7 @@ description: Development-Only Stability Checks
 
 import Tabs from '@theme/Tabs'
 import TabItem from '@theme/TabItem'
+import { InternalLinks } from '@site/src/components/InternalLinks'
 
 # Development-Only Stability Checks
 
@@ -16,7 +17,7 @@ Reselect includes extra checks in development mode to help catch and warn about 
 
 ## `inputStabilityCheck`
 
-Due to how [**_Cascading Memoization_**] works in Reselect, it is crucial that your [input selectors] do not return a new reference on each run. If an [input selector][input selectors] always returns a new reference, like
+Due to how <InternalLinks.CascadingMemoization /> works in Reselect, it is crucial that your <InternalLinks.InputSelectors /> do not return a new reference on each run. If an <InternalLinks.InputSelectors text='input selector' /> always returns a new reference, like
 
 ```ts
 state => ({ a: state.a, b: state.b })
@@ -29,7 +30,7 @@ state => state.todos.map(todo => todo.id)
 ```
 
 that will cause the selector to never memoize properly.
-Since this is a common mistake, we've added a development mode check to catch this. By default, [`createSelector`] will now run the [input selectors] twice during the first call to the selector. If the result appears to be different for the same call, it will log a warning with the arguments and the two different sets of extracted input values.
+Since this is a common mistake, we've added a development mode check to catch this. By default, <InternalLinks.CreateSelector /> will now run the <InternalLinks.InputSelectors /> twice during the first call to the selector. If the result appears to be different for the same call, it will log a warning with the arguments and the two different sets of extracted input values.
 
 ```ts
 type StabilityCheckFrequency = 'always' | 'once' | 'never'
@@ -66,9 +67,9 @@ setInputStabilityCheckEnabled('always')
 setInputStabilityCheckEnabled('never')
 ```
 
-### 2. Per selector by passing an `inputStabilityCheck` option directly to [`createSelector`]:
+### 2. Per selector by passing an `inputStabilityCheck` option directly to <InternalLinks.CreateSelector />:
 
-  <!-- START: development-only-stability-checks/per-selector.ts -->
+  <!-- START: development-only-stability-checks/perSelector.ts -->
 
 <Tabs
   groupId='language'
@@ -79,7 +80,7 @@ setInputStabilityCheckEnabled('never')
   ]}>
   <TabItem value='ts'>
 
-```ts title="development-only-stability-checks/per-selector.ts"
+```ts title="development-only-stability-checks/perSelector.ts"
 import { createSelector } from 'reselect'
 
 interface RootState {
@@ -103,7 +104,7 @@ const selectCompletedTodosLength = createSelector(
   </TabItem>
   <TabItem value='js'>
 
-```js title="development-only-stability-checks/per-selector.js"
+```js title="development-only-stability-checks/perSelector.js"
 import { createSelector } from 'reselect'
 
 // Create a selector that double-checks the results of input selectors every time it runs.
@@ -121,7 +122,7 @@ const selectCompletedTodosLength = createSelector(
   </TabItem>
 </Tabs>
 
-  <!-- END: development-only-stability-checks/per-selector.ts -->
+  <!-- END: development-only-stability-checks/perSelector.ts -->
 
 :::warning
 

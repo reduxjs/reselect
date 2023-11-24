@@ -6,37 +6,39 @@ hide_title: true
 description: What's New in 5.0.0?
 ---
 
+import { InternalLinks } from '@site/src/components/InternalLinks'
+
 # What's New in 5.0.0?
 
 Version 5.0.0 introduces several new features and improvements:
 
-## Customization Enhancements:
+## Customization Enhancements
 
-- Added the ability to pass an options object to [`createSelectorCreator`], allowing for customized `memoize` and `argsMemoize` functions, alongside their respective options (`memoizeOptions` and `argsMemoizeOptions`).
-- The [`createSelector`] function now supports direct customization of `memoize` and `argsMemoize` within its options object.
+- Added the ability to pass an options object to <InternalLinks.CreateSelectorCreator />, allowing for customized `memoize` and `argsMemoize` functions, alongside their respective options (`memoizeOptions` and `argsMemoizeOptions`).
+- The <InternalLinks.CreateSelector /> function now supports direct customization of `memoize` and `argsMemoize` within its options object.
 
-## Memoization Functions:
+## Memoization Functions
 
 - Introduced new experimental memoization functions: `weakMapMemoize` and `unstable_autotrackMemoize`.
-  - Incorporated `memoize` and `argsMemoize` into the [output selector fields] for debugging purposes.
+- Incorporated `memoize` and `argsMemoize` into the <InternalLinks.OutputSelectorFields /> for debugging purposes.
 
-## TypeScript Support and Performance:
+## TypeScript Support and Performance
 
 - Discontinued support for TypeScript versions below 4.7, aligning with modern TypeScript features.
-- Significantly improved TypeScript performance for nesting [output selector]s. The nesting limit has increased from approximately 8 to around 30 [output selector]s, greatly reducing the occurrence of the infamous `Type instantiation is excessively deep and possibly infinite` error.
+- Significantly improved TypeScript performance for nesting <InternalLinks.OutputSelector text="output selectors" />. The nesting limit has increased from approximately 8 to around 30 <InternalLinks.OutputSelector text="output selectors" />, greatly reducing the occurrence of the infamous `Type instantiation is excessively deep and possibly infinite` error.
 
-## Selector API Enhancements:
+## Selector API Enhancements
 
 - Removed the second overload of `createStructuredSelector` due to its susceptibility to runtime errors.
 - Added the `TypedStructuredSelectorCreator` utility type (_currently a work-in-progress_) to facilitate the creation of a pre-typed version of `createStructuredSelector` for your root state.
 
-## Additional Functionalities:
+## Additional Functionalities
 
-- Added `dependencyRecomputations` and `resetDependencyRecomputations` to the [output selector fields]. These additions provide greater control and insight over [input selectors], complementing the new `argsMemoize` API.
-- Introduced `inputStabilityCheck`, a development tool that runs the [input selectors] twice using the same arguments and triggers a warning If they return differing results for the same call.
+- Added `dependencyRecomputations` and `resetDependencyRecomputations` to the <InternalLinks.OutputSelectorFields />. These additions provide greater control and insight over <InternalLinks.InputSelectors />, complementing the new `argsMemoize` API.
+- Introduced `inputStabilityCheck`, a development tool that runs the <InternalLinks.InputSelectors /> twice using the same arguments and triggers a warning If they return differing results for the same call.
 
 These updates aim to enhance flexibility, performance, and developer experience. For detailed usage and examples, refer to the updated documentation sections for each feature.
 
-## Breaking Changes:
+## Breaking Changes
 
 - Removed `ParametricSelector` and `OutputParametricSelector` types. Their functionalities are now integrated into `Selector` and `OutputSelector` respectively, which inherently support additional parameters.

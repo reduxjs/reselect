@@ -6,23 +6,29 @@ hide_title: true
 description: Related Projects
 ---
 
+import { InternalLinks } from '@site/src/components/InternalLinks'
+import { ExternalLinks } from '@site/src/components/ExternalLinks'
+import Link from '@docusaurus/Link'
+
 # Related Projects
 
-## [re-reselect](https://github.com/toomuchdesign/re-reselect)
+## <ExternalLinks.ReReselect />
 
-Enhances Reselect selectors by wrapping [`createSelector`] and returning a memoized collection of selectors indexed with the cache key returned by a custom resolver function.
+Enhances Reselect selectors by wrapping <InternalLinks.CreateSelector /> and returning a memoized collection of selectors indexed with the cache key returned by a custom resolver function.
 
 Useful to reduce selectors recalculation when the same selector is repeatedly called with one/few different arguments.
 
-## [reselect-tools](https://github.com/skortchmark9/reselect-tools)
+## <Link to='https://github.com/skortchmark9/reselect-tools'>reselect-tools</Link>
 
 - Measure selector recomputations across the app and identify performance bottlenecks
 - Check selector dependencies, inputs, outputs, and recomputations at any time with the chrome extension
 - Statically export a JSON representation of your selector graph for further analysis
 
-## [reselect-debugger](https://github.com/vlanemcev/reselect-debugger-flipper)
+## <Link to='https://github.com/vlanemcev/reselect-debugger-flipper'>reselect-debugger</Link>
 
-[Flipper plugin](https://github.com/vlanemcev/flipper-plugin-reselect-debugger) and [and the connect app](https://github.com/vlanemcev/reselect-debugger-flipper) for debugging selectors in **React Native Apps**.
+<!-- prettier-ignore -->
+<Link to="https://github.com/vlanemcev/flipper-plugin-reselect-debugger">Flipper plugin</Link> and
+<Link to="https://github.com/vlanemcev/reselect-debugger-flipper">the connect app</Link> for debugging selectors in **React Native Apps**.
 
 Inspired by Reselect Tools, so it also has all functionality from this library and more, but only for React Native and Flipper.
 

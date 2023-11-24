@@ -2,7 +2,7 @@ import type { FC } from 'react'
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { createSelector } from 'reselect'
-import type { RootState } from './weakMapMemoize-problem'
+import type { RootState } from './cacheSizeProblem'
 
 const makeSelectItemsByCategory = (category: string) =>
   createSelector([(state: RootState) => state.items], items =>

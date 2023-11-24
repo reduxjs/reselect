@@ -8,18 +8,21 @@ description: FAQ
 
 import Tabs from '@theme/Tabs'
 import TabItem from '@theme/TabItem'
+import { InternalLinks } from '@site/src/components/InternalLinks'
+import { ExternalLinks } from '@site/src/components/ExternalLinks'
+import Link from '@docusaurus/Link'
 
 # FAQ
 
 ## Why isn’t my selector recomputing when the input state changes?
 
-Check that your memoization function is compatible with your state update function (i.e. the reducer if you are using [Redux]). For example, a selector created with [`createSelector`] will not work with a state update function that mutates an existing object instead of creating a new one each time. [`createSelector`] uses an identity check (`===`) to detect that an input has changed, so mutating an existing object will not trigger the selector to recompute because mutating an object does not change its identity. Note that if you are using [Redux], mutating the state object is [almost certainly a mistake](http://redux.js.org/docs/Troubleshooting.html).
+Check that your memoization function is compatible with your state update function (i.e. the reducer if you are using <ExternalLinks.Redux />). For example, a selector created with <InternalLinks.CreateSelector /> will not work with a state update function that mutates an existing object instead of creating a new one each time. <InternalLinks.CreateSelector /> uses an identity check (`===`) to detect that an input has changed, so mutating an existing object will not trigger the selector to recompute because mutating an object does not change its identity. Note that if you are using <ExternalLinks.Redux />, mutating the state object is <Link to='http://redux.js.org/docs/Troubleshooting.html'>almost certainly a mistake</Link>.
 
 ## Why is my selector recomputing when the input state stays the same?
 
-To address unexpected recomputations in your selector, first ensure that `inputStabilityCheck` is set to either `'always'` or `'once'`. This setting aids in debugging by monitoring the stability of your inputs. Additionally, utilize [output selector fields] such as `recomputations`, `resetRecomputations`, `dependencyRecomputations`, and `resetDependencyRecomputations`. These tools help identify the source of the issue.
+To address unexpected recomputations in your selector, first ensure that `inputStabilityCheck` is set to either `'always'` or `'once'`. This setting aids in debugging by monitoring the stability of your inputs. Additionally, utilize <InternalLinks.OutputSelectorFields /> such as `recomputations`, `resetRecomputations`, `dependencyRecomputations`, and `resetDependencyRecomputations`. These tools help identify the source of the issue.
 
-Keep an eye on the `dependencyRecomputations` count. If it increases while `recomputations` remains the same, it suggests that your arguments are changing references but your [input selectors] are stable which is typically the desired behavior.
+Keep an eye on the `dependencyRecomputations` count. If it increases while `recomputations` remains the same, it suggests that your arguments are changing references but your <InternalLinks.InputSelectors /> are stable which is typically the desired behavior.
 
 To delve deeper, you can determine which arguments are changing references too frequently by using the `argsMemoizeOptions` and `equalityCheck`. Consider the following example:
 
@@ -90,13 +93,13 @@ const selectAlertsByType = createSelector(
 
   <!-- END: FAQ/selectorRecomputing.ts -->
 
-## Can I use Reselect without [Redux]?
+## Can I use Reselect without <ExternalLinks.Redux />?
 
-Yes. Reselect has no dependencies on any other package, so although it was designed to be used with [Redux] it can be used independently. It can be used with any plain JS data, such as typical [React] state values, as long as that data is being updated immutably.
+Yes. Reselect has no dependencies on any other package, so although it was designed to be used with <ExternalLinks.Redux /> it can be used independently. It can be used with any plain JS data, such as typical <ExternalLinks.React /> state values, as long as that data is being updated immutably.
 
 ## How do I create a selector that takes an argument?
 
-Each of the [input selectors] you provide will be called with all of the selector's arguments. You can add additional input selectors to extract arguments and forward them to the [result function], like this:
+Each of the <InternalLinks.InputSelectors /> you provide will be called with all of the selector's arguments. You can add additional input selectors to extract arguments and forward them to the <InternalLinks.ResultFunction />, like this:
 
 ```ts
 const selectTodosByCategory = createSelector(
@@ -107,11 +110,11 @@ const selectTodosByCategory = createSelector(
 )
 ```
 
-When creating a selector that accepts arguments in Reselect, it's important to structure your input and [output selector]s appropriately. Here are key points to consider:
+When creating a selector that accepts arguments in Reselect, it's important to structure your input and <InternalLinks.OutputSelector text='output selectors' /> appropriately. Here are key points to consider:
 
-1. **Consistency in Arguments**: Ensure that all positional arguments across [input selectors] are of the same type for consistency.
+1. **Consistency in Arguments**: Ensure that all positional arguments across <InternalLinks.InputSelectors /> are of the same type for consistency.
 
-2. **Selective Argument Usage**: Design each selector to use only its relevant argument(s) and ignore the rest. This is crucial because all [input selectors] receive the same arguments that are passed to the [output selector].
+2. **Selective Argument Usage**: Design each selector to use only its relevant argument(s) and ignore the rest. This is crucial because all <InternalLinks.InputSelectors /> receive the same arguments that are passed to the <InternalLinks.OutputSelector />.
 
 Suppose we have the following state structure:
 
@@ -181,7 +184,7 @@ const selectItemById = createSelector(
 
 ## Can the memoization behavior be customized?
 
-Yes. The built-in `defaultMemoize` memoizer works great for a lot of use cases, but it can be customized or swapped out for a different memoizer. See [these examples](#customize-equalitycheck-for-defaultmemoize).
+Yes. The built-in `defaultMemoize` memoizer works great for a lot of use cases, but it can be customized or swapped out for a different memoizer. See <Link to='/api/createSelectorCreator#customize-equalitycheck-for-defaultmemoize'>these examples</Link>.
 
 ## How do I test a selector?
 
@@ -330,7 +333,7 @@ test('selector unit test', () => {
 Yes, although if they pass in different arguments, you will need to handle that in order for memoization to work consistently:
 
 - Pass a larger `maxSize` if using `defaultMemoize` ( as of 4.1.0+)
-- Use [`weakMapMemoize`](#weakmapmemoize) (as of 5.0.0+)
+- Use <InternalLinks.WeakMapMemoize /> (as of 5.0.0+)
 
 ## Are there TypeScript Typings?
 
@@ -338,11 +341,11 @@ Yes! Reselect is now written in TypeScript itself, so they should Just Work™.
 
 ## I am seeing a TypeScript error: `Type instantiation is excessively deep and possibly infinite`
 
-Starting in 5.0.0 you should be able to nest up to 30 selectors, but in case you still run into this issue, you can refer to [this
-comment](https://github.com/reduxjs/reselect/issues/534#issuecomment-956708953) for a discussion of the problem, as
+Starting in 5.0.0 you should be able to nest up to 30 selectors, but in case you still run into this issue, you can refer to <Link to='https://github.com/reduxjs/reselect/issues/534#issuecomment-956708953'>this
+comment</Link> for a discussion of the problem, as
 relating to nested selectors.
 
-## How can I make a [curried](https://github.com/hemanth/functional-programming-jargon#currying) selector?
+## How can I make a <Link to='https://github.com/hemanth/functional-programming-jargon#currying'>curried</Link> selector?
 
 Selectors that take arguments are commonly used inside of React-Redux's `useSelector` by using a closure to pass along the extra arguments:
 
@@ -505,7 +508,7 @@ Now you can do this:
 const todoById = useSelector(selectTodoByIdCurried(id))
 ```
 
-Another thing you can do if you are using [React-Redux] is create a custom hook factory function:
+Another thing you can do if you are using <ExternalLinks.ReactRedux /> is create a custom hook factory function:
 
   <!-- START: FAQ/createParametricSelectorHook.ts -->
 
@@ -663,11 +666,11 @@ const MyComponent = ({ id }) => {
 
   <!-- END: FAQ/MyComponent.tsx -->
 
-## How can I make pre-typed version of [`createSelector`](#createselector) for my root state?
+## How can I make pre-typed version of <InternalLinks.CreateSelector /> for my root state?
 
 When used with Redux, it's typical to have all input selectors take `(state: RootState)` as their first argument. Creating a pre-typed version of `createSelector` can shorten that repetition.
 
-You can create a custom typed version of [`createSelector`] by defining a utility type that extends the original [`createSelector`] function. Here's an example:
+You can create a custom typed version of <InternalLinks.CreateSelector /> by defining a utility type that extends the original <InternalLinks.CreateSelector /> function. Here's an example:
 
 ```ts
 import type {
@@ -715,13 +718,13 @@ export const createAppSelector: TypedCreateSelector<RootState> = createSelector
 
 :::warning
 
-This approach currently only supports [input selectors] provided as a single array.
+This approach currently only supports <InternalLinks.InputSelectors /> provided as a single array.
 
 :::
 
-## What if I want to use [`createSelector`](#createselector) without memoization?
+## What if I want to use <InternalLinks.CreateSelector /> without memoization?
 
-There may be rare cases when you might want to use `createSelector` for its composition syntax, but without any memoization applied. In that case, create an [`identity function`][Identity Function] and use it as the memoizers:
+There may be rare cases when you might want to use `createSelector` for its composition syntax, but without any memoization applied. In that case, create an <ExternalLinks.IdentityFunction /> and use it as the memoizers:
 
 <!-- START: FAQ/identity.ts -->
 

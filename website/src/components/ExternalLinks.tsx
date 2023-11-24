@@ -2,7 +2,7 @@ import Link from '@docusaurus/Link'
 import { FC } from 'react'
 
 interface Props {
-  readonly text: string
+  readonly text?: string
 }
 
 export const ExternalLinks = {
@@ -11,7 +11,7 @@ export const ExternalLinks = {
       to="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap"
       title="WeakMap"
     >
-      {text}
+      <code>{text}</code>
     </Link>
   ),
   ReferenceEqualityCheck: ({ text = 'Reference Equality Check' }) => (
@@ -40,7 +40,7 @@ export const ExternalLinks = {
       to="https://react.dev/reference/react/useMemo#usememo"
       title="useMemo"
     >
-      {text}
+      <code>{text}</code>
     </Link>
   ),
   UseCallback: ({ text = 'useCallback' }) => (
@@ -48,7 +48,7 @@ export const ExternalLinks = {
       to="https://react.dev/reference/react/useCallback#usecallback"
       title="useCallback"
     >
-      {text}
+      <code>{text}</code>
     </Link>
   ),
   ReReselect: ({ text = 're-reselect' }) => (
@@ -77,3 +77,17 @@ export const ExternalLinks = {
     </Link>
   )
 } as const satisfies Record<string, FC<Props>>
+
+export const AllExternalLinks: FC = () => {
+  return (
+    <ul>
+      {Object.values(ExternalLinks).map((ExternalLink, index) => (
+        <li key={index}>
+          <b>
+            <ExternalLink />
+          </b>
+        </li>
+      ))}
+    </ul>
+  )
+}

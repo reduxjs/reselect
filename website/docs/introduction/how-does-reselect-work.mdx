@@ -6,8 +6,8 @@ hide_title: true
 description: 'How Does Reselect Work?'
 ---
 
-import { InternalLinks } from '../../src/components/InternalLinks'
-import { ExternalLinks } from '../../src/components/ExternalLinks'
+import { InternalLinks } from '@site/src/components/InternalLinks'
+import { ExternalLinks } from '@site/src/components/ExternalLinks'
 
 # How Does Reselect Work?
 
@@ -56,13 +56,13 @@ This behavior is what we call **_Cascading Double-Layer Memoization_**.
 
 #### Standard Memoization
 
-![normal-memoization-function](../../static/img/normal-memoization-function.png)
+![normal-memoization-function](@site/static/img/normal-memoization-function.png)
 
 _Standard memoization only compares arguments. If they're the same, it returns the cached result._
 
 #### Memoization with Reselect
 
-![reselect-memoization](../../static/img/reselect-memoization.png)
+![reselect-memoization](@site/static/img/reselect-memoization.png)
 
 _Reselect adds a second layer of checks with the <InternalLinks.InputSelectors />. This is crucial in <ExternalLinks.Redux /> applications where state references change frequently._
 
