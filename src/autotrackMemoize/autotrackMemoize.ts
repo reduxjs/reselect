@@ -5,7 +5,11 @@ import {
   createCacheKeyComparator,
   defaultEqualityCheck
 } from '@internal/defaultMemoize'
-import type { AnyFunction } from '@internal/types'
+import type {
+  AnyFunction,
+  DefaultMemoizeFields,
+  Simplify
+} from '@internal/types'
 import { createCache } from './autotracking'
 
 /**
@@ -55,7 +59,7 @@ import { createCache } from './autotracking'
  * ```ts
  * import { unstable_autotrackMemoize as autotrackMemoize, createSelectorCreator } from 'reselect'
  *
- * const createSelectorAutotrack = createSelectorCreator(autotrackMemoize)
+ * const createSelectorAutotrack = createSelectorCreator({ memoize: autotrackMemoize })
  *
  * const selectTodoIds = createSelectorAutotrack(
  *   [(state: RootState) => state.todos],
@@ -64,6 +68,8 @@ import { createCache } from './autotracking'
  * ```
  *
  * @template Func - The type of the function that is memoized.
+ *
+ * @see {@link https://github.com/reduxjs/reselect#unstable_autotrackmemoizefunc---since-500 autotrackMemoize}
  *
  * @since 5.0.0
  * @public
@@ -93,7 +99,9 @@ export function autotrackMemoize<Func extends AnyFunction>(func: Func) {
     return cache.value
   }
 
-  memoized.clearCache = () => cache.clear()
+  memoized.clearCache = () => {
+    return cache.clear()
+  }
 
-  return memoized as Func & { clearCache: () => void }
+  return memoized as Func & Simplify<DefaultMemoizeFields>
 }
