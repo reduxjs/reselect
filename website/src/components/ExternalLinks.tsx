@@ -1,75 +1,79 @@
 import Link from '@docusaurus/Link'
 import { FC } from 'react'
 
+interface Props {
+  readonly text: string
+}
+
 export const ExternalLinks = {
-  WeakMap: () => (
+  WeakMap: ({ text = 'WeakMap' }) => (
     <Link
       to="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap"
       title="WeakMap"
     >
-      WeakMap
+      {text}
     </Link>
   ),
-  ReferenceEqualityCheck: () => (
+  ReferenceEqualityCheck: ({ text = 'Reference Equality Check' }) => (
     <Link
       to="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Strict_equality"
       title="Reference Equality Check"
     >
-      Reference Equality Check
+      {text}
     </Link>
   ),
-  Memoization: () => (
+  Memoization: ({ text = 'memoization' }) => (
     <Link to="https://en.wikipedia.org/wiki/Memoization" title="Memoization">
-      memoization
+      {text}
     </Link>
   ),
-  IdentityFunction: () => (
+  IdentityFunction: ({ text = 'Identity Function' }) => (
     <Link
       to="https://en.wikipedia.org/wiki/Identity_function"
       title="Identity Function"
     >
-      Identity Function
+      {text}
     </Link>
   ),
-  UseMemo: () => (
+  UseMemo: ({ text = 'useMemo' }) => (
     <Link
       to="https://react.dev/reference/react/useMemo#usememo"
       title="useMemo"
     >
-      useMemo
+      {text}
     </Link>
   ),
-  UseCallback: () => (
+  UseCallback: ({ text = 'useCallback' }) => (
     <Link
       to="https://react.dev/reference/react/useCallback#usecallback"
       title="useCallback"
     >
-      useCallback
+      {text}
     </Link>
   ),
-  ReReselect: () => (
+  ReReselect: ({ text = 're-reselect' }) => (
     <Link to="https://github.com/toomuchdesign/re-reselect" title="re-reselect">
-      re-reselect
+      {text}
     </Link>
   ),
-  Redux: () => (
+  Redux: ({ text = 'Redux' }) => (
     <Link to="https://redux.js.org" title="Redux">
-      Redux
+      {text}
     </Link>
   ),
-  React: () => (
+  React: ({ text = 'React' }) => (
     <Link to="https://react.dev" title="React">
-      React
+      {text}
     </Link>
   ),
-  ReactRedux: () => (
+  ReactRedux: ({ text = 'React-Redux' }) => (
     <Link to="https://react-redux.js.org" title="React-Redux">
-      React-Redux
+      {text}
     </Link>
   ),
-  ReduxToolkit: () => (
+  ReduxToolkit: ({ text = 'Redux-Toolkit' }) => (
     <Link to="https://redux-toolkit.js.org" title="Redux-Toolkit">
-      Redux-Toolkit
+      {text}
     </Link>
   )
-} as const satisfies Record<string, FC>
+} as const satisfies Record<string, FC<Props>>
