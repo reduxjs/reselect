@@ -141,6 +141,32 @@ export interface CreateSelectorFunction<
     OverrideArgsMemoizeFunction
   > &
     InterruptRecursion
+
+    <
+    SoloSelector extends (...args: any[]) => any,
+    OverrideMemoizeFunction extends UnknownMemoizer = MemoizeFunction,
+    OverrideArgsMemoizeFunction extends UnknownMemoizer = ArgsMemoizeFunction
+  >(
+    selector: SoloSelector,
+    createSelectorOptions?: Simplify<
+      CreateSelectorOptions<
+        MemoizeFunction,
+        ArgsMemoizeFunction,
+        OverrideMemoizeFunction,
+        OverrideArgsMemoizeFunction
+      >
+    >
+  ): OutputSelector<
+    ParametersToVirtualInputSelectors<Parameters<SoloSelector>>,
+    ReturnType<SoloSelector>,
+    OverrideMemoizeFunction,
+    OverrideArgsMemoizeFunction
+  > &
+    InterruptRecursion
+}
+
+type ParametersToVirtualInputSelectors<T extends [...any]> = {
+  [K in keyof T]: K extends keyof Array<any> ? T[K] : (...params: T) => T[K]
 }
 
 let globalStabilityCheck: StabilityCheckFrequency = 'once'
