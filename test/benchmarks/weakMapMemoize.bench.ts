@@ -1,7 +1,7 @@
 import type { OutputSelector, Selector } from 'reselect'
 import {
-  createSelector,
   unstable_autotrackMemoize as autotrackMemoize,
+  createSelector,
   weakMapMemoize
 } from 'reselect'
 import { bench } from 'vitest'
@@ -421,9 +421,24 @@ describe.skip('weakMapMemoize memory leak', () => {
   const selectorWeakMap = createSelector(
     [(state: RootState) => state.todos, (state: RootState, id: number) => id],
     todos => todos.map(({ id }) => id),
+    { memoize: weakMapMemoize }
+  )
+  const selectorArgsWeakMap = createSelector(
+    [(state: RootState) => state.todos, (state: RootState, id: number) => id],
+    todos => todos.map(({ id }) => id),
+    { argsMemoize: weakMapMemoize }
+  )
+  const selectorBothWeakMap = createSelector(
+    [(state: RootState) => state.todos, (state: RootState, id: number) => id],
+    todos => todos.map(({ id }) => id),
     { argsMemoize: weakMapMemoize, memoize: weakMapMemoize }
   )
-  setFunctionNames({ selectorDefault, selectorWeakMap })
+  setFunctionNames({
+    selectorDefault,
+    selectorWeakMap,
+    selectorArgsWeakMap,
+    selectorBothWeakMap
+  })
   const createOptions = <S extends OutputSelector>(
     selector: S,
     commonOptions: Options = {}
@@ -453,5 +468,19 @@ describe.skip('weakMapMemoize memory leak', () => {
       runSelector(selectorWeakMap)
     },
     createOptions(selectorWeakMap, commonOptions)
+  )
+  bench.skip(
+    selectorArgsWeakMap,
+    () => {
+      runSelector(selectorArgsWeakMap)
+    },
+    createOptions(selectorArgsWeakMap, commonOptions)
+  )
+  bench.skip(
+    selectorBothWeakMap,
+    () => {
+      runSelector(selectorBothWeakMap)
+    },
+    createOptions(selectorBothWeakMap, commonOptions)
   )
 })

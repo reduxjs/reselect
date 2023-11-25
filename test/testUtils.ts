@@ -432,7 +432,6 @@ export interface LocalTestContext {
 }
 
 export const { markAsRead, addAlert, removeAlert, toggleRead } =
-
   alertSlice.actions
 
 export const {
@@ -467,20 +466,14 @@ export const localTest = test.extend<LocalTestContext>({
   state
 })
 
-export const resetSelector = <S extends OutputSelector>(
-  selector: S
-) => {
+export const resetSelector = <S extends OutputSelector>(selector: S) => {
   selector.clearCache()
   selector.resetRecomputations()
   selector.resetDependencyRecomputations()
   selector.memoizedResultFunc.clearCache()
 }
 
-export const logRecomputations = <
-  S extends OutputSelector
->(
-  selector: S
-) => {
+export const logRecomputations = <S extends OutputSelector>(selector: S) => {
   console.log(
     `${selector.name} result function recalculated:`,
     selector.recomputations(),
@@ -496,7 +489,12 @@ export const logSelectorRecomputations = <S extends OutputSelector>(
 ) => {
   console.log(
     `\x1B[32m\x1B[1m${selector.name}\x1B[0m result function recalculated:`,
-    selector.recomputations(),
+    `\x1B[33m${selector.recomputations().toLocaleString('en-US')}\x1B[0m`,
+    'time(s)',
+    `input selectors recalculated:`,
+    `\x1B[33m${selector
+      .dependencyRecomputations()
+      .toLocaleString('en-US')}\x1B[0m`,
     'time(s)'
   )
 }
