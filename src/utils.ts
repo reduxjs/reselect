@@ -113,7 +113,7 @@ export function collectInputSelectorResults(
   if (!length) {
     // no input selectors -> only one selector function was passed to `createSelector`
     // pass all arguments to that selector function
-    return inputSelectorArgs
+    return [...inputSelectorArgs]
   }
   for (let i = 0; i < length; i++) {
     // @ts-ignore
