@@ -197,18 +197,15 @@ export const runIdentityFunctionCheck = (resultFunc: AnyFunction) => {
 }
 
 /**
- * Determines if the input stability check should run.
+ * Determines if a development-only check should run.
  *
- * @param inputStabilityCheck - The frequency of the input stability check.
+ * @param devModeCheckFrequency - The frequency of the development mode check.
  * @param firstRun - Indicates whether it is the first time the selector has run.
- * @returns true if the input stability check should run, otherwise false.
+ * @returns true if the development mode check should run, otherwise false.
  */
 export const shouldRunDevModeCheck = (
-  inputStabilityCheck: DevModeCheckFrequency,
+  devModeCheckFrequency: DevModeCheckFrequency,
   firstRun: boolean
 ) => {
-  return (
-    inputStabilityCheck === 'always' ||
-    (inputStabilityCheck === 'once' && firstRun)
-  )
+  return devModeCheckFrequency === 'always' || (devModeCheckFrequency === 'once' && firstRun)
 }
