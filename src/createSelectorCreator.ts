@@ -469,9 +469,8 @@ export function createSelectorCreator<
             { memoize, memoizeOptions: finalMemoizeOptions },
             arguments
           )
-
-          if (firstRun) firstRun = false
         }
+        if (firstRun) firstRun = false
       }
 
       // apply arguments instead of spreading for performance.
