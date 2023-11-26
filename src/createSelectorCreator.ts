@@ -420,7 +420,6 @@ export function createSelectorCreator<
 
       if (
         process.env.NODE_ENV !== 'production' &&
-        inputSelectorResults.length &&
         shouldRunInputStabilityCheck(noopCheck, firstRun)
       ) {
         runNoopCheck(resultFunc as Combiner<InputSelectors, Result>)

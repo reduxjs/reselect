@@ -566,3 +566,11 @@ export const expensiveComputation = (times = 1_000_000) => {
     // Do nothing
   }
 }
+
+export const setEnvToProd = () => {
+  const originalEnv = process.env.NODE_ENV
+  process.env.NODE_ENV = 'production'
+  return () => {
+    process.env.NODE_ENV = originalEnv
+  }
+}

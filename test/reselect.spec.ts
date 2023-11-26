@@ -12,7 +12,13 @@ import {
 
 import type { OutputSelector, OutputSelectorFields } from 'reselect'
 import type { RootState } from './testUtils'
-import { addTodo, deepClone, localTest, toggleCompleted } from './testUtils'
+import {
+  addTodo,
+  deepClone,
+  localTest,
+  setEnvToProd,
+  toggleCompleted
+} from './testUtils'
 
 // Construct 1E6 states for perf test outside of the perf test so as to not change the execute time of the test function
 const numOfStates = 1_000_000
@@ -105,21 +111,13 @@ describe('Basic selector behavior', () => {
     )
   })
 
+  const isCoverage = process.env.COVERAGE
+
   describe('performance checks', () => {
-    const originalEnv = process.env.NODE_ENV
+    beforeAll(setEnvToProd)
 
-    beforeAll(() => {
-      process.env.NODE_ENV = 'production'
-    })
-    afterAll(() => {
-      process.env.NODE_ENV = originalEnv
-    })
-
-    test('basic selector cache hit performance', () => {
-      if (process.env.COVERAGE) {
-        return // don't run performance tests for coverage
-      }
-
+    // don't run performance tests for coverage
+    test.skipIf(isCoverage)('basic selector cache hit performance', () => {
       const selector = createSelector(
         (state: StateAB) => state.a,
         (state: StateAB) => state.b,
@@ -128,7 +126,7 @@ describe('Basic selector behavior', () => {
       const state1 = { a: 1, b: 2 }
 
       const start = performance.now()
-      for (let i = 0; i < 1000000; i++) {
+      for (let i = 0; i < 1_000_000; i++) {
         selector(state1)
       }
       const totalTime = performance.now() - start
@@ -139,25 +137,24 @@ describe('Basic selector behavior', () => {
       expect(totalTime).toBeLessThan(2000)
     })
 
-    test('basic selector cache hit performance for state changes but shallowly equal selector args', () => {
-      if (process.env.COVERAGE) {
-        return // don't run performance tests for coverage
-      }
+    // don't run performance tests for coverage
+    test.skipIf(isCoverage)(
+      'basic selector cache hit performance for state changes but shallowly equal selector args',
+      () => {
+        const selector = createSelector(
+          (state: StateAB) => state.a,
+          (state: StateAB) => state.b,
+          (a, b) => a + b
+        )
 
-      const selector = createSelector(
-        (state: StateAB) => state.a,
-        (state: StateAB) => state.b,
-        (a, b) => a + b
-      )
+        const start = new Date()
+        for (let i = 0; i < numOfStates; i++) {
+          selector(states[i])
+        }
+        const totalTime = new Date().getTime() - start.getTime()
 
-      const start = new Date()
-      for (let i = 0; i < numOfStates; i++) {
-        selector(states[i])
-      }
-      const totalTime = new Date().getTime() - start.getTime()
-
-      expect(selector(states[0])).toBe(3)
-      expect(selector.recomputations()).toBe(1)
+        expect(selector(states[0])).toBe(3)
+        expect(selector.recomputations()).toBe(1)
 
       // Expected a million calls to a selector with the same arguments to take less than 1 second
       expect(totalTime).toBeLessThan(2000)
