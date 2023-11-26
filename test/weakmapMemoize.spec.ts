@@ -30,7 +30,8 @@ describe('Basic selector behavior with weakMapMemoize', () => {
     // console.log('Selector test')
     const selector = createSelector(
       (state: StateA) => state.a,
-      a => a
+      a => a,
+      { noopCheck: 'never' }
     )
     const firstState = { a: 1 }
     const firstStateNewPointer = { a: 1 }
@@ -48,7 +49,8 @@ describe('Basic selector behavior with weakMapMemoize', () => {
   test("don't pass extra parameters to inputSelector when only called with the state", () => {
     const selector = createSelector(
       (...params: any[]) => params.length,
-      a => a
+      a => a,
+      { noopCheck: 'never' }
     )
     expect(selector({})).toBe(1)
   })
@@ -204,13 +206,14 @@ describe('Basic selector behavior with weakMapMemoize', () => {
         called++
         if (a > 1) throw Error('test error')
         return a
-      }
+      },
+      { noopCheck: 'never' }
     )
     const state1 = { a: 1 }
     const state2 = { a: 2 }
     expect(selector(state1)).toBe(1)
     expect(() => selector(state2)).toThrow('test error')
     expect(selector(state1)).toBe(1)
-    expect(called).toBe(3)
+    expect(called).toBe(2)
   })
 })

@@ -368,39 +368,40 @@ describe('defaultMemoize', () => {
         return state
       },
       {
-        memoizeOptions: { maxSize: 3 }
+        memoizeOptions: { maxSize: 3 },
+        noopCheck: 'never'
       }
     )
 
     // Initial call
     selector('a') // ['a']
-    expect(funcCalls).toBe(2)
+    expect(funcCalls).toBe(1)
 
     // In cache - memoized
     selector('a') // ['a']
-    expect(funcCalls).toBe(2)
+    expect(funcCalls).toBe(1)
 
     // Added
     selector('b') // ['b', 'a']
-    expect(funcCalls).toBe(3)
+    expect(funcCalls).toBe(2)
 
     // Added
     selector('c') // ['c', 'b', 'a']
-    expect(funcCalls).toBe(4)
+    expect(funcCalls).toBe(3)
 
     // Already in cache
     selector('c') // ['c', 'b', 'a']
-    expect(funcCalls).toBe(4)
+    expect(funcCalls).toBe(3)
 
     selector.memoizedResultFunc.clearCache()
 
     // Added
     selector('a') // ['a']
-    expect(funcCalls).toBe(5)
+    expect(funcCalls).toBe(4)
 
     // Already in cache
     selector('a') // ['a']
-    expect(funcCalls).toBe(5)
+    expect(funcCalls).toBe(4)
 
     // make sure clearCache is passed to the selector correctly
     selector.clearCache()
@@ -409,14 +410,8 @@ describe('defaultMemoize', () => {
     // Note: the outer arguments wrapper function still has 'a' in its own size-1 cache, so passing
     // 'a' here would _not_ recalculate
     selector('b') // ['b']
-    expect(funcCalls).toBe(6)
-
-    try {
-      //@ts-expect-error issue 591
-      selector.resultFunc.clearCache()
-      fail('should have thrown for issue 591')
-    } catch (err) {
-      //expected catch
-    }
+    expect(funcCalls).toBe(5)
+    // @ts-expect-error
+    expect(selector.resultFunc.clearCache).toBeUndefined()
   })
 })

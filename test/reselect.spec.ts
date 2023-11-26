@@ -41,7 +41,8 @@ describe('Basic selector behavior', () => {
   test('basic selector', () => {
     const selector = createSelector(
       (state: StateA) => state.a,
-      a => a
+      a => a,
+      { noopCheck: 'never' }
     )
     const firstState = { a: 1 }
     const firstStateNewPointer = { a: 1 }
@@ -59,7 +60,8 @@ describe('Basic selector behavior', () => {
   test("don't pass extra parameters to inputSelector when only called with the state", () => {
     const selector = createSelector(
       (...params: any[]) => params.length,
-      a => a
+      a => a,
+      { noopCheck: 'never' }
     )
     expect(selector({})).toBe(1)
   })
@@ -164,7 +166,8 @@ describe('Basic selector behavior', () => {
   test('memoized composite arguments', () => {
     const selector = createSelector(
       (state: StateSub) => state.sub,
-      sub => sub
+      sub => sub,
+      { noopCheck: 'never' }
     )
     const state1 = { sub: { a: 1 } }
     expect(selector(state1)).toEqual({ a: 1 })
@@ -225,14 +228,15 @@ describe('Basic selector behavior', () => {
         called++
         if (a > 1) throw Error('test error')
         return a
-      }
+      },
+      { noopCheck: 'never' }
     )
     const state1 = { a: 1 }
     const state2 = { a: 2 }
     expect(selector(state1)).toBe(1)
     expect(() => selector(state2)).toThrow('test error')
     expect(selector(state1)).toBe(1)
-    expect(called).toBe(3)
+    expect(called).toBe(2)
   })
 })
 
@@ -240,7 +244,8 @@ describe('Combining selectors', () => {
   test('chained selector', () => {
     const selector1 = createSelector(
       (state: StateSub) => state.sub,
-      sub => sub
+      sub => sub,
+      { noopCheck: 'never' }
     )
     const selector2 = createSelector(selector1, sub => sub.a)
     const state1 = { sub: { a: 1 } }
@@ -301,7 +306,8 @@ describe('Combining selectors', () => {
     )
     const selector = createOverridenSelector(
       (state: StateA) => state.a,
-      a => a
+      a => a,
+      { noopCheck: 'never' }
     )
     expect(selector({ a: 1 })).toBe(1)
     expect(selector({ a: 2 })).toBe(1) // yes, really true

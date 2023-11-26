@@ -33,7 +33,8 @@ describe('Basic selector behavior with autotrack', () => {
     // console.log('Selector test')
     const selector = createSelector(
       (state: StateA) => state.a,
-      a => a
+      a => a,
+      { noopCheck: 'never' }
     )
     const firstState = { a: 1 }
     const firstStateNewPointer = { a: 1 }
@@ -51,7 +52,8 @@ describe('Basic selector behavior with autotrack', () => {
   test("don't pass extra parameters to inputSelector when only called with the state", () => {
     const selector = createSelector(
       (...params: any[]) => params.length,
-      a => a
+      a => a,
+      { noopCheck: 'never' }
     )
     expect(selector({})).toBe(1)
   })
