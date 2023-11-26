@@ -1196,7 +1196,7 @@ const selectTodos = createSelector(
   // This result function does not contain any transformation logic.
   todos => todos,
   // Will override the global setting.
-  { inputStabilityCheck: 'always' }
+  { identityFunctionCheck: 'always' }
 )
 ```
 
