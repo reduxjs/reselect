@@ -1,4 +1,3 @@
-import type { OutputSelector, Selector, SelectorArray } from 'reselect'
 import { defaultMemoize } from './defaultMemoize'
 
 import type {
@@ -9,6 +8,11 @@ import type {
   GetParamsFromSelectors,
   GetStateFromSelectors,
   InterruptRecursion,
+  OutputSelector,
+  Selector,
+  SelectorArray,
+  SetRequired,
+  Simplify,
   StabilityCheckFrequency,
   UnknownMemoizer
 } from './types'
@@ -45,7 +49,7 @@ export interface CreateSelectorFunction<
    * @template OverrideMemoizeFunction - The type of the optional `memoize` function that could be passed into the options object to override the original `memoize` function that was initially passed into `createSelectorCreator`.
    * @template OverrideArgsMemoizeFunction - The type of the optional `argsMemoize` function that could be passed into the options object to override the original `argsMemoize` function that was initially passed into `createSelectorCreator`.
    *
-   * @see {@link https://github.com/reduxjs/reselect#createselectorinputselectors--inputselectors-resultfunc-selectoroptions createSelector}
+   * @see {@link https://github.com/reduxjs/reselect#createselectorinputselectors--inputselectors-resultfunc-createselectoroptions createSelector}
    */
   <InputSelectors extends SelectorArray, Result>(
     ...createSelectorArgs: [
@@ -71,7 +75,7 @@ export interface CreateSelectorFunction<
    * @template OverrideMemoizeFunction - The type of the optional `memoize` function that could be passed into the options object to override the original `memoize` function that was initially passed into `createSelectorCreator`.
    * @template OverrideArgsMemoizeFunction - The type of the optional `argsMemoize` function that could be passed into the options object to override the original `argsMemoize` function that was initially passed into `createSelectorCreator`.
    *
-   * @see {@link https://github.com/reduxjs/reselect#createselectorinputselectors--inputselectors-resultfunc-selectoroptions createSelector}
+   * @see {@link https://github.com/reduxjs/reselect#createselectorinputselectors--inputselectors-resultfunc-createselectoroptions createSelector}
    */
   <
     InputSelectors extends SelectorArray,
@@ -82,7 +86,7 @@ export interface CreateSelectorFunction<
     ...createSelectorArgs: [
       ...inputSelectors: InputSelectors,
       combiner: Combiner<InputSelectors, Result>,
-      createSelectorOptions: Partial<
+      createSelectorOptions: Simplify<
         CreateSelectorOptions<
           MemoizeFunction,
           ArgsMemoizeFunction,
@@ -112,7 +116,7 @@ export interface CreateSelectorFunction<
    * @template OverrideMemoizeFunction - The type of the optional `memoize` function that could be passed into the options object to override the original `memoize` function that was initially passed into `createSelectorCreator`.
    * @template OverrideArgsMemoizeFunction - The type of the optional `argsMemoize` function that could be passed into the options object to override the original `argsMemoize` function that was initially passed into `createSelectorCreator`.
    *
-   * @see {@link https://github.com/reduxjs/reselect#createselectorinputselectors--inputselectors-resultfunc-selectoroptions createSelector}
+   * @see {@link https://github.com/reduxjs/reselect#createselectorinputselectors--inputselectors-resultfunc-createselectoroptions createSelector}
    */
   <
     InputSelectors extends SelectorArray,
@@ -122,7 +126,7 @@ export interface CreateSelectorFunction<
   >(
     inputSelectors: [...InputSelectors],
     combiner: Combiner<InputSelectors, Result>,
-    createSelectorOptions?: Partial<
+    createSelectorOptions?: Simplify<
       CreateSelectorOptions<
         MemoizeFunction,
         ArgsMemoizeFunction,
@@ -149,7 +153,7 @@ let globalStabilityCheck: StabilityCheckFrequency = 'once'
  * This function allows you to override this setting for all of your selectors.
  *
  * **Note**: This setting can still be overridden per selector inside `createSelector`'s `options` object.
- * See {@link https://github.com/reduxjs/reselect#per-selector-configuration per-selector-configuration}
+ * See {@link https://github.com/reduxjs/reselect#2-per-selector-by-passing-an-inputstabilitycheck-option-directly-to-createselector per-selector-configuration}
  * and {@linkcode CreateSelectorOptions.inputStabilityCheck inputStabilityCheck} for more details.
  *
  * _The input stability check does not run in production builds._
@@ -171,8 +175,8 @@ import { OutputSelectorFields, Mapped } from './types';
  * // Never run the input stability check.
  * setInputStabilityCheckEnabled('never')
  * ```
- * @see {@link https://github.com/reduxjs/reselect#development-only-checks development-only-checks}
- * @see {@link https://github.com/reduxjs/reselect#global-configuration global-configuration}
+ * @see {@link https://github.com/reduxjs/reselect#debugging-tools debugging-tools}
+ * @see {@link https://github.com/reduxjs/reselect#1-globally-through-setinputstabilitycheckenabled global-configuration}
  *
  * @since 5.0.0
  * @public
@@ -211,7 +215,7 @@ export function setInputStabilityCheckEnabled(
  * @template MemoizeFunction - The type of the memoize function that is used to memoize the `resultFunc` inside `createSelector` (e.g., `defaultMemoize` or `weakMapMemoize`).
  * @template ArgsMemoizeFunction - The type of the optional memoize function that is used to memoize the arguments passed into the output selector generated by `createSelector` (e.g., `defaultMemoize` or `weakMapMemoize`). If none is explicitly provided, `defaultMemoize` will be used.
  *
- * @see {@link https://github.com/reduxjs/reselect#createselectorcreatormemoize-memoizeoptions createSelectorCreator}
+ * @see {@link https://github.com/reduxjs/reselect#createselectorcreatormemoize--options-memoizeoptions createSelectorCreator}
  *
  * @since 5.0.0
  * @public
@@ -220,11 +224,16 @@ export function createSelectorCreator<
   MemoizeFunction extends UnknownMemoizer,
   ArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
 >(
-  options: CreateSelectorOptions<
-    typeof defaultMemoize,
-    typeof defaultMemoize,
-    MemoizeFunction,
-    ArgsMemoizeFunction
+  options: Simplify<
+    SetRequired<
+      CreateSelectorOptions<
+        typeof defaultMemoize,
+        typeof defaultMemoize,
+        MemoizeFunction,
+        ArgsMemoizeFunction
+      >,
+      'memoize'
+    >
   >
 ): CreateSelectorFunction<MemoizeFunction, ArgsMemoizeFunction>
 
@@ -251,7 +260,7 @@ export function createSelectorCreator<
  *
  * @template MemoizeFunction - The type of the memoize function that is used to memoize the `resultFunc` inside `createSelector` (e.g., `defaultMemoize` or `weakMapMemoize`).
  *
- * @see {@link https://github.com/reduxjs/reselect#createselectorcreatormemoize-memoizeoptions createSelectorCreator}
+ * @see {@link https://github.com/reduxjs/reselect#createselectorcreatormemoize--options-memoizeoptions createSelectorCreator}
  *
  * @public
  */
@@ -276,27 +285,29 @@ export function createSelectorCreator<
   ArgsMemoizeFunction extends UnknownMemoizer,
   MemoizeOrOptions extends
     | MemoizeFunction
-    | CreateSelectorOptions<MemoizeFunction, ArgsMemoizeFunction>
+    | SetRequired<
+        CreateSelectorOptions<MemoizeFunction, ArgsMemoizeFunction>,
+        'memoize'
+      >
 >(
   memoizeOrOptions: MemoizeOrOptions,
-  ...memoizeOptionsFromArgs: MemoizeOrOptions extends CreateSelectorOptions<
-    MemoizeFunction,
-    ArgsMemoizeFunction
+  ...memoizeOptionsFromArgs: MemoizeOrOptions extends SetRequired<
+    CreateSelectorOptions<MemoizeFunction, ArgsMemoizeFunction>,
+    'memoize'
   >
     ? never
     : DropFirstParameter<MemoizeFunction>
 ) {
   /** options initially passed into `createSelectorCreator`. */
-  const createSelectorCreatorOptions: CreateSelectorOptions<
-    MemoizeFunction,
-    ArgsMemoizeFunction
-  > =
-    typeof memoizeOrOptions === 'function'
-      ? {
-          memoize: memoizeOrOptions as MemoizeFunction,
-          memoizeOptions: memoizeOptionsFromArgs
-        }
-      : memoizeOrOptions
+  const createSelectorCreatorOptions: SetRequired<
+    CreateSelectorOptions<MemoizeFunction, ArgsMemoizeFunction>,
+    'memoize'
+  > = typeof memoizeOrOptions === 'function'
+    ? {
+        memoize: memoizeOrOptions as MemoizeFunction,
+        memoizeOptions: memoizeOptionsFromArgs
+      }
+    : memoizeOrOptions
 
   const createSelector = <
     InputSelectors extends SelectorArray,
@@ -307,41 +318,36 @@ export function createSelectorCreator<
     ...createSelectorArgs: [
       ...inputSelectors: [...InputSelectors],
       combiner: Combiner<InputSelectors, Result>,
-      createSelectorOptions?: Partial<
-        CreateSelectorOptions<
-          MemoizeFunction,
-          ArgsMemoizeFunction,
-          OverrideMemoizeFunction,
-          OverrideArgsMemoizeFunction
-        >
-      >
-    ]
-  ) => {
-    let recomputations = 0
-    let lastResult: Result
-
-    // Due to the intricacies of rest params, we can't do an optional arg after `...funcs`.
-    // So, start by declaring the default value here.
-    // (And yes, the words 'memoize' and 'options' appear too many times in this next sequence.)
-    let directlyPassedOptions: Partial<
-      CreateSelectorOptions<
+      createSelectorOptions?: CreateSelectorOptions<
         MemoizeFunction,
         ArgsMemoizeFunction,
         OverrideMemoizeFunction,
         OverrideArgsMemoizeFunction
       >
+    ]
+  ) => {
+    let recomputations = 0
+    let dependencyRecomputations = 0
+    let lastResult: Result
+
+    // Due to the intricacies of rest params, we can't do an optional arg after `...createSelectorArgs`.
+    // So, start by declaring the default value here.
+    // (And yes, the words 'memoize' and 'options' appear too many times in this next sequence.)
+    let directlyPassedOptions: CreateSelectorOptions<
+      MemoizeFunction,
+      ArgsMemoizeFunction,
+      OverrideMemoizeFunction,
+      OverrideArgsMemoizeFunction
     > = {}
 
     // Normally, the result func or "combiner" is the last arg
     let resultFunc = createSelectorArgs.pop() as
       | Combiner<InputSelectors, Result>
-      | Partial<
-          CreateSelectorOptions<
-            MemoizeFunction,
-            ArgsMemoizeFunction,
-            OverrideMemoizeFunction,
-            OverrideArgsMemoizeFunction
-          >
+      | CreateSelectorOptions<
+          MemoizeFunction,
+          ArgsMemoizeFunction,
+          OverrideMemoizeFunction,
+          OverrideArgsMemoizeFunction
         >
 
     // If the result func is actually an _object_, assume it's our options object
@@ -395,6 +401,7 @@ export function createSelectorCreator<
 
     // If a selector is called with the exact same arguments we don't need to traverse our dependencies again.
     const selector = argsMemoize(function dependenciesChecker() {
+      dependencyRecomputations++
       /** Return values of input selectors which the `resultFunc` takes as arguments. */
       const inputSelectorResults = collectInputSelectorResults(
         dependencies,
@@ -436,6 +443,8 @@ export function createSelectorCreator<
       resultFunc,
       memoizedResultFunc,
       dependencies,
+      dependencyRecomputations: () => dependencyRecomputations,
+      resetDependencyRecomputations: () => (dependencyRecomputations = 0),
       lastResult: () => lastResult,
       recomputations: () => recomputations,
       resetRecomputations: () => (recomputations = 0),
@@ -459,7 +468,7 @@ export function createSelectorCreator<
  * a single "result function" / "combiner", and an optional options object, and
  * generates a memoized selector function.
  *
- * @see {@link https://github.com/reduxjs/reselect#createselectorinputselectors--inputselectors-resultfunc-selectoroptions createSelector}
+ * @see {@link https://github.com/reduxjs/reselect#createselectorinputselectors--inputselectors-resultfunc-createselectoroptions createSelector}
  *
  * @public
  */

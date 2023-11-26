@@ -3,12 +3,12 @@
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "node",
+    "module": "ESNext",
+    "moduleResolution": "Node",
     "emitDeclarationOnly": false,
     "strict": true,
     "noEmit": true,
-    "target": "esnext",
+    "target": "ESNext",
     "jsx": "react",
     "baseUrl": ".",
     "rootDir": ".",
@@ -18,8 +18,10 @@
     "types": ["vitest/globals"],
     "paths": {
       "reselect": ["../src/index.ts"], // @remap-prod-remove-line
-      "@internal/*": ["src/*"]
+      "@internal/*": ["../src/*"]
     }
   },
-  "include": ["**/*.ts"]
+  "include": [
+    "**/*.ts",
+  ]
 }
