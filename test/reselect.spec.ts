@@ -465,7 +465,7 @@ describe('argsMemoize and memoize', () => {
     const memoizerFields: Exclude<
       keyof OutputSelector,
       keyof OutputSelectorFields
-    >[] = ['clearCache']
+    >[] = ['clearCache', 'resultsCount', 'resetResultsCount']
     const allFields: (keyof OutputSelector)[] = [
       ...outPutSelectorFields,
       ...memoizerFields
@@ -994,7 +994,7 @@ describe('argsMemoize and memoize', () => {
     // Checking existence of fields related to `memoize`
     expect(selectorMicroMemoizeOverrideMemoizeOnly.memoizedResultFunc)
       .to.be.a('function')
-      .that.has.all.keys(['clearCache'])
+      .that.has.all.keys(['clearCache', 'resultsCount', 'resetResultsCount'])
     expect(
       selectorMicroMemoizeOverrideMemoizeOnly.memoizedResultFunc.clearCache
     ).to.be.a('function')
