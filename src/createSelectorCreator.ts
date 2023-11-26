@@ -164,8 +164,6 @@ let globalStabilityCheck: DevModeCheckFrequency = 'once'
  * @example
  * ```ts
  * import { setInputStabilityCheckEnabled } from 'reselect'
-import { assert } from './autotrackMemoize/utils';
-import { OutputSelectorFields, Mapped } from './types';
  *
  * // Run only the first time the selector is called. (default)
  * setInputStabilityCheckEnabled('once')
@@ -190,6 +188,40 @@ export function setInputStabilityCheckEnabled(
 
 let globalIdentityFunctionCheck: DevModeCheckFrequency = 'once'
 
+/**
+ * In development mode, an extra check is conducted on your result function.
+ * It runs your result function an extra time, and
+ * warns in the console if it returns its own input.
+ *
+ * This function allows you to override this setting for all of your selectors.
+ *
+ * **Note**: This setting can still be overridden per selector inside `createSelector`'s `options` object.
+ * See {@link https://github.com/reduxjs/reselect#2-per-selector-by-passing-an-identityfunctioncheck-option-directly-to-createselector per-selector-configuration}
+ * and {@linkcode CreateSelectorOptions.identityFunctionCheck identityFunctionCheck} for more details.
+ *
+ * _The identity function check does not run in production builds._
+ *
+ * @param identityFunctionCheckFrequency - How often the `identityFunctionCheck` should run for all selectors.
+ *
+ * @example
+ * ```ts
+ * import { setGlobalIdentityFunctionCheck } from 'reselect'
+ *
+ * // Run only the first time the selector is called. (default)
+ * setGlobalIdentityFunctionCheck('once')
+ *
+ * // Run every time the selector is called.
+ * setGlobalIdentityFunctionCheck('always')
+ *
+ * // Never run the identity function check.
+ * setGlobalIdentityFunctionCheck('never')
+ * ```
+ * @see {@link https://github.com/reduxjs/reselect#debugging-tools debugging-tools}
+ * @see {@link https://github.com/reduxjs/reselect#1-globally-through-setGlobalIdentityFunctionCheck global-configuration}
+ *
+ * @since 5.0.0
+ * @public
+ */
 export const setGlobalIdentityFunctionCheck = (
   identityFunctionCheckFrequency: DevModeCheckFrequency
 ) => {
