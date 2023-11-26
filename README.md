@@ -1253,6 +1253,7 @@ Version 5.0.0 introduces several new features and improvements:
 
   - Added `dependencyRecomputations` and `resetDependencyRecomputations` to the [output selector fields]. These additions provide greater control and insight over [input selectors], complementing the new `argsMemoize` API.
   - Introduced `inputStabilityCheck`, a development tool that runs the [input selectors] twice using the same arguments and triggers a warning If they return differing results for the same call.
+  - Introduced `identityFunctionCheck`, a development tool that checks to see if the [result function] returns its own input.
 
 These updates aim to enhance flexibility, performance, and developer experience. For detailed usage and examples, refer to the updated documentation sections for each feature.
 
