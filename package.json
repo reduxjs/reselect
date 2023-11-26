@@ -51,7 +51,10 @@
   "license": "MIT",
   "devDependencies": {
     "@reduxjs/toolkit": "^1.9.3",
+    "@testing-library/react": "^14.1.2",
     "@types/lodash": "^4.14.175",
+    "@types/react": "^18.2.38",
+    "@types/react-dom": "^18.2.17",
     "@types/shelljs": "^0.8.11",
     "@typescript-eslint/eslint-plugin": "5.1.0",
     "@typescript-eslint/eslint-plugin-tslint": "5.1.0",
