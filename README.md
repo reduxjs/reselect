@@ -1115,10 +1115,10 @@ setInputStabilityCheckEnabled('never')
 ##### 2. Per selector by passing an `inputStabilityCheck` option directly to [`createSelector`]:
 
 ```ts
-// Create a selector that double-checks the results of [`input selectors`][Input Selectors] every time it runs.
+// Create a selector that double-checks the results of input selectors every time it runs.
 const selectCompletedTodosLength = createSelector(
   [
-    // This `input selector` will not be memoized properly since it always returns a new reference.
+    // This input selector will not be memoized properly since it always returns a new reference.
     (state: RootState) =>
       state.todos.filter(({ completed }) => completed === true)
   ],
@@ -1130,6 +1130,75 @@ const selectCompletedTodosLength = createSelector(
 
 > [!WARNING]
 > This will override the global input stability check set by calling `setInputStabilityCheckEnabled`.
+
+<a id="identityfunctioncheck"></a>
+
+#### `identityFunctionCheck`
+
+When working with Reselect, it's crucial to adhere to a fundamental philosophy regarding the separation of concerns between extraction and transformation logic.
+
+- **Extraction Logic**: This refers to operations like `state => state.todos`, which should be placed in [input selectors]. Extraction logic is responsible for retrieving or 'selecting' data from a broader state or dataset.
+
+- **Transformation Logic**: In contrast, transformation logic, such as `todos => todos.map(({ id }) => id)`, belongs in the [result function]. This is where you manipulate, format, or transform the data extracted by the input selectors.
+
+Most importantly, effective memoization in Reselect hinges on following these guidelines. Memoization, only functions correctly when extraction and transformation logic are properly segregated. By keeping extraction logic in input selectors and transformation logic in the result function, Reselect can efficiently determine when to reuse cached results and when to recompute them. This not only enhances performance but also ensures the consistency and predictability of your selectors.
+
+For memoization to work as intended, it's imperative to follow both guidelines. If either is disregarded, memoization will not function properly. Consider the following example for clarity:
+
+```ts
+// ❌ Incorrect Use Case: This will not memoize correctly, and does nothing useful!
+const brokenSelector = createSelector(
+  // ✔️ GOOD: Contains extraction logic.
+  [(state: RootState) => state.todos],
+  // ❌ BAD: Does not contain transformation logic.
+  todos => todos
+)
+```
+
+```ts
+type DevModeCheckFrequency = 'always' | 'once' | 'never'
+```
+
+| Possible Values | Description                                     |
+| :-------------- | :---------------------------------------------- |
+| `once`          | Run only the first time the selector is called. |
+| `always`        | Run every time the selector is called.          |
+| `never`         | Never run the identity function check.          |
+
+> [!IMPORTANT]
+> The identity function check is automatically disabled in production environments.
+
+You can configure this behavior in two ways:
+
+<a id="setglobalidentityfunctioncheck"></a>
+
+##### 1. Globally through `setGlobalIdentityFunctionCheck`:
+
+```ts
+import { setGlobalIdentityFunctionCheck } from 'reselect'
+
+// Run only the first time the selector is called. (default)
+setGlobalIdentityFunctionCheck('once')
+
+// Run every time the selector is called.
+setGlobalIdentityFunctionCheck('always')
+
+// Never run the identity function check.
+setGlobalIdentityFunctionCheck('never')
+```
+
+##### 2. Per selector by passing an `identityFunctionCheck` option directly to [`createSelector`]:
+
+```ts
+// Create a selector that checks to see if the result function is an identity function.
+const selectTodos = createSelector(
+  [(state: RootState) => state.todos],
+  // This result function does not contain any transformation logic.
+  todos => todos,
+  // Will override the global setting.
+  { inputStabilityCheck: 'always' }
+)
+```
 
 <a id="outputselectorfields"></a>
 
