@@ -494,19 +494,32 @@ export const logRecomputations = <S extends OutputSelector>(selector: S) => {
   )
 }
 
-export const logSelectorRecomputations = <S extends OutputSelector>(
+export const logSelectorRecomputations = <
+  S extends OutputSelector<unknown, typeof defaultMemoize, any>
+>(
   selector: S
 ) => {
   console.log(
     `\x1B[32m\x1B[1m${selector.name}\x1B[0m result function recalculated:`,
-    `\x1B[33m${selector.recomputations().toLocaleString('en-US')}\x1B[0m`,
-    'time(s)',
-    `input selectors recalculated:`,
-    `\x1B[33m${selector
-      .dependencyRecomputations()
-      .toLocaleString('en-US')}\x1B[0m`,
-    'time(s)'
+    {
+      resultFunc: selector.recomputations(),
+      inputSelectors: selector.dependencyRecomputations(),
+      newResults:
+        typeof selector.memoizedResultFunc.resultsCount === 'function'
+          ? selector.memoizedResultFunc.resultsCount()
+          : undefined
+    }
   )
+  // console.log(
+  //   `\x1B[32m\x1B[1m${selector.name}\x1B[0m result function recalculated:`,
+  //   `\x1B[33m${selector.recomputations().toLocaleString('en-US')}\x1B[0m`,
+  //   'time(s)',
+  //   `input selectors recalculated:`,
+  //   `\x1B[33m${selector
+  //     .dependencyRecomputations()
+  //     .toLocaleString('en-US')}\x1B[0m`,
+  //   'time(s)'
+  // )
 }
 
 export const logFunctionInfo = (func: AnyFunction, recomputations: number) => {
