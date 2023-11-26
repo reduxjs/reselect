@@ -123,7 +123,7 @@ export function collectInputSelectorResults(
 }
 
 /**
- * Run a stability check to ensure the input selector results remain stable
+ * Runs a stability check to ensure the input selector results remain stable
  * when provided with the same arguments. This function is designed to detect
  * changes in the output of input selectors, which can impact the performance of memoized selectors.
  *
@@ -168,6 +168,16 @@ export function runStabilityCheck(
   }
 }
 
+/**
+ * Runs a check to determine if the given result function behaves as an
+ * identity function. An identity function is one that returns its
+ * input unchanged, for example, `x => x`. This check helps ensure
+ * efficient memoization and prevent unnecessary re-renders by encouraging
+ * proper use of transformation logic in result functions and
+ * extraction logic in input selectors.
+ *
+ * @param resultFunc - The result function to be checked.
+ */
 export const runIdentityFunctionCheck = (resultFunc: AnyFunction) => {
   let isInputSameAsOutput = false
   try {
