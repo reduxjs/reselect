@@ -32,7 +32,7 @@ describe('Basic selector behavior with weakMapMemoize', () => {
     const selector = createSelector(
       (state: StateA) => state.a,
       a => a,
-      { noopCheck: 'never' }
+      { identityFunctionCheck: 'never' }
     )
     const firstState = { a: 1 }
     const firstStateNewPointer = { a: 1 }
@@ -51,7 +51,7 @@ describe('Basic selector behavior with weakMapMemoize', () => {
     const selector = createSelector(
       (...params: any[]) => params.length,
       a => a,
-      { noopCheck: 'never' }
+      { identityFunctionCheck: 'never' }
     )
     expect(selector({})).toBe(1)
   })
@@ -160,7 +160,7 @@ describe('Basic selector behavior with weakMapMemoize', () => {
         if (a > 1) throw Error('test error')
         return a
       },
-      { noopCheck: 'never' }
+      { identityFunctionCheck: 'never' }
     )
     const state1 = { a: 1 }
     const state2 = { a: 2 }
@@ -182,7 +182,7 @@ describe.skipIf(isCoverage)('weakmapMemoize performance tests', () => {
       (state: StateAB) => state.a,
       (state: StateAB) => state.b,
       (a, b) => a + b,
-      { noopCheck: 'never' }
+      { identityFunctionCheck: 'never' }
     )
     const state1 = { a: 1, b: 2 }
 
@@ -203,7 +203,7 @@ describe.skipIf(isCoverage)('weakmapMemoize performance tests', () => {
       (state: StateAB) => state.a,
       (state: StateAB) => state.b,
       (a, b) => a + b,
-      { noopCheck: 'never' }
+      { identityFunctionCheck: 'never' }
     )
 
     const start = performance.now()

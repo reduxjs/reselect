@@ -2,7 +2,7 @@ export { autotrackMemoize as unstable_autotrackMemoize } from './autotrackMemoiz
 export {
   createSelector,
   createSelectorCreator,
-  setGlobalNoopCheck,
+  setGlobalIdentityFunctionCheck,
   setInputStabilityCheckEnabled
 } from './createSelectorCreator'
 export type { CreateSelectorFunction } from './createSelectorCreator'

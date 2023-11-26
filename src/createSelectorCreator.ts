@@ -22,7 +22,7 @@ import {
   collectInputSelectorResults,
   ensureIsArray,
   getDependencies,
-  runNoopCheck,
+  runIdentityFunctionCheck,
   runStabilityCheck,
   shouldRunDevModeCheck
 } from './utils'
@@ -188,12 +188,12 @@ export function setInputStabilityCheckEnabled(
   globalStabilityCheck = inputStabilityCheckFrequency
 }
 
-let globalNoopCheck: DevModeCheckFrequency = 'once'
+let globalIdentityFunctionCheck: DevModeCheckFrequency = 'once'
 
-export const setGlobalNoopCheck = (
-  noopCheckFrequency: DevModeCheckFrequency
+export const setGlobalIdentityFunctionCheck = (
+  identityFunctionCheckFrequency: DevModeCheckFrequency
 ) => {
-  globalNoopCheck = noopCheckFrequency
+  globalIdentityFunctionCheck = identityFunctionCheckFrequency
 }
 
 /**
@@ -384,7 +384,7 @@ export function createSelectorCreator<
       argsMemoize = weakMapMemoize,
       argsMemoizeOptions = [],
       inputStabilityCheck = globalStabilityCheck,
-      noopCheck = globalNoopCheck
+      identityFunctionCheck = globalIdentityFunctionCheck
     } = combinedOptions
 
     // Simplifying assumption: it's unlikely that the first options arg of the provided memoizer
@@ -419,8 +419,10 @@ export function createSelectorCreator<
       )
 
       if (process.env.NODE_ENV !== 'production') {
-        if (shouldRunDevModeCheck(noopCheck, firstRun)) {
-          runNoopCheck(resultFunc as Combiner<InputSelectors, Result>)
+        if (shouldRunDevModeCheck(identityFunctionCheck, firstRun)) {
+          runIdentityFunctionCheck(
+            resultFunc as Combiner<InputSelectors, Result>
+          )
         }
 
         if (shouldRunDevModeCheck(inputStabilityCheck, firstRun)) {

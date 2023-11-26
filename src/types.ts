@@ -83,7 +83,7 @@ export interface CreateSelectorOptions<
    */
   inputStabilityCheck?: DevModeCheckFrequency
 
-  noopCheck?: DevModeCheckFrequency
+  identityFunctionCheck?: DevModeCheckFrequency
 
   /**
    * The memoize function that is used to memoize the {@linkcode OutputSelectorFields.resultFunc resultFunc}

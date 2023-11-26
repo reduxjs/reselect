@@ -1,4 +1,4 @@
-import { createSelector, setGlobalNoopCheck } from 'reselect'
+import { createSelector, setGlobalIdentityFunctionCheck } from 'reselect'
 import type { LocalTestContext, RootState } from './testUtils'
 import { localTest } from './testUtils'
 
@@ -40,7 +40,7 @@ describe<LocalTestContext>('noopCheck', () => {
   )
 
   localTest('disables check if global setting is set to never', ({ state }) => {
-    setGlobalNoopCheck('never')
+    setGlobalIdentityFunctionCheck('never')
 
     expect(badSelector(state)).toBe(state)
 
@@ -48,7 +48,7 @@ describe<LocalTestContext>('noopCheck', () => {
 
     expect(consoleSpy).not.toHaveBeenCalled()
 
-    setGlobalNoopCheck('once')
+    setGlobalIdentityFunctionCheck('once')
   })
 
   localTest(
@@ -57,7 +57,7 @@ describe<LocalTestContext>('noopCheck', () => {
       const badSelector = createSelector(
         [(state: RootState) => state],
         identityFunction,
-        { noopCheck: 'never' }
+        { identityFunctionCheck: 'never' }
       )
 
       expect(badSelector(state)).toBe(state)
@@ -85,7 +85,7 @@ describe<LocalTestContext>('noopCheck', () => {
     const badSelector = createSelector(
       [(state: RootState) => state],
       identityFunction,
-      { noopCheck: 'once' }
+      { identityFunctionCheck: 'once' }
     )
     expect(badSelector(state)).toBe(state)
 
@@ -103,9 +103,6 @@ describe<LocalTestContext>('noopCheck', () => {
   })
 
   localTest('uses the memoize provided', ({ state }) => {
-    // console.log(setupStore)
-    // const store = setupStore()
-    // const state = store.getState()
     const badSelector = createSelector(
       [(state: RootState) => state.todos],
       identityFunction
@@ -116,11 +113,7 @@ describe<LocalTestContext>('noopCheck', () => {
 
     expect(consoleSpy).toHaveBeenCalledTimes(1)
 
-    const newState = { ...state }
-
     expect(badSelector({ ...state })).not.toBe(state)
-
-    // expect(identityFunction).toHaveBeenCalledTimes(3)
 
     expect(consoleSpy).toHaveBeenCalledTimes(1)
   })

@@ -168,7 +168,7 @@ export function runStabilityCheck(
   }
 }
 
-export const runNoopCheck = (resultFunc: AnyFunction) => {
+export const runIdentityFunctionCheck = (resultFunc: AnyFunction) => {
   let isInputSameAsOutput = false
   try {
     const emptyObject = {}

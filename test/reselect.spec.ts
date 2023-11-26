@@ -3,10 +3,10 @@
 import lodashMemoize from 'lodash/memoize'
 import microMemoize from 'micro-memoize'
 import {
+  unstable_autotrackMemoize as autotrackMemoize,
   createSelector,
   createSelectorCreator,
   defaultMemoize,
-  unstable_autotrackMemoize as autotrackMemoize,
   weakMapMemoize
 } from 'reselect'
 
@@ -48,7 +48,7 @@ describe('Basic selector behavior', () => {
     const selector = createSelector(
       (state: StateA) => state.a,
       a => a,
-      { noopCheck: 'never' }
+      { identityFunctionCheck: 'never' }
     )
     const firstState = { a: 1 }
     const firstStateNewPointer = { a: 1 }
@@ -67,7 +67,7 @@ describe('Basic selector behavior', () => {
     const selector = createSelector(
       (...params: any[]) => params.length,
       a => a,
-      { noopCheck: 'never' }
+      { identityFunctionCheck: 'never' }
     )
     expect(selector({})).toBe(1)
   })
@@ -164,7 +164,7 @@ describe('Basic selector behavior', () => {
     const selector = createSelector(
       (state: StateSub) => state.sub,
       sub => sub,
-      { noopCheck: 'never' }
+      { identityFunctionCheck: 'never' }
     )
     const state1 = { sub: { a: 1 } }
     expect(selector(state1)).toEqual({ a: 1 })
@@ -226,7 +226,7 @@ describe('Basic selector behavior', () => {
         if (a > 1) throw Error('test error')
         return a
       },
-      { noopCheck: 'never' }
+      { identityFunctionCheck: 'never' }
     )
     const state1 = { a: 1 }
     const state2 = { a: 2 }
@@ -242,7 +242,7 @@ describe('Combining selectors', () => {
     const selector1 = createSelector(
       (state: StateSub) => state.sub,
       sub => sub,
-      { noopCheck: 'never' }
+      { identityFunctionCheck: 'never' }
     )
     const selector2 = createSelector(selector1, sub => sub.a)
     const state1 = { sub: { a: 1 } }
@@ -304,7 +304,7 @@ describe('Combining selectors', () => {
     const selector = createOverridenSelector(
       (state: StateA) => state.a,
       a => a,
-      { noopCheck: 'never' }
+      { identityFunctionCheck: 'never' }
     )
     expect(selector({ a: 1 })).toBe(1)
     expect(selector({ a: 2 })).toBe(1) // yes, really true
