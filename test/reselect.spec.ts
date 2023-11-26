@@ -214,7 +214,7 @@ describe('Basic selector behavior', () => {
     )
     expect(() => selector({ a: 1 })).toThrow('test error')
     expect(() => selector({ a: 1 })).toThrow('test error')
-    expect(called).toBe(2)
+    expect(called).toBe(3)
   })
 
   test('memoizes previous result before exception', () => {
@@ -232,7 +232,7 @@ describe('Basic selector behavior', () => {
     expect(selector(state1)).toBe(1)
     expect(() => selector(state2)).toThrow('test error')
     expect(selector(state1)).toBe(1)
-    expect(called).toBe(2)
+    expect(called).toBe(3)
   })
 })
 

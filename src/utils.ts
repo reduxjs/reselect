@@ -1,4 +1,5 @@
 import type {
+  AnyFunction,
   CreateSelectorOptions,
   Selector,
   SelectorArray,
@@ -163,6 +164,24 @@ export function runStabilityCheck(
         firstInputs: inputSelectorResults,
         secondInputs: inputSelectorResultsCopy
       }
+    )
+  }
+}
+
+export const runNoopCheck = <Func extends AnyFunction>(resultFunc: Func) => {
+  let isInputSameAsOutput = false
+  try {
+    const emptyObject = {}
+    if (resultFunc(emptyObject) === emptyObject) isInputSameAsOutput = true
+  } catch {
+    // Do nothing
+  }
+  if (isInputSameAsOutput) {
+    console.warn(
+      'The result function returned its own inputs without modification. e.g' +
+        '\n`createSelector([state => state.todos], todos => todos)`' +
+        '\nThis could lead to inefficient memoization and unnecessary re-renders.' +
+        '\nEnsure transformation logic is in the result function, and extraction logic is in the input selectors.'
     )
   }
 }

@@ -274,12 +274,12 @@ describe('defaultMemoize', () => {
     )
 
     fooChangeHandler(state)
-    expect(fooChangeSpy.mock.calls.length).toEqual(1)
+    expect(fooChangeSpy.mock.calls.length).toEqual(2)
 
     // no change
     fooChangeHandler(state)
     // this would fail
-    expect(fooChangeSpy.mock.calls.length).toEqual(1)
+    expect(fooChangeSpy.mock.calls.length).toEqual(2)
 
     const state2 = { a: 1 }
     let count = 0
@@ -290,9 +290,9 @@ describe('defaultMemoize', () => {
     })
 
     selector(state)
-    expect(count).toBe(1)
+    expect(count).toBe(2)
     selector(state)
-    expect(count).toBe(1)
+    expect(count).toBe(2)
   })
 
   test('Accepts an options object as an arg', () => {
@@ -374,33 +374,33 @@ describe('defaultMemoize', () => {
 
     // Initial call
     selector('a') // ['a']
-    expect(funcCalls).toBe(1)
+    expect(funcCalls).toBe(2)
 
     // In cache - memoized
     selector('a') // ['a']
-    expect(funcCalls).toBe(1)
-
-    // Added
-    selector('b') // ['b', 'a']
     expect(funcCalls).toBe(2)
 
     // Added
-    selector('c') // ['c', 'b', 'a']
+    selector('b') // ['b', 'a']
     expect(funcCalls).toBe(3)
+
+    // Added
+    selector('c') // ['c', 'b', 'a']
+    expect(funcCalls).toBe(4)
 
     // Already in cache
     selector('c') // ['c', 'b', 'a']
-    expect(funcCalls).toBe(3)
+    expect(funcCalls).toBe(4)
 
     selector.memoizedResultFunc.clearCache()
 
     // Added
     selector('a') // ['a']
-    expect(funcCalls).toBe(4)
+    expect(funcCalls).toBe(5)
 
     // Already in cache
     selector('a') // ['a']
-    expect(funcCalls).toBe(4)
+    expect(funcCalls).toBe(5)
 
     // make sure clearCache is passed to the selector correctly
     selector.clearCache()
@@ -409,7 +409,7 @@ describe('defaultMemoize', () => {
     // Note: the outer arguments wrapper function still has 'a' in its own size-1 cache, so passing
     // 'a' here would _not_ recalculate
     selector('b') // ['b']
-    expect(funcCalls).toBe(5)
+    expect(funcCalls).toBe(6)
 
     try {
       //@ts-expect-error issue 591

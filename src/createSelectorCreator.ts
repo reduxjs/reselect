@@ -22,6 +22,7 @@ import {
   collectInputSelectorResults,
   ensureIsArray,
   getDependencies,
+  runNoopCheck,
   runStabilityCheck,
   shouldRunInputStabilityCheck
 } from './utils'
@@ -185,6 +186,14 @@ export function setInputStabilityCheckEnabled(
   inputStabilityCheckFrequency: StabilityCheckFrequency
 ) {
   globalStabilityCheck = inputStabilityCheckFrequency
+}
+
+let globalNoopCheck: StabilityCheckFrequency = 'once'
+
+export const setGlobalNoopCheck = (
+  noopCheckFrequency: StabilityCheckFrequency
+) => {
+  globalNoopCheck = noopCheckFrequency
 }
 
 /**
@@ -374,7 +383,8 @@ export function createSelectorCreator<
       memoizeOptions = [],
       argsMemoize = weakMapMemoize,
       argsMemoizeOptions = [],
-      inputStabilityCheck = globalStabilityCheck
+      inputStabilityCheck = globalStabilityCheck,
+      noopCheck = globalNoopCheck
     } = combinedOptions
 
     // Simplifying assumption: it's unlikely that the first options arg of the provided memoizer
@@ -407,6 +417,14 @@ export function createSelectorCreator<
         dependencies,
         arguments
       )
+
+      if (
+        process.env.NODE_ENV !== 'production' &&
+        inputSelectorResults.length &&
+        shouldRunInputStabilityCheck(noopCheck, firstRun)
+      ) {
+        runNoopCheck(resultFunc as Combiner<InputSelectors, Result>)
+      }
 
       if (
         process.env.NODE_ENV !== 'production' &&

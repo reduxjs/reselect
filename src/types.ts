@@ -83,6 +83,8 @@ export interface CreateSelectorOptions<
    */
   inputStabilityCheck?: StabilityCheckFrequency
 
+  noopCheck?: StabilityCheckFrequency
+
   /**
    * The memoize function that is used to memoize the {@linkcode OutputSelectorFields.resultFunc resultFunc}
    * inside `createSelector` (e.g., `defaultMemoize` or `weakMapMemoize`).
