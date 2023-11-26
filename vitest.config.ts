@@ -1,15 +1,22 @@
 import { defineConfig } from 'vitest/config'
 
+import { fileURLToPath } from 'url'
+import path from 'path'
+
+// No __dirname under Node ESM
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
 export default defineConfig({
   test: {
     typecheck: { tsconfig: './type-tests/tsconfig.json' },
     globals: true,
     include: ['./test/**/*.(spec|test).[jt]s?(x)'],
     alias: {
-      reselect: './src/index.ts', // @remap-prod-remove-line
+      reselect: path.join(__dirname, 'src/index.ts'), // @remap-prod-remove-line
 
       // this mapping is disabled as we want `dist` imports in the tests only to be used for "type-only" imports which don't play a role for jest
-      '@internal/': './src/'
+      '@internal/': path.join(__dirname, 'src')
     },
     deps: {
       interopDefault: true
