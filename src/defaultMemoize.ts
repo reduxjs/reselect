@@ -5,11 +5,11 @@ import type {
   Simplify
 } from './types'
 
+import type { NOT_FOUND_TYPE } from './utils'
+import { NOT_FOUND } from './utils'
+
 // Cache implementation based on Erik Rasmussen's `lru-memoize`:
 // https://github.com/erikras/lru-memoize
-
-const NOT_FOUND = 'NOT_FOUND'
-type NOT_FOUND_TYPE = typeof NOT_FOUND
 
 interface Entry {
   key: unknown
