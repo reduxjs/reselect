@@ -1,9 +1,9 @@
 import type {
   AnyFunction,
   CreateSelectorOptions,
+  DevModeCheckFrequency,
   Selector,
   SelectorArray,
-  StabilityCheckFrequency,
   UnknownMemoizer
 } from './types'
 
@@ -168,7 +168,7 @@ export function runStabilityCheck(
   }
 }
 
-export const runNoopCheck = <Func extends AnyFunction>(resultFunc: Func) => {
+export const runNoopCheck = (resultFunc: AnyFunction) => {
   let isInputSameAsOutput = false
   try {
     const emptyObject = {}
@@ -193,8 +193,8 @@ export const runNoopCheck = <Func extends AnyFunction>(resultFunc: Func) => {
  * @param firstRun - Indicates whether it is the first time the selector has run.
  * @returns true if the input stability check should run, otherwise false.
  */
-export const shouldRunInputStabilityCheck = (
-  inputStabilityCheck: StabilityCheckFrequency,
+export const shouldRunDevModeCheck = (
+  inputStabilityCheck: DevModeCheckFrequency,
   firstRun: boolean
 ) => {
   return (

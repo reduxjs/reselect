@@ -181,7 +181,8 @@ describe.skipIf(isCoverage)('weakmapMemoize performance tests', () => {
     const selector = createSelector(
       (state: StateAB) => state.a,
       (state: StateAB) => state.b,
-      (a, b) => a + b
+      (a, b) => a + b,
+      { noopCheck: 'never' }
     )
     const state1 = { a: 1, b: 2 }
 
@@ -201,7 +202,8 @@ describe.skipIf(isCoverage)('weakmapMemoize performance tests', () => {
     const selector = createSelector(
       (state: StateAB) => state.a,
       (state: StateAB) => state.b,
-      (a, b) => a + b
+      (a, b) => a + b,
+      { noopCheck: 'never' }
     )
 
     const start = performance.now()

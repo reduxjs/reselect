@@ -1079,7 +1079,7 @@ that will cause the selector to never memoize properly.
 Since this is a common mistake, we've added a development mode check to catch this. By default, [`createSelector`] will now run the [input selectors] twice during the first call to the selector. If the result appears to be different for the same call, it will log a warning with the arguments and the two different sets of extracted input values.
 
 ```ts
-type StabilityCheckFrequency = 'always' | 'once' | 'never'
+type DevModeCheckFrequency = 'always' | 'once' | 'never'
 ```
 
 | Possible Values | Description                                     |

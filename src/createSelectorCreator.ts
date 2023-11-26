@@ -3,6 +3,7 @@ import { weakMapMemoize } from './weakMapMemoize'
 import type {
   Combiner,
   CreateSelectorOptions,
+  DevModeCheckFrequency,
   DropFirstParameter,
   ExtractMemoizerFields,
   GetParamsFromSelectors,
@@ -13,7 +14,6 @@ import type {
   SelectorArray,
   SetRequired,
   Simplify,
-  StabilityCheckFrequency,
   UnknownMemoizer
 } from './types'
 
@@ -24,7 +24,7 @@ import {
   getDependencies,
   runNoopCheck,
   runStabilityCheck,
-  shouldRunInputStabilityCheck
+  shouldRunDevModeCheck
 } from './utils'
 
 /**
@@ -144,7 +144,7 @@ export interface CreateSelectorFunction<
     InterruptRecursion
 }
 
-let globalStabilityCheck: StabilityCheckFrequency = 'once'
+let globalStabilityCheck: DevModeCheckFrequency = 'once'
 
 /**
  * In development mode, an extra check is conducted on your input selectors.
@@ -183,15 +183,15 @@ import { OutputSelectorFields, Mapped } from './types';
  * @public
  */
 export function setInputStabilityCheckEnabled(
-  inputStabilityCheckFrequency: StabilityCheckFrequency
+  inputStabilityCheckFrequency: DevModeCheckFrequency
 ) {
   globalStabilityCheck = inputStabilityCheckFrequency
 }
 
-let globalNoopCheck: StabilityCheckFrequency = 'once'
+let globalNoopCheck: DevModeCheckFrequency = 'once'
 
 export const setGlobalNoopCheck = (
-  noopCheckFrequency: StabilityCheckFrequency
+  noopCheckFrequency: DevModeCheckFrequency
 ) => {
   globalNoopCheck = noopCheckFrequency
 }
@@ -418,30 +418,26 @@ export function createSelectorCreator<
         arguments
       )
 
-      if (
-        process.env.NODE_ENV !== 'production' &&
-        shouldRunInputStabilityCheck(noopCheck, firstRun)
-      ) {
-        runNoopCheck(resultFunc as Combiner<InputSelectors, Result>)
-      }
+      if (process.env.NODE_ENV !== 'production') {
+        if (shouldRunDevModeCheck(noopCheck, firstRun)) {
+          runNoopCheck(resultFunc as Combiner<InputSelectors, Result>)
+        }
 
-      if (
-        process.env.NODE_ENV !== 'production' &&
-        shouldRunInputStabilityCheck(inputStabilityCheck, firstRun)
-      ) {
-        // make a second copy of the params, to check if we got the same results
-        const inputSelectorResultsCopy = collectInputSelectorResults(
-          dependencies,
-          arguments
-        )
+        if (shouldRunDevModeCheck(inputStabilityCheck, firstRun)) {
+          // make a second copy of the params, to check if we got the same results
+          const inputSelectorResultsCopy = collectInputSelectorResults(
+            dependencies,
+            arguments
+          )
 
-        runStabilityCheck(
-          { inputSelectorResults, inputSelectorResultsCopy },
-          { memoize, memoizeOptions: finalMemoizeOptions },
-          arguments
-        )
+          runStabilityCheck(
+            { inputSelectorResults, inputSelectorResultsCopy },
+            { memoize, memoizeOptions: finalMemoizeOptions },
+            arguments
+          )
 
-        if (firstRun) firstRun = false
+          if (firstRun) firstRun = false
+        }
       }
 
       // apply arguments instead of spreading for performance.

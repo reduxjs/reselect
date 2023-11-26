@@ -17,6 +17,7 @@ export type {
   Combiner,
   CreateSelectorOptions,
   DefaultMemoizeFields,
+  DevModeCheckFrequency,
   EqualityFn,
   ExtractMemoizerFields,
   GetParamsFromSelectors,
@@ -28,7 +29,6 @@ export type {
   Selector,
   SelectorArray,
   SelectorResultArray,
-  StabilityCheckFrequency,
   UnknownMemoizer
 } from './types'
 export { weakMapMemoize } from './weakMapMemoize'

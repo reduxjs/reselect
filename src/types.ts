@@ -81,9 +81,9 @@ export interface CreateSelectorOptions<
    *
    * @since 5.0.0
    */
-  inputStabilityCheck?: StabilityCheckFrequency
+  inputStabilityCheck?: DevModeCheckFrequency
 
-  noopCheck?: StabilityCheckFrequency
+  noopCheck?: DevModeCheckFrequency
 
   /**
    * The memoize function that is used to memoize the {@linkcode OutputSelectorFields.resultFunc resultFunc}
@@ -305,7 +305,7 @@ export type EqualityFn<T = any> = (a: T, b: T) => boolean
  * @since 5.0.0
  * @public
  */
-export type StabilityCheckFrequency = 'always' | 'once' | 'never'
+export type DevModeCheckFrequency = 'always' | 'once' | 'never'
 
 /**
  * Determines the combined single "State" type (first arg) from all input selectors.
