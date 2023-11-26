@@ -9,6 +9,7 @@
     "checkJs": true,
     "alwaysStrict": false,
     "baseUrl": ".",
+    "outDir": "dist",
     "strict": true,
     "target": "ESNext",
     "module": "ESNext",
@@ -25,5 +26,5 @@
       "@internal/*": ["../../src/*"]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx"],
+  "include": ["**/*.ts", "**/*.tsx"]
 }

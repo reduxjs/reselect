@@ -415,20 +415,14 @@ export const localTest = test.extend<LocalTestContext>({
   state
 })
 
-export const resetSelector = <S extends OutputSelector>(
-  selector: S
-) => {
+export const resetSelector = <S extends OutputSelector>(selector: S) => {
   selector.clearCache()
   selector.resetRecomputations()
   selector.resetDependencyRecomputations()
   selector.memoizedResultFunc.clearCache()
 }
 
-export const logRecomputations = <
-  S extends OutputSelector
->(
-  selector: S
-) => {
+export const logRecomputations = <S extends OutputSelector>(selector: S) => {
   console.log(
     `${selector.name} result function recalculated:`,
     selector.recomputations(),

@@ -2,6 +2,7 @@ import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import {
   EXAMPLES_DIRECTORY,
+  getTSConfig,
   hasTSXExtension,
   tsExtensionRegex
 } from './compileExamples'
@@ -57,9 +58,10 @@ const insertCodeExamples = (examplesDirectory: string) => {
         )
 
         const tsFilePath = path.join(examplesDirectory, tsFileName)
-        const jsFilePath = tsFilePath.replace(
-          tsExtensionRegex,
-          `.${jsFileExtension}`
+        const jsFilePath = path.join(
+          examplesDirectory,
+          getTSConfig(examplesDirectory).compilerOptions.outDir,
+          tsFileName.replace(tsExtensionRegex, `.${jsFileExtension}`)
         )
 
         const tsFileContent = readFileSync(tsFilePath, 'utf-8')

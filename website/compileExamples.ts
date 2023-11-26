@@ -1,4 +1,11 @@
-import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import {
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  writeFileSync
+} from 'node:fs'
 import path from 'node:path'
 import ts from 'typescript'
 
@@ -368,6 +375,16 @@ export const tsExtensionRegex = /\.tsx?$/
 
 export const hasTSXExtension = (fileName: string) => /\.tsx$/.test(fileName)
 
+export const getTSConfig = (filePath: string) => {
+  const tsconfigPath = lstatSync(filePath).isDirectory()
+    ? path.join(filePath, 'tsconfig.json')
+    : filePath
+  const { config } = ts.readConfigFile(tsconfigPath, ts.sys.readFile) as {
+    config: Pick<ts.TranspileOptions, 'compilerOptions'>
+  }
+  return config
+}
+
 /**
  * Compiles a single TypeScript file to JavaScript, preserving whitespaces.
  * This function takes a path to a TypeScript file (.ts or .tsx), compiles it into
@@ -377,26 +394,39 @@ export const hasTSXExtension = (fileName: string) => /\.tsx$/.test(fileName)
  *
  * @param filePath - The file path of the TypeScript file to compile.
  */
-const compileTSFile = (filePath: string) => {
+const compileTSFile = (filePath: string, tsconfigPath?: string) => {
   const fileContents = readFileSync(filePath, 'utf8')
-  const isTSX = hasTSXExtension(filePath)
+  const tsFileName = path.basename(filePath)
+  const isTSX = hasTSXExtension(tsFileName)
   const outputFileExtension = isTSX ? '.jsx' : '.js'
+  const jsFileName = tsFileName.replace(tsExtensionRegex, outputFileExtension)
   const jsx = isTSX ? ts.JsxEmit.Preserve : ts.JsxEmit.None
 
   const savedWhitespaceContents = saveWhitespace(fileContents)
-  const tsconfigPath = path.join(EXAMPLES_DIRECTORY, 'tsconfig.json')
-  const { config } = ts.readConfigFile(tsconfigPath, ts.sys.readFile) as {
-    config: Pick<ts.TranspileOptions, 'compilerOptions'>
-  }
+  const inputFileDirectory = path.dirname(filePath)
+  const config = getTSConfig(tsconfigPath ?? inputFileDirectory)
   const result = ts.transpileModule(savedWhitespaceContents, {
     compilerOptions: {
       ...config.compilerOptions,
       jsx
     }
   })
+  const { outDir } = config.compilerOptions
+  const tsconfigDirectory = path.dirname(tsconfigPath)
+  const outputFolder = path.join(
+    tsconfigDirectory,
+    outDir,
+    ...inputFileDirectory
+      .split(path.sep)
+      .slice(tsconfigDirectory.split(path.sep).length)
+  )
 
-  const outputFilePath = filePath.replace(tsExtensionRegex, outputFileExtension)
   const restoredWhitespaceContents = restoreWhitespace(result.outputText)
+  const outputFilePath = path.join(outputFolder, jsFileName)
+  if (!existsSync(outputFolder)) {
+    mkdirSync(outputFolder)
+  }
+
   writeFileSync(outputFilePath, restoredWhitespaceContents, 'utf8')
 }
 
@@ -408,15 +438,18 @@ const compileTSFile = (filePath: string) => {
  *
  * @param directory - The directory path where TypeScript files are located.
  */
-const compileTSWithWhitespace = (directory: string) => {
+const compileTSWithWhitespace = (directory: string, tsconfigPath: string) => {
   readdirSync(directory, { withFileTypes: true }).forEach(entry => {
     const filePath = path.join(directory, entry.name)
     if (entry.isDirectory()) {
-      compileTSWithWhitespace(filePath)
+      compileTSWithWhitespace(filePath, tsconfigPath)
     } else if (tsExtensionRegex.test(entry.name)) {
-      compileTSFile(filePath)
+      compileTSFile(filePath, tsconfigPath)
     }
   })
 }
 
-compileTSWithWhitespace(EXAMPLES_DIRECTORY)
+compileTSWithWhitespace(
+  EXAMPLES_DIRECTORY,
+  path.join(EXAMPLES_DIRECTORY, 'tsconfig.json')
+)

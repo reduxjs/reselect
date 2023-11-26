@@ -13,9 +13,18 @@ interface RootState {
 
 const state: RootState = {
   todos: [
-    { id: 0, completed: false, title: 'Figure out if plants are really plotting world domination.', description: 'They may be.' },
-    { id: 1, completed: true, title: 'Practice telekinesis for 15 minutes',
-    description: 'Just do it' }
+    {
+      id: 0,
+      completed: false,
+      title: 'Figure out if plants are really plotting world domination.',
+      description: 'They may be.'
+    },
+    {
+      id: 1,
+      completed: true,
+      title: 'Practice telekinesis for 15 minutes',
+      description: 'Just do it'
+    }
   ],
   alerts: [
     { id: 0, read: false },
