@@ -83,6 +83,20 @@ export interface CreateSelectorOptions<
    */
   inputStabilityCheck?: DevModeCheckFrequency
 
+  /**
+   * Overrides the global identity function check for the selector.
+   * - `once` - Run only the first time the selector is called.
+   * - `always` - Run every time the selector is called.
+   * - `never` - Never run the identity function check.
+   *
+   * @default 'once'
+   *
+   * @see {@link https://github.com/reduxjs/reselect#debugging-tools debugging-tools}
+   * @see {@link https://github.com/reduxjs/reselect#identityfunctioncheck identityFunctionCheck}
+   * @see {@link https://github.com/reduxjs/reselect#2-per-selector-by-passing-an-identityfunctioncheck-option-directly-to-createselector per-selector-configuration}
+   *
+   * @since 5.0.0
+   */
   identityFunctionCheck?: DevModeCheckFrequency
 
   /**

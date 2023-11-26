@@ -217,7 +217,7 @@ let globalIdentityFunctionCheck: DevModeCheckFrequency = 'once'
  * setGlobalIdentityFunctionCheck('never')
  * ```
  * @see {@link https://github.com/reduxjs/reselect#debugging-tools debugging-tools}
- * @see {@link https://github.com/reduxjs/reselect#1-globally-through-setGlobalIdentityFunctionCheck global-configuration}
+ * @see {@link https://github.com/reduxjs/reselect#1-globally-through-setglobalidentityfunctioncheck global-configuration}
  *
  * @since 5.0.0
  * @public
