@@ -369,7 +369,7 @@ describe('defaultMemoize', () => {
       },
       {
         memoizeOptions: { maxSize: 3 },
-        identityFunctionCheck: 'never'
+        devModeChecks: { identityFunctionCheck: 'never' }
       }
     )
 

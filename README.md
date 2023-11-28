@@ -1055,7 +1055,7 @@ const selectTodoIds = createSelectorAutotrack(
 
 <a id="developmentonlychecks"></a>
 
-### Development-Only Stability Checks
+### Development-Only Checks
 
 Reselect includes extra checks in development mode to help catch and warn about mistakes in selector behavior.
 

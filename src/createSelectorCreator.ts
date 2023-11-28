@@ -3,7 +3,6 @@ import { weakMapMemoize } from './weakMapMemoize'
 import type {
   Combiner,
   CreateSelectorOptions,
-  DevModeCheckFrequency,
   DropFirstParameter,
   ExtractMemoizerFields,
   GetParamsFromSelectors,
@@ -22,9 +21,7 @@ import {
   collectInputSelectorResults,
   ensureIsArray,
   getDependencies,
-  runIdentityFunctionCheck,
-  runStabilityCheck,
-  shouldRunDevModeCheck
+  getDevModeChecksExecutionInfo
 } from './utils'
 
 /**
@@ -142,90 +139,6 @@ export interface CreateSelectorFunction<
     OverrideArgsMemoizeFunction
   > &
     InterruptRecursion
-}
-
-let globalStabilityCheck: DevModeCheckFrequency = 'once'
-
-/**
- * In development mode, an extra check is conducted on your input selectors.
- * It runs your input selectors an extra time with the same arguments, and
- * warns in the console if they return a different result _(based on your `memoize` method)_.
- *
- * This function allows you to override this setting for all of your selectors.
- *
- * **Note**: This setting can still be overridden per selector inside `createSelector`'s `options` object.
- * See {@link https://github.com/reduxjs/reselect#2-per-selector-by-passing-an-inputstabilitycheck-option-directly-to-createselector per-selector-configuration}
- * and {@linkcode CreateSelectorOptions.inputStabilityCheck inputStabilityCheck} for more details.
- *
- * _The input stability check does not run in production builds._
- *
- * @param inputStabilityCheckFrequency - How often the `inputStabilityCheck` should run for all selectors.
- *
- * @example
- * ```ts
- * import { setInputStabilityCheckEnabled } from 'reselect'
- *
- * // Run only the first time the selector is called. (default)
- * setInputStabilityCheckEnabled('once')
- *
- * // Run every time the selector is called.
- * setInputStabilityCheckEnabled('always')
- *
- * // Never run the input stability check.
- * setInputStabilityCheckEnabled('never')
- * ```
- * @see {@link https://github.com/reduxjs/reselect#debugging-tools debugging-tools}
- * @see {@link https://github.com/reduxjs/reselect#1-globally-through-setinputstabilitycheckenabled global-configuration}
- *
- * @since 5.0.0
- * @public
- */
-export function setInputStabilityCheckEnabled(
-  inputStabilityCheckFrequency: DevModeCheckFrequency
-) {
-  globalStabilityCheck = inputStabilityCheckFrequency
-}
-
-let globalIdentityFunctionCheck: DevModeCheckFrequency = 'once'
-
-/**
- * In development mode, an extra check is conducted on your result function.
- * It runs your result function an extra time, and
- * warns in the console if it returns its own input.
- *
- * This function allows you to override this setting for all of your selectors.
- *
- * **Note**: This setting can still be overridden per selector inside `createSelector`'s `options` object.
- * See {@link https://github.com/reduxjs/reselect#2-per-selector-by-passing-an-identityfunctioncheck-option-directly-to-createselector per-selector-configuration}
- * and {@linkcode CreateSelectorOptions.identityFunctionCheck identityFunctionCheck} for more details.
- *
- * _The identity function check does not run in production builds._
- *
- * @param identityFunctionCheckFrequency - How often the `identityFunctionCheck` should run for all selectors.
- *
- * @example
- * ```ts
- * import { setGlobalIdentityFunctionCheck } from 'reselect'
- *
- * // Run only the first time the selector is called. (default)
- * setGlobalIdentityFunctionCheck('once')
- *
- * // Run every time the selector is called.
- * setGlobalIdentityFunctionCheck('always')
- *
- * // Never run the identity function check.
- * setGlobalIdentityFunctionCheck('never')
- * ```
- * @see {@link https://github.com/reduxjs/reselect#debugging-tools debugging-tools}
- * @see {@link https://github.com/reduxjs/reselect#1-globally-through-setglobalidentityfunctioncheck global-configuration}
- *
- * @since 5.0.0
- * @public
- */
-export const setGlobalIdentityFunctionCheck = (
-  identityFunctionCheckFrequency: DevModeCheckFrequency
-) => {
-  globalIdentityFunctionCheck = identityFunctionCheckFrequency
 }
 
 /**
@@ -415,8 +328,7 @@ export function createSelectorCreator<
       memoizeOptions = [],
       argsMemoize = weakMapMemoize,
       argsMemoizeOptions = [],
-      inputStabilityCheck = globalStabilityCheck,
-      identityFunctionCheck = globalIdentityFunctionCheck
+      devModeChecks = {}
     } = combinedOptions
 
     // Simplifying assumption: it's unlikely that the first options arg of the provided memoizer
@@ -451,25 +363,28 @@ export function createSelectorCreator<
       )
 
       if (process.env.NODE_ENV !== 'production') {
-        if (shouldRunDevModeCheck(identityFunctionCheck, firstRun)) {
-          runIdentityFunctionCheck(
+        const { identityFunctionCheck, inputStabilityCheck } =
+          getDevModeChecksExecutionInfo(firstRun, devModeChecks)
+        if (identityFunctionCheck.shouldRun) {
+          identityFunctionCheck.run(
             resultFunc as Combiner<InputSelectors, Result>
           )
         }
 
-        if (shouldRunDevModeCheck(inputStabilityCheck, firstRun)) {
+        if (inputStabilityCheck.shouldRun) {
           // make a second copy of the params, to check if we got the same results
           const inputSelectorResultsCopy = collectInputSelectorResults(
             dependencies,
             arguments
           )
 
-          runStabilityCheck(
+          inputStabilityCheck.run(
             { inputSelectorResults, inputSelectorResultsCopy },
             { memoize, memoizeOptions: finalMemoizeOptions },
             arguments
           )
         }
+
         if (firstRun) firstRun = false
       }
 

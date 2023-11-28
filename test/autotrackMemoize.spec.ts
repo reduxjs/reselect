@@ -35,7 +35,7 @@ describe('Basic selector behavior with autotrack', () => {
     const selector = createSelector(
       (state: StateA) => state.a,
       a => a,
-      { identityFunctionCheck: 'never' }
+      { devModeChecks: { identityFunctionCheck: 'never' } }
     )
     const firstState = { a: 1 }
     const firstStateNewPointer = { a: 1 }
@@ -54,7 +54,7 @@ describe('Basic selector behavior with autotrack', () => {
     const selector = createSelector(
       (...params: any[]) => params.length,
       a => a,
-      { identityFunctionCheck: 'never' }
+      { devModeChecks: { identityFunctionCheck: 'never' } }
     )
     expect(selector({})).toBe(1)
   })
@@ -109,7 +109,7 @@ describe('Basic selector behavior with autotrack', () => {
         (state: StateAB) => state.a,
         (state: StateAB) => state.b,
         (a, b) => a + b,
-        { identityFunctionCheck: 'never' }
+        { devModeChecks: { identityFunctionCheck: 'never' } }
       )
       const state1 = { a: 1, b: 2 }
 
@@ -130,7 +130,7 @@ describe('Basic selector behavior with autotrack', () => {
         (state: StateAB) => state.a,
         (state: StateAB) => state.b,
         (a, b) => a + b,
-        { identityFunctionCheck: 'never' }
+        { devModeChecks: { identityFunctionCheck: 'never' } }
       )
 
       const start = performance.now()
@@ -197,7 +197,7 @@ describe('Basic selector behavior with autotrack', () => {
         called++
         throw Error('test error')
       },
-      { identityFunctionCheck: 'never' }
+      { devModeChecks: { identityFunctionCheck: 'never' } }
     )
     expect(() => selector({ a: 1 })).toThrow('test error')
     expect(() => selector({ a: 1 })).toThrow('test error')
@@ -213,7 +213,7 @@ describe('Basic selector behavior with autotrack', () => {
         if (a > 1) throw Error('test error')
         return a
       },
-      { identityFunctionCheck: 'never' }
+      { devModeChecks: { identityFunctionCheck: 'never' } }
     )
     const state1 = { a: 1 }
     const state2 = { a: 2 }

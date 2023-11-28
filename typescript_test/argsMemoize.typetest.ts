@@ -1,13 +1,13 @@
-import memoizeOne from 'memoize-one'
-import microMemoize from 'micro-memoize'
+import memoizeOne from 'memoize-one';
+import microMemoize from 'micro-memoize';
 import {
   unstable_autotrackMemoize as autotrackMemoize,
   createSelector,
   createSelectorCreator,
   defaultMemoize,
   weakMapMemoize
-} from 'reselect'
-import { expectExactType } from './typesTestUtils'
+} from 'reselect';
+import { expectExactType } from './typesTestUtils';
 
 interface RootState {
   todos: {
@@ -687,7 +687,7 @@ function overrideMemoizeAndArgsMemoizeInCreateSelector() {
     (id, todos) => todos.filter(todo => todo.id === id),
     {
       argsMemoize: microMemoize,
-      inputStabilityCheck: 'never',
+      devModeChecks: { inputStabilityCheck: 'never' },
       memoize: memoizeOne,
       argsMemoizeOptions: [],
       memoizeOptions: [(a, b) => a === b]

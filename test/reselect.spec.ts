@@ -48,7 +48,7 @@ describe('Basic selector behavior', () => {
     const selector = createSelector(
       (state: StateA) => state.a,
       a => a,
-      { identityFunctionCheck: 'never' }
+      { devModeChecks: { identityFunctionCheck: 'never' } }
     )
     const firstState = { a: 1 }
     const firstStateNewPointer = { a: 1 }
@@ -67,7 +67,7 @@ describe('Basic selector behavior', () => {
     const selector = createSelector(
       (...params: any[]) => params.length,
       a => a,
-      { identityFunctionCheck: 'never' }
+      { devModeChecks: { identityFunctionCheck: 'never' } }
     )
     expect(selector({})).toBe(1)
   })
@@ -156,15 +156,16 @@ describe('Basic selector behavior', () => {
         expect(selector(states[0])).toBe(3)
         expect(selector.recomputations()).toBe(1)
 
-      // Expected a million calls to a selector with the same arguments to take less than 1 second
-      expect(totalTime).toBeLessThan(2000)
-    })
+        // Expected a million calls to a selector with the same arguments to take less than 1 second
+        expect(totalTime).toBeLessThan(2000)
+      }
+    )
   })
   test('memoized composite arguments', () => {
     const selector = createSelector(
       (state: StateSub) => state.sub,
       sub => sub,
-      { identityFunctionCheck: 'never' }
+      { devModeChecks: { identityFunctionCheck: 'never' } }
     )
     const state1 = { sub: { a: 1 } }
     expect(selector(state1)).toEqual({ a: 1 })
@@ -226,7 +227,7 @@ describe('Basic selector behavior', () => {
         if (a > 1) throw Error('test error')
         return a
       },
-      { identityFunctionCheck: 'never' }
+      { devModeChecks: { identityFunctionCheck: 'never' } }
     )
     const state1 = { a: 1 }
     const state2 = { a: 2 }
@@ -242,7 +243,7 @@ describe('Combining selectors', () => {
     const selector1 = createSelector(
       (state: StateSub) => state.sub,
       sub => sub,
-      { identityFunctionCheck: 'never' }
+      { devModeChecks: { identityFunctionCheck: 'never' } }
     )
     const selector2 = createSelector(selector1, sub => sub.a)
     const state1 = { sub: { a: 1 } }
@@ -304,7 +305,7 @@ describe('Combining selectors', () => {
     const selector = createOverridenSelector(
       (state: StateA) => state.a,
       a => a,
-      { identityFunctionCheck: 'never' }
+      { devModeChecks: { identityFunctionCheck: 'never' } }
     )
     expect(selector({ a: 1 })).toBe(1)
     expect(selector({ a: 2 })).toBe(1) // yes, really true
@@ -408,8 +409,8 @@ describe('Customizing selectors', () => {
         (state: RootState) => state.todos,
         todos => todos.map(({ id }) => id),
         {
-          inputStabilityCheck: 'always',
           memoize: defaultMemoize,
+          devModeChecks: { inputStabilityCheck: 'always' },
           memoizeOptions: {
             equalityCheck: (a, b) => false,
             resultEqualityCheck: (a, b) => false
@@ -1106,7 +1107,7 @@ describe('argsMemoize and memoize', () => {
         users => {
           return users.user.details.preferences.notifications.push.frequency
         },
-        { inputStabilityCheck: 'never' }
+        { devModeChecks: { inputStabilityCheck: 'never' } }
       )
       const start = performance.now()
       for (let i = 0; i < 10_000_000; i++) {

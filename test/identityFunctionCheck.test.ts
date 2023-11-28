@@ -1,8 +1,9 @@
-import { createSelector, setGlobalIdentityFunctionCheck } from 'reselect'
+import { setGlobalDevModeChecks } from '@internal/devModeChecks/setGlobalDevModeChecks'
+import { createSelector } from 'reselect'
 import type { LocalTestContext, RootState } from './testUtils'
 import { localTest } from './testUtils'
 
-describe<LocalTestContext>('noopCheck', () => {
+describe<LocalTestContext>('identityFunctionCheck', () => {
   const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
   const identityFunction = vi.fn(<T>(state: T) => state)
   const badSelector = createSelector(
@@ -35,20 +36,20 @@ describe<LocalTestContext>('noopCheck', () => {
 
       expect(identityFunction).toHaveBeenCalledTimes(2)
 
-      expect(consoleSpy).toHaveBeenCalled()
+      expect(consoleSpy).toHaveBeenCalledOnce()
     }
   )
 
   localTest('disables check if global setting is set to never', ({ state }) => {
-    setGlobalIdentityFunctionCheck('never')
+    setGlobalDevModeChecks({ identityFunctionCheck: 'never' })
 
     expect(badSelector(state)).toBe(state)
 
-    expect(identityFunction).toHaveBeenCalledTimes(1)
+    expect(identityFunction).toHaveBeenCalledOnce()
 
     expect(consoleSpy).not.toHaveBeenCalled()
 
-    setGlobalIdentityFunctionCheck('once')
+    setGlobalDevModeChecks({ identityFunctionCheck: 'once' })
   })
 
   localTest(
@@ -57,12 +58,12 @@ describe<LocalTestContext>('noopCheck', () => {
       const badSelector = createSelector(
         [(state: RootState) => state],
         identityFunction,
-        { identityFunctionCheck: 'never' }
+        { devModeChecks: { identityFunctionCheck: 'never' } }
       )
 
       expect(badSelector(state)).toBe(state)
 
-      expect(identityFunction).toHaveBeenCalledTimes(1)
+      expect(identityFunction).toHaveBeenCalledOnce()
 
       expect(consoleSpy).not.toHaveBeenCalled()
     }
@@ -74,7 +75,7 @@ describe<LocalTestContext>('noopCheck', () => {
 
     expect(badSelector(state)).toBe(state)
 
-    expect(identityFunction).toHaveBeenCalledTimes(1)
+    expect(identityFunction).toHaveBeenCalledOnce()
 
     expect(consoleSpy).not.toHaveBeenCalled()
 
@@ -85,7 +86,54 @@ describe<LocalTestContext>('noopCheck', () => {
     const badSelector = createSelector(
       [(state: RootState) => state],
       identityFunction,
-      { identityFunctionCheck: 'once' }
+      { devModeChecks: { identityFunctionCheck: 'once' } }
+    )
+    expect(badSelector(state)).toBe(state)
+
+    expect(identityFunction).toHaveBeenCalledTimes(2)
+
+    expect(consoleSpy).toHaveBeenCalledOnce()
+
+    const newState = { ...state }
+
+    expect(badSelector(newState)).toBe(newState)
+
+    expect(identityFunction).toHaveBeenCalledTimes(3)
+
+    expect(consoleSpy).toHaveBeenCalledOnce()
+  })
+
+  localTest('allows always running the check', () => {
+    const badSelector = createSelector([state => state], identityFunction, {
+      devModeChecks: { identityFunctionCheck: 'always' }
+    })
+
+    const state = {}
+
+    expect(badSelector(state)).toBe(state)
+
+    expect(identityFunction).toHaveBeenCalledTimes(2)
+
+    expect(consoleSpy).toHaveBeenCalledOnce()
+
+    expect(badSelector({ ...state })).toStrictEqual(state)
+
+    expect(identityFunction).toHaveBeenCalledTimes(4)
+
+    expect(consoleSpy).toHaveBeenCalledTimes(2)
+
+    expect(badSelector(state)).toBe(state)
+
+    expect(identityFunction).toHaveBeenCalledTimes(6)
+
+    expect(consoleSpy).toHaveBeenCalledTimes(3)
+  })
+
+  localTest('runs once when devModeChecks is an empty object', ({ state }) => {
+    const badSelector = createSelector(
+      [(state: RootState) => state],
+      identityFunction,
+      { devModeChecks: {} }
     )
     expect(badSelector(state)).toBe(state)
 
@@ -111,10 +159,10 @@ describe<LocalTestContext>('noopCheck', () => {
 
     expect(identityFunction).toHaveBeenCalledTimes(2)
 
-    expect(consoleSpy).toHaveBeenCalledTimes(1)
+    expect(consoleSpy).toHaveBeenCalledOnce()
 
     expect(badSelector({ ...state })).not.toBe(state)
 
-    expect(consoleSpy).toHaveBeenCalledTimes(1)
+    expect(consoleSpy).toHaveBeenCalledOnce()
   })
 })

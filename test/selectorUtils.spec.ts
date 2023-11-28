@@ -9,7 +9,7 @@ describe('createSelector exposed utils', () => {
       {
         memoize: defaultMemoize,
         argsMemoize: defaultMemoize,
-        identityFunctionCheck: 'never'
+        devModeChecks: { identityFunctionCheck: 'never' }
       }
     )
     expect(selector({ a: 1 })).toBe(1)

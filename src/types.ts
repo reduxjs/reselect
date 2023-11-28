@@ -68,36 +68,15 @@ export interface CreateSelectorOptions<
   OverrideArgsMemoizeFunction extends UnknownMemoizer = never
 > {
   /**
-   * Overrides the global input stability check for the selector.
-   * - `once` - Run only the first time the selector is called.
-   * - `always` - Run every time the selector is called.
-   * - `never` - Never run the input stability check.
-   *
-   * @default 'once'
+   * Reselect performs additional checks in development mode to help identify
+   * and warn about potential issues in selector behavior. This option
+   * allows you to customize the behavior of these checks per selector.
    *
    * @see {@link https://github.com/reduxjs/reselect#debugging-tools debugging-tools}
-   * @see {@link https://github.com/reduxjs/reselect#inputstabilitycheck inputStabilityCheck}
-   * @see {@link https://github.com/reduxjs/reselect#2-per-selector-by-passing-an-inputstabilitycheck-option-directly-to-createselector per-selector-configuration}
    *
    * @since 5.0.0
    */
-  inputStabilityCheck?: DevModeCheckFrequency
-
-  /**
-   * Overrides the global identity function check for the selector.
-   * - `once` - Run only the first time the selector is called.
-   * - `always` - Run every time the selector is called.
-   * - `never` - Never run the identity function check.
-   *
-   * @default 'once'
-   *
-   * @see {@link https://github.com/reduxjs/reselect#debugging-tools debugging-tools}
-   * @see {@link https://github.com/reduxjs/reselect#identityfunctioncheck identityFunctionCheck}
-   * @see {@link https://github.com/reduxjs/reselect#2-per-selector-by-passing-an-identityfunctioncheck-option-directly-to-createselector per-selector-configuration}
-   *
-   * @since 5.0.0
-   */
-  identityFunctionCheck?: DevModeCheckFrequency
+  devModeChecks?: Partial<DevModeChecks>
 
   /**
    * The memoize function that is used to memoize the {@linkcode OutputSelectorFields.resultFunc resultFunc}
@@ -314,12 +293,72 @@ export type Combiner<InputSelectors extends SelectorArray, Result> = Distribute<
 export type EqualityFn<T = any> = (a: T, b: T) => boolean
 
 /**
- * The frequency of input stability checks.
+ * The frequency of development mode checks.
  *
  * @since 5.0.0
  * @public
  */
 export type DevModeCheckFrequency = 'always' | 'once' | 'never'
+
+/**
+ * Represents the configuration for development mode checks.
+ *
+ * @since 5.0.0
+ * @public
+ */
+export interface DevModeChecks {
+  /**
+   * Overrides the global input stability check for the selector.
+   * - `once` - Run only the first time the selector is called.
+   * - `always` - Run every time the selector is called.
+   * - `never` - Never run the input stability check.
+   *
+   * @default 'once'
+   *
+   * @see {@link https://github.com/reduxjs/reselect#debugging-tools debugging-tools}
+   * @see {@link https://github.com/reduxjs/reselect#inputstabilitycheck inputStabilityCheck}
+   * @see {@link https://github.com/reduxjs/reselect#2-per-selector-by-passing-an-inputstabilitycheck-option-directly-to-createselector per-selector-configuration}
+   *
+   * @since 5.0.0
+   */
+  inputStabilityCheck: DevModeCheckFrequency
+
+  /**
+   * Overrides the global identity function check for the selector.
+   * - `once` - Run only the first time the selector is called.
+   * - `always` - Run every time the selector is called.
+   * - `never` - Never run the identity function check.
+   *
+   * @default 'once'
+   *
+   * @see {@link https://github.com/reduxjs/reselect#debugging-tools debugging-tools}
+   * @see {@link https://github.com/reduxjs/reselect#identityfunctioncheck identityFunctionCheck}
+   * @see {@link https://github.com/reduxjs/reselect#2-per-selector-by-passing-an-identityfunctioncheck-option-directly-to-createselector per-selector-configuration}
+   *
+   * @since 5.0.0
+   */
+  identityFunctionCheck: DevModeCheckFrequency
+}
+
+/**
+ * Represents execution information for development mode checks.
+ *
+ * @public
+ * @since 5.0.0
+ */
+export type DevModeChecksExecutionInfo = {
+  [K in keyof DevModeChecks]: {
+    /**
+     * A boolean indicating whether the check should be executed.
+     */
+    shouldRun: boolean
+
+    /**
+     * The function to execute for the check.
+     */
+    run: AnyFunction
+  }
+}
 
 /**
  * Determines the combined single "State" type (first arg) from all input selectors.
