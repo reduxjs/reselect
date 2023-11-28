@@ -872,10 +872,6 @@ describe('argsMemoize and memoize', () => {
     expect(selectorMicroMemoizeOverridden.dependencyRecomputations()).to.be.a(
       'number'
     )
-    expect(selectorMicroMemoizeOverridden.resetRecomputations()).toBe(0)
-    expect(selectorMicroMemoizeOverridden.resetDependencyRecomputations()).toBe(
-      0
-    )
     expect(
       selectorMicroMemoizeOverridden.resultFunc([
         {
@@ -954,12 +950,6 @@ describe('argsMemoize and memoize', () => {
       selectorMicroMemoizeOverrideArgsMemoizeOnly.dependencyRecomputations()
     ).to.be.a('number')
     expect(
-      selectorMicroMemoizeOverrideArgsMemoizeOnly.resetRecomputations()
-    ).toBe(0)
-    expect(
-      selectorMicroMemoizeOverrideArgsMemoizeOnly.resetDependencyRecomputations()
-    ).toBe(0)
-    expect(
       selectorMicroMemoizeOverrideArgsMemoizeOnly.resultFunc([
         {
           id: 0,
@@ -1031,12 +1021,6 @@ describe('argsMemoize and memoize', () => {
     expect(
       selectorMicroMemoizeOverrideMemoizeOnly.dependencyRecomputations()
     ).to.be.a('number')
-    expect(selectorMicroMemoizeOverrideMemoizeOnly.resetRecomputations()).toBe(
-      0
-    )
-    expect(
-      selectorMicroMemoizeOverrideMemoizeOnly.resetDependencyRecomputations()
-    ).toBe(0)
     expect(
       selectorMicroMemoizeOverrideMemoizeOnly.resultFunc([
         {

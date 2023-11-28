@@ -444,10 +444,14 @@ export function createSelectorCreator<
       memoizedResultFunc,
       dependencies,
       dependencyRecomputations: () => dependencyRecomputations,
-      resetDependencyRecomputations: () => (dependencyRecomputations = 0),
+      resetDependencyRecomputations: () => {
+        dependencyRecomputations = 0
+      },
       lastResult: () => lastResult,
       recomputations: () => recomputations,
-      resetRecomputations: () => (recomputations = 0),
+      resetRecomputations: () => {
+        recomputations = 0
+      },
       memoize,
       argsMemoize
     }) as OutputSelector<
