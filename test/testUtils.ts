@@ -1,13 +1,7 @@
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { combineReducers, configureStore, createSlice } from '@reduxjs/toolkit'
 import { test } from 'vitest'
-import type {
-  AnyFunction,
-  OutputSelector,
-  Selector,
-  SelectorArray,
-  Simplify
-} from '../src/types'
+import type { AnyFunction, OutputSelector, Simplify } from '../src/types'
 
 interface Todo {
   id: number
@@ -23,6 +17,63 @@ interface Alert {
   read: boolean
 }
 
+interface BillingAddress {
+  street: string
+  city: string
+  state: string
+  zip: string
+}
+
+interface Address extends BillingAddress {
+  billing: BillingAddress
+}
+
+interface PushNotification {
+  enabled: boolean
+  frequency: string
+}
+
+interface Notifications {
+  email: boolean
+  sms: boolean
+  push: PushNotification
+}
+
+interface Preferences {
+  newsletter: boolean
+  notifications: Notifications
+}
+
+interface Login {
+  lastLogin: string
+  loginCount: number
+}
+
+interface UserDetails {
+  name: string
+  email: string
+  address: Address
+  preferences: Preferences
+}
+
+interface User {
+  id: number
+  details: UserDetails
+  status: string
+  login: Login
+}
+
+interface AppSettings {
+  theme: string
+  language: string
+}
+
+interface UserState {
+  user: User
+  appSettings: AppSettings
+}
+
+// For long arrays
 interface BillingAddress {
   street: string
   city: string
@@ -415,20 +466,14 @@ export const localTest = test.extend<LocalTestContext>({
   state
 })
 
-export const resetSelector = <S extends OutputSelector>(
-  selector: S
-) => {
+export const resetSelector = <S extends OutputSelector>(selector: S) => {
   selector.clearCache()
   selector.resetRecomputations()
   selector.resetDependencyRecomputations()
   selector.memoizedResultFunc.clearCache()
 }
 
-export const logRecomputations = <
-  S extends OutputSelector
->(
-  selector: S
-) => {
+export const logRecomputations = <S extends OutputSelector>(selector: S) => {
   console.log(
     `${selector.name} result function recalculated:`,
     selector.recomputations(),
@@ -437,4 +482,70 @@ export const logRecomputations = <
     selector.dependencyRecomputations(),
     `time(s)`
   )
+}
+
+export const logSelectorRecomputations = <S extends OutputSelector>(
+  selector: S
+) => {
+  console.log(
+    `\x1B[32m\x1B[1m${selector.name}\x1B[0m result function recalculated:`,
+    `\x1B[33m${selector.recomputations().toLocaleString('en-US')}\x1B[0m`,
+    'time(s)',
+    `input selectors recalculated:`,
+    `\x1B[33m${selector
+      .dependencyRecomputations()
+      .toLocaleString('en-US')}\x1B[0m`,
+    'time(s)'
+  )
+}
+
+export const logFunctionInfo = (func: AnyFunction, recomputations: number) => {
+  console.log(
+    `\x1B[32m\x1B[1m${func.name}\x1B[0m was called:`,
+    recomputations,
+    'time(s)'
+  )
+}
+
+export const safeApply = <Params extends any[], Result>(
+  func: (...args: Params) => Result,
+  args: Params
+) => func.apply<null, Params, Result>(null, args)
+
+export const countRecomputations = <
+  Params extends any[],
+  Result,
+  AdditionalFields
+>(
+  func: ((...args: Params) => Result) & AdditionalFields
+) => {
+  let recomputations = 0
+  const wrapper = (...args: Params) => {
+    recomputations++
+    return safeApply(func, args)
+  }
+  return Object.assign(
+    wrapper,
+    {
+      recomputations: () => recomputations,
+      resetRecomputations: () => (recomputations = 0)
+    },
+    func
+  )
+}
+
+export const runMultipleTimes = <Params extends any[]>(
+  func: (...args: Params) => any,
+  times: number,
+  ...args: Params
+) => {
+  for (let i = 0; i < times; i++) {
+    safeApply(func, args)
+  }
+}
+
+export const expensiveComputation = (times = 1_000_000) => {
+  for (let i = 0; i < times; i++) {
+    // Do nothing
+  }
 }

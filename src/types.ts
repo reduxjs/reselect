@@ -464,7 +464,7 @@ export type FunctionType<T> = Extract<T, AnyFunction>
  */
 export type ExtractReturnType<FunctionsArray extends readonly AnyFunction[]> = {
   [Index in keyof FunctionsArray]: FunctionsArray[Index] extends FunctionsArray[number]
-    ? FallbackIfUnknown<ReturnType<FunctionsArray[Index]>, any>
+    ? FallbackIfUnknown<FallbackIfUnknown<ReturnType<FunctionsArray[Index]>, any>, any>
     : never
 }
 
