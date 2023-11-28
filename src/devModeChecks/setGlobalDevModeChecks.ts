@@ -41,16 +41,16 @@ export const globalDevModeChecks: DevModeChecks = {
  * setGlobalDevModeChecks({ inputStabilityCheck: 'never' })
  *
  * // Run only the first time the selector is called. (default)
- * setGlobalDevModeChecks({ inputStabilityCheck: 'once' })
+ * setGlobalDevModeChecks({ identityFunctionCheck: 'once' })
  *
  * // Run every time the selector is called.
- * setGlobalDevModeChecks({ inputStabilityCheck: 'always' })
+ * setGlobalDevModeChecks({ identityFunctionCheck: 'always' })
  *
  * // Never run the identity function check.
- * setGlobalDevModeChecks({ inputStabilityCheck: 'never' })
+ * setGlobalDevModeChecks({ identityFunctionCheck: 'never' })
  * ```
  * @see {@link https://github.com/reduxjs/reselect#debugging-tools debugging-tools}
- * @see {@link https://github.com/reduxjs/reselect#1-globally-through-setglobalidentityfunctioncheck global-configuration}
+ * @see {@link https://github.com/reduxjs/reselect#1-globally-through-setglobaldevmodechecks global-configuration}
  *
  * @since 5.0.0
  * @public
