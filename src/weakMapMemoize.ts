@@ -8,9 +8,6 @@ import type {
   Simplify
 } from './types'
 
-import type { NOT_FOUND_TYPE } from './utils'
-import { NOT_FOUND } from './utils'
-
 const UNTERMINATED = 0
 const TERMINATED = 1
 
@@ -200,34 +197,6 @@ export function weakMapMemoize<Func extends AnyFunction>(
       }
     }
 
-    // if (cacheNode.s === TERMINATED) {
-    //   return cacheNode.v
-    // }
-    // // Allow errors to propagate
-    // const result = func.apply(null, arguments as unknown as any[])
-    // const terminatedNode = cacheNode as unknown as TerminatedCacheNode<any>
-    // terminatedNode.s = TERMINATED
-    // terminatedNode.v = result
-    // return result
-
-    //     // Not found in cache
-    //     if (cacheNode.s == TERMINATED && !hasResultEqualityCheck) {
-    //       return cacheNode.v
-    //     }
-
-    //  // Allow errors to propagate
-    //     let result = func.apply(null, arguments as unknown as any[])
-
-    // const existingResult = cacheNode.s === TERMINATED ? cacheNode.v : NOT_FOUND
-    // let finalResult = existingResult
-
-    // if (existingResult === NOT_FOUND) {
-    //   finalResult = func.apply(null, arguments as unknown as any[])
-    // }
-
-    // terminatedNode.s = TERMINATED
-    // terminatedNode.v = finalResult
-
     const terminatedNode = cacheNode as unknown as TerminatedCacheNode<any>
 
     let result
@@ -245,16 +214,16 @@ export function weakMapMemoize<Func extends AnyFunction>(
     if (resultEqualityCheck) {
       const lastResultValue = lastResult?.deref() ?? lastResult
       if (lastResultValue && resultEqualityCheck(lastResultValue, result)) {
-        console.log('Last results were equal: ', lastResultValue)
         result = lastResultValue
         resultsCount--
       }
+
+      const needsWeakRef =
+        (typeof result === 'object' && result !== null) ||
+        typeof result === 'function'
+      lastResult = needsWeakRef ? new WeakRef(result) : result
     }
     terminatedNode.v = result
-    // console.log('result', result)
-    lastResult = ['object', 'function'].includes(typeof result)
-      ? new WeakRef(result)
-      : result
     return result
   }
 
