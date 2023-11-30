@@ -133,8 +133,8 @@ export interface StructuredSelectorCreator {
    * ```
    *
    * @template InputSelectorsObject - The shape of the input selectors object.
-   * @template MemoizeFunction - The type of the memoize function that is used to create the structured selector. It defaults to `defaultMemoize`.
-   * @template ArgsMemoizeFunction - The type of the of the memoize function that is used to memoize the arguments passed into the generated structured selector. It defaults to `defaultMemoize`.
+   * @template MemoizeFunction - The type of the memoize function that is used to create the structured selector. It defaults to `weakMapMemoize`.
+   * @template ArgsMemoizeFunction - The type of the of the memoize function that is used to memoize the arguments passed into the generated structured selector. It defaults to `weakMapMemoize`.
    *
    * @see {@link https://github.com/reduxjs/reselect#createstructuredselector-inputselectorsobject--selectorcreator--createselector createStructuredSelector}
    */
