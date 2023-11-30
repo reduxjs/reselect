@@ -36,7 +36,7 @@ export const runInputStabilityCheck = (
       'An input selector returned a different result when passed same arguments.' +
         '\nThis means your output selector will likely run more frequently than intended.' +
         '\nAvoid returning a new reference inside your input selector, e.g.' +
-        '\n`createSelector([(arg1, arg2) => ({ arg1, arg2 })],(arg1, arg2) => {})`',
+        '\n`createSelector([state => state.todos.map(todo => todo.id)], todoIds => todoIds.length)`',
       {
         arguments: inputSelectorArgs,
         firstInputs: inputSelectorResults,
