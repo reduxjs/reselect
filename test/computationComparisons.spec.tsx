@@ -2,26 +2,23 @@
  * @vitest-environment jsdom
  */
 
-import { createSelector, weakMapMemoize } from 'reselect'
+import * as rtl from '@testing-library/react'
 import React, { useLayoutEffect, useMemo } from 'react'
 import type { TypedUseSelectorHook } from 'react-redux'
-import { useSelector, Provider, shallowEqual } from 'react-redux'
-import * as rtl from '@testing-library/react'
-
-import type {
-  OutputSelector,
-  OutputSelectorFields,
-  Selector,
-  defaultMemoize
+import { Provider, shallowEqual, useSelector } from 'react-redux'
+import {
+  createSelector,
+  unstable_autotrackMemoize,
+  weakMapMemoize
 } from 'reselect'
+
+import type { OutputSelector, defaultMemoize } from 'reselect'
 import type { RootState, Todo } from './testUtils'
-import { logSelectorRecomputations } from './testUtils'
 import {
   addTodo,
-  deepClone,
-  localTest,
-  toggleCompleted,
-  setupStore
+  logSelectorRecomputations,
+  setupStore,
+  toggleCompleted
 } from './testUtils'
 
 describe('Computations and re-rendering with React components', () => {
@@ -46,8 +43,8 @@ describe('Computations and re-rendering with React components', () => {
   type SelectTodoIds = OutputSelector<
     [(state: RootState) => RootState['todos']],
     number[],
-    typeof defaultMemoize,
-    any
+    typeof defaultMemoize | typeof weakMapMemoize,
+    typeof defaultMemoize | typeof weakMapMemoize
   >
 
   type SelectTodoById = OutputSelector<
@@ -56,8 +53,8 @@ describe('Computations and re-rendering with React components', () => {
       (state: RootState, id: number) => number
     ],
     readonly [todo: Todo | undefined],
-    typeof defaultMemoize,
-    any
+    typeof defaultMemoize | typeof weakMapMemoize,
+    typeof defaultMemoize | typeof weakMapMemoize
   >
 
   const selectTodos = (state: RootState) => state.todos
@@ -170,7 +167,7 @@ describe('Computations and re-rendering with React components', () => {
       selectTodoIdsResultEquality,
       selectTodoByIdResultEquality
     ],
-    ['weakMap', selectTodoIdsWeakMap, selectTodoByIdWeakMap] as any,
+    ['weakMap', selectTodoIdsWeakMap, selectTodoByIdWeakMap],
 
     [
       'weakMapResultEquality',
@@ -183,8 +180,8 @@ describe('Computations and re-rendering with React components', () => {
     `%s`,
     async (
       name,
-      selectTodoIds: SelectTodoIds,
-      selectTodoById: SelectTodoById
+      selectTodoIds,
+      selectTodoById
     ) => {
       selectTodoIds.resetRecomputations()
       selectTodoIds.resetDependencyRecomputations()
@@ -250,4 +247,83 @@ describe('Computations and re-rendering with React components', () => {
       })
     }
   )
+})
+
+describe('resultEqualityCheck in weakMapMemoize', () => {
+  test('resultEqualityCheck with shallowEqual', () => {
+    const store = setupStore()
+    const state = store.getState()
+    const selectorWeakMap = createSelector(
+      [(state: RootState) => state.todos],
+      todos => todos.map(({ id }) => id),
+      { memoize: weakMapMemoize }
+    )
+    const selectorWeakMapShallow = createSelector(
+      [(state: RootState) => state.todos],
+      todos => todos.map(({ id }) => id),
+      {
+        memoize: weakMapMemoize,
+        memoizeOptions: { resultEqualityCheck: shallowEqual }
+      }
+    )
+    const selectorAutotrack = createSelector(
+      [(state: RootState) => state.todos],
+      todos => todos.map(({ id }) => id),
+      { memoize: unstable_autotrackMemoize }
+    )
+    const firstResult = selectorWeakMap(store.getState())
+    store.dispatch(toggleCompleted(0))
+    const secondResult = selectorWeakMap(store.getState())
+    expect(firstResult).not.toBe(secondResult)
+    expect(firstResult).toStrictEqual(secondResult)
+    const firstResultShallow = selectorWeakMapShallow(store.getState())
+    store.dispatch(toggleCompleted(0))
+    const secondResultShallow = selectorWeakMapShallow(store.getState())
+    expect(firstResultShallow).toBe(secondResultShallow)
+    const firstResultAutotrack = selectorAutotrack(store.getState())
+    store.dispatch(toggleCompleted(0))
+    const secondResultAutotrack = selectorAutotrack(store.getState())
+    expect(firstResultAutotrack).toBe(secondResultAutotrack)
+
+    const memoized = weakMapMemoize((state: RootState) =>
+      state.todos.map(({ id }) => id)
+    )
+    const memoizedShallow = weakMapMemoize(
+      (state: RootState) => state.todos.map(({ id }) => id),
+      { resultEqualityCheck: shallowEqual }
+    )
+    expect(memoized.resetResultsCount).to.be.a('function')
+    expect(memoized.resultsCount).to.be.a('function')
+    expect(memoized.clearCache).to.be.a('function')
+
+    expect(memoizedShallow.resetResultsCount).to.be.a('function')
+    expect(memoizedShallow.resultsCount).to.be.a('function')
+    expect(memoizedShallow.clearCache).to.be.a('function')
+
+    expect(memoized(state)).toBe(memoized(state))
+    expect(memoized(state)).toBe(memoized(state))
+    expect(memoized(state)).toBe(memoized(state))
+    expect(memoized.resultsCount()).toBe(1)
+    expect(memoized({ ...state })).not.toBe(memoized(state))
+    expect(memoized({ ...state })).toStrictEqual(memoized(state))
+    expect(memoized.resultsCount()).toBe(3)
+    expect(memoized({ ...state })).not.toBe(memoized(state))
+    expect(memoized({ ...state })).toStrictEqual(memoized(state))
+    expect(memoized.resultsCount()).toBe(5)
+
+    expect(memoizedShallow(state)).toBe(memoizedShallow(state))
+    expect(memoizedShallow.resultsCount()).toBe(0)
+    expect(memoizedShallow({ ...state })).toBe(memoizedShallow(state))
+    expect(memoizedShallow.resultsCount()).toBe(0)
+    expect(memoizedShallow({ ...state })).toBe(memoizedShallow(state))
+    // We spread the state to force the function to re-run but the
+    // result maintains the same reference because of `resultEqualityCheck`.
+    const first = memoizedShallow({ ...state })
+    expect(memoizedShallow.resultsCount()).toBe(0)
+    memoizedShallow({ ...state })
+    expect(memoizedShallow.resultsCount()).toBe(0)
+    const second = memoizedShallow({ ...state })
+    expect(memoizedShallow.resultsCount()).toBe(0)
+    expect(first).toBe(second)
+  })
 })

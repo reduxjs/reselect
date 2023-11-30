@@ -8,6 +8,15 @@ import type {
   Simplify
 } from './types'
 
+class StrongRef<T> {
+  constructor(private value: T) {}
+  deref() {
+    return this.value
+  }
+}
+
+const Ref = WeakRef ?? StrongRef
+
 const UNTERMINATED = 0
 const TERMINATED = 1
 
@@ -156,7 +165,7 @@ export function weakMapMemoize<Func extends AnyFunction>(
   let fnNode = createCacheNode()
   const { resultEqualityCheck } = options
 
-  let lastResult: WeakRef<object> | undefined = undefined
+  let lastResult: WeakRef<object> | undefined
 
   let resultsCount = 0
 
@@ -213,15 +222,15 @@ export function weakMapMemoize<Func extends AnyFunction>(
 
     if (resultEqualityCheck) {
       const lastResultValue = lastResult?.deref() ?? lastResult
-      if (lastResultValue && resultEqualityCheck(lastResultValue, result)) {
+      if (lastResultValue != null && resultEqualityCheck(lastResultValue, result)) {
         result = lastResultValue
-        resultsCount--
+        resultsCount !== 0 && resultsCount--
       }
 
       const needsWeakRef =
         (typeof result === 'object' && result !== null) ||
         typeof result === 'function'
-      lastResult = needsWeakRef ? new WeakRef(result) : result
+      lastResult = needsWeakRef ? new Ref(result) : result
     }
     terminatedNode.v = result
     return result
