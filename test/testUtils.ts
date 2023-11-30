@@ -1,7 +1,13 @@
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { combineReducers, configureStore, createSlice } from '@reduxjs/toolkit'
 import { test } from 'vitest'
-import type { AnyFunction, OutputSelector, Simplify } from '../src/types'
+import type {
+  AnyFunction,
+  OutputSelector,
+  Selector,
+  SelectorArray,
+  Simplify
+} from '../src/types'
 
 export interface Todo {
   id: number
@@ -488,7 +494,9 @@ export const logRecomputations = <S extends OutputSelector>(selector: S) => {
   )
 }
 
-export const logSelectorRecomputations = <S extends OutputSelector>(
+export const logSelectorRecomputations = <
+  S extends OutputSelector<unknown, typeof defaultMemoize, any>
+>(
   selector: S
 ) => {
   console.log(
