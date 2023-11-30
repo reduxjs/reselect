@@ -3,10 +3,10 @@
 import lodashMemoize from 'lodash/memoize'
 import microMemoize from 'micro-memoize'
 import {
-  unstable_autotrackMemoize as autotrackMemoize,
   createSelector,
   createSelectorCreator,
   defaultMemoize,
+  unstable_autotrackMemoize as autotrackMemoize,
   weakMapMemoize
 } from 'reselect'
 
@@ -113,7 +113,7 @@ describe('Basic selector behavior', () => {
 
   const isCoverage = process.env.COVERAGE
 
-  describe('performance checks', () => {
+  describe.skipIf(isCoverage)('performance checks', () => {
     beforeAll(setEnvToProd)
 
     // don't run performance tests for coverage

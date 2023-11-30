@@ -203,7 +203,12 @@ describe.skipIf(isCoverage)('weakmapMemoize performance tests', () => {
       (state: StateAB) => state.a,
       (state: StateAB) => state.b,
       (a, b) => a + b,
-      { devModeChecks: { identityFunctionCheck: 'never' } }
+      {
+        devModeChecks: {
+          identityFunctionCheck: 'never',
+          inputStabilityCheck: 'never'
+        }
+      }
     )
 
     const start = performance.now()
