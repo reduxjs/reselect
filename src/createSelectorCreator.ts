@@ -1,4 +1,4 @@
-import { defaultMemoize } from './defaultMemoize'
+import { weakMapMemoize } from './weakMapMemoize'
 
 import type {
   Combiner,
@@ -35,8 +35,8 @@ import {
  * @public
  */
 export interface CreateSelectorFunction<
-  MemoizeFunction extends UnknownMemoizer = typeof defaultMemoize,
-  ArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
+  MemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize,
+  ArgsMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize
 > {
   /**
    * Creates a memoized selector function.
@@ -222,13 +222,13 @@ export function setInputStabilityCheckEnabled(
  */
 export function createSelectorCreator<
   MemoizeFunction extends UnknownMemoizer,
-  ArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
+  ArgsMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize
 >(
   options: Simplify<
     SetRequired<
       CreateSelectorOptions<
-        typeof defaultMemoize,
-        typeof defaultMemoize,
+        typeof weakMapMemoize,
+        typeof weakMapMemoize,
         MemoizeFunction,
         ArgsMemoizeFunction
       >,
@@ -372,7 +372,7 @@ export function createSelectorCreator<
     const {
       memoize,
       memoizeOptions = [],
-      argsMemoize = defaultMemoize,
+      argsMemoize = weakMapMemoize,
       argsMemoizeOptions = [],
       inputStabilityCheck = globalStabilityCheck
     } = combinedOptions
@@ -477,4 +477,4 @@ export function createSelectorCreator<
  * @public
  */
 export const createSelector =
-  /* #__PURE__ */ createSelectorCreator(defaultMemoize)
+  /* #__PURE__ */ createSelectorCreator(weakMapMemoize)

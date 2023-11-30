@@ -344,6 +344,7 @@ describe('Customizing selectors', () => {
       (state: StateAB) => state.b,
       (a, b) => a + b,
       {
+        memoize: defaultMemoize,
         memoizeOptions: (a, b) => {
           memoizer1Calls++
           return a === b
@@ -361,6 +362,7 @@ describe('Customizing selectors', () => {
       (state: StateAB) => state.b,
       (a, b) => a + b,
       {
+        memoize: defaultMemoize,
         memoizeOptions: [
           (a, b) => {
             memoizer2Calls++
@@ -404,6 +406,7 @@ describe('Customizing selectors', () => {
         todos => todos.map(({ id }) => id),
         {
           inputStabilityCheck: 'always',
+          memoize: defaultMemoize,
           memoizeOptions: {
             equalityCheck: (a, b) => false,
             resultEqualityCheck: (a, b) => false
@@ -430,8 +433,7 @@ describe('argsMemoize and memoize', () => {
     const state = store.getState()
     const selectorDefault = createSelector(
       (state: RootState) => state.todos,
-      todos => todos.map(({ id }) => id),
-      { memoize: defaultMemoize }
+      todos => todos.map(({ id }) => id)
     )
     const selectorDefaultParametric = createSelector(
       [(state: RootState, id: number) => id, (state: RootState) => state.todos],
@@ -695,11 +697,11 @@ describe('argsMemoize and memoize', () => {
     expect(selectorDefaultParametric.dependencyRecomputations()).toBe(1)
     selectorDefaultParametric(store.getState(), 2)
     selectorDefaultParametric(store.getState(), 1)
-    expect(selectorDefaultParametric.recomputations()).toBe(3)
-    expect(selectorDefaultParametric.dependencyRecomputations()).toBe(3)
+    expect(selectorDefaultParametric.recomputations()).toBe(2)
+    expect(selectorDefaultParametric.dependencyRecomputations()).toBe(2)
     selectorDefaultParametric(store.getState(), 2)
-    expect(selectorDefaultParametric.recomputations()).toBe(4)
-    expect(selectorDefaultParametric.dependencyRecomputations()).toBe(4)
+    expect(selectorDefaultParametric.recomputations()).toBe(2)
+    expect(selectorDefaultParametric.dependencyRecomputations()).toBe(2)
     const selectorDefaultParametricArgsWeakMap = createSelector(
       [(state: RootState, id: number) => id, (state: RootState) => state.todos],
       (id, todos) => todos.filter(todo => todo.id === id),
@@ -748,8 +750,8 @@ describe('argsMemoize and memoize', () => {
       selectorDefaultParametric(store.getState(), 4)
       selectorDefaultParametric(store.getState(), 5)
     }
-    expect(selectorDefaultParametric.recomputations()).toBe(54)
-    expect(selectorDefaultParametric.dependencyRecomputations()).toBe(54)
+    expect(selectorDefaultParametric.recomputations()).toBe(5)
+    expect(selectorDefaultParametric.dependencyRecomputations()).toBe(5)
     for (let i = 0; i < 10; i++) {
       selectorDefaultParametricWeakMap(store.getState(), 1)
       selectorDefaultParametricWeakMap(store.getState(), 2)
@@ -758,7 +760,7 @@ describe('argsMemoize and memoize', () => {
       selectorDefaultParametricWeakMap(store.getState(), 5)
     }
     expect(selectorDefaultParametricWeakMap.recomputations()).toBe(5)
-    expect(selectorDefaultParametricWeakMap.dependencyRecomputations()).toBe(50)
+    expect(selectorDefaultParametricWeakMap.dependencyRecomputations()).toBe(5)
   })
 
   localTest('passing argsMemoize to createSelectorCreator', ({ store }) => {
