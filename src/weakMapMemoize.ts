@@ -156,7 +156,7 @@ export function weakMapMemoize<Func extends AnyFunction>(
   let fnNode = createCacheNode()
   const { resultEqualityCheck } = options
 
-  let lastResult: WeakRef<object> | undefined = undefined
+  let lastResult: ReturnType<Func> | undefined
 
   let resultsCount = 0
 
@@ -212,16 +212,12 @@ export function weakMapMemoize<Func extends AnyFunction>(
     terminatedNode.s = TERMINATED
 
     if (resultEqualityCheck) {
-      const lastResultValue = lastResult?.deref() ?? lastResult
-      if (lastResultValue && resultEqualityCheck(lastResultValue, result)) {
-        result = lastResultValue
-        resultsCount--
+      if (lastResult != null && resultEqualityCheck(lastResult, result)) {
+        result = lastResult
+        resultsCount !== 0 && resultsCount--
       }
 
-      const needsWeakRef =
-        (typeof result === 'object' && result !== null) ||
-        typeof result === 'function'
-      lastResult = needsWeakRef ? new WeakRef(result) : result
+      lastResult = result
     }
     terminatedNode.v = result
     return result
