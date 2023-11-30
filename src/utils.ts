@@ -6,6 +6,9 @@ import type {
   UnknownMemoizer
 } from './types'
 
+export const NOT_FOUND = 'NOT_FOUND'
+export type NOT_FOUND_TYPE = typeof NOT_FOUND
+
 /**
  * Assert that the provided value is a function. If the assertion fails,
  * a `TypeError` is thrown with an optional custom error message.

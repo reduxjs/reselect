@@ -401,6 +401,8 @@ export type DefaultMemoizeFields = {
    * that future calls to the function recompute the results.
    */
   clearCache: () => void
+  resultsCount: () => number
+  resetResultsCount: () => void
 }
 
 /*
@@ -464,7 +466,7 @@ export type FunctionType<T> = Extract<T, AnyFunction>
  */
 export type ExtractReturnType<FunctionsArray extends readonly AnyFunction[]> = {
   [Index in keyof FunctionsArray]: FunctionsArray[Index] extends FunctionsArray[number]
-    ? FallbackIfUnknown<FallbackIfUnknown<ReturnType<FunctionsArray[Index]>, any>, any>
+    ? FallbackIfUnknown<ReturnType<FunctionsArray[Index]>, any>
     : never
 }
 

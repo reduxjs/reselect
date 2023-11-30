@@ -5,11 +5,11 @@ import type {
   Simplify
 } from './types'
 
+import type { NOT_FOUND_TYPE } from './utils'
+import { NOT_FOUND } from './utils'
+
 // Cache implementation based on Erik Rasmussen's `lru-memoize`:
 // https://github.com/erikras/lru-memoize
-
-const NOT_FOUND = 'NOT_FOUND'
-type NOT_FOUND_TYPE = typeof NOT_FOUND
 
 interface Entry {
   key: unknown
@@ -182,6 +182,8 @@ export function defaultMemoize<Func extends AnyFunction>(
 
   const comparator = createCacheKeyComparator(equalityCheck)
 
+  let resultsCount = 0
+
   const cache =
     maxSize === 1
       ? createSingletonCache(comparator)
@@ -193,6 +195,7 @@ export function defaultMemoize<Func extends AnyFunction>(
     if (value === NOT_FOUND) {
       // @ts-ignore
       value = func.apply(null, arguments)
+      resultsCount++
 
       if (resultEqualityCheck) {
         const entries = cache.getEntries()
@@ -202,6 +205,7 @@ export function defaultMemoize<Func extends AnyFunction>(
 
         if (matchingEntry) {
           value = matchingEntry.value
+          resultsCount--
         }
       }
 
@@ -212,6 +216,13 @@ export function defaultMemoize<Func extends AnyFunction>(
 
   memoized.clearCache = () => {
     cache.clear()
+    memoized.resetResultsCount()
+  }
+
+  memoized.resultsCount = () => resultsCount
+
+  memoized.resetResultsCount = () => {
+    resultsCount = 0
   }
 
   return memoized as Func & Simplify<DefaultMemoizeFields>
