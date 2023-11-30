@@ -1,4 +1,4 @@
-import type { AnyFunction } from '@internal/types'
+import type { AnyFunction } from '../types'
 
 /**
  * Runs a check to determine if the given result function behaves as an

@@ -1,4 +1,4 @@
-import type { DevModeChecks } from '@internal/types'
+import type { DevModeChecks } from '../types'
 
 /**
  * Global configuration for development mode checks. This specifies the default
@@ -30,6 +30,7 @@ export const globalDevModeChecks: DevModeChecks = {
  * @example
  * ```ts
  * import { setGlobalDevModeChecks } from 'reselect'
+import { DevModeChecks } from '../types';
  *
  * // Run only the first time the selector is called. (default)
  * setGlobalDevModeChecks({ inputStabilityCheck: 'once' })

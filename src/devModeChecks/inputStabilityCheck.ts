@@ -1,4 +1,4 @@
-import type { CreateSelectorOptions, UnknownMemoizer } from '@internal/types'
+import type { CreateSelectorOptions, UnknownMemoizer } from '../types'
 
 /**
  * Runs a stability check to ensure the input selector results remain stable

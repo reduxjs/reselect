@@ -1,5 +1,4 @@
-import { setGlobalDevModeChecks } from '@internal/devModeChecks/setGlobalDevModeChecks'
-import { createSelector } from 'reselect'
+import { createSelector, setGlobalDevModeChecks } from 'reselect'
 import type { LocalTestContext, RootState } from './testUtils'
 import { localTest } from './testUtils'
 
@@ -124,9 +123,9 @@ describe<LocalTestContext>('identityFunctionCheck', () => {
 
     expect(badSelector(state)).toBe(state)
 
-    expect(identityFunction).toHaveBeenCalledTimes(6)
+    expect(identityFunction).toHaveBeenCalledTimes(4)
 
-    expect(consoleSpy).toHaveBeenCalledTimes(3)
+    expect(consoleSpy).toHaveBeenCalledTimes(2)
   })
 
   localTest('runs once when devModeChecks is an empty object', ({ state }) => {

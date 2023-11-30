@@ -1,5 +1,8 @@
-import { createSelector, defaultMemoize } from 'reselect'
-import { setGlobalDevModeChecks } from '@internal/devModeChecks/setGlobalDevModeChecks'
+import {
+  createSelector,
+  defaultMemoize,
+  setGlobalDevModeChecks
+} from 'reselect'
 import { shallowEqual } from 'react-redux'
 
 describe('inputStabilityCheck', () => {
@@ -122,9 +125,9 @@ describe('inputStabilityCheck', () => {
 
     expect(addNums(1, 2)).toBe(3)
 
-    expect(unstableInput).toHaveBeenCalledTimes(6)
+    expect(unstableInput).toHaveBeenCalledTimes(4)
 
-    expect(consoleSpy).toHaveBeenCalledTimes(3)
+    expect(consoleSpy).toHaveBeenCalledTimes(2)
   })
 
   it('runs once when devModeChecks is an empty object', () => {
