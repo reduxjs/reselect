@@ -295,7 +295,7 @@ export type Combiner<InputSelectors extends SelectorArray, Result> = Distribute<
  *
  * @public
  */
-export type EqualityFn = (a: any, b: any) => boolean
+export type EqualityFn<T = any> = (a: T, b: T) => boolean
 
 /**
  * The frequency of input stability checks.
