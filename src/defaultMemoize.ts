@@ -225,7 +225,7 @@ export function lruMemoize<Func extends AnyFunction>(
 
         if (matchingEntry) {
           value = matchingEntry.value as ReturnType<Func>
-          resultsCount--
+          resultsCount !== 0 && resultsCount--
         }
       }
 
