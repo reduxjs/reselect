@@ -124,27 +124,42 @@ export function createCacheKeyComparator(equalityCheck: EqualityFn) {
 }
 
 /**
+ * Options for configuring the behavior of a function memoized with
+ * LRU (Least Recently Used) caching.
+ *
+ * @template Result - The type of the return value of the memoized function.
+ *
  * @public
  */
 export interface LruMemoizeOptions<Result = any> {
   /**
-   * Used to compare the individual arguments of the provided calculation function.
+   * Function used to compare the individual arguments of the
+   * provided calculation function.
    *
-   * @default defaultEqualityCheck
+   * @default referenceEqualityCheck
    */
   equalityCheck?: EqualityFn
+
   /**
-   * If provided, used to compare a newly generated output value against previous values in the cache.
-   * If a match is found, the old value is returned. This addresses the common
+   * If provided, used to compare a newly generated output value against
+   * previous values in the cache. If a match is found,
+   * the old value is returned. This addresses the common
    * ```ts
    * todos.map(todo => todo.id)
    * ```
-   * use case, where an update to another field in the original data causes a recalculation
-   * due to changed references, but the output is still effectively the same.
+   * use case, where an update to another field in the original data causes
+   * a recalculation due to changed references, but the output is still
+   * effectively the same.
+   *
+   * @since 4.1.0
    */
   resultEqualityCheck?: EqualityFn<Result>
+
   /**
-   * The cache size for the selector. If greater than 1, the selector will use an LRU cache internally.
+   * The maximum size of the cache used by the selector.
+   * A size greater than 1 means the selector will use an
+   * LRU (Least Recently Used) cache, allowing for the caching of multiple
+   * results based on different sets of arguments.
    *
    * @default 1
    */
