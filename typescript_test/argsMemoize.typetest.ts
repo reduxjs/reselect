@@ -687,7 +687,7 @@ function overrideMemoizeAndArgsMemoizeInCreateSelector() {
     (id, todos) => todos.filter(todo => todo.id === id),
     {
       argsMemoize: microMemoize,
-      inputStabilityCheck: 'never',
+      devModeChecks: { inputStabilityCheck: 'never' },
       memoize: memoizeOne,
       argsMemoizeOptions: [],
       memoizeOptions: [(a, b) => a === b]

@@ -274,12 +274,12 @@ describe('defaultMemoize', () => {
     )
 
     fooChangeHandler(state)
-    expect(fooChangeSpy.mock.calls.length).toEqual(1)
+    expect(fooChangeSpy.mock.calls.length).toEqual(2)
 
     // no change
     fooChangeHandler(state)
     // this would fail
-    expect(fooChangeSpy.mock.calls.length).toEqual(1)
+    expect(fooChangeSpy.mock.calls.length).toEqual(2)
 
     const state2 = { a: 1 }
     let count = 0
@@ -290,9 +290,9 @@ describe('defaultMemoize', () => {
     })
 
     selector(state)
-    expect(count).toBe(1)
+    expect(count).toBe(2)
     selector(state)
-    expect(count).toBe(1)
+    expect(count).toBe(2)
   })
 
   test('Accepts an options object as an arg', () => {
@@ -368,7 +368,8 @@ describe('defaultMemoize', () => {
         return state
       },
       {
-        memoizeOptions: { maxSize: 3 }
+        memoizeOptions: { maxSize: 3 },
+        devModeChecks: { identityFunctionCheck: 'never' }
       }
     )
 
@@ -410,13 +411,7 @@ describe('defaultMemoize', () => {
     // 'a' here would _not_ recalculate
     selector('b') // ['b']
     expect(funcCalls).toBe(5)
-
-    try {
-      //@ts-expect-error issue 591
-      selector.resultFunc.clearCache()
-      fail('should have thrown for issue 591')
-    } catch (err) {
-      //expected catch
-    }
+    // @ts-expect-error
+    expect(selector.resultFunc.clearCache).toBeUndefined()
   })
 })

@@ -1,7 +1,8 @@
 import {
-  createSelectorCreator,
-  unstable_autotrackMemoize as autotrackMemoize
+  unstable_autotrackMemoize as autotrackMemoize,
+  createSelectorCreator
 } from 'reselect'
+import { setEnvToProd } from './testUtils'
 
 // Construct 1E6 states for perf test outside of the perf test so as to not change the execute time of the test function
 const numOfStates = 1_000_000
@@ -33,7 +34,8 @@ describe('Basic selector behavior with autotrack', () => {
     // console.log('Selector test')
     const selector = createSelector(
       (state: StateA) => state.a,
-      a => a
+      a => a,
+      { devModeChecks: { identityFunctionCheck: 'never' } }
     )
     const firstState = { a: 1 }
     const firstStateNewPointer = { a: 1 }
@@ -51,7 +53,8 @@ describe('Basic selector behavior with autotrack', () => {
   test("don't pass extra parameters to inputSelector when only called with the state", () => {
     const selector = createSelector(
       (...params: any[]) => params.length,
-      a => a
+      a => a,
+      { devModeChecks: { identityFunctionCheck: 'never' } }
     )
     expect(selector({})).toBe(1)
   })
@@ -95,30 +98,23 @@ describe('Basic selector behavior with autotrack', () => {
     )
   })
 
-  describe('performance checks', () => {
-    const originalEnv = process.env.NODE_ENV
+  const isCoverage = process.env.COVERAGE
 
-    beforeAll(() => {
-      process.env.NODE_ENV = 'production'
-    })
-    afterAll(() => {
-      process.env.NODE_NV = originalEnv
-    })
+  // don't run performance tests for coverage
+  describe.skipIf(isCoverage)('performance checks', () => {
+    beforeAll(setEnvToProd)
 
     test('basic selector cache hit performance', () => {
-      if (process.env.COVERAGE) {
-        return // don't run performance tests for coverage
-      }
-
       const selector = createSelector(
         (state: StateAB) => state.a,
         (state: StateAB) => state.b,
-        (a, b) => a + b
+        (a, b) => a + b,
+        { devModeChecks: { identityFunctionCheck: 'never' } }
       )
       const state1 = { a: 1, b: 2 }
 
       const start = performance.now()
-      for (let i = 0; i < 1000000; i++) {
+      for (let i = 0; i < 1_000_000; i++) {
         selector(state1)
       }
       const totalTime = performance.now() - start
@@ -130,18 +126,15 @@ describe('Basic selector behavior with autotrack', () => {
     })
 
     test('basic selector cache hit performance for state changes but shallowly equal selector args', () => {
-      if (process.env.COVERAGE) {
-        return // don't run performance tests for coverage
-      }
-
       const selector = createSelector(
         (state: StateAB) => state.a,
         (state: StateAB) => state.b,
-        (a, b) => a + b
+        (a, b) => a + b,
+        { devModeChecks: { identityFunctionCheck: 'never' } }
       )
 
       const start = performance.now()
-      for (let i = 0; i < 1000000; i++) {
+      for (let i = 0; i < 1_000_000; i++) {
         selector(states[i])
       }
       const totalTime = performance.now() - start
@@ -203,7 +196,8 @@ describe('Basic selector behavior with autotrack', () => {
       () => {
         called++
         throw Error('test error')
-      }
+      },
+      { devModeChecks: { identityFunctionCheck: 'never' } }
     )
     expect(() => selector({ a: 1 })).toThrow('test error')
     expect(() => selector({ a: 1 })).toThrow('test error')
@@ -218,7 +212,8 @@ describe('Basic selector behavior with autotrack', () => {
         called++
         if (a > 1) throw Error('test error')
         return a
-      }
+      },
+      { devModeChecks: { identityFunctionCheck: 'never' } }
     )
     const state1 = { a: 1 }
     const state2 = { a: 2 }

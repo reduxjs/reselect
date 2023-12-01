@@ -1,7 +1,7 @@
 // This entire implementation courtesy of Anders Hjelsberg:
 // https://github.com/microsoft/TypeScript/pull/50831#issuecomment-1253830522
 
-import type { AnyFunction } from '@internal/types'
+import type { AnyFunction } from '../types'
 
 /**
  * Represents the longest array within an array of arrays.

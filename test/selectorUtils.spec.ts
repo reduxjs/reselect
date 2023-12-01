@@ -6,7 +6,11 @@ describe('createSelector exposed utils', () => {
     const selector = createSelector(
       (state: StateA) => state.a,
       a => a,
-      { memoize: defaultMemoize, argsMemoize: defaultMemoize }
+      {
+        memoize: defaultMemoize,
+        argsMemoize: defaultMemoize,
+        devModeChecks: { identityFunctionCheck: 'never' }
+      }
     )
     expect(selector({ a: 1 })).toBe(1)
     expect(selector({ a: 1 })).toBe(1)

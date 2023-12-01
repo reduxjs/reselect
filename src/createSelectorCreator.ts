@@ -13,7 +13,6 @@ import type {
   SelectorArray,
   SetRequired,
   Simplify,
-  StabilityCheckFrequency,
   UnknownMemoizer
 } from './types'
 
@@ -22,8 +21,7 @@ import {
   collectInputSelectorResults,
   ensureIsArray,
   getDependencies,
-  runStabilityCheck,
-  shouldRunInputStabilityCheck
+  getDevModeChecksExecutionInfo
 } from './utils'
 
 /**
@@ -141,50 +139,6 @@ export interface CreateSelectorFunction<
     OverrideArgsMemoizeFunction
   > &
     InterruptRecursion
-}
-
-let globalStabilityCheck: StabilityCheckFrequency = 'once'
-
-/**
- * In development mode, an extra check is conducted on your input selectors.
- * It runs your input selectors an extra time with the same arguments, and
- * warns in the console if they return a different result _(based on your `memoize` method)_.
- *
- * This function allows you to override this setting for all of your selectors.
- *
- * **Note**: This setting can still be overridden per selector inside `createSelector`'s `options` object.
- * See {@link https://github.com/reduxjs/reselect#2-per-selector-by-passing-an-inputstabilitycheck-option-directly-to-createselector per-selector-configuration}
- * and {@linkcode CreateSelectorOptions.inputStabilityCheck inputStabilityCheck} for more details.
- *
- * _The input stability check does not run in production builds._
- *
- * @param inputStabilityCheckFrequency - How often the `inputStabilityCheck` should run for all selectors.
- *
- * @example
- * ```ts
- * import { setInputStabilityCheckEnabled } from 'reselect'
-import { assert } from './autotrackMemoize/utils';
-import { OutputSelectorFields, Mapped } from './types';
- *
- * // Run only the first time the selector is called. (default)
- * setInputStabilityCheckEnabled('once')
- *
- * // Run every time the selector is called.
- * setInputStabilityCheckEnabled('always')
- *
- * // Never run the input stability check.
- * setInputStabilityCheckEnabled('never')
- * ```
- * @see {@link https://github.com/reduxjs/reselect#debugging-tools debugging-tools}
- * @see {@link https://github.com/reduxjs/reselect#1-globally-through-setinputstabilitycheckenabled global-configuration}
- *
- * @since 5.0.0
- * @public
- */
-export function setInputStabilityCheckEnabled(
-  inputStabilityCheckFrequency: StabilityCheckFrequency
-) {
-  globalStabilityCheck = inputStabilityCheckFrequency
 }
 
 /**
@@ -374,7 +328,7 @@ export function createSelectorCreator<
       memoizeOptions = [],
       argsMemoize = weakMapMemoize,
       argsMemoizeOptions = [],
-      inputStabilityCheck = globalStabilityCheck
+      devModeChecks = {}
     } = combinedOptions
 
     // Simplifying assumption: it's unlikely that the first options arg of the provided memoizer
@@ -408,21 +362,28 @@ export function createSelectorCreator<
         arguments
       )
 
-      if (
-        process.env.NODE_ENV !== 'production' &&
-        shouldRunInputStabilityCheck(inputStabilityCheck, firstRun)
-      ) {
-        // make a second copy of the params, to check if we got the same results
-        const inputSelectorResultsCopy = collectInputSelectorResults(
-          dependencies,
-          arguments
-        )
+      if (process.env.NODE_ENV !== 'production') {
+        const { identityFunctionCheck, inputStabilityCheck } =
+          getDevModeChecksExecutionInfo(firstRun, devModeChecks)
+        if (identityFunctionCheck.shouldRun) {
+          identityFunctionCheck.run(
+            resultFunc as Combiner<InputSelectors, Result>
+          )
+        }
 
-        runStabilityCheck(
-          { inputSelectorResults, inputSelectorResultsCopy },
-          { memoize, memoizeOptions: finalMemoizeOptions },
-          arguments
-        )
+        if (inputStabilityCheck.shouldRun) {
+          // make a second copy of the params, to check if we got the same results
+          const inputSelectorResultsCopy = collectInputSelectorResults(
+            dependencies,
+            arguments
+          )
+
+          inputStabilityCheck.run(
+            { inputSelectorResults, inputSelectorResultsCopy },
+            { memoize, memoizeOptions: finalMemoizeOptions },
+            arguments
+          )
+        }
 
         if (firstRun) firstRun = false
       }

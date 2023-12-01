@@ -1,13 +1,7 @@
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { combineReducers, configureStore, createSlice } from '@reduxjs/toolkit'
 import { test } from 'vitest'
-import type {
-  AnyFunction,
-  OutputSelector,
-  Selector,
-  SelectorArray,
-  Simplify
-} from '../src/types'
+import type { AnyFunction, OutputSelector, Simplify } from '../src/types'
 
 export interface Todo {
   id: number
@@ -570,5 +564,13 @@ export const runMultipleTimes = <Params extends any[]>(
 export const expensiveComputation = (times = 1_000_000) => {
   for (let i = 0; i < times; i++) {
     // Do nothing
+  }
+}
+
+export const setEnvToProd = () => {
+  const originalEnv = process.env.NODE_ENV
+  process.env.NODE_ENV = 'production'
+  return () => {
+    process.env.NODE_ENV = originalEnv
   }
 }
