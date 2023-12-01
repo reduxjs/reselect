@@ -1,11 +1,12 @@
-import { createSelector } from 'reselect'
+import { createSelector, defaultMemoize } from 'reselect'
 import type { StateA, StateAB } from 'testTypes'
 
 describe('createSelector exposed utils', () => {
   test('resetRecomputations', () => {
     const selector = createSelector(
       (state: StateA) => state.a,
-      a => a
+      a => a,
+      { memoize: defaultMemoize, argsMemoize: defaultMemoize }
     )
     expect(selector({ a: 1 })).toBe(1)
     expect(selector({ a: 1 })).toBe(1)

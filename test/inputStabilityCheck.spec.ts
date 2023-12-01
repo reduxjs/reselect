@@ -1,4 +1,8 @@
-import { createSelector, setInputStabilityCheckEnabled } from 'reselect'
+import {
+  createSelector,
+  defaultMemoize,
+  setInputStabilityCheckEnabled
+} from 'reselect'
 import { shallowEqual } from 'react-redux'
 
 describe('inputStabilityCheck', () => {
@@ -107,6 +111,7 @@ describe('inputStabilityCheck', () => {
       [unstableInput],
       ({ a, b }) => a + b,
       {
+        memoize: defaultMemoize,
         memoizeOptions: {
           equalityCheck: shallowEqual
         }
