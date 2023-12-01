@@ -1,7 +1,7 @@
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { combineReducers, configureStore, createSlice } from '@reduxjs/toolkit'
 import { test } from 'vitest'
-import type { lruMemoize } from '../src/defaultMemoize'
+import type { lruMemoize } from '../src/lruMemoize'
 import type { AnyFunction, OutputSelector, Simplify } from '../src/types'
 
 export interface Todo {

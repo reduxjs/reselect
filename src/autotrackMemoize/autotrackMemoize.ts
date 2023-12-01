@@ -4,7 +4,7 @@ import type { Node } from './tracking'
 import {
   createCacheKeyComparator,
   referenceEqualityCheck
-} from '../defaultMemoize'
+} from '../lruMemoize'
 import type { AnyFunction, DefaultMemoizeFields, Simplify } from '../types'
 import { createCache } from './autotracking'
 

@@ -1,7 +1,7 @@
 import { createSelector } from './createSelectorCreator'
 
 import type { CreateSelectorFunction } from './createSelectorCreator'
-import type { lruMemoize } from './defaultMemoize'
+import type { lruMemoize } from './lruMemoize'
 import type {
   InterruptRecursion,
   ObjectValuesToTuple,
