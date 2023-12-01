@@ -5,7 +5,7 @@ import { localTest } from './testUtils'
 describe('identityFunctionCheck', () => {
   const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
   const identityFunction = vi.fn(<T>(state: T) => state)
-  const badSelector = createSelector(
+  let badSelector = createSelector(
     [(state: RootState) => state],
     identityFunction
   )
@@ -13,8 +13,10 @@ describe('identityFunctionCheck', () => {
   afterEach(() => {
     consoleSpy.mockClear()
     identityFunction.mockClear()
-    badSelector.clearCache()
-    badSelector.memoizedResultFunc.clearCache()
+    badSelector = createSelector(
+      [(state: RootState) => state],
+      identityFunction
+    )
   })
   afterAll(() => {
     consoleSpy.mockRestore()
@@ -42,7 +44,7 @@ describe('identityFunctionCheck', () => {
   localTest('includes stack with warning', ({ state }) => {
     expect(badSelector(state)).toBe(state)
 
-    expect(identityFunction).toHaveBeenCalledTimes(1)
+    expect(identityFunction).toHaveBeenCalledTimes(2)
 
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining(
