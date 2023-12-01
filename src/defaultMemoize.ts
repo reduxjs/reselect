@@ -94,7 +94,7 @@ function createLruCache(maxSize: number, equals: EqualityFn): Cache {
 
 /**
  * Runs a simple reference equality check.
- * What {@linkcode lruMemoize defaultMemoize} uses by default.
+ * What {@linkcode lruMemoize lruMemoize} uses by default.
  *
  * @public
  */
@@ -151,10 +151,15 @@ export interface LruMemoizeOptions<Result = any> {
   maxSize?: number
 }
 
-// defaultMemoize now supports a configurable cache size with LRU behavior,
-// and optional comparison of the result value with existing values
 /**
- * The standard memoize function used by `createSelector`.
+ * Creates a memoized version of a function with an optional
+ * LRU (Least Recently Used) cache. The memoized function uses a cache to
+ * store computed values. Depending on the `maxSize` option, it will use
+ * either a singleton cache (for a single entry) or an
+ * LRU cache (for multiple entries).
+ *
+ * **Note**: This function was previously known as `defaultMemoize`.
+ *
  * @param func - The function to be memoized.
  * @param equalityCheckOrOptions - Either an equality check function or an options object.
  * @returns A memoized function with a `.clearCache()` method attached.
