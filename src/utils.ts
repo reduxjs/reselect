@@ -1,8 +1,13 @@
 import { runIdentityFunctionCheck } from './devModeChecks/identityFunctionCheck'
 import { runInputStabilityCheck } from './devModeChecks/inputStabilityCheck'
 import { globalDevModeChecks } from './devModeChecks/setGlobalDevModeChecks'
-import type { DevModeChecks, Selector, SelectorArray } from './types'
-import { DevModeChecksExecutionInfo } from './types'
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+import type {
+  DevModeChecks,
+  Selector,
+  SelectorArray,
+  DevModeChecksExecutionInfo
+} from './types'
 
 export const NOT_FOUND = 'NOT_FOUND'
 export type NOT_FOUND_TYPE = typeof NOT_FOUND
