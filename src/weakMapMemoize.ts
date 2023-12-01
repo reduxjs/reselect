@@ -72,7 +72,7 @@ function createCacheNode<T>(): CacheNode<T> {
 /**
  * @public
  */
-export interface WeakMapMemoizeOptions {
+export interface WeakMapMemoizeOptions<T = any> {
   /**
    * If provided, used to compare a newly generated output value against previous values in the cache.
    * If a match is found, the old value is returned. This addresses the common
@@ -82,7 +82,7 @@ export interface WeakMapMemoizeOptions {
    * use case, where an update to another field in the original data causes a recalculation
    * due to changed references, but the output is still effectively the same.
    */
-  resultEqualityCheck?: EqualityFn
+  resultEqualityCheck?: EqualityFn<T>
 }
 
 /**
@@ -160,7 +160,7 @@ export interface WeakMapMemoizeOptions {
  */
 export function weakMapMemoize<Func extends AnyFunction>(
   func: Func,
-  options: WeakMapMemoizeOptions = {}
+  options: WeakMapMemoizeOptions<ReturnType<Func>> = {}
 ) {
   let fnNode = createCacheNode()
   const { resultEqualityCheck } = options
@@ -222,7 +222,10 @@ export function weakMapMemoize<Func extends AnyFunction>(
 
     if (resultEqualityCheck) {
       const lastResultValue = lastResult?.deref() ?? lastResult
-      if (lastResultValue != null && resultEqualityCheck(lastResultValue, result)) {
+      if (
+        lastResultValue != null &&
+        resultEqualityCheck(lastResultValue as ReturnType<Func>, result)
+      ) {
         result = lastResultValue
         resultsCount !== 0 && resultsCount--
       }

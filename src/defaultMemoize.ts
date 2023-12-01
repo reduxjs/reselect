@@ -126,7 +126,7 @@ export function createCacheKeyComparator(equalityCheck: EqualityFn) {
 /**
  * @public
  */
-export interface DefaultMemoizeOptions {
+export interface DefaultMemoizeOptions<T = any> {
   /**
    * Used to compare the individual arguments of the provided calculation function.
    *
@@ -142,7 +142,7 @@ export interface DefaultMemoizeOptions {
    * use case, where an update to another field in the original data causes a recalculation
    * due to changed references, but the output is still effectively the same.
    */
-  resultEqualityCheck?: EqualityFn
+  resultEqualityCheck?: EqualityFn<T>
   /**
    * The cache size for the selector. If greater than 1, the selector will use an LRU cache internally.
    *
@@ -167,7 +167,7 @@ export interface DefaultMemoizeOptions {
  */
 export function defaultMemoize<Func extends AnyFunction>(
   func: Func,
-  equalityCheckOrOptions?: EqualityFn | DefaultMemoizeOptions
+  equalityCheckOrOptions?: EqualityFn | DefaultMemoizeOptions<ReturnType<Func>>
 ) {
   const providedOptions =
     typeof equalityCheckOrOptions === 'object'
@@ -191,20 +191,20 @@ export function defaultMemoize<Func extends AnyFunction>(
 
   // we reference arguments instead of spreading them for performance reasons
   function memoized() {
-    let value = cache.get(arguments)
+    let value = cache.get(arguments) as ReturnType<Func>
     if (value === NOT_FOUND) {
       // @ts-ignore
-      value = func.apply(null, arguments)
+      value = func.apply(null, arguments) as ReturnType<Func>
       resultsCount++
 
       if (resultEqualityCheck) {
         const entries = cache.getEntries()
         const matchingEntry = entries.find(entry =>
-          resultEqualityCheck(entry.value, value)
+          resultEqualityCheck(entry.value as ReturnType<Func>, value)
         )
 
         if (matchingEntry) {
-          value = matchingEntry.value
+          value = matchingEntry.value as ReturnType<Func>
           resultsCount--
         }
       }
