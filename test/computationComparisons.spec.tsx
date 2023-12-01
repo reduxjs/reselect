@@ -9,10 +9,11 @@ import { Provider, shallowEqual, useSelector } from 'react-redux'
 import {
   createSelector,
   unstable_autotrackMemoize,
-  weakMapMemoize
+  weakMapMemoize,
+  defaultMemoize
 } from 'reselect'
 
-import type { OutputSelector, defaultMemoize } from 'reselect'
+import type { OutputSelector } from 'reselect'
 import type { RootState, Todo } from './testUtils'
 import {
   addTodo,
@@ -97,7 +98,10 @@ describe('Computations and re-rendering with React components', () => {
   const selectTodoByIdResultEquality = createSelector(
     [selectTodos, selectTodoId],
     mapTodoById,
-    { memoizeOptions: { resultEqualityCheck: shallowEqual, maxSize: 500 } }
+    {
+      memoize: defaultMemoize,
+      memoizeOptions: { resultEqualityCheck: shallowEqual, maxSize: 500 }
+    }
   )
 
   const selectTodoByIdWeakMap = createSelector(
@@ -176,77 +180,70 @@ describe('Computations and re-rendering with React components', () => {
     ]
   ]
 
-  test.each(testCases)(
-    `%s`,
-    async (
-      name,
-      selectTodoIds,
-      selectTodoById
-    ) => {
-      selectTodoIds.resetRecomputations()
-      selectTodoIds.resetDependencyRecomputations()
-      selectTodoById.resetRecomputations()
-      selectTodoById.resetDependencyRecomputations()
-      selectTodoIds.memoizedResultFunc.resetResultsCount()
-      selectTodoById.memoizedResultFunc.resetResultsCount()
+  test.each(testCases)(`%s`, async (name, selectTodoIds, selectTodoById) => {
+    selectTodoIds.resetRecomputations()
+    selectTodoIds.resetDependencyRecomputations()
+    selectTodoById.resetRecomputations()
+    selectTodoById.resetDependencyRecomputations()
+    selectTodoIds.memoizedResultFunc.resetResultsCount()
+    selectTodoById.memoizedResultFunc.resetResultsCount()
 
-      const numTodos = store.getState().todos.length
-      rtl.render(
-        <Provider store={store}>
-          <TodoList
-            selectTodoIds={selectTodoIds}
-            selectTodoById={selectTodoById}
-          />
-        </Provider>
-      )
+    const numTodos = store.getState().todos.length
+    rtl.render(
+      <Provider store={store}>
+        <TodoList
+          selectTodoIds={selectTodoIds}
+          selectTodoById={selectTodoById}
+        />
+      </Provider>
+    )
 
-      console.log(`Recomputations after render (${name}): `)
-      console.log('selectTodoIds: ')
-      logSelectorRecomputations(selectTodoIds as any)
-      console.log('selectTodoById: ')
-      logSelectorRecomputations(selectTodoById as any)
+    // console.log(`Recomputations after render (${name}): `)
+    // console.log('selectTodoIds: ')
+    // logSelectorRecomputations(selectTodoIds as any)
+    // console.log('selectTodoById: ')
+    // logSelectorRecomputations(selectTodoById as any)
 
-      console.log('Render count: ', {
-        listRenders,
-        listItemRenders,
-        listItemMounts
-      })
+    // console.log('Render count: ', {
+    //   listRenders,
+    //   listItemRenders,
+    //   listItemMounts
+    // })
 
-      expect(listItemRenders).toBe(numTodos)
+    expect(listItemRenders).toBe(numTodos)
 
-      rtl.act(() => {
-        store.dispatch(toggleCompleted(3))
-      })
+    rtl.act(() => {
+      store.dispatch(toggleCompleted(3))
+    })
 
-      console.log(`\nRecomputations after toggle completed (${name}): `)
-      console.log('selectTodoIds: ')
-      logSelectorRecomputations(selectTodoIds as any)
-      console.log('selectTodoById: ')
-      logSelectorRecomputations(selectTodoById as any)
+    // console.log(`\nRecomputations after toggle completed (${name}): `)
+    // console.log('selectTodoIds: ')
+    // logSelectorRecomputations(selectTodoIds as any)
+    // console.log('selectTodoById: ')
+    // logSelectorRecomputations(selectTodoById as any)
 
-      console.log('Render count: ', {
-        listRenders,
-        listItemRenders,
-        listItemMounts
-      })
+    // console.log('Render count: ', {
+    //   listRenders,
+    //   listItemRenders,
+    //   listItemMounts
+    // })
 
-      rtl.act(() => {
-        store.dispatch(addTodo({ title: 'a', description: 'b' }))
-      })
+    rtl.act(() => {
+      store.dispatch(addTodo({ title: 'a', description: 'b' }))
+    })
 
-      console.log(`\nRecomputations after added (${name}): `)
-      console.log('selectTodoIds: ')
-      logSelectorRecomputations(selectTodoIds as any)
-      console.log('selectTodoById: ')
-      logSelectorRecomputations(selectTodoById as any)
+    // console.log(`\nRecomputations after added (${name}): `)
+    // console.log('selectTodoIds: ')
+    // // logSelectorRecomputations(selectTodoIds as any)
+    // console.log('selectTodoById: ')
+    // // logSelectorRecomputations(selectTodoById as any)
 
-      console.log('Render count: ', {
-        listRenders,
-        listItemRenders,
-        listItemMounts
-      })
-    }
-  )
+    // console.log('Render count: ', {
+    //   listRenders,
+    //   listItemRenders,
+    //   listItemMounts
+    // })
+  })
 })
 
 describe('resultEqualityCheck in weakMapMemoize', () => {
