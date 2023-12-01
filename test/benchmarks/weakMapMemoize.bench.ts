@@ -208,7 +208,7 @@ describe('Parametric selectors: weakMapMemoize vs others', () => {
   )
 })
 
-// describe('weakMapMemoize vs defaultMemoize with maxSize', () => {
+// describe('weakMapMemoize vs lruMemoize with maxSize', () => {
 //   const store = setupStore()
 //   const state = store.getState()
 //   const arrayOfNumbers = Array.from({ length: 30 }, (num, index) => index)

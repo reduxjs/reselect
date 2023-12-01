@@ -8,7 +8,7 @@ const createSelector = createSelectorCreator({
   argsMemoize: lruMemoize
 })
 
-describe('defaultMemoize', () => {
+describe(lruMemoize, () => {
   test('Basic memoization', () => {
     let called = 0
     const memoized = lruMemoize(state => {
@@ -75,7 +75,7 @@ describe('defaultMemoize', () => {
     const anotherObject = { foo: 'bar' }
     const memoized = lruMemoize(a => a, shallowEqual)
 
-    // the first call to `memoized` doesn't hit because `defaultMemoize.lastArgs` is uninitialized
+    // the first call to `memoized` doesn't hit because `lruMemoize.lastArgs` is uninitialized
     // and so `equalityCheck` is never called
     memoized(someObject)
     // first call does not shallow compare
@@ -91,7 +91,7 @@ describe('defaultMemoize', () => {
     This test was useful when we had a cache size of 1 previously, and always saved `lastArgs`.
     But, with the new implementation, this doesn't make sense any more.
 
-    // the third call does not fall through because `defaultMemoize` passes `anotherObject` as
+    // the third call does not fall through because `lruMemoize` passes `anotherObject` as
     // both the `newVal` and `oldVal` params. This allows `shallowEqual` to be much more performant
     // than if it had passed `someObject` as `oldVal`, even though `someObject` and `anotherObject`
     // are shallowly equal

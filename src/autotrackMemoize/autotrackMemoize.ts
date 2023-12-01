@@ -14,15 +14,15 @@ import { createCache } from './autotracking'
  * in your selector on first read. Later, when the selector is called with
  * new arguments, it identifies which accessed fields have changed and
  * only recalculates the result if one or more of those accessed fields have changed.
- * This allows it to be more precise than the shallow equality checks in `defaultMemoize`.
+ * This allows it to be more precise than the shallow equality checks in `lruMemoize`.
  *
  * __Design Tradeoffs for `autotrackMemoize`:__
  * - Pros:
- *    - It is likely to avoid excess calculations and recalculate fewer times than `defaultMemoize` will,
+ *    - It is likely to avoid excess calculations and recalculate fewer times than `lruMemoize` will,
  *    which may also result in fewer component re-renders.
  * - Cons:
  *    - It only has a cache size of 1.
- *    - It is slower than `defaultMemoize`, because it has to do more work. (How much slower is dependent on the number of accessed fields in a selector, number of calls, frequency of input changes, etc)
+ *    - It is slower than `lruMemoize`, because it has to do more work. (How much slower is dependent on the number of accessed fields in a selector, number of calls, frequency of input changes, etc)
  *    - It can have some unexpected behavior. Because it tracks nested field accesses,
  *    cases where you don't access a field will not recalculate properly.
  *    For example, a badly-written selector like:

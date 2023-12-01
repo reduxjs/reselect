@@ -3,7 +3,7 @@ import memoizeOne from 'memoize-one'
 import microMemoize from 'micro-memoize'
 import {
   createSelectorCreator,
-  defaultMemoize,
+  lruMemoize,
   unstable_autotrackMemoize as autotrackMemoize,
   weakMapMemoize
 } from 'reselect'
@@ -28,7 +28,7 @@ const state: RootState = {
 describe('createSelectorCreator', () => {
   test('options object as argument', () => {
     const createSelectorDefault = createSelectorCreator({
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
     const createSelectorWeakMap = createSelectorCreator({
       memoize: weakMapMemoize
@@ -48,7 +48,7 @@ describe('createSelectorCreator', () => {
   })
 
   test('memoize function as argument', () => {
-    const createSelectorDefault = createSelectorCreator(defaultMemoize)
+    const createSelectorDefault = createSelectorCreator(lruMemoize)
     const createSelectorWeakMap = createSelectorCreator(weakMapMemoize)
     const createSelectorAutotrack = createSelectorCreator(autotrackMemoize)
     const createSelectorMicro = createSelectorCreator(microMemoize)

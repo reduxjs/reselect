@@ -730,7 +730,7 @@ describe('argsMemoize and memoize', () => {
     ).toBe(2)
     selectorDefaultParametricArgsWeakMap(store.getState(), 2)
     // If we call the selector with 1, then 2, then 1 and back to 2 again,
-    // `defaultMemoize` will recompute a total of 4 times,
+    // `lruMemoize` will recompute a total of 4 times,
     // but weakMapMemoize will recompute only twice.
     expect(selectorDefaultParametricArgsWeakMap.recomputations()).toBe(2)
     expect(

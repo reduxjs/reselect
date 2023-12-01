@@ -1,6 +1,7 @@
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { combineReducers, configureStore, createSlice } from '@reduxjs/toolkit'
 import { test } from 'vitest'
+import type { lruMemoize } from '../src/defaultMemoize'
 import type { AnyFunction, OutputSelector, Simplify } from '../src/types'
 
 export interface Todo {
@@ -489,7 +490,7 @@ export const logRecomputations = <S extends OutputSelector>(selector: S) => {
 }
 
 export const logSelectorRecomputations = <
-  S extends OutputSelector<unknown, typeof defaultMemoize, any>
+  S extends OutputSelector<unknown, typeof lruMemoize, any>
 >(
   selector: S
 ) => {

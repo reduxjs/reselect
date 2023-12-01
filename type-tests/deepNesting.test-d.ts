@@ -1,5 +1,5 @@
 import microMemoize from 'micro-memoize'
-import { createSelector, defaultMemoize } from 'reselect'
+import { createSelector, lruMemoize } from 'reselect'
 import { describe, test } from 'vitest'
 
 interface RootState {
@@ -75,91 +75,91 @@ describe('deep nesting', () => {
 
     const selector0 = createSelector(readOne, one => one)
     const selector1 = createSelector(selector0, s => s, {
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
     const selector2 = createSelector(selector1, s => s, {
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
     const selector3 = createSelector(selector2, s => s, {
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
     const selector4 = createSelector(selector3, s => s, {
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
     const selector5 = createSelector(selector4, s => s, {
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
     const selector6 = createSelector(selector5, s => s, {
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
     const selector7 = createSelector(selector6, s => s, {
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
     const selector8 = createSelector(selector7, s => s, {
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
     const selector9 = createSelector(selector8, s => s, {
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
     const selector10 = createSelector(selector9, s => s, {
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
     const selector11 = createSelector(selector10, s => s, {
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
     const selector12 = createSelector(selector11, s => s, {
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
     const selector13 = createSelector(selector12, s => s, {
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
     const selector14 = createSelector(selector13, s => s, {
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
     const selector15 = createSelector(selector14, s => s, {
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
     const selector16 = createSelector(selector15, s => s, {
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
     const selector17 = createSelector(selector16, s => s, {
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
     const selector18 = createSelector(selector17, s => s, {
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
     const selector19 = createSelector(selector18, s => s, {
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
     const selector20 = createSelector(selector19, s => s, {
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
     const selector21 = createSelector(selector20, s => s, {
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
     const selector22 = createSelector(selector21, s => s, {
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
     const selector23 = createSelector(selector22, s => s, {
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
     const selector24 = createSelector(selector23, s => s, {
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
     const selector25 = createSelector(selector24, s => s, {
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
     const selector26 = createSelector(selector25, s => s, {
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
     const selector27 = createSelector(selector26, s => s, {
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
     const selector28 = createSelector(selector27, s => s, {
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
     const selector29 = createSelector(selector28, s => s, {
-      memoize: defaultMemoize
+      memoize: lruMemoize
     })
   })
 
