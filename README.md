@@ -627,7 +627,7 @@ Since 4.1.0, `lruMemoize` also accepts an options object as its first argument i
 ```ts
 type EqualityFn = (a: any, b: any) => boolean
 
-interface DefaultMemoizeOptions {
+interface LruMemoizeOptions {
   equalityCheck?: EqualityFn
   resultEqualityCheck?: EqualityFn
   maxSize?: number
@@ -1911,7 +1911,7 @@ Originally inspired by getters in [NuclearJS](https://github.com/optimizely/nucl
 [output selector fields]: #output-selector-fields 'Output Selector Fields'
 [`createSelector`]: #createselectorinputselectors--inputselectors-resultfunc-createselectoroptions 'createSelector'
 [`createSelectorCreator`]: #createselectorcreatormemoize--options-memoizeoptions 'createSelectorCreator'
-[`lruMemoize`]: #lrumemoizefunc-equalitycheckoroptions--defaultequalitycheck 'lruMemoize'
+[`lruMemoize`]: #lrumemoizefunc-equalitycheckoroptions--referenceequalitycheck 'lruMemoize'
 [`weakMapMemoize`]: #weakmapmemoizefunc---since-500 'weakMapMemoize'
 [`unstable_autotrackMemoize`]: #unstable_autotrackmemoizefunc---since-500 'unstable_autotrackMemoize'
 [`createStructuredSelector`]: #createstructuredselector-inputSelectorsObject--selectorcreator--createselector 'createStructuredSelector'

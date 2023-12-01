@@ -181,7 +181,7 @@ export interface LruMemoizeOptions<Result = any> {
  *
  * @template Func - The type of the function that is memoized.
  *
- * @see {@link https://github.com/reduxjs/reselect#lrumemoizefunc-equalitycheckoroptions--defaultequalitycheck lruMemoize}
+ * @see {@link https://github.com/reduxjs/reselect#lrumemoizefunc-equalitycheckoroptions--referenceequalitycheck lruMemoize}
  *
  * @public
  */
@@ -209,10 +209,10 @@ export function lruMemoize<Func extends AnyFunction>(
       ? createSingletonCache(comparator)
       : createLruCache(maxSize, comparator)
 
-  // we reference arguments instead of spreading them for performance reasons
   function memoized() {
     let value = cache.get(arguments) as ReturnType<Func>
     if (value === NOT_FOUND) {
+      // apply arguments instead of spreading for performance.
       // @ts-ignore
       value = func.apply(null, arguments) as ReturnType<Func>
       resultsCount++
