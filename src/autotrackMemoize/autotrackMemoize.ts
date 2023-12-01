@@ -3,7 +3,7 @@ import type { Node } from './tracking'
 
 import {
   createCacheKeyComparator,
-  defaultEqualityCheck
+  referenceEqualityCheck
 } from '../defaultMemoize'
 import type { AnyFunction, DefaultMemoizeFields, Simplify } from '../types'
 import { createCache } from './autotracking'
@@ -80,7 +80,7 @@ export function autotrackMemoize<Func extends AnyFunction>(func: Func) {
 
   let lastArgs: IArguments | null = null
 
-  const shallowEqual = createCacheKeyComparator(defaultEqualityCheck)
+  const shallowEqual = createCacheKeyComparator(referenceEqualityCheck)
 
   const cache = createCache(() => {
     const res = func.apply(null, node.proxy as unknown as any[])

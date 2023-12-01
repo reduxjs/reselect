@@ -6,7 +6,7 @@ export type {
   StructuredSelectorCreator,
   TypedStructuredSelectorCreator
 } from './createStructuredSelector'
-export { defaultEqualityCheck, lruMemoize } from './defaultMemoize'
+export { lruMemoize, referenceEqualityCheck } from './defaultMemoize'
 export type { LruMemoizeOptions } from './defaultMemoize'
 export { setGlobalDevModeChecks } from './devModeChecks/setGlobalDevModeChecks'
 export type {

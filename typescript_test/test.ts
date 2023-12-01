@@ -17,7 +17,7 @@ import {
   createSelector,
   createSelectorCreator,
   createStructuredSelector,
-  defaultEqualityCheck,
+  referenceEqualityCheck,
   lruMemoize
 } from 'reselect'
 import { expectExactType } from './typesTestUtils'
@@ -941,7 +941,7 @@ function multiArgMemoize<F extends (...args: any[]) => any>(
   func: F,
   a: number,
   b: string,
-  equalityCheck = defaultEqualityCheck
+  equalityCheck = referenceEqualityCheck
 ): F {
   // @ts-ignore
   return () => {}
@@ -969,7 +969,7 @@ function multiArgMemoize<F extends (...args: any[]) => any>(
     multiArgMemoize,
     42,
     'abcd',
-    defaultEqualityCheck
+    referenceEqualityCheck
   )
 
   const select = createMultiMemoizeArgSelector(
@@ -983,7 +983,7 @@ function multiArgMemoize<F extends (...args: any[]) => any>(
     multiArgMemoize,
     42,
     // @ts-expect-error
-    defaultEqualityCheck
+    referenceEqualityCheck
   )
 
   const groupTransactionsByLabel = lruMemoize(

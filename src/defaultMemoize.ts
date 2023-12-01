@@ -98,7 +98,7 @@ function createLruCache(maxSize: number, equals: EqualityFn): Cache {
  *
  * @public
  */
-export const defaultEqualityCheck: EqualityFn = (a, b): boolean => {
+export const referenceEqualityCheck: EqualityFn = (a, b): boolean => {
   return a === b
 }
 
@@ -180,7 +180,7 @@ export function lruMemoize<Func extends AnyFunction>(
       : { equalityCheck: equalityCheckOrOptions }
 
   const {
-    equalityCheck = defaultEqualityCheck,
+    equalityCheck = referenceEqualityCheck,
     maxSize = 1,
     resultEqualityCheck
   } = providedOptions
