@@ -96,11 +96,11 @@ function createLruCache(maxSize: number, equals: EqualityFn): Cache {
  * Runs a simple reference equality check.
  * What {@linkcode lruMemoize lruMemoize} uses by default.
  *
+ * **Note**: This function was previously known as `defaultEqualityCheck`.
+ *
  * @public
  */
-export const referenceEqualityCheck: EqualityFn = (a, b): boolean => {
-  return a === b
-}
+export const referenceEqualityCheck: EqualityFn = (a, b) => a === b
 
 export function createCacheKeyComparator(equalityCheck: EqualityFn) {
   return function areArgumentsShallowlyEqual(
