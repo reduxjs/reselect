@@ -126,7 +126,7 @@ export function createCacheKeyComparator(equalityCheck: EqualityFn) {
 /**
  * @public
  */
-export interface DefaultMemoizeOptions<T = any> {
+export interface LruMemoizeOptions<Result = any> {
   /**
    * Used to compare the individual arguments of the provided calculation function.
    *
@@ -142,7 +142,7 @@ export interface DefaultMemoizeOptions<T = any> {
    * use case, where an update to another field in the original data causes a recalculation
    * due to changed references, but the output is still effectively the same.
    */
-  resultEqualityCheck?: EqualityFn<T>
+  resultEqualityCheck?: EqualityFn<Result>
   /**
    * The cache size for the selector. If greater than 1, the selector will use an LRU cache internally.
    *
@@ -161,13 +161,13 @@ export interface DefaultMemoizeOptions<T = any> {
  *
  * @template Func - The type of the function that is memoized.
  *
- * @see {@link https://github.com/reduxjs/reselect#defaultmemoizefunc-equalitycheckoroptions--defaultequalitycheck defaultMemoize}
+ * @see {@link https://github.com/reduxjs/reselect#lrumemoizefunc-equalitycheckoroptions--defaultequalitycheck lruMemoize}
  *
  * @public
  */
 export function lruMemoize<Func extends AnyFunction>(
   func: Func,
-  equalityCheckOrOptions?: EqualityFn | DefaultMemoizeOptions<ReturnType<Func>>
+  equalityCheckOrOptions?: EqualityFn | LruMemoizeOptions<ReturnType<Func>>
 ) {
   const providedOptions =
     typeof equalityCheckOrOptions === 'object'
