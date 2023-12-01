@@ -1,10 +1,10 @@
 import memoizeOne from 'memoize-one'
 import microMemoize from 'micro-memoize'
 import {
+  unstable_autotrackMemoize as autotrackMemoize,
   createSelector,
   createSelectorCreator,
   defaultMemoize,
-  unstable_autotrackMemoize as autotrackMemoize,
   weakMapMemoize
 } from 'reselect'
 import { expectExactType } from './typesTestUtils'
@@ -260,19 +260,7 @@ function overrideOnlyArgsMemoizeInCreateSelector() {
         argsMemoizeOptions: [{ maxSize: 2 }]
       }
     )
-  const selectorWeakMapSeparateInlineArgsWithMemoizeOptions4 =
-    // @ts-expect-error
-    createSelectorDefaultMemoize(
-      (state: RootState) => state.todos,
-      // @ts-expect-error
-      todos => todos.map(t => t.id),
-      {
-        memoizeOptions: [{ isPromise: false }],
-        argsMemoizeOptions:
-          // @ts-expect-error
-          (a, b) => a === b
-      }
-    )
+
   const selectorWeakMapSeparateInlineArgsWithMemoizeOptions5 =
     // @ts-expect-error
     createSelectorDefaultMemoize(
@@ -283,7 +271,6 @@ function overrideOnlyArgsMemoizeInCreateSelector() {
         argsMemoize: weakMapMemoize,
         memoizeOptions: [{ isPromise: false }],
         argsMemoizeOptions: []
-        // argsMemoizeOptions: (a, b) => a === b
       }
     )
   const selectorWeakMapSeparateInlineArgsWithMemoizeOptions6 =
@@ -686,22 +673,13 @@ function overrideMemoizeAndArgsMemoizeInCreateSelector() {
         argsMemoizeOptions: [{ isPromise: false }] // This field causes a type error since it does not match the options param of `defaultMemoize`.
       }
     )
-  const selectorMicroMemoizePartiallyOverridden2 =
-    createSelectorMicroMemoize(
-      (state: RootState) => state.todos,
-      todos => todos.map(t => t.id),
-      {
-        // memoizeOptions: [
-        //   {
-        //     equalityCheck:
-        //       // @ts-expect-error
-        //       (a, b) => a === b,
-        //     maxSize: 2
-        //   }
-        // ],
-        argsMemoizeOptions: [{ isPromise: false }]
-      }
-    )
+  const selectorMicroMemoizePartiallyOverridden2 = createSelectorMicroMemoize(
+    (state: RootState) => state.todos,
+    todos => todos.map(t => t.id),
+    {
+      argsMemoizeOptions: [{ isPromise: false }]
+    }
+  )
 
   const selectorDefaultParametric = createSelector(
     (state: RootState, id: number) => id,
@@ -709,7 +687,7 @@ function overrideMemoizeAndArgsMemoizeInCreateSelector() {
     (id, todos) => todos.filter(todo => todo.id === id),
     {
       argsMemoize: microMemoize,
-      inputStabilityCheck: 'never',
+      devModeChecks: { inputStabilityCheck: 'never' },
       memoize: memoizeOne,
       argsMemoizeOptions: [],
       memoizeOptions: [(a, b) => a === b]
@@ -849,7 +827,7 @@ function memoizeAndArgsMemoizeInCreateSelectorCreator() {
   expectExactType<typeof microMemoize>(
     selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault.memoize
   )
-  expectExactType<typeof defaultMemoize>(
+  expectExactType<typeof weakMapMemoize>(
     selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault.argsMemoize
   )
 

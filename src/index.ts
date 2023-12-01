@@ -1,9 +1,5 @@
 export { autotrackMemoize as unstable_autotrackMemoize } from './autotrackMemoize/autotrackMemoize'
-export {
-  createSelector,
-  createSelectorCreator,
-  setInputStabilityCheckEnabled
-} from './createSelectorCreator'
+export { createSelector, createSelectorCreator } from './createSelectorCreator'
 export type { CreateSelectorFunction } from './createSelectorCreator'
 export { createStructuredSelector } from './createStructuredSelector'
 export type {
@@ -12,10 +8,14 @@ export type {
 } from './createStructuredSelector'
 export { defaultEqualityCheck, defaultMemoize } from './defaultMemoize'
 export type { DefaultMemoizeOptions } from './defaultMemoize'
+export { setGlobalDevModeChecks } from './devModeChecks/setGlobalDevModeChecks'
 export type {
   Combiner,
   CreateSelectorOptions,
   DefaultMemoizeFields,
+  DevModeCheckFrequency,
+  DevModeChecks,
+  DevModeChecksExecutionInfo,
   EqualityFn,
   ExtractMemoizerFields,
   GetParamsFromSelectors,
@@ -27,7 +27,6 @@ export type {
   Selector,
   SelectorArray,
   SelectorResultArray,
-  StabilityCheckFrequency,
   UnknownMemoizer
 } from './types'
 export { weakMapMemoize } from './weakMapMemoize'

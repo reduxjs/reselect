@@ -5,10 +5,10 @@ import type {
   UnknownMemoizer
 } from 'reselect'
 import {
+  unstable_autotrackMemoize as autotrackMemoize,
   createSelector,
   createSelectorCreator,
   defaultMemoize,
-  unstable_autotrackMemoize as autotrackMemoize,
   weakMapMemoize
 } from 'reselect'
 import { test } from 'vitest'
@@ -47,7 +47,7 @@ test('identity', () => {
   const nonMemoizedSelector = createNonMemoizedSelector(
     [(state: RootState) => state.todos],
     todos => todos.filter(todo => todo.completed === true),
-    { inputStabilityCheck: 'never' }
+    { devModeChecks: { inputStabilityCheck: 'never' } }
   )
 
   nonMemoizedSelector(store.getState())

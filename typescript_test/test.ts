@@ -1157,6 +1157,7 @@ function createSelectorConfigOptions() {
     (state: StateAB) => state.b,
     (a, b) => a + b,
     {
+      memoize: defaultMemoize,
       memoizeOptions: (a, b) => a === b
     }
   )
@@ -1166,6 +1167,7 @@ function createSelectorConfigOptions() {
     (state: StateAB) => state.b,
     (a, b) => a + b,
     {
+      memoize: defaultMemoize,
       memoizeOptions: {
         equalityCheck: (a, b) => a === b
       }
@@ -1177,6 +1179,7 @@ function createSelectorConfigOptions() {
     (state: StateAB) => state.b,
     (a, b) => a + b,
     {
+      memoize: defaultMemoize,
       memoizeOptions: [(a, b) => a === b]
     }
   )
@@ -1338,12 +1341,16 @@ function testInputSelectorWithUndefinedReturn() {
   const selector2: SelectorType = createSelector(
     ({ field }: Input) => field,
     args => 'test',
-    { memoizeOptions: { maxSize: 42 } }
+    {
+      memoize: defaultMemoize,
+      memoizeOptions: { maxSize: 42 }
+    }
   )
 
   // Make sure inference of functions works...
   const selector3: SelectorType = createSelector(input, result)
   const selector4: SelectorType = createSelector(input, result, {
+    memoize: defaultMemoize,
     memoizeOptions: { maxSize: 42 }
   })
 }

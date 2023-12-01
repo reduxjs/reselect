@@ -4,12 +4,8 @@ import type { Node } from './tracking'
 import {
   createCacheKeyComparator,
   defaultEqualityCheck
-} from '@internal/defaultMemoize'
-import type {
-  AnyFunction,
-  DefaultMemoizeFields,
-  Simplify
-} from '@internal/types'
+} from '../defaultMemoize'
+import type { AnyFunction, DefaultMemoizeFields, Simplify } from '../types'
 import { createCache } from './autotracking'
 
 /**

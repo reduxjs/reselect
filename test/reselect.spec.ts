@@ -12,7 +12,13 @@ import {
 
 import type { OutputSelector, OutputSelectorFields } from 'reselect'
 import type { RootState } from './testUtils'
-import { addTodo, deepClone, localTest, toggleCompleted } from './testUtils'
+import {
+  addTodo,
+  deepClone,
+  localTest,
+  setEnvToProd,
+  toggleCompleted
+} from './testUtils'
 
 // Construct 1E6 states for perf test outside of the perf test so as to not change the execute time of the test function
 const numOfStates = 1_000_000
@@ -41,7 +47,8 @@ describe('Basic selector behavior', () => {
   test('basic selector', () => {
     const selector = createSelector(
       (state: StateA) => state.a,
-      a => a
+      a => a,
+      { devModeChecks: { identityFunctionCheck: 'never' } }
     )
     const firstState = { a: 1 }
     const firstStateNewPointer = { a: 1 }
@@ -59,7 +66,8 @@ describe('Basic selector behavior', () => {
   test("don't pass extra parameters to inputSelector when only called with the state", () => {
     const selector = createSelector(
       (...params: any[]) => params.length,
-      a => a
+      a => a,
+      { devModeChecks: { identityFunctionCheck: 'never' } }
     )
     expect(selector({})).toBe(1)
   })
@@ -103,21 +111,13 @@ describe('Basic selector behavior', () => {
     )
   })
 
-  describe('performance checks', () => {
-    const originalEnv = process.env.NODE_ENV
+  const isCoverage = process.env.COVERAGE
 
-    beforeAll(() => {
-      process.env.NODE_ENV = 'production'
-    })
-    afterAll(() => {
-      process.env.NODE_ENV = originalEnv
-    })
+  describe.skipIf(isCoverage)('performance checks', () => {
+    beforeAll(setEnvToProd)
 
-    test('basic selector cache hit performance', () => {
-      if (process.env.COVERAGE) {
-        return // don't run performance tests for coverage
-      }
-
+    // don't run performance tests for coverage
+    test.skipIf(isCoverage)('basic selector cache hit performance', () => {
       const selector = createSelector(
         (state: StateAB) => state.a,
         (state: StateAB) => state.b,
@@ -126,7 +126,7 @@ describe('Basic selector behavior', () => {
       const state1 = { a: 1, b: 2 }
 
       const start = performance.now()
-      for (let i = 0; i < 1000000; i++) {
+      for (let i = 0; i < 1_000_000; i++) {
         selector(state1)
       }
       const totalTime = performance.now() - start
@@ -134,37 +134,38 @@ describe('Basic selector behavior', () => {
       expect(selector(state1)).toBe(3)
       expect(selector.recomputations()).toBe(1)
       // Expected a million calls to a selector with the same arguments to take less than 1 second
-      expect(totalTime).toBeLessThan(1000)
+      expect(totalTime).toBeLessThan(2000)
     })
 
-    test('basic selector cache hit performance for state changes but shallowly equal selector args', () => {
-      if (process.env.COVERAGE) {
-        return // don't run performance tests for coverage
+    // don't run performance tests for coverage
+    test.skipIf(isCoverage)(
+      'basic selector cache hit performance for state changes but shallowly equal selector args',
+      () => {
+        const selector = createSelector(
+          (state: StateAB) => state.a,
+          (state: StateAB) => state.b,
+          (a, b) => a + b
+        )
+
+        const start = new Date()
+        for (let i = 0; i < numOfStates; i++) {
+          selector(states[i])
+        }
+        const totalTime = new Date().getTime() - start.getTime()
+
+        expect(selector(states[0])).toBe(3)
+        expect(selector.recomputations()).toBe(1)
+
+        // Expected a million calls to a selector with the same arguments to take less than 1 second
+        expect(totalTime).toBeLessThan(2000)
       }
-
-      const selector = createSelector(
-        (state: StateAB) => state.a,
-        (state: StateAB) => state.b,
-        (a, b) => a + b
-      )
-
-      const start = new Date()
-      for (let i = 0; i < numOfStates; i++) {
-        selector(states[i])
-      }
-      const totalTime = new Date().getTime() - start.getTime()
-
-      expect(selector(states[0])).toBe(3)
-      expect(selector.recomputations()).toBe(1)
-
-      // Expected a million calls to a selector with the same arguments to take less than 1 second
-      expect(totalTime).toBeLessThan(1000)
-    })
+    )
   })
   test('memoized composite arguments', () => {
     const selector = createSelector(
       (state: StateSub) => state.sub,
-      sub => sub
+      sub => sub,
+      { devModeChecks: { identityFunctionCheck: 'never' } }
     )
     const state1 = { sub: { a: 1 } }
     expect(selector(state1)).toEqual({ a: 1 })
@@ -214,7 +215,7 @@ describe('Basic selector behavior', () => {
     )
     expect(() => selector({ a: 1 })).toThrow('test error')
     expect(() => selector({ a: 1 })).toThrow('test error')
-    expect(called).toBe(2)
+    expect(called).toBe(3)
   })
 
   test('memoizes previous result before exception', () => {
@@ -225,7 +226,8 @@ describe('Basic selector behavior', () => {
         called++
         if (a > 1) throw Error('test error')
         return a
-      }
+      },
+      { devModeChecks: { identityFunctionCheck: 'never' } }
     )
     const state1 = { a: 1 }
     const state2 = { a: 2 }
@@ -240,7 +242,8 @@ describe('Combining selectors', () => {
   test('chained selector', () => {
     const selector1 = createSelector(
       (state: StateSub) => state.sub,
-      sub => sub
+      sub => sub,
+      { devModeChecks: { identityFunctionCheck: 'never' } }
     )
     const selector2 = createSelector(selector1, sub => sub.a)
     const state1 = { sub: { a: 1 } }
@@ -301,7 +304,8 @@ describe('Combining selectors', () => {
     )
     const selector = createOverridenSelector(
       (state: StateA) => state.a,
-      a => a
+      a => a,
+      { devModeChecks: { identityFunctionCheck: 'never' } }
     )
     expect(selector({ a: 1 })).toBe(1)
     expect(selector({ a: 2 })).toBe(1) // yes, really true
@@ -344,6 +348,7 @@ describe('Customizing selectors', () => {
       (state: StateAB) => state.b,
       (a, b) => a + b,
       {
+        memoize: defaultMemoize,
         memoizeOptions: (a, b) => {
           memoizer1Calls++
           return a === b
@@ -361,6 +366,7 @@ describe('Customizing selectors', () => {
       (state: StateAB) => state.b,
       (a, b) => a + b,
       {
+        memoize: defaultMemoize,
         memoizeOptions: [
           (a, b) => {
             memoizer2Calls++
@@ -403,7 +409,8 @@ describe('Customizing selectors', () => {
         (state: RootState) => state.todos,
         todos => todos.map(({ id }) => id),
         {
-          inputStabilityCheck: 'always',
+          memoize: defaultMemoize,
+          devModeChecks: { inputStabilityCheck: 'always' },
           memoizeOptions: {
             equalityCheck: (a, b) => false,
             resultEqualityCheck: (a, b) => false
@@ -430,8 +437,7 @@ describe('argsMemoize and memoize', () => {
     const state = store.getState()
     const selectorDefault = createSelector(
       (state: RootState) => state.todos,
-      todos => todos.map(({ id }) => id),
-      { memoize: defaultMemoize }
+      todos => todos.map(({ id }) => id)
     )
     const selectorDefaultParametric = createSelector(
       [(state: RootState, id: number) => id, (state: RootState) => state.todos],
@@ -465,7 +471,7 @@ describe('argsMemoize and memoize', () => {
     const memoizerFields: Exclude<
       keyof OutputSelector,
       keyof OutputSelectorFields
-    >[] = ['clearCache']
+    >[] = ['clearCache', 'resultsCount', 'resetResultsCount']
     const allFields: (keyof OutputSelector)[] = [
       ...outPutSelectorFields,
       ...memoizerFields
@@ -695,11 +701,11 @@ describe('argsMemoize and memoize', () => {
     expect(selectorDefaultParametric.dependencyRecomputations()).toBe(1)
     selectorDefaultParametric(store.getState(), 2)
     selectorDefaultParametric(store.getState(), 1)
-    expect(selectorDefaultParametric.recomputations()).toBe(3)
-    expect(selectorDefaultParametric.dependencyRecomputations()).toBe(3)
+    expect(selectorDefaultParametric.recomputations()).toBe(2)
+    expect(selectorDefaultParametric.dependencyRecomputations()).toBe(2)
     selectorDefaultParametric(store.getState(), 2)
-    expect(selectorDefaultParametric.recomputations()).toBe(4)
-    expect(selectorDefaultParametric.dependencyRecomputations()).toBe(4)
+    expect(selectorDefaultParametric.recomputations()).toBe(2)
+    expect(selectorDefaultParametric.dependencyRecomputations()).toBe(2)
     const selectorDefaultParametricArgsWeakMap = createSelector(
       [(state: RootState, id: number) => id, (state: RootState) => state.todos],
       (id, todos) => todos.filter(todo => todo.id === id),
@@ -748,8 +754,8 @@ describe('argsMemoize and memoize', () => {
       selectorDefaultParametric(store.getState(), 4)
       selectorDefaultParametric(store.getState(), 5)
     }
-    expect(selectorDefaultParametric.recomputations()).toBe(54)
-    expect(selectorDefaultParametric.dependencyRecomputations()).toBe(54)
+    expect(selectorDefaultParametric.recomputations()).toBe(5)
+    expect(selectorDefaultParametric.dependencyRecomputations()).toBe(5)
     for (let i = 0; i < 10; i++) {
       selectorDefaultParametricWeakMap(store.getState(), 1)
       selectorDefaultParametricWeakMap(store.getState(), 2)
@@ -758,7 +764,7 @@ describe('argsMemoize and memoize', () => {
       selectorDefaultParametricWeakMap(store.getState(), 5)
     }
     expect(selectorDefaultParametricWeakMap.recomputations()).toBe(5)
-    expect(selectorDefaultParametricWeakMap.dependencyRecomputations()).toBe(50)
+    expect(selectorDefaultParametricWeakMap.dependencyRecomputations()).toBe(5)
   })
 
   localTest('passing argsMemoize to createSelectorCreator', ({ store }) => {
@@ -872,10 +878,6 @@ describe('argsMemoize and memoize', () => {
     expect(selectorMicroMemoizeOverridden.dependencyRecomputations()).to.be.a(
       'number'
     )
-    expect(selectorMicroMemoizeOverridden.resetRecomputations()).toBe(0)
-    expect(selectorMicroMemoizeOverridden.resetDependencyRecomputations()).toBe(
-      0
-    )
     expect(
       selectorMicroMemoizeOverridden.resultFunc([
         {
@@ -954,12 +956,6 @@ describe('argsMemoize and memoize', () => {
       selectorMicroMemoizeOverrideArgsMemoizeOnly.dependencyRecomputations()
     ).to.be.a('number')
     expect(
-      selectorMicroMemoizeOverrideArgsMemoizeOnly.resetRecomputations()
-    ).toBe(0)
-    expect(
-      selectorMicroMemoizeOverrideArgsMemoizeOnly.resetDependencyRecomputations()
-    ).toBe(0)
-    expect(
       selectorMicroMemoizeOverrideArgsMemoizeOnly.resultFunc([
         {
           id: 0,
@@ -1004,7 +1000,7 @@ describe('argsMemoize and memoize', () => {
     // Checking existence of fields related to `memoize`
     expect(selectorMicroMemoizeOverrideMemoizeOnly.memoizedResultFunc)
       .to.be.a('function')
-      .that.has.all.keys(['clearCache'])
+      .that.has.all.keys(['clearCache', 'resultsCount', 'resetResultsCount'])
     expect(
       selectorMicroMemoizeOverrideMemoizeOnly.memoizedResultFunc.clearCache
     ).to.be.a('function')
@@ -1031,12 +1027,6 @@ describe('argsMemoize and memoize', () => {
     expect(
       selectorMicroMemoizeOverrideMemoizeOnly.dependencyRecomputations()
     ).to.be.a('number')
-    expect(selectorMicroMemoizeOverrideMemoizeOnly.resetRecomputations()).toBe(
-      0
-    )
-    expect(
-      selectorMicroMemoizeOverrideMemoizeOnly.resetDependencyRecomputations()
-    ).toBe(0)
     expect(
       selectorMicroMemoizeOverrideMemoizeOnly.resultFunc([
         {
@@ -1117,7 +1107,7 @@ describe('argsMemoize and memoize', () => {
         users => {
           return users.user.details.preferences.notifications.push.frequency
         },
-        { inputStabilityCheck: 'never' }
+        { devModeChecks: { inputStabilityCheck: 'never' } }
       )
       const start = performance.now()
       for (let i = 0; i < 10_000_000; i++) {

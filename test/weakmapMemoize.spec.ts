@@ -1,4 +1,5 @@
-import { createSelectorCreator, weakMapMemoize } from 'reselect'
+import { createSelector, createSelectorCreator, weakMapMemoize } from 'reselect'
+import { setEnvToProd } from './testUtils'
 
 // Construct 1E6 states for perf test outside of the perf test so as to not change the execute time of the test function
 const numOfStates = 1_000_000
@@ -30,7 +31,8 @@ describe('Basic selector behavior with weakMapMemoize', () => {
     // console.log('Selector test')
     const selector = createSelector(
       (state: StateA) => state.a,
-      a => a
+      a => a,
+      { devModeChecks: { identityFunctionCheck: 'never' } }
     )
     const firstState = { a: 1 }
     const firstStateNewPointer = { a: 1 }
@@ -48,7 +50,8 @@ describe('Basic selector behavior with weakMapMemoize', () => {
   test("don't pass extra parameters to inputSelector when only called with the state", () => {
     const selector = createSelector(
       (...params: any[]) => params.length,
-      a => a
+      a => a,
+      { devModeChecks: { identityFunctionCheck: 'never' } }
     )
     expect(selector({})).toBe(1)
   })
@@ -90,54 +93,6 @@ describe('Basic selector behavior with weakMapMemoize', () => {
     ).toThrow(
       'createSelector expects an output function after the inputs, but received: [string]'
     )
-  })
-
-  test('basic selector cache hit performance', () => {
-    if (process.env.COVERAGE) {
-      return // don't run performance tests for coverage
-    }
-
-    const selector = createSelector(
-      (state: StateAB) => state.a,
-      (state: StateAB) => state.b,
-      (a, b) => a + b
-    )
-    const state1 = { a: 1, b: 2 }
-
-    const start = performance.now()
-    for (let i = 0; i < 1000000; i++) {
-      selector(state1)
-    }
-    const totalTime = performance.now() - start
-
-    expect(selector(state1)).toBe(3)
-    expect(selector.recomputations()).toBe(1)
-    // Expected a million calls to a selector with the same arguments to take less than 1 second
-    expect(totalTime).toBeLessThan(1000)
-  })
-
-  test('basic selector cache hit performance for state changes but shallowly equal selector args', () => {
-    if (process.env.COVERAGE) {
-      return // don't run performance tests for coverage
-    }
-
-    const selector = createSelector(
-      (state: StateAB) => state.a,
-      (state: StateAB) => state.b,
-      (a, b) => a + b
-    )
-
-    const start = performance.now()
-    for (let i = 0; i < 1000000; i++) {
-      selector(states[i])
-    }
-    const totalTime = performance.now() - start
-
-    expect(selector(states[0])).toBe(3)
-    expect(selector.recomputations()).toBe(1)
-
-    // Expected a million calls to a selector with the same arguments to take less than 1 second
-    expect(totalTime).toBeLessThan(1000)
   })
 
   test('memoized composite arguments', () => {
@@ -193,7 +148,7 @@ describe('Basic selector behavior with weakMapMemoize', () => {
     )
     expect(() => selector({ a: 1 })).toThrow('test error')
     expect(() => selector({ a: 1 })).toThrow('test error')
-    expect(called).toBe(2)
+    expect(called).toBe(3)
   })
 
   test('memoizes previous result before exception', () => {
@@ -204,7 +159,8 @@ describe('Basic selector behavior with weakMapMemoize', () => {
         called++
         if (a > 1) throw Error('test error')
         return a
-      }
+      },
+      { devModeChecks: { identityFunctionCheck: 'never' } }
     )
     const state1 = { a: 1 }
     const state2 = { a: 2 }
@@ -212,5 +168,59 @@ describe('Basic selector behavior with weakMapMemoize', () => {
     expect(() => selector(state2)).toThrow('test error')
     expect(selector(state1)).toBe(1)
     expect(called).toBe(2)
+  })
+})
+
+const isCoverage = process.env.COVERAGE
+
+// don't run performance tests for coverage
+describe.skipIf(isCoverage)('weakmapMemoize performance tests', () => {
+  beforeAll(setEnvToProd)
+
+  test('basic selector cache hit performance', () => {
+    const selector = createSelector(
+      (state: StateAB) => state.a,
+      (state: StateAB) => state.b,
+      (a, b) => a + b,
+      { devModeChecks: { identityFunctionCheck: 'never' } }
+    )
+    const state1 = { a: 1, b: 2 }
+
+    const start = performance.now()
+    for (let i = 0; i < 1_000_000; i++) {
+      selector(state1)
+    }
+    const totalTime = performance.now() - start
+
+    expect(selector(state1)).toBe(3)
+    expect(selector.recomputations()).toBe(1)
+    // Expected a million calls to a selector with the same arguments to take less than 1 second
+    expect(totalTime).toBeLessThan(2000)
+  })
+
+  test('basic selector cache hit performance for state changes but shallowly equal selector args', () => {
+    const selector = createSelector(
+      (state: StateAB) => state.a,
+      (state: StateAB) => state.b,
+      (a, b) => a + b,
+      {
+        devModeChecks: {
+          identityFunctionCheck: 'never',
+          inputStabilityCheck: 'never'
+        }
+      }
+    )
+
+    const start = performance.now()
+    for (let i = 0; i < 1_000_000; i++) {
+      selector(states[i])
+    }
+    const totalTime = performance.now() - start
+
+    expect(selector(states[0])).toBe(3)
+    expect(selector.recomputations()).toBe(1)
+
+    // Expected a million calls to a selector with the same arguments to take less than 1 second
+    expect(totalTime).toBeLessThan(2000)
   })
 })

@@ -1,7 +1,21 @@
 // Original source:
 // - https://github.com/facebook/react/blob/0b974418c9a56f6c560298560265dcf4b65784bc/packages/react/src/ReactCache.js
 
-import type { AnyFunction, DefaultMemoizeFields, Simplify } from './types'
+import type {
+  AnyFunction,
+  DefaultMemoizeFields,
+  EqualityFn,
+  Simplify
+} from './types'
+
+class StrongRef<T> {
+  constructor(private value: T) {}
+  deref() {
+    return this.value
+  }
+}
+
+const Ref = WeakRef ?? StrongRef
 
 const UNTERMINATED = 0
 const TERMINATED = 1
@@ -53,6 +67,22 @@ function createCacheNode<T>(): CacheNode<T> {
     o: null,
     p: null
   }
+}
+
+/**
+ * @public
+ */
+export interface WeakMapMemoizeOptions<T = any> {
+  /**
+   * If provided, used to compare a newly generated output value against previous values in the cache.
+   * If a match is found, the old value is returned. This addresses the common
+   * ```ts
+   * todos.map(todo => todo.id)
+   * ```
+   * use case, where an update to another field in the original data causes a recalculation
+   * due to changed references, but the output is still effectively the same.
+   */
+  resultEqualityCheck?: EqualityFn<T>
 }
 
 /**
@@ -128,8 +158,16 @@ function createCacheNode<T>(): CacheNode<T> {
  * @public
  * @experimental
  */
-export function weakMapMemoize<Func extends AnyFunction>(func: Func) {
+export function weakMapMemoize<Func extends AnyFunction>(
+  func: Func,
+  options: WeakMapMemoizeOptions<ReturnType<Func>> = {}
+) {
   let fnNode = createCacheNode()
+  const { resultEqualityCheck } = options
+
+  let lastResult: WeakRef<object> | undefined
+
+  let resultsCount = 0
 
   function memoized() {
     let cacheNode = fnNode
@@ -167,19 +205,49 @@ export function weakMapMemoize<Func extends AnyFunction>(func: Func) {
         }
       }
     }
-    if (cacheNode.s === TERMINATED) {
-      return cacheNode.v
-    }
-    // Allow errors to propagate
-    const result = func.apply(null, arguments as unknown as any[])
+
     const terminatedNode = cacheNode as unknown as TerminatedCacheNode<any>
+
+    let result
+
+    if (cacheNode.s === TERMINATED) {
+      result = cacheNode.v
+    } else {
+      // Allow errors to propagate
+      result = func.apply(null, arguments as unknown as any[])
+      resultsCount++
+    }
+
     terminatedNode.s = TERMINATED
+
+    if (resultEqualityCheck) {
+      const lastResultValue = lastResult?.deref() ?? lastResult
+      if (
+        lastResultValue != null &&
+        resultEqualityCheck(lastResultValue as ReturnType<Func>, result)
+      ) {
+        result = lastResultValue
+        resultsCount !== 0 && resultsCount--
+      }
+
+      const needsWeakRef =
+        (typeof result === 'object' && result !== null) ||
+        typeof result === 'function'
+      lastResult = needsWeakRef ? new Ref(result) : result
+    }
     terminatedNode.v = result
     return result
   }
 
   memoized.clearCache = () => {
     fnNode = createCacheNode()
+    memoized.resetResultsCount()
+  }
+
+  memoized.resultsCount = () => resultsCount
+
+  memoized.resetResultsCount = () => {
+    resultsCount = 0
   }
 
   return memoized as Func & Simplify<DefaultMemoizeFields>

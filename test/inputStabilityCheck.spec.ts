@@ -1,4 +1,8 @@
-import { createSelector, setInputStabilityCheckEnabled } from 'reselect'
+import {
+  createSelector,
+  defaultMemoize,
+  setGlobalDevModeChecks
+} from 'reselect'
 import { shallowEqual } from 'react-redux'
 
 describe('inputStabilityCheck', () => {
@@ -47,25 +51,25 @@ describe('inputStabilityCheck', () => {
   })
 
   it('disables check if global setting is changed', () => {
-    setInputStabilityCheckEnabled('never')
+    setGlobalDevModeChecks({ inputStabilityCheck: 'never' })
 
     expect(addNums(1, 2)).toBe(3)
 
-    expect(unstableInput).toHaveBeenCalledTimes(1)
+    expect(unstableInput).toHaveBeenCalledOnce()
 
     expect(consoleSpy).not.toHaveBeenCalled()
 
-    setInputStabilityCheckEnabled('once')
+    setGlobalDevModeChecks({ inputStabilityCheck: 'once' })
   })
 
   it('disables check if specified in the selector options', () => {
     const addNums = createSelector([unstableInput], ({ a, b }) => a + b, {
-      inputStabilityCheck: 'never'
+      devModeChecks: { inputStabilityCheck: 'never' }
     })
 
     expect(addNums(1, 2)).toBe(3)
 
-    expect(unstableInput).toHaveBeenCalledTimes(1)
+    expect(unstableInput).toHaveBeenCalledOnce()
 
     expect(consoleSpy).not.toHaveBeenCalled()
   })
@@ -86,7 +90,49 @@ describe('inputStabilityCheck', () => {
 
   it('allows running the check only once', () => {
     const addNums = createSelector([unstableInput], ({ a, b }) => a + b, {
-      inputStabilityCheck: 'once'
+      devModeChecks: { inputStabilityCheck: 'once' }
+    })
+
+    expect(addNums(1, 2)).toBe(3)
+
+    expect(unstableInput).toHaveBeenCalledTimes(2)
+
+    expect(consoleSpy).toHaveBeenCalledOnce()
+
+    expect(addNums(2, 2)).toBe(4)
+
+    expect(unstableInput).toHaveBeenCalledTimes(3)
+
+    expect(consoleSpy).toHaveBeenCalledOnce()
+  })
+
+  it('allows always running the check', () => {
+    const addNums = createSelector([unstableInput], ({ a, b }) => a + b, {
+      devModeChecks: { inputStabilityCheck: 'always' }
+    })
+
+    expect(addNums(1, 2)).toBe(3)
+
+    expect(unstableInput).toHaveBeenCalledTimes(2)
+
+    expect(consoleSpy).toHaveBeenCalledOnce()
+
+    expect(addNums(2, 2)).toBe(4)
+
+    expect(unstableInput).toHaveBeenCalledTimes(4)
+
+    expect(consoleSpy).toHaveBeenCalledTimes(2)
+
+    expect(addNums(1, 2)).toBe(3)
+
+    expect(unstableInput).toHaveBeenCalledTimes(4)
+
+    expect(consoleSpy).toHaveBeenCalledTimes(2)
+  })
+
+  it('runs once when devModeChecks is an empty object', () => {
+    const addNums = createSelector([unstableInput], ({ a, b }) => a + b, {
+      devModeChecks: {}
     })
 
     expect(addNums(1, 2)).toBe(3)
@@ -107,6 +153,7 @@ describe('inputStabilityCheck', () => {
       [unstableInput],
       ({ a, b }) => a + b,
       {
+        memoize: defaultMemoize,
         memoizeOptions: {
           equalityCheck: shallowEqual
         }
