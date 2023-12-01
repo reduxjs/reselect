@@ -126,8 +126,8 @@ test.todo('Find Fastest Selector', () => {
 test('TypedCreateSelector', () => {
   type TypedCreateSelector<
     State,
-    MemoizeFunction extends UnknownMemoizer = typeof lruMemoize,
-    ArgsMemoizeFunction extends UnknownMemoizer = typeof lruMemoize
+    MemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize,
+    ArgsMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize
   > = <
     InputSelectors extends readonly Selector<State>[],
     Result,
@@ -178,8 +178,8 @@ test('createCurriedSelector copy paste pattern', () => {
   const createCurriedSelector = <
     InputSelectors extends SelectorArray,
     Result,
-    OverrideMemoizeFunction extends UnknownMemoizer = typeof lruMemoize,
-    OverrideArgsMemoizeFunction extends UnknownMemoizer = typeof lruMemoize
+    OverrideMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize,
+    OverrideArgsMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize
   >(
     ...args: Parameters<
       typeof createSelector<
