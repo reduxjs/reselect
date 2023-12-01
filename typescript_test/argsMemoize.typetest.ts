@@ -260,19 +260,7 @@ function overrideOnlyArgsMemoizeInCreateSelector() {
         argsMemoizeOptions: [{ maxSize: 2 }]
       }
     )
-  const selectorWeakMapSeparateInlineArgsWithMemoizeOptions4 =
-    createSelectorDefaultMemoize(
-      // @ts-expect-error
-      (state: RootState) => state.todos,
-      // @ts-expect-error
-      todos => todos.map(t => t.id),
-      {
-        memoizeOptions: [{ isPromise: false }],
-        argsMemoizeOptions:
-          // @ts-expect-error
-          (a, b) => a === b
-      }
-    )
+
   const selectorWeakMapSeparateInlineArgsWithMemoizeOptions5 =
     // @ts-expect-error
     createSelectorDefaultMemoize(
@@ -283,7 +271,6 @@ function overrideOnlyArgsMemoizeInCreateSelector() {
         argsMemoize: weakMapMemoize,
         memoizeOptions: [{ isPromise: false }],
         argsMemoizeOptions: []
-        // argsMemoizeOptions: (a, b) => a === b
       }
     )
   const selectorWeakMapSeparateInlineArgsWithMemoizeOptions6 =
@@ -690,14 +677,6 @@ function overrideMemoizeAndArgsMemoizeInCreateSelector() {
     (state: RootState) => state.todos,
     todos => todos.map(t => t.id),
     {
-      // memoizeOptions: [
-      //   {
-      //     equalityCheck:
-      //       // @ts-expect-error
-      //       (a, b) => a === b,
-      //     maxSize: 2
-      //   }
-      // ],
       argsMemoizeOptions: [{ isPromise: false }]
     }
   )
