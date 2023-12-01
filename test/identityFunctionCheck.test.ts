@@ -2,7 +2,7 @@ import { createSelector, setGlobalDevModeChecks } from 'reselect'
 import type { LocalTestContext, RootState } from './testUtils'
 import { localTest } from './testUtils'
 
-describe<LocalTestContext>('identityFunctionCheck', () => {
+describe('identityFunctionCheck', () => {
   const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
   const identityFunction = vi.fn(<T>(state: T) => state)
   const badSelector = createSelector(
@@ -38,6 +38,21 @@ describe<LocalTestContext>('identityFunctionCheck', () => {
       expect(consoleSpy).toHaveBeenCalledOnce()
     }
   )
+
+  localTest('includes stack with warning', ({ state }) => {
+    expect(badSelector(state)).toBe(state)
+
+    expect(identityFunction).toHaveBeenCalledTimes(2)
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining(
+        'The result function returned its own inputs without modification'
+      ),
+      {
+        stack: expect.any(String)
+      }
+    )
+  })
 
   localTest('disables check if global setting is set to never', ({ state }) => {
     setGlobalDevModeChecks({ identityFunctionCheck: 'never' })

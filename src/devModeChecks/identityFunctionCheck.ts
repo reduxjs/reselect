@@ -19,11 +19,19 @@ export const runIdentityFunctionCheck = (resultFunc: AnyFunction) => {
     // Do nothing
   }
   if (isInputSameAsOutput) {
+    let stack: string | undefined = undefined
+    try {
+      throw new Error()
+    } catch (e) {
+      // eslint-disable-next-line @typescript-eslint/no-extra-semi
+      ;({ stack } = e as Error)
+    }
     console.warn(
       'The result function returned its own inputs without modification. e.g' +
         '\n`createSelector([state => state.todos], todos => todos)`' +
         '\nThis could lead to inefficient memoization and unnecessary re-renders.' +
-        '\nEnsure transformation logic is in the result function, and extraction logic is in the input selectors.'
+        '\nEnsure transformation logic is in the result function, and extraction logic is in the input selectors.',
+      { stack }
     )
   }
 }
