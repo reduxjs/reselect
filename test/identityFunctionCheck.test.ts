@@ -42,7 +42,7 @@ describe('identityFunctionCheck', () => {
   localTest('includes stack with warning', ({ state }) => {
     expect(badSelector(state)).toBe(state)
 
-    expect(identityFunction).toHaveBeenCalledTimes(2)
+    expect(identityFunction).toHaveBeenCalledTimes(1)
 
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining(
