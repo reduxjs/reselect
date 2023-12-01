@@ -1,7 +1,7 @@
 import { createSelector } from './createSelectorCreator'
 
 import type { CreateSelectorFunction } from './createSelectorCreator'
-import type { defaultMemoize } from './defaultMemoize'
+import type { lruMemoize } from './defaultMemoize'
 import type {
   InterruptRecursion,
   ObjectValuesToTuple,
@@ -36,8 +36,8 @@ export interface TypedStructuredSelectorCreator<RootState = any> {
     } = {
       [Key in keyof RootState]: Selector<RootState, RootState[Key], []>
     },
-    MemoizeFunction extends UnknownMemoizer = typeof defaultMemoize,
-    ArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
+    MemoizeFunction extends UnknownMemoizer = typeof lruMemoize,
+    ArgsMemoizeFunction extends UnknownMemoizer = typeof lruMemoize
   >(
     selectors: InputSelectorsObject,
     selectorCreator?: CreateSelectorFunction<
@@ -140,8 +140,8 @@ export interface StructuredSelectorCreator {
    */
   <
     InputSelectorsObject extends SelectorsObject,
-    MemoizeFunction extends UnknownMemoizer = typeof defaultMemoize,
-    ArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
+    MemoizeFunction extends UnknownMemoizer = typeof lruMemoize,
+    ArgsMemoizeFunction extends UnknownMemoizer = typeof lruMemoize
   >(
     inputSelectorsObject: InputSelectorsObject,
     selectorCreator?: CreateSelectorFunction<
@@ -209,8 +209,8 @@ export interface StructuredSelectorCreator {
  */
 export const createStructuredSelector: StructuredSelectorCreator = (<
   InputSelectorsObject extends SelectorsObject,
-  MemoizeFunction extends UnknownMemoizer = typeof defaultMemoize,
-  ArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
+  MemoizeFunction extends UnknownMemoizer = typeof lruMemoize,
+  ArgsMemoizeFunction extends UnknownMemoizer = typeof lruMemoize
 >(
   inputSelectorsObject: InputSelectorsObject,
   selectorCreator: CreateSelectorFunction<

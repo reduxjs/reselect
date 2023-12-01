@@ -94,7 +94,7 @@ function createLruCache(maxSize: number, equals: EqualityFn): Cache {
 
 /**
  * Runs a simple reference equality check.
- * What {@linkcode defaultMemoize defaultMemoize} uses by default.
+ * What {@linkcode lruMemoize defaultMemoize} uses by default.
  *
  * @public
  */
@@ -165,7 +165,7 @@ export interface DefaultMemoizeOptions<T = any> {
  *
  * @public
  */
-export function defaultMemoize<Func extends AnyFunction>(
+export function lruMemoize<Func extends AnyFunction>(
   func: Func,
   equalityCheckOrOptions?: EqualityFn | DefaultMemoizeOptions<ReturnType<Func>>
 ) {

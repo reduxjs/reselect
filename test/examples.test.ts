@@ -8,7 +8,7 @@ import {
   unstable_autotrackMemoize as autotrackMemoize,
   createSelector,
   createSelectorCreator,
-  defaultMemoize,
+  lruMemoize,
   weakMapMemoize
 } from 'reselect'
 import { test } from 'vitest'
@@ -81,7 +81,7 @@ test.todo('Find Fastest Selector', () => {
     selector: S,
     ...selectorArgs: Parameters<S>
   ) => {
-    const memoizeFuncs = [defaultMemoize, weakMapMemoize, autotrackMemoize]
+    const memoizeFuncs = [lruMemoize, weakMapMemoize, autotrackMemoize]
     const results = memoizeFuncs
       .map(memoize => {
         const alternateSelector = createSelector(
@@ -126,8 +126,8 @@ test.todo('Find Fastest Selector', () => {
 test('TypedCreateSelector', () => {
   type TypedCreateSelector<
     State,
-    MemoizeFunction extends UnknownMemoizer = typeof defaultMemoize,
-    ArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
+    MemoizeFunction extends UnknownMemoizer = typeof lruMemoize,
+    ArgsMemoizeFunction extends UnknownMemoizer = typeof lruMemoize
   > = <
     InputSelectors extends readonly Selector<State>[],
     Result,
@@ -178,8 +178,8 @@ test('createCurriedSelector copy paste pattern', () => {
   const createCurriedSelector = <
     InputSelectors extends SelectorArray,
     Result,
-    OverrideMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize,
-    OverrideArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
+    OverrideMemoizeFunction extends UnknownMemoizer = typeof lruMemoize,
+    OverrideArgsMemoizeFunction extends UnknownMemoizer = typeof lruMemoize
   >(
     ...args: Parameters<
       typeof createSelector<

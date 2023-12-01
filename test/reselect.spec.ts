@@ -3,10 +3,10 @@
 import lodashMemoize from 'lodash/memoize'
 import microMemoize from 'micro-memoize'
 import {
+  unstable_autotrackMemoize as autotrackMemoize,
   createSelector,
   createSelectorCreator,
-  defaultMemoize,
-  unstable_autotrackMemoize as autotrackMemoize,
+  lruMemoize,
   weakMapMemoize
 } from 'reselect'
 
@@ -299,7 +299,7 @@ describe('Combining selectors', () => {
   test('override valueEquals', () => {
     // a rather absurd equals operation we can verify in tests
     const createOverridenSelector = createSelectorCreator(
-      defaultMemoize,
+      lruMemoize,
       (a, b) => typeof a === typeof b
     )
     const selector = createOverridenSelector(
@@ -348,7 +348,7 @@ describe('Customizing selectors', () => {
       (state: StateAB) => state.b,
       (a, b) => a + b,
       {
-        memoize: defaultMemoize,
+        memoize: lruMemoize,
         memoizeOptions: (a, b) => {
           memoizer1Calls++
           return a === b
@@ -366,7 +366,7 @@ describe('Customizing selectors', () => {
       (state: StateAB) => state.b,
       (a, b) => a + b,
       {
-        memoize: defaultMemoize,
+        memoize: lruMemoize,
         memoizeOptions: [
           (a, b) => {
             memoizer2Calls++
@@ -382,7 +382,7 @@ describe('Customizing selectors', () => {
     expect(memoizer2Calls).toBeGreaterThan(0)
 
     const createSelectorWithSeparateArg = createSelectorCreator(
-      defaultMemoize,
+      lruMemoize,
       (a, b) => {
         memoizer3Calls++
         return a === b
@@ -409,7 +409,7 @@ describe('Customizing selectors', () => {
         (state: RootState) => state.todos,
         todos => todos.map(({ id }) => id),
         {
-          memoize: defaultMemoize,
+          memoize: lruMemoize,
           devModeChecks: { inputStabilityCheck: 'always' },
           memoizeOptions: {
             equalityCheck: (a, b) => false,
@@ -442,7 +442,7 @@ describe('argsMemoize and memoize', () => {
     const selectorDefaultParametric = createSelector(
       [(state: RootState, id: number) => id, (state: RootState) => state.todos],
       (id, todos) => todos.filter(todo => todo.id === id),
-      { memoize: defaultMemoize }
+      { memoize: lruMemoize }
     )
     selectorDefaultParametric(state, 0)
     selectorDefaultParametric(state, 1)
@@ -590,7 +590,7 @@ describe('argsMemoize and memoize', () => {
     const selectorDefault = otherCreateSelector(
       [(state: RootState) => state.todos],
       todos => todos.map(({ id }) => id),
-      { memoize: defaultMemoize, argsMemoize: defaultMemoize }
+      { memoize: lruMemoize, argsMemoize: lruMemoize }
     )
     const selectorAutotrack = createSelector(
       [(state: RootState) => state.todos],
@@ -675,7 +675,7 @@ describe('argsMemoize and memoize', () => {
       [(state: RootState) => state.todos],
       todos => todos.map(({ id }) => id),
       {
-        memoize: defaultMemoize,
+        memoize: lruMemoize,
         // WARNING!! This is just for testing purposes, do not use `autotrackMemoize` to memoize the arguments,
         // it can return false positives, since it's not tracking a nested field.
         argsMemoize: autotrackMemoize
@@ -827,7 +827,7 @@ describe('argsMemoize and memoize', () => {
     const selectorMicroMemoizeOverridden = createSelectorMicroMemoize(
       [(state: RootState) => state.todos],
       todos => todos.map(({ id }) => id),
-      { memoize: defaultMemoize, argsMemoize: defaultMemoize }
+      { memoize: lruMemoize, argsMemoize: lruMemoize }
     )
     expect(selectorMicroMemoizeOverridden(state)).to.be.an('array').that.is.not
       .empty
@@ -894,7 +894,7 @@ describe('argsMemoize and memoize', () => {
         (state: RootState) => state.todos,
         todos => todos.map(({ id }) => id),
         {
-          argsMemoize: defaultMemoize,
+          argsMemoize: lruMemoize,
           argsMemoizeOptions: { resultEqualityCheck: (a, b) => a === b }
         }
       )
@@ -969,7 +969,7 @@ describe('argsMemoize and memoize', () => {
     const selectorMicroMemoizeOverrideMemoizeOnly = createSelectorMicroMemoize(
       [(state: RootState) => state.todos],
       todos => todos.map(({ id }) => id),
-      { memoize: defaultMemoize }
+      { memoize: lruMemoize }
     )
     expect(selectorMicroMemoizeOverrideMemoizeOnly(state)).to.be.an('array')
       .that.is.not.empty
