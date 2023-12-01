@@ -74,7 +74,7 @@
     "rimraf": "^3.0.2",
     "shelljs": "^0.8.5",
     "tsup": "^6.7.0",
-    "typescript": "^4.9",
+    "typescript": "5.2",
     "vitest": "^0.34"
   }
 }
