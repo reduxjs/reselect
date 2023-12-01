@@ -4,6 +4,7 @@
     "esModuleInterop": true,
     "strict": true,
     "target": "ES2015",
+    "lib": ["ES2021.WeakRef"],
     "declaration": true,
     "noEmit": true,
     "skipLibCheck": true,

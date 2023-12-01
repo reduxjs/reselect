@@ -1,10 +1,10 @@
 import memoizeOne from 'memoize-one'
 import microMemoize from 'micro-memoize'
 import {
+  unstable_autotrackMemoize as autotrackMemoize,
   createSelector,
   createSelectorCreator,
   defaultMemoize,
-  unstable_autotrackMemoize as autotrackMemoize,
   weakMapMemoize
 } from 'reselect'
 import { assertType, describe, expectTypeOf, test } from 'vitest'
@@ -265,8 +265,8 @@ describe('memoize and argsMemoize', () => {
         }
       )
     const selectorWeakMapSeparateInlineArgsWithMemoizeOptions4 =
-      // @ts-expect-error
       createSelectorDefaultMemoize(
+        // @ts-expect-error
         (state: RootState) => state.todos,
         // @ts-expect-error
         todos => todos.map(t => t.id),
@@ -854,7 +854,7 @@ describe('memoize and argsMemoize', () => {
     ).toEqualTypeOf(microMemoize)
     expectTypeOf(
       selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault.argsMemoize
-    ).toEqualTypeOf(defaultMemoize)
+    ).toEqualTypeOf(weakMapMemoize)
 
     const createSelectorWithWrongArgsMemoizeOptions =
       // @ts-expect-error If we don't pass in `argsMemoize`, the type for `argsMemoizeOptions` falls back to the options parameter of `defaultMemoize`.
@@ -881,7 +881,6 @@ describe('memoize and argsMemoize', () => {
       [] // This causes the error.
     )
   })
-
 
   test('autotrackMemoize types', () => {
     const selector = createSelector(
