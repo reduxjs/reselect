@@ -1,6 +1,6 @@
 [build]
   base    = "website"
-  publish = "website/build"
+  publish = "build"
   command = "yarn build"
   ignore  = "git diff --quiet HEAD^ HEAD -- ./docs/ ."
 
