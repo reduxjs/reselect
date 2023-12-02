@@ -1,6 +1,7 @@
 import Heading from '@theme/Heading'
 import clsx from 'clsx'
-import type { ComponentProps, ComponentType, FC, JSX } from 'react'
+import type { ComponentProps, ComponentType, FC } from 'react'
+import { memo } from 'react'
 import styles from './styles.module.css'
 
 interface FeatureItem {
@@ -58,7 +59,7 @@ const FeatureList: FeatureItem[] = [
   }
 ]
 
-const Feature: FC<FeatureItem> = ({ title, Svg, description }) => {
+const Feature: FC<FeatureItem> = memo(({ title, Svg, description }) => {
   return (
     <div className={clsx('col col--3')}>
       <div className="text--center">
@@ -70,7 +71,7 @@ const Feature: FC<FeatureItem> = ({ title, Svg, description }) => {
       </div>
     </div>
   )
-}
+})
 
 const HomepageFeatures: FC = () => {
   return (
@@ -86,4 +87,4 @@ const HomepageFeatures: FC = () => {
   )
 }
 
-export default HomepageFeatures
+export default memo(HomepageFeatures)

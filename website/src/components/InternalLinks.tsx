@@ -1,49 +1,50 @@
 import Link from '@docusaurus/Link'
 import type { FC, ReactNode } from 'react'
+import { memo } from 'react'
 
 interface Props {
   readonly text: ReactNode
 }
 
 export const InternalLinks = {
-  Selector: ({ text = 'selector' }) => (
+  Selector: memo(({ text = 'selector' }) => (
     <Link
       to="/introduction/getting-started#selector-function"
       title="Selector Function"
     >
       {text}
     </Link>
-  ),
-  InputSelectors: ({ text = 'input selectors' }) => (
+  )),
+  InputSelectors: memo(({ text = 'input selectors' }) => (
     <Link
       to="/introduction/getting-started#input-selectors"
       title="Input Selectors"
     >
       {text}
     </Link>
-  ),
-  OutputSelector: ({ text = 'output selector' }) => (
+  )),
+  OutputSelector: memo(({ text = 'output selector' }) => (
     <Link
       to="/introduction/getting-started#output-selector"
       title="Output Selector"
     >
       {text}
     </Link>
-  ),
-  ResultFunction: ({ text = 'result function' }) => (
+  )),
+  ResultFunction: memo(({ text = 'result function' }) => (
     <Link
       to="/introduction/getting-started#result-function"
       title="Result Function"
     >
       {text}
     </Link>
-  ),
-  Dependencies: ({ text = 'dependencies' }) => (
+  )),
+  Dependencies: memo(({ text = 'dependencies' }) => (
     <Link to="/introduction/getting-started#dependencies" title="Dependencies">
       {text}
     </Link>
-  ),
-  CascadingMemoization: ({ text = 'Cascading Memoization' }) => (
+  )),
+  CascadingMemoization: memo(({ text = 'Cascading Memoization' }) => (
     <Link
       to="/introduction/how-does-reselect-work#cascading-memoization"
       title="Cascading Memoization"
@@ -52,43 +53,43 @@ export const InternalLinks = {
         <i>{text}</i>
       </b>
     </Link>
-  ),
-  OutputSelectorFields: ({ text = 'Output Selector Fields' }) => (
+  )),
+  OutputSelectorFields: memo(({ text = 'Output Selector Fields' }) => (
     <Link
       to="/api/createSelector#output-selector-fields"
       title="Output Selector Fields"
     >
       {text}
     </Link>
-  ),
-  CreateSelector: () => (
+  )),
+  CreateSelector: memo(() => (
     <Link to="/api/createSelector" title="createSelector">
       <code>createSelector</code>
     </Link>
-  ),
-  CreateSelectorCreator: () => (
+  )),
+  CreateSelectorCreator: memo(() => (
     <Link to="/api/createSelectorCreator" title="createSelectorCreator">
       <code>createSelectorCreator</code>
     </Link>
-  ),
-  LruMemoize: () => (
+  )),
+  LruMemoize: memo(() => (
     <Link to="/api/lruMemoize" title="lruMemoize">
       <code>lruMemoize</code>
     </Link>
-  ),
-  WeakMapMemoize: () => (
+  )),
+  WeakMapMemoize: memo(() => (
     <Link to="/api/weakMapMemoize" title="weakMapMemoize">
       <code>weakMapMemoize</code>
     </Link>
-  ),
-  UnstableAutotrackMemoize: () => (
+  )),
+  UnstableAutotrackMemoize: memo(() => (
     <Link to="/api/unstable_autotrackMemoize" title="unstable_autotrackMemoize">
       <code>unstable_autotrackMemoize</code>
     </Link>
-  ),
-  CreateStructuredSelector: () => (
+  )),
+  CreateStructuredSelector: memo(() => (
     <Link to="/api/createStructuredSelector" title="createStructuredSelector">
       <code>createStructuredSelector</code>
     </Link>
-  )
+  ))
 } as const satisfies Record<string, FC<Props>>
