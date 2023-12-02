@@ -51,7 +51,10 @@
         "@typescript-eslint/ban-types": "off",
         "prefer-rest-params": "off",
         "prefer-spread": "off",
-        "@typescript-eslint/consistent-type-imports": [2],
+        "@typescript-eslint/consistent-type-imports": [
+          2,
+          { "fixStyle": "separate-type-imports" }
+        ],
         "@typescript-eslint/consistent-type-exports": [2]
       }
     },
