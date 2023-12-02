@@ -672,7 +672,7 @@ function testOptionalArgumentsConflicting() {
   selector8({} as State, 2)
 }
 
-function testDefaultMemoize() {
+function testLruMemoize() {
   const func = (a: string) => +a
 
   const memoized = lruMemoize(func)
@@ -1152,7 +1152,7 @@ function customMemoizationOptionTypes() {
 
 // createSelector config options
 function createSelectorConfigOptions() {
-  const defaultMemoizeAcceptsFirstArgDirectly = createSelector(
+  const lruMemoizeAcceptsFirstArgDirectly = createSelector(
     (state: StateAB) => state.a,
     (state: StateAB) => state.b,
     (a, b) => a + b,
@@ -1162,7 +1162,7 @@ function createSelectorConfigOptions() {
     }
   )
 
-  const defaultMemoizeAcceptsFirstArgAsObject = createSelector(
+  const lruMemoizeAcceptsFirstArgAsObject = createSelector(
     (state: StateAB) => state.a,
     (state: StateAB) => state.b,
     (a, b) => a + b,
@@ -1174,7 +1174,7 @@ function createSelectorConfigOptions() {
     }
   )
 
-  const defaultMemoizeAcceptsArgsAsArray = createSelector(
+  const lruMemoizeAcceptsArgsAsArray = createSelector(
     (state: StateAB) => state.a,
     (state: StateAB) => state.b,
     (a, b) => a + b,

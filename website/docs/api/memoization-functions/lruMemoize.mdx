@@ -13,7 +13,7 @@ import { ExternalLinks } from '@site/src/components/ExternalLinks'
 
 # `lruMemoize`
 
-The standard memoize function used by <InternalLinks.CreateSelector />.
+A memoization function that uses a provided equality check function to compare its inputs. This was originally known as `defaultMemoize`, and was the default inside of <InternalLinks.CreateSelector /> up through version 4.x.
 
 It has a default cache size of 1. This means it always recalculates when the value of an argument changes. However, this can be customized as needed with a specific max cache size (since 4.1.0).
 

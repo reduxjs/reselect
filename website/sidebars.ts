@@ -36,7 +36,7 @@ const sidebars: SidebarsConfig = {
           collapsed: false,
           label: 'Memoization Functions',
           items: [
-            'api/memoization-functions/defaultMemoize',
+            'api/memoization-functions/lruMemoize',
             'api/memoization-functions/weakMapMemoize',
             'api/memoization-functions/unstable_autotrackMemoize'
           ]
