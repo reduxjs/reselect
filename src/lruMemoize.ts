@@ -94,13 +94,13 @@ function createLruCache(maxSize: number, equals: EqualityFn): Cache {
 
 /**
  * Runs a simple reference equality check.
- * What {@linkcode defaultMemoize defaultMemoize} uses by default.
+ * What {@linkcode lruMemoize lruMemoize} uses by default.
+ *
+ * **Note**: This function was previously known as `defaultEqualityCheck`.
  *
  * @public
  */
-export const defaultEqualityCheck: EqualityFn = (a, b): boolean => {
-  return a === b
-}
+export const referenceEqualityCheck: EqualityFn = (a, b) => a === b
 
 export function createCacheKeyComparator(equalityCheck: EqualityFn) {
   return function areArgumentsShallowlyEqual(
@@ -124,50 +124,70 @@ export function createCacheKeyComparator(equalityCheck: EqualityFn) {
 }
 
 /**
+ * Options for configuring the behavior of a function memoized with
+ * LRU (Least Recently Used) caching.
+ *
+ * @template Result - The type of the return value of the memoized function.
+ *
  * @public
  */
-export interface DefaultMemoizeOptions<T = any> {
+export interface LruMemoizeOptions<Result = any> {
   /**
-   * Used to compare the individual arguments of the provided calculation function.
+   * Function used to compare the individual arguments of the
+   * provided calculation function.
    *
-   * @default defaultEqualityCheck
+   * @default referenceEqualityCheck
    */
   equalityCheck?: EqualityFn
+
   /**
-   * If provided, used to compare a newly generated output value against previous values in the cache.
-   * If a match is found, the old value is returned. This addresses the common
+   * If provided, used to compare a newly generated output value against
+   * previous values in the cache. If a match is found,
+   * the old value is returned. This addresses the common
    * ```ts
    * todos.map(todo => todo.id)
    * ```
-   * use case, where an update to another field in the original data causes a recalculation
-   * due to changed references, but the output is still effectively the same.
+   * use case, where an update to another field in the original data causes
+   * a recalculation due to changed references, but the output is still
+   * effectively the same.
+   *
+   * @since 4.1.0
    */
-  resultEqualityCheck?: EqualityFn<T>
+  resultEqualityCheck?: EqualityFn<Result>
+
   /**
-   * The cache size for the selector. If greater than 1, the selector will use an LRU cache internally.
+   * The maximum size of the cache used by the selector.
+   * A size greater than 1 means the selector will use an
+   * LRU (Least Recently Used) cache, allowing for the caching of multiple
+   * results based on different sets of arguments.
    *
    * @default 1
    */
   maxSize?: number
 }
 
-// defaultMemoize now supports a configurable cache size with LRU behavior,
-// and optional comparison of the result value with existing values
 /**
- * The standard memoize function used by `createSelector`.
+ * Creates a memoized version of a function with an optional
+ * LRU (Least Recently Used) cache. The memoized function uses a cache to
+ * store computed values. Depending on the `maxSize` option, it will use
+ * either a singleton cache (for a single entry) or an
+ * LRU cache (for multiple entries).
+ *
+ * **Note**: This function was previously known as `defaultMemoize`.
+ *
  * @param func - The function to be memoized.
  * @param equalityCheckOrOptions - Either an equality check function or an options object.
  * @returns A memoized function with a `.clearCache()` method attached.
  *
  * @template Func - The type of the function that is memoized.
  *
- * @see {@link https://github.com/reduxjs/reselect#defaultmemoizefunc-equalitycheckoroptions--defaultequalitycheck defaultMemoize}
+ * @see {@link https://github.com/reduxjs/reselect#lrumemoizefunc-equalitycheckoroptions--referenceequalitycheck lruMemoize}
  *
  * @public
  */
-export function defaultMemoize<Func extends AnyFunction>(
+export function lruMemoize<Func extends AnyFunction>(
   func: Func,
-  equalityCheckOrOptions?: EqualityFn | DefaultMemoizeOptions<ReturnType<Func>>
+  equalityCheckOrOptions?: EqualityFn | LruMemoizeOptions<ReturnType<Func>>
 ) {
   const providedOptions =
     typeof equalityCheckOrOptions === 'object'
@@ -175,7 +195,7 @@ export function defaultMemoize<Func extends AnyFunction>(
       : { equalityCheck: equalityCheckOrOptions }
 
   const {
-    equalityCheck = defaultEqualityCheck,
+    equalityCheck = referenceEqualityCheck,
     maxSize = 1,
     resultEqualityCheck
   } = providedOptions
@@ -189,10 +209,10 @@ export function defaultMemoize<Func extends AnyFunction>(
       ? createSingletonCache(comparator)
       : createLruCache(maxSize, comparator)
 
-  // we reference arguments instead of spreading them for performance reasons
   function memoized() {
     let value = cache.get(arguments) as ReturnType<Func>
     if (value === NOT_FOUND) {
+      // apply arguments instead of spreading for performance.
       // @ts-ignore
       value = func.apply(null, arguments) as ReturnType<Func>
       resultsCount++
@@ -205,7 +225,7 @@ export function defaultMemoize<Func extends AnyFunction>(
 
         if (matchingEntry) {
           value = matchingEntry.value as ReturnType<Func>
-          resultsCount--
+          resultsCount !== 0 && resultsCount--
         }
       }
 

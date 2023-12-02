@@ -1,5 +1,5 @@
 import type { OutputSelector, Selector } from 'reselect'
-import { createSelector, defaultMemoize } from 'reselect'
+import { createSelector, lruMemoize } from 'reselect'
 import type { Options } from 'tinybench'
 import { bench } from 'vitest'
 import type { RootState } from '../testUtils'
@@ -121,7 +121,7 @@ describe('Reselect vs standalone memoization for field access', () => {
     users => users.appSettings
   )
   const fieldAccessorWithMemoize = countRecomputations(
-    defaultMemoize((state: RootState) => {
+    lruMemoize((state: RootState) => {
       return state.users.appSettings
     })
   )

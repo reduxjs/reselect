@@ -71,9 +71,9 @@ export const InternalLinks = {
       <code>createSelectorCreator</code>
     </Link>
   ),
-  DefaultMemoize: () => (
-    <Link to="/api/memoization-functions/defaultMemoize" title="defaultMemoize">
-      <code>defaultMemoize</code>
+  LruMemoize: () => (
+    <Link to="/api/memoization-functions/lruMemoize" title="lruMemoize">
+      <code>lruMemoize</code>
     </Link>
   ),
   WeakMapMemoize: () => (

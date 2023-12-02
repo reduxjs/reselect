@@ -27,11 +27,11 @@ A memoized structured selector.
 
 ## Type Parameters
 
-| Name                   | Description                                                                                                                                                   |
-| :--------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `InputSelectorsObject` | The shape of the <InternalLinks.InputSelectors /> object.                                                                                                     |
-| `MemoizeFunction`      | The type of the memoize function that is used to create the structured selector. It defaults to `defaultMemoize`.                                             |
-| `ArgsMemoizeFunction`  | The type of the of the memoize function that is used to memoize the arguments passed into the generated structured selector. It defaults to `defaultMemoize`. |
+| Name                   | Description                                                                                                                                               |
+| :--------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `InputSelectorsObject` | The shape of the <InternalLinks.InputSelectors /> object.                                                                                                 |
+| `MemoizeFunction`      | The type of the memoize function that is used to create the structured selector. It defaults to `lruMemoize`.                                             |
+| `ArgsMemoizeFunction`  | The type of the of the memoize function that is used to memoize the arguments passed into the generated structured selector. It defaults to `lruMemoize`. |
 
 ## Examples
 

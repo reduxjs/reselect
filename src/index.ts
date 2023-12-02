@@ -6,8 +6,8 @@ export type {
   StructuredSelectorCreator,
   TypedStructuredSelectorCreator
 } from './createStructuredSelector'
-export { defaultEqualityCheck, defaultMemoize } from './defaultMemoize'
-export type { DefaultMemoizeOptions } from './defaultMemoize'
+export { lruMemoize, referenceEqualityCheck } from './lruMemoize'
+export type { LruMemoizeOptions } from './lruMemoize'
 export { setGlobalDevModeChecks } from './devModeChecks/setGlobalDevModeChecks'
 export type {
   Combiner,

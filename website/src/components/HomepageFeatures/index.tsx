@@ -11,32 +11,48 @@ interface FeatureItem {
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'Easy to Use',
+    title: 'Predictable',
     Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
     description: (
       <>
-        Docusaurus was designed from the ground up to be easily installed and
-        used to get your website up and running quickly.
+        Like Redux, Reselect gives users a <b>consistent mental model</b> for
+        memoizing functions. Extract input values, recalculate when any input
+        changes.
       </>
     )
   },
   {
-    title: 'Focus on What Matters',
+    title: 'Optimized',
     Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
     description: (
       <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
+        Reselect{' '}
+        <b>
+          minimizes the number of times expensive computations are performed
+        </b>
+        , reuses existing result references if nothing has changed, and improves
+        performance.
       </>
     )
   },
   {
-    title: 'Powered by React',
+    title: 'Customizable',
     Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
     description: (
       <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
+        Reselect comes with fast defaults, but provides{' '}
+        <b>flexible customization options</b>. Swap memoization methods, change
+        equality checks, and customize for your needs.
+      </>
+    )
+  },
+  {
+    title: 'Type-Safe',
+    Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
+    description: (
+      <>
+        Reselect is designed for <b>great TypeScript support</b>. Generated
+        selectors infer all types from input selectors.
       </>
     )
   }
@@ -44,9 +60,9 @@ const FeatureList: FeatureItem[] = [
 
 const Feature: FC<FeatureItem> = ({ title, Svg, description }) => {
   return (
-    <div className={clsx('col col--4')}>
+    <div className={clsx('col col--3')}>
       <div className="text--center">
-        <Svg className={styles.featureSvg} role="img" />
+        {/* <Svg className={styles.featureSvg} role="img" /> */}
       </div>
       <div className="text--center padding-horiz--md">
         <Heading as="h3">{title}</Heading>

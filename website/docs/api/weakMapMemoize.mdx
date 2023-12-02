@@ -13,7 +13,7 @@ import { ExternalLinks } from '@site/src/components/ExternalLinks'
 
 # `weakMapMemoize`
 
-<InternalLinks.DefaultMemoize /> has to be explicitly configured to have a cache
+<InternalLinks.LruMemoize /> has to be explicitly configured to have a cache
 size larger than 1, and uses an LRU cache internally.
 
 `weakMapMemoize` creates a tree of <ExternalLinks.WeakMap />-based cache nodes based on the identity of the arguments it's been called with (in this case, the extracted values from your input selectors). **This allows `weakMapMemoize` to have an effectively infinite cache size**. Cache results will be kept in memory as long as references to the arguments still exist, and then cleared out as the arguments are garbage-collected.
@@ -115,7 +115,7 @@ selectItemsByCategory(state, 'Electronics') // Selector runs again!
 
 Before you could solve this in a number of different ways:
 
-1. Set the `maxSize` with <InternalLinks.DefaultMemoize />:
+1. Set the `maxSize` with <InternalLinks.LruMemoize />:
 
   <!-- START: weakMapMemoize/setMaxSize.ts -->
 

@@ -2,7 +2,7 @@ import {
   createSelector,
   createSelectorCreator,
   createStructuredSelector,
-  defaultMemoize
+  lruMemoize
 } from 'reselect'
 import type { LocalTestContext, RootState } from './testUtils'
 import { setupStore } from './testUtils'
@@ -47,7 +47,7 @@ describe('createStructureSelector', () => {
 
   test('structured selector with custom selector creator', () => {
     const customSelectorCreator = createSelectorCreator(
-      defaultMemoize,
+      lruMemoize,
       (a, b) => a === b
     )
     const selector = createStructuredSelector(

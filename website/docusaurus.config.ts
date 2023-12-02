@@ -4,7 +4,7 @@ import { themes as prismThemes } from 'prism-react-renderer'
 
 const config: Config = {
   title: 'Reselect',
-  tagline: 'Selector library for Redux',
+  tagline: 'A memoized selector library for Redux',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
@@ -60,16 +60,16 @@ const config: Config = {
       },
       items: [
         {
-          type: 'docSidebar',
-          sidebarId: 'tutorialSidebar',
+          type: 'doc',
           position: 'right',
-          label: 'Getting Started'
+          label: 'Getting Started',
+          docId: 'introduction/getting-started'
         },
         {
-          type: 'docSidebar',
-          sidebarId: 'tutorialSidebar',
+          type: 'doc',
           position: 'right',
-          label: 'API'
+          label: 'API',
+          docId: 'api/createSelector'
         },
         {
           href: 'https://www.github.com/reduxjs/reselect',
@@ -104,7 +104,7 @@ const config: Config = {
           ]
         }
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`
+      copyright: `Copyright © ${new Date().getFullYear()} by the Redux Maintainers. Built with Docusaurus.`
     },
     prism: {
       theme: prismThemes.github,

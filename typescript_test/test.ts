@@ -17,8 +17,8 @@ import {
   createSelector,
   createSelectorCreator,
   createStructuredSelector,
-  defaultEqualityCheck,
-  defaultMemoize
+  referenceEqualityCheck,
+  lruMemoize
 } from 'reselect'
 import { expectExactType } from './typesTestUtils'
 
@@ -55,7 +55,7 @@ export const testExportBasic = createSelector(
 
 // Test for exporting declaration of created selector creator
 export const testExportStructured = createSelectorCreator(
-  defaultMemoize,
+  lruMemoize,
   (a, b) => typeof a === typeof b
 )
 
@@ -672,16 +672,16 @@ function testOptionalArgumentsConflicting() {
   selector8({} as State, 2)
 }
 
-function testDefaultMemoize() {
+function testLruMemoize() {
   const func = (a: string) => +a
 
-  const memoized = defaultMemoize(func)
+  const memoized = lruMemoize(func)
 
   const ret0: number = memoized('42')
   // @ts-expect-error
   const ret1: string = memoized('42')
 
-  const memoized2 = defaultMemoize(
+  const memoized2 = lruMemoize(
     (str: string, arr: string[]): { str: string; arr: string[] } => ({
       str,
       arr
@@ -697,7 +697,7 @@ function testDefaultMemoize() {
 }
 
 function testCreateSelectorCreator() {
-  const defaultCreateSelector = createSelectorCreator(defaultMemoize)
+  const defaultCreateSelector = createSelectorCreator(lruMemoize)
 
   const selector = defaultCreateSelector(
     (state: { foo: string }) => state.foo,
@@ -708,7 +708,7 @@ function testCreateSelectorCreator() {
   // @ts-expect-error
   selector({ foo: 'fizz' }, { bar: 42 })
 
-  // clearCache should exist because of defaultMemoize
+  // clearCache should exist because of lruMemoize
   selector.clearCache()
 
   const parametric = defaultCreateSelector(
@@ -725,9 +725,9 @@ function testCreateSelectorCreator() {
   const bar: number = ret.bar
 
   // @ts-expect-error
-  createSelectorCreator(defaultMemoize, 1)
+  createSelectorCreator(lruMemoize, 1)
 
-  createSelectorCreator(defaultMemoize, <T>(a: T, b: T) => {
+  createSelectorCreator(lruMemoize, <T>(a: T, b: T) => {
     return `${a}` === `${b}`
   })
 }
@@ -941,13 +941,13 @@ function multiArgMemoize<F extends (...args: any[]) => any>(
   func: F,
   a: number,
   b: string,
-  equalityCheck = defaultEqualityCheck
+  equalityCheck = referenceEqualityCheck
 ): F {
   // @ts-ignore
   return () => {}
 }
 
-// #384: check for defaultMemoize
+// #384: check for lruMemoize
 
 {
   interface Transaction {
@@ -961,7 +961,7 @@ function multiArgMemoize<F extends (...args: any[]) => any>(
     isEqual(transactionsIds(ts1), transactionsIds(ts2))
 
   const createTransactionsSelector = createSelectorCreator(
-    defaultMemoize,
+    lruMemoize,
     collectionsEqual
   )
 
@@ -969,7 +969,7 @@ function multiArgMemoize<F extends (...args: any[]) => any>(
     multiArgMemoize,
     42,
     'abcd',
-    defaultEqualityCheck
+    referenceEqualityCheck
   )
 
   const select = createMultiMemoizeArgSelector(
@@ -983,10 +983,10 @@ function multiArgMemoize<F extends (...args: any[]) => any>(
     multiArgMemoize,
     42,
     // @ts-expect-error
-    defaultEqualityCheck
+    referenceEqualityCheck
   )
 
-  const groupTransactionsByLabel = defaultMemoize(
+  const groupTransactionsByLabel = lruMemoize(
     (transactions: Transaction[]) =>
       groupBy(transactions, item => item.transactionId),
     collectionsEqual
@@ -1152,34 +1152,34 @@ function customMemoizationOptionTypes() {
 
 // createSelector config options
 function createSelectorConfigOptions() {
-  const defaultMemoizeAcceptsFirstArgDirectly = createSelector(
+  const lruMemoizeAcceptsFirstArgDirectly = createSelector(
     (state: StateAB) => state.a,
     (state: StateAB) => state.b,
     (a, b) => a + b,
     {
-      memoize: defaultMemoize,
+      memoize: lruMemoize,
       memoizeOptions: (a, b) => a === b
     }
   )
 
-  const defaultMemoizeAcceptsFirstArgAsObject = createSelector(
+  const lruMemoizeAcceptsFirstArgAsObject = createSelector(
     (state: StateAB) => state.a,
     (state: StateAB) => state.b,
     (a, b) => a + b,
     {
-      memoize: defaultMemoize,
+      memoize: lruMemoize,
       memoizeOptions: {
         equalityCheck: (a, b) => a === b
       }
     }
   )
 
-  const defaultMemoizeAcceptsArgsAsArray = createSelector(
+  const lruMemoizeAcceptsArgsAsArray = createSelector(
     (state: StateAB) => state.a,
     (state: StateAB) => state.b,
     (a, b) => a + b,
     {
-      memoize: defaultMemoize,
+      memoize: lruMemoize,
       memoizeOptions: [(a, b) => a === b]
     }
   )
@@ -1342,7 +1342,7 @@ function testInputSelectorWithUndefinedReturn() {
     ({ field }: Input) => field,
     args => 'test',
     {
-      memoize: defaultMemoize,
+      memoize: lruMemoize,
       memoizeOptions: { maxSize: 42 }
     }
   )
@@ -1350,7 +1350,7 @@ function testInputSelectorWithUndefinedReturn() {
   // Make sure inference of functions works...
   const selector3: SelectorType = createSelector(input, result)
   const selector4: SelectorType = createSelector(input, result, {
-    memoize: defaultMemoize,
+    memoize: lruMemoize,
     memoizeOptions: { maxSize: 42 }
   })
 }

@@ -184,7 +184,7 @@ const selectItemById = createSelector(
 
 ## Can the memoization behavior be customized?
 
-Yes. The built-in `defaultMemoize` memoizer works great for a lot of use cases, but it can be customized or swapped out for a different memoizer. See <Link to='/api/createSelectorCreator#customize-equalitycheck-for-defaultmemoize'>these examples</Link>.
+Yes. The built-in `lruMemoize` memoizer works great for a lot of use cases, but it can be customized or swapped out for a different memoizer. See <Link to='/api/createSelectorCreator#customize-equalitycheck-for-lrumemoize'>these examples</Link>.
 
 ## How do I test a selector?
 
@@ -332,7 +332,7 @@ test('selector unit test', () => {
 
 Yes, although if they pass in different arguments, you will need to handle that in order for memoization to work consistently:
 
-- Pass a larger `maxSize` if using `defaultMemoize` ( as of 4.1.0+)
+- Pass a larger `maxSize` if using `lruMemoize` ( as of 4.1.0+)
 - Use <InternalLinks.WeakMapMemoize /> (as of 5.0.0+)
 
 ## Are there TypeScript Typings?
@@ -688,8 +688,8 @@ interface RootState {
 
 export type TypedCreateSelector<
   State,
-  MemoizeFunction extends UnknownMemoizer = typeof defaultMemoize,
-  ArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
+  MemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize,
+  ArgsMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize
 > = <
   InputSelectors extends readonly Selector<State>[],
   Result,
