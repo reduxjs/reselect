@@ -343,7 +343,7 @@ describe('Customizing selectors', () => {
     let memoizer2Calls = 0
     let memoizer3Calls = 0
 
-    const defaultMemoizeAcceptsFirstArgDirectly = createSelector(
+    const lruMemoizeAcceptsFirstArgDirectly = createSelector(
       (state: StateAB) => state.a,
       (state: StateAB) => state.b,
       (a, b) => a + b,
@@ -356,12 +356,12 @@ describe('Customizing selectors', () => {
       }
     )
 
-    defaultMemoizeAcceptsFirstArgDirectly({ a: 1, b: 2 })
-    defaultMemoizeAcceptsFirstArgDirectly({ a: 1, b: 3 })
+    lruMemoizeAcceptsFirstArgDirectly({ a: 1, b: 2 })
+    lruMemoizeAcceptsFirstArgDirectly({ a: 1, b: 3 })
 
     expect(memoizer1Calls).toBeGreaterThan(0)
 
-    const defaultMemoizeAcceptsArgsAsArray = createSelector(
+    const lruMemoizeAcceptsArgsAsArray = createSelector(
       (state: StateAB) => state.a,
       (state: StateAB) => state.b,
       (a, b) => a + b,
@@ -376,8 +376,8 @@ describe('Customizing selectors', () => {
       }
     )
 
-    defaultMemoizeAcceptsArgsAsArray({ a: 1, b: 2 })
-    defaultMemoizeAcceptsArgsAsArray({ a: 1, b: 3 })
+    lruMemoizeAcceptsArgsAsArray({ a: 1, b: 2 })
+    lruMemoizeAcceptsArgsAsArray({ a: 1, b: 3 })
 
     expect(memoizer2Calls).toBeGreaterThan(0)
 
@@ -389,14 +389,14 @@ describe('Customizing selectors', () => {
       }
     )
 
-    const defaultMemoizeAcceptsArgFromCSC = createSelectorWithSeparateArg(
+    const lruMemoizeAcceptsArgFromCSC = createSelectorWithSeparateArg(
       (state: StateAB) => state.a,
       (state: StateAB) => state.b,
       (a, b) => a + b
     )
 
-    defaultMemoizeAcceptsArgFromCSC({ a: 1, b: 2 })
-    defaultMemoizeAcceptsArgFromCSC({ a: 1, b: 3 })
+    lruMemoizeAcceptsArgFromCSC({ a: 1, b: 2 })
+    lruMemoizeAcceptsArgFromCSC({ a: 1, b: 3 })
 
     expect(memoizer3Calls).toBeGreaterThan(0)
   })
