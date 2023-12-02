@@ -60,11 +60,11 @@ const referenceEqualityCheck = (previousValue, currentValue) => {
 Since 4.1.0, `lruMemoize` also accepts an options object as its first argument instead of an `equalityCheck` function. The `options` object may contain:
 
 ```ts
-type EqualityFn = (a: any, b: any) => boolean
+type EqualityFn<T = any> = (a: T, b: T) => boolean
 
-interface DefaultMemoizeOptions {
+interface LruMemoizeOptions<Result = any> {
   equalityCheck?: EqualityFn
-  resultEqualityCheck?: EqualityFn
+  resultEqualityCheck?: EqualityFn<Result>
   maxSize?: number
 }
 ```

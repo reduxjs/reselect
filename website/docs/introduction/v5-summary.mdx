@@ -6,7 +6,8 @@ hide_title: true
 description: What's New in 5.0.0?
 ---
 
-import { InternalLinks } from '@site/src/components/InternalLinks'
+import { ExternalLinks } from '@site/src/components/ExternalLinks';
+import { InternalLinks } from '@site/src/components/InternalLinks';
 
 # What's New in 5.0.0?
 
@@ -36,9 +37,14 @@ Version 5.0.0 introduces several new features and improvements:
 
 - Added `dependencyRecomputations` and `resetDependencyRecomputations` to the <InternalLinks.OutputSelectorFields />. These additions provide greater control and insight over <InternalLinks.InputSelectors />, complementing the new `argsMemoize` API.
 - Introduced `inputStabilityCheck`, a development tool that runs the <InternalLinks.InputSelectors /> twice using the same arguments and triggers a warning If they return differing results for the same call.
+- Introduced `identityFunctionCheck`, a development tool that checks to see if the <InternalLinks.ResultFunction /> is an <ExternalLinks.IdentityFunction /> .
 
 These updates aim to enhance flexibility, performance, and developer experience. For detailed usage and examples, refer to the updated documentation sections for each feature.
 
 ## Breaking Changes
 
+- Switched the default memoization function used by `createSelector` to `weakMapMemoize`.
+- Renamed `defaultMemoize` to `lruMemoize` as it is no longer the default memoization function passed to `createSelector`.
+- Renamed `defaultEqualityCheck` to `referenceEqualityCheck`.
+- Renamed `DefaultMemoizeOptions` to `LruMemoizeOptions`.
 - Removed `ParametricSelector` and `OutputParametricSelector` types. Their functionalities are now integrated into `Selector` and `OutputSelector` respectively, which inherently support additional parameters.
