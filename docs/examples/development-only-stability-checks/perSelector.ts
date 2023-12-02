@@ -14,5 +14,5 @@ const selectCompletedTodosLength = createSelector(
   ],
   completedTodos => completedTodos.length,
   // Will override the global setting.
-  { inputStabilityCheck: 'always' }
+  { devModeChecks: { inputStabilityCheck: 'always' } }
 )
