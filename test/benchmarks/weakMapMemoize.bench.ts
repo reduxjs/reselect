@@ -1,8 +1,8 @@
 import type { OutputSelector, Selector } from 'reselect'
-import { defaultMemoize } from 'reselect'
 import {
   unstable_autotrackMemoize as autotrackMemoize,
   createSelector,
+  lruMemoize,
   weakMapMemoize
 } from 'reselect'
 import { bench } from 'vitest'
@@ -39,14 +39,14 @@ describe('Parametric selectors: weakMapMemoize vs others', () => {
   const selectorDefaultWithCacheSize = createSelector(
     [(state: RootState) => state.todos, (state: RootState, id: number) => id],
     (todos, id) => todos.find(todo => todo.id === id),
-    { memoize: defaultMemoize, memoizeOptions: { maxSize: 30 } }
+    { memoize: lruMemoize, memoizeOptions: { maxSize: 30 } }
   )
   const selectorDefaultWithArgsCacheSize = createSelector(
     [(state: RootState) => state.todos, (state: RootState, id: number) => id],
     (todos, id) => todos.find(todo => todo.id === id),
     {
-      memoize: defaultMemoize,
-      argsMemoize: defaultMemoize,
+      memoize: lruMemoize,
+      argsMemoize: lruMemoize,
       argsMemoizeOptions: { maxSize: 30 }
     }
   )
@@ -54,8 +54,8 @@ describe('Parametric selectors: weakMapMemoize vs others', () => {
     [(state: RootState) => state.todos, (state: RootState, id: number) => id],
     (todos, id) => todos.find(todo => todo.id === id),
     {
-      memoize: defaultMemoize,
-      argsMemoize: defaultMemoize,
+      memoize: lruMemoize,
+      argsMemoize: lruMemoize,
       memoizeOptions: { maxSize: 30 },
       argsMemoizeOptions: { maxSize: 30 }
     }
@@ -208,7 +208,7 @@ describe('Parametric selectors: weakMapMemoize vs others', () => {
   )
 })
 
-// describe('weakMapMemoize vs defaultMemoize with maxSize', () => {
+// describe('weakMapMemoize vs lruMemoize with maxSize', () => {
 //   const store = setupStore()
 //   const state = store.getState()
 //   const arrayOfNumbers = Array.from({ length: 30 }, (num, index) => index)

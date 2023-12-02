@@ -1,7 +1,6 @@
 import { createSelector } from './createSelectorCreator'
 
 import type { CreateSelectorFunction } from './createSelectorCreator'
-import type { defaultMemoize } from './defaultMemoize'
 import type {
   InterruptRecursion,
   ObjectValuesToTuple,
@@ -11,6 +10,7 @@ import type {
   UnknownMemoizer
 } from './types'
 import { assertIsObject } from './utils'
+import type { weakMapMemoize } from './weakMapMemoize'
 
 /**
  *
@@ -36,8 +36,8 @@ export interface TypedStructuredSelectorCreator<RootState = any> {
     } = {
       [Key in keyof RootState]: Selector<RootState, RootState[Key], []>
     },
-    MemoizeFunction extends UnknownMemoizer = typeof defaultMemoize,
-    ArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
+    MemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize,
+    ArgsMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize
   >(
     selectors: InputSelectorsObject,
     selectorCreator?: CreateSelectorFunction<
@@ -140,8 +140,8 @@ export interface StructuredSelectorCreator {
    */
   <
     InputSelectorsObject extends SelectorsObject,
-    MemoizeFunction extends UnknownMemoizer = typeof defaultMemoize,
-    ArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
+    MemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize,
+    ArgsMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize
   >(
     inputSelectorsObject: InputSelectorsObject,
     selectorCreator?: CreateSelectorFunction<
@@ -209,8 +209,8 @@ export interface StructuredSelectorCreator {
  */
 export const createStructuredSelector: StructuredSelectorCreator = (<
   InputSelectorsObject extends SelectorsObject,
-  MemoizeFunction extends UnknownMemoizer = typeof defaultMemoize,
-  ArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
+  MemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize,
+  ArgsMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize
 >(
   inputSelectorsObject: InputSelectorsObject,
   selectorCreator: CreateSelectorFunction<

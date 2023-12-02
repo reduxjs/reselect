@@ -99,7 +99,7 @@ export interface WeakMapMemoizeOptions<T = any> {
  * - Cons:
  *   - There's currently no way to alter the argument comparisons.
  *   They're based on strict reference equality.
- *   - It's roughly the same speed as `defaultMemoize`, although likely a fraction slower.
+ *   - It's roughly the same speed as `lruMemoize`, although likely a fraction slower.
  *
  * __Use Cases for `weakMapMemoize`:__
  * - This memoizer is likely best used for cases where you need to call the
