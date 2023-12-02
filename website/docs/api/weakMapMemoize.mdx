@@ -1,0 +1,611 @@
+---
+id: weakMapMemoize
+title: weakMapMemoize
+sidebar_label: weakMapMemoize
+hide_title: true
+description: 'weakMapMemoize'
+---
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+import { InternalLinks } from '@site/src/components/InternalLinks'
+import { ExternalLinks } from '@site/src/components/ExternalLinks'
+
+# `weakMapMemoize`
+
+<InternalLinks.LruMemoize /> has to be explicitly configured to have a cache
+size larger than 1, and uses an LRU cache internally.
+
+`weakMapMemoize` creates a tree of <ExternalLinks.WeakMap />-based cache nodes based on the identity of the arguments it's been called with (in this case, the extracted values from your input selectors). **This allows `weakMapMemoize` to have an effectively infinite cache size**. Cache results will be kept in memory as long as references to the arguments still exist, and then cleared out as the arguments are garbage-collected.
+
+## Design Tradeoffs
+
+- Pros:
+
+  - It has an effectively infinite cache size, but you have no control over
+    how long values are kept in cache as it's based on garbage collection and <ExternalLinks.WeakMap />s.
+
+- Cons:
+  - There's currently no way to alter the argument comparisons. They're based on <ExternalLinks.ReferenceEqualityCheck text='strict reference equality' />.
+
+## Use Cases
+
+- This memoizer is likely best used for cases where you need to call the
+  same selector instance with many different arguments, such as a single
+  selector instance that is used in a list item component and called with
+  item IDs like:
+
+```ts
+useSelector(state => selectSomeData(state, id))
+```
+
+Prior to `weakMapMemoize`, you had this problem:
+
+  <!-- START: weakMapMemoize/cacheSizeProblem.ts -->
+
+<Tabs
+  groupId='language'
+  defaultValue='ts'
+  values={[
+    {label: 'TypeScript', value: 'ts'},
+    {label: 'JavaScript', value: 'js'},
+  ]}>
+  <TabItem value='ts'>
+
+```ts title="weakMapMemoize/cacheSizeProblem.ts"
+import { createSelector } from 'reselect'
+
+export interface RootState {
+  items: { id: number; category: string; name: string }[]
+}
+
+const state: RootState = {
+  items: [
+    { id: 1, category: 'Electronics', name: 'Wireless Headphones' },
+    { id: 2, category: 'Books', name: 'The Great Gatsby' },
+    { id: 3, category: 'Home Appliances', name: 'Blender' },
+    { id: 4, category: 'Stationery', name: 'Sticky Notes' }
+  ]
+}
+
+const selectItemsByCategory = createSelector(
+  [
+    (state: RootState) => state.items,
+    (state: RootState, category: string) => category
+  ],
+  (items, category) => items.filter(item => item.category === category)
+)
+
+selectItemsByCategory(state, 'Electronics') // Selector runs
+selectItemsByCategory(state, 'Electronics')
+selectItemsByCategory(state, 'Stationery') // Selector runs
+selectItemsByCategory(state, 'Electronics') // Selector runs again!
+```
+
+  </TabItem>
+  <TabItem value='js'>
+
+```js title="weakMapMemoize/cacheSizeProblem.js"
+import { createSelector } from 'reselect'
+
+const state = {
+  items: [
+    { id: 1, category: 'Electronics', name: 'Wireless Headphones' },
+    { id: 2, category: 'Books', name: 'The Great Gatsby' },
+    { id: 3, category: 'Home Appliances', name: 'Blender' },
+    { id: 4, category: 'Stationery', name: 'Sticky Notes' }
+  ]
+}
+
+const selectItemsByCategory = createSelector(
+  [state => state.items, (state, category) => category],
+  (items, category) => items.filter(item => item.category === category)
+)
+
+selectItemsByCategory(state, 'Electronics') // Selector runs
+selectItemsByCategory(state, 'Electronics')
+selectItemsByCategory(state, 'Stationery') // Selector runs
+selectItemsByCategory(state, 'Electronics') // Selector runs again!
+```
+
+  </TabItem>
+</Tabs>
+
+  <!-- END: weakMapMemoize/cacheSizeProblem.ts -->
+
+Before you could solve this in a number of different ways:
+
+1. Set the `maxSize` with <InternalLinks.LruMemoize />:
+
+  <!-- START: weakMapMemoize/setMaxSize.ts -->
+
+<Tabs
+  groupId='language'
+  defaultValue='ts'
+  values={[
+    {label: 'TypeScript', value: 'ts'},
+    {label: 'JavaScript', value: 'js'},
+  ]}>
+  <TabItem value='ts'>
+
+```ts title="weakMapMemoize/setMaxSize.ts"
+import { createSelector } from 'reselect'
+import type { RootState } from './cacheSizeProblem'
+
+const selectItemsByCategory = createSelector(
+  [
+    (state: RootState) => state.items,
+    (state: RootState, category: string) => category
+  ],
+  (items, category) => items.filter(item => item.category === category),
+  {
+    memoizeOptions: {
+      maxSize: 10
+    }
+  }
+)
+```
+
+  </TabItem>
+  <TabItem value='js'>
+
+```js title="weakMapMemoize/setMaxSize.js"
+import { createSelector } from 'reselect'
+
+const selectItemsByCategory = createSelector(
+  [state => state.items, (state, category) => category],
+  (items, category) => items.filter(item => item.category === category),
+  {
+    memoizeOptions: {
+      maxSize: 10
+    }
+  }
+)
+```
+
+  </TabItem>
+</Tabs>
+
+  <!-- END: weakMapMemoize/setMaxSize.ts -->
+
+But this required having to know the cache size ahead of time.
+
+2. Create unique selector instances using <ExternalLinks.UseMemo />.
+
+  <!-- START: weakMapMemoize/withUseMemo.tsx -->
+
+<Tabs
+  groupId='language'
+  defaultValue='tsx'
+  values={[
+    {label: 'TypeScript', value: 'tsx'},
+    {label: 'JavaScript', value: 'jsx'},
+  ]}>
+  <TabItem value='tsx'>
+
+```tsx title="weakMapMemoize/withUseMemo.tsx"
+import type { FC } from 'react'
+import { useMemo } from 'react'
+import { useSelector } from 'react-redux'
+import { createSelector } from 'reselect'
+import type { RootState } from './cacheSizeProblem'
+
+const makeSelectItemsByCategory = (category: string) =>
+  createSelector([(state: RootState) => state.items], items =>
+    items.filter(item => item.category === category)
+  )
+
+interface Props {
+  category: string
+}
+
+const MyComponent: FC<Props> = ({ category }) => {
+  const selectItemsByCategory = useMemo(
+    () => makeSelectItemsByCategory(category),
+    [category]
+  )
+
+  const itemsByCategory = useSelector(selectItemsByCategory)
+
+  return (
+    <div>
+      {itemsByCategory.map(item => (
+        <div key={item.id}>{item.name}</div>
+      ))}
+    </div>
+  )
+}
+```
+
+  </TabItem>
+  <TabItem value='jsx'>
+
+```jsx title="weakMapMemoize/withUseMemo.jsx"
+import { useMemo } from 'react'
+import { useSelector } from 'react-redux'
+import { createSelector } from 'reselect'
+
+const makeSelectItemsByCategory = category =>
+  createSelector([state => state.items], items =>
+    items.filter(item => item.category === category)
+  )
+
+const MyComponent = ({ category }) => {
+  const selectItemsByCategory = useMemo(
+    () => makeSelectItemsByCategory(category),
+    [category]
+  )
+
+  const itemsByCategory = useSelector(selectItemsByCategory)
+
+  return (
+    <div>
+      {itemsByCategory.map(item => (
+        <div key={item.id}>{item.name}</div>
+      ))}
+    </div>
+  )
+}
+```
+
+  </TabItem>
+</Tabs>
+
+  <!-- END: weakMapMemoize/withUseMemo.tsx -->
+
+3. Using <ExternalLinks.UseCallback />.
+
+  <!-- START: weakMapMemoize/withUseCallback.tsx -->
+
+<Tabs
+  groupId='language'
+  defaultValue='tsx'
+  values={[
+    {label: 'TypeScript', value: 'tsx'},
+    {label: 'JavaScript', value: 'jsx'},
+  ]}>
+  <TabItem value='tsx'>
+
+```tsx title="weakMapMemoize/withUseCallback.tsx"
+import type { FC } from 'react'
+import { useCallback } from 'react'
+import { useSelector } from 'react-redux'
+import { createSelector } from 'reselect'
+import type { RootState } from './cacheSizeProblem'
+
+const selectItemsByCategory = createSelector(
+  [
+    (state: RootState) => state.items,
+    (state: RootState, category: string) => category
+  ],
+  (items, category) => items.filter(item => item.category === category)
+)
+
+interface Props {
+  category: string
+}
+
+const MyComponent: FC<Props> = ({ category }) => {
+  const selectItemsByCategoryMemoized = useCallback(selectItemsByCategory, [])
+
+  const itemsByCategory = useSelector((state: RootState) =>
+    selectItemsByCategoryMemoized(state, category)
+  )
+
+  return (
+    <div>
+      {itemsByCategory.map(item => (
+        <div key={item.id}>{item.name}</div>
+      ))}
+    </div>
+  )
+}
+```
+
+  </TabItem>
+  <TabItem value='jsx'>
+
+```jsx title="weakMapMemoize/withUseCallback.jsx"
+import { useCallback } from 'react'
+import { useSelector } from 'react-redux'
+import { createSelector } from 'reselect'
+
+const selectItemsByCategory = createSelector(
+  [state => state.items, (state, category) => category],
+  (items, category) => items.filter(item => item.category === category)
+)
+
+const MyComponent = ({ category }) => {
+  const selectItemsByCategoryMemoized = useCallback(selectItemsByCategory, [])
+
+  const itemsByCategory = useSelector(state =>
+    selectItemsByCategoryMemoized(state, category)
+  )
+
+  return (
+    <div>
+      {itemsByCategory.map(item => (
+        <div key={item.id}>{item.name}</div>
+      ))}
+    </div>
+  )
+}
+```
+
+  </TabItem>
+</Tabs>
+
+  <!-- END: weakMapMemoize/withUseCallback.tsx -->
+
+4. Use `<ExternalLinks.ReReselect />`:
+
+```ts
+import { createCachedSelector } from 're-reselect'
+
+const selectItemsByCategory = createCachedSelector(
+  [
+    (state: RootState) => state.items,
+    (state: RootState, category: string) => category
+  ],
+  (items, category) => items.filter(item => item.category === category)
+)((state: RootState, category: string) => category)
+```
+
+Starting in 5.0.0, you can eliminate this problem using `weakMapMemoize`.
+
+  <!-- START: weakMapMemoize/cacheSizeSolution.ts -->
+
+<Tabs
+  groupId='language'
+  defaultValue='ts'
+  values={[
+    {label: 'TypeScript', value: 'ts'},
+    {label: 'JavaScript', value: 'js'},
+  ]}>
+  <TabItem value='ts'>
+
+```ts title="weakMapMemoize/cacheSizeSolution.ts"
+import { createSelector, weakMapMemoize } from 'reselect'
+import type { RootState } from './cacheSizeProblem'
+
+const state: RootState = {
+  items: [
+    { id: 1, category: 'Electronics', name: 'Wireless Headphones' },
+    { id: 2, category: 'Books', name: 'The Great Gatsby' },
+    { id: 3, category: 'Home Appliances', name: 'Blender' },
+    { id: 4, category: 'Stationery', name: 'Sticky Notes' }
+  ]
+}
+
+const selectItemsByCategory = createSelector(
+  [
+    (state: RootState) => state.items,
+    (state: RootState, category: string) => category
+  ],
+  (items, category) => items.filter(item => item.category === category),
+  {
+    memoize: weakMapMemoize,
+    argsMemoize: weakMapMemoize
+  }
+)
+
+selectItemsByCategory(state, 'Electronics') // Selector runs
+selectItemsByCategory(state, 'Electronics') // Cached
+selectItemsByCategory(state, 'Stationery') // Selector runs
+selectItemsByCategory(state, 'Electronics') // Still cached!
+```
+
+  </TabItem>
+  <TabItem value='js'>
+
+```js title="weakMapMemoize/cacheSizeSolution.js"
+import { createSelector, weakMapMemoize } from 'reselect'
+
+const state = {
+  items: [
+    { id: 1, category: 'Electronics', name: 'Wireless Headphones' },
+    { id: 2, category: 'Books', name: 'The Great Gatsby' },
+    { id: 3, category: 'Home Appliances', name: 'Blender' },
+    { id: 4, category: 'Stationery', name: 'Sticky Notes' }
+  ]
+}
+
+const selectItemsByCategory = createSelector(
+  [state => state.items, (state, category) => category],
+  (items, category) => items.filter(item => item.category === category),
+  {
+    memoize: weakMapMemoize,
+    argsMemoize: weakMapMemoize
+  }
+)
+
+selectItemsByCategory(state, 'Electronics') // Selector runs
+selectItemsByCategory(state, 'Electronics') // Cached
+selectItemsByCategory(state, 'Stationery') // Selector runs
+selectItemsByCategory(state, 'Electronics') // Still cached!
+```
+
+  </TabItem>
+</Tabs>
+
+  <!-- END: weakMapMemoize/cacheSizeSolution.ts -->
+
+This solves the problem of having to know and set the cache size prior to creating a memoized selector. Because `weakMapMemoize` essentially provides a dynamic cache size out of the box.
+
+## Parameters
+
+| Name   | Description                  |
+| :----- | :--------------------------- |
+| `func` | The function to be memoized. |
+
+## Returns
+
+A memoized function with a `.clearCache()` method attached.
+
+## Type Parameters
+
+| Name   | Description                                |
+| :----- | :----------------------------------------- |
+| `Func` | The type of the function that is memoized. |
+
+## Examples
+
+### Using `weakMapMemoize` with `createSelector`
+
+  <!-- START: weakMapMemoize/usingWithCreateSelector.ts -->
+
+<Tabs
+  groupId='language'
+  defaultValue='ts'
+  values={[
+    {label: 'TypeScript', value: 'ts'},
+    {label: 'JavaScript', value: 'js'},
+  ]}>
+  <TabItem value='ts'>
+
+```ts title="weakMapMemoize/usingWithCreateSelector.ts"
+import { createSelector, weakMapMemoize } from 'reselect'
+import type { RootState } from './cacheSizeProblem'
+
+const state: RootState = {
+  items: [
+    { id: 1, category: 'Electronics', name: 'Wireless Headphones' },
+    { id: 2, category: 'Books', name: 'The Great Gatsby' },
+    { id: 3, category: 'Home Appliances', name: 'Blender' },
+    { id: 4, category: 'Stationery', name: 'Sticky Notes' }
+  ]
+}
+
+const selectItemsByCategory = createSelector(
+  [
+    (state: RootState) => state.items,
+    (state: RootState, category: string) => category
+  ],
+  (items, category) => items.filter(item => item.category === category),
+  {
+    memoize: weakMapMemoize,
+    argsMemoize: weakMapMemoize
+  }
+)
+
+selectItemsByCategory(state, 'Electronics') // Selector runs
+selectItemsByCategory(state, 'Electronics')
+selectItemsByCategory(state, 'Stationery') // Selector runs
+selectItemsByCategory(state, 'Electronics')
+```
+
+  </TabItem>
+  <TabItem value='js'>
+
+```js title="weakMapMemoize/usingWithCreateSelector.js"
+import { createSelector, weakMapMemoize } from 'reselect'
+
+const state = {
+  items: [
+    { id: 1, category: 'Electronics', name: 'Wireless Headphones' },
+    { id: 2, category: 'Books', name: 'The Great Gatsby' },
+    { id: 3, category: 'Home Appliances', name: 'Blender' },
+    { id: 4, category: 'Stationery', name: 'Sticky Notes' }
+  ]
+}
+
+const selectItemsByCategory = createSelector(
+  [state => state.items, (state, category) => category],
+  (items, category) => items.filter(item => item.category === category),
+  {
+    memoize: weakMapMemoize,
+    argsMemoize: weakMapMemoize
+  }
+)
+
+selectItemsByCategory(state, 'Electronics') // Selector runs
+selectItemsByCategory(state, 'Electronics')
+selectItemsByCategory(state, 'Stationery') // Selector runs
+selectItemsByCategory(state, 'Electronics')
+```
+
+  </TabItem>
+</Tabs>
+
+  <!-- END: weakMapMemoize/usingWithCreateSelector.ts -->
+
+### Using `weakMapMemoize` with `createSelectorCreator`
+
+  <!-- START: weakMapMemoize/usingWithCreateSelectorCreator.ts -->
+
+<Tabs
+  groupId='language'
+  defaultValue='ts'
+  values={[
+    {label: 'TypeScript', value: 'ts'},
+    {label: 'JavaScript', value: 'js'},
+  ]}>
+  <TabItem value='ts'>
+
+```ts title="weakMapMemoize/usingWithCreateSelectorCreator.ts"
+import { createSelectorCreator, weakMapMemoize } from 'reselect'
+import type { RootState } from './cacheSizeProblem'
+
+const state: RootState = {
+  items: [
+    { id: 1, category: 'Electronics', name: 'Wireless Headphones' },
+    { id: 2, category: 'Books', name: 'The Great Gatsby' },
+    { id: 3, category: 'Home Appliances', name: 'Blender' },
+    { id: 4, category: 'Stationery', name: 'Sticky Notes' }
+  ]
+}
+
+const createSelectorWeakMap = createSelectorCreator({
+  memoize: weakMapMemoize,
+  argsMemoize: weakMapMemoize
+})
+
+const selectItemsByCategory = createSelectorWeakMap(
+  [
+    (state: RootState) => state.items,
+    (state: RootState, category: string) => category
+  ],
+  (items, category) => items.filter(item => item.category === category)
+)
+
+selectItemsByCategory(state, 'Electronics') // Selector runs
+selectItemsByCategory(state, 'Electronics')
+selectItemsByCategory(state, 'Stationery') // Selector runs
+selectItemsByCategory(state, 'Electronics')
+```
+
+  </TabItem>
+  <TabItem value='js'>
+
+```js title="weakMapMemoize/usingWithCreateSelectorCreator.js"
+import { createSelectorCreator, weakMapMemoize } from 'reselect'
+
+const state = {
+  items: [
+    { id: 1, category: 'Electronics', name: 'Wireless Headphones' },
+    { id: 2, category: 'Books', name: 'The Great Gatsby' },
+    { id: 3, category: 'Home Appliances', name: 'Blender' },
+    { id: 4, category: 'Stationery', name: 'Sticky Notes' }
+  ]
+}
+
+const createSelectorWeakMap = createSelectorCreator({
+  memoize: weakMapMemoize,
+  argsMemoize: weakMapMemoize
+})
+
+const selectItemsByCategory = createSelectorWeakMap(
+  [state => state.items, (state, category) => category],
+  (items, category) => items.filter(item => item.category === category)
+)
+
+selectItemsByCategory(state, 'Electronics') // Selector runs
+selectItemsByCategory(state, 'Electronics')
+selectItemsByCategory(state, 'Stationery') // Selector runs
+selectItemsByCategory(state, 'Electronics')
+```
+
+  </TabItem>
+</Tabs>
+
+  <!-- END: weakMapMemoize/usingWithCreateSelectorCreator.ts -->

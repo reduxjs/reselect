@@ -1,0 +1,33 @@
+---
+id: common-mistakes
+title: Common Mistakes
+sidebar_label: Common Mistakes
+hide_title: true
+description: Common Mistakes
+---
+
+import { InternalLinks } from '@site/src/components/InternalLinks'
+
+# Common Mistakes
+
+A somewhat common mistake is to write an <InternalLinks.InputSelectors text="input selector" /> that extracts a value or does some derivation, and a <InternalLinks.ResultFunction /> that just returns its result:
+
+```ts
+// ❌ BROKEN: this will not memoize correctly, and does nothing useful!
+const brokenSelector = createSelector(
+  [(state: RootState) => state.todos],
+  todos => todos
+)
+```
+
+Any <InternalLinks.ResultFunction /> that just returns its inputs is incorrect! The <InternalLinks.ResultFunction /> should always have the transformation logic.
+
+Similarly:
+
+```ts
+// ❌ BROKEN: this will not memoize correctly!
+const brokenSelector = createSelector(
+  [(state: RootState) => state],
+  state => state.todos
+)
+```

@@ -321,7 +321,7 @@ generates a memoized selector function.
 
 A memoized [output selector].
 
-<details><summary><b>Type parameters</b></summary>
+<details><summary><b>Type Parameters</b></summary>
 
 | Name                          | Description                                                                                                                                                                                            |
 | :---------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -366,7 +366,7 @@ Accepts either a `memoize` function and `...memoizeOptions` rest parameter, or s
 
 A customized [`createSelector`] function.
 
-<details><summary><b>Type parameters</b></summary>
+<details><summary><b>Type Parameters</b></summary>
 
 | Name                  | Description                                                                                                                                                                                                                                                |
 | :-------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -489,7 +489,7 @@ A convenience function that simplifies returning an object made up of selector r
 
 A memoized structured selector.
 
-<details><summary><b>Type parameters</b></summary>
+<details><summary><b>Type Parameters</b></summary>
 
 | Name                   | Description                                                                                                                                                   |
 | :--------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -587,6 +587,35 @@ const structuredSelector = createSelector(selectA, selectB, (a, b) => ({
 const result = structuredSelector({ a: 1, b: 2 }) // will produce { x: 1, y: 2 }
 ```
 
+`createStructuredSelector` takes an object whose properties are input selectors and returns a structured selector. The structured selector returns an object with the same keys as the `inputSelectorsObject` argument, but with the selectors replaced with their values.
+
+```ts
+const selectA = state => state.a
+const selectB = state => state.b
+
+const structuredSelector = createStructuredSelector({
+  x: selectA,
+  y: selectB
+})
+
+const result = structuredSelector({ a: 1, b: 2 }) // will produce { x: 1, y: 2 }
+```
+
+Structured selectors can be nested:
+
+```ts
+const nestedSelector = createStructuredSelector({
+  subA: createStructuredSelector({
+    selectorA,
+    selectorB
+  }),
+  subB: createStructuredSelector({
+    selectorC,
+    selectorD
+  })
+})
+```
+
 </details>
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
@@ -647,7 +676,7 @@ interface LruMemoizeOptions {
 
 A memoized function with a `.clearCache()` method attached.
 
-<details><summary><b>Type parameters</b></summary>
+<details><summary><b>Type Parameters</b></summary>
 
 | Name   | Description                                |
 | :----- | :----------------------------------------- |
@@ -896,7 +925,7 @@ This solves the problem of having to know and set the cache size prior to creati
 
 A memoized function with a `.clearCache()` method attached.
 
-<details><summary><b>Type parameters</b></summary>
+<details><summary><b>Type Parameters</b></summary>
 
 | Name   | Description                                |
 | :----- | :----------------------------------------- |
@@ -1006,7 +1035,7 @@ Uses an "auto-tracking" approach inspired by the work of the Ember Glimmer team.
 
 A memoized function with a `.clearCache()` method attached.
 
-<details><summary><b>Type parameters</b></summary>
+<details><summary><b>Type Parameters</b></summary>
 
 | Name   | Description                                |
 | :----- | :----------------------------------------- |
@@ -1260,8 +1289,6 @@ These updates aim to enhance flexibility, performance, and developer experience.
 - **Breaking Changes**:
 
   - Removed `ParametricSelector` and `OutputParametricSelector` types. Their functionalities are now integrated into `Selector` and `OutputSelector` respectively, which inherently support additional parameters.
-
-</details>
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
@@ -1573,9 +1600,9 @@ test('selector unit test', () => {
   selectTodoIds(state)
   selectTodoIds(state)
   selectTodoIds(state)
-  // The `Result Function` should not recalculate.
+  // The result function should not recalculate.
   expect(selectTodoIds.recomputations()).toBe(1)
-  // `input selectors` should not recalculate.
+  // input selectors should not recalculate.
   expect(selectTodoIds.dependencyRecomputations()).toBe(1)
 })
 
@@ -1594,9 +1621,9 @@ test('selector unit test', () => {
   selectTodoIds(state)
   selectTodoIds(state)
   selectTodoIds(state)
-  // The `result function` should not recalculate.
+  // The result function should not recalculate.
   expect(selectTodoIds.recomputations()).to.equal(1)
-  // `input selectors` should not recalculate.
+  // input selectors should not recalculate.
   expect(selectTodoIds.dependencyRecomputations()).to.equal(1)
 })
 ```
@@ -1635,8 +1662,6 @@ function TodosList({ category }) {
 If you prefer to use a curried form instead, you can create a curried selector with this recipe:
 
 <details><summary><b>Detailed Explanation: Creating Curried Selectors</b></summary>
-
-You can try this pattern:
 
 ```ts
 const currySelector = <
@@ -1854,7 +1879,7 @@ Useful to reduce selectors recalculation when the same selector is repeatedly ca
 
 ### [reselect-debugger](https://github.com/vlanemcev/reselect-debugger-flipper)
 
-[Flipper plugin](https://github.com/vlanemcev/flipper-plugin-reselect-debugger) and [and the connect app](https://github.com/vlanemcev/reselect-debugger-flipper) for debugging selectors in **React Native Apps**.
+[Flipper plugin](https://github.com/vlanemcev/flipper-plugin-reselect-debugger) and [the connect app](https://github.com/vlanemcev/reselect-debugger-flipper) for debugging selectors in **React Native Apps**.
 
 Inspired by Reselect Tools, so it also has all functionality from this library and more, but only for React Native and Flipper.
 

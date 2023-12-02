@@ -1,0 +1,140 @@
+---
+id: how-does-reselect-work
+title: How Does Reselect Work?
+sidebar_label: How Does Reselect Work?
+hide_title: true
+description: 'How Does Reselect Work?'
+---
+
+import { InternalLinks } from '@site/src/components/InternalLinks'
+import { ExternalLinks } from '@site/src/components/ExternalLinks'
+
+# How Does Reselect Work?
+
+Reselect, at its core, is a library for creating memoized selectors in JavaScript applications. Its primary role is to efficiently compute derived data based on provided inputs. A key aspect of Reselect's internal mechanism is how it orchestrates the flow of arguments from the final selector to its constituent <InternalLinks.InputSelectors />.
+
+```ts
+const finalSelector = (...args) => {
+  const extractedValues = inputSelectors.map(inputSelector =>
+    inputSelector(...args)
+  )
+  return resultFunc(...extractedValues)
+}
+```
+
+In this pattern, the `finalSelector` is composed of several <InternalLinks.InputSelectors />, **all receiving the same arguments as the final selector**. Each input selector processes its part of the data, and the results are then combined and further processed by the <InternalLinks.ResultFunction />. Understanding this argument flow is crucial for appreciating how Reselect optimizes data computation and minimizes unnecessary recalculations.
+
+## Cascading Memoization
+
+Reselect uses a two-stage "cascading" approach to memoizing functions:
+
+The way Reselect works can be broken down into multiple parts:
+
+1. **Initial Run**: On the first call, Reselect runs all the <InternalLinks.InputSelectors />, gathers their results, and passes them to the <InternalLinks.ResultFunction />.
+
+2. **Subsequent Runs**: For subsequent calls, Reselect performs two levels of checks:
+
+   - **First Level**: It compares the current arguments with the previous ones (done by `argsMemoize`).
+
+     - If they're the same, it returns the cached result without running the <InternalLinks.InputSelectors /> or the <InternalLinks.ResultFunction />.
+
+     - If they differ, it proceeds ("cascades") to the second level.
+
+   - **Second Level**: It runs the <InternalLinks.InputSelectors /> and compares their current results with the previous ones (done by `memoize`).
+     :::note
+
+     If any one of the <InternalLinks.InputSelectors /> return a different result, all <InternalLinks.InputSelectors /> will recalculate.
+
+     :::
+
+     - If the results are the same, it returns the cached result without running the <InternalLinks.ResultFunction />.
+     - If the results differ, it runs the <InternalLinks.ResultFunction />.
+
+This behavior is what we call **_Cascading Double-Layer Memoization_**.
+
+### Reselect Vs Standard Memoization
+
+#### Standard Memoization
+
+![normal-memoization-function](@site/static/img/normal-memoization-function.png)
+
+_Standard memoization only compares arguments. If they're the same, it returns the cached result._
+
+#### Memoization with Reselect
+
+![reselect-memoization](@site/static/img/reselect-memoization.png)
+
+_Reselect adds a second layer of checks with the <InternalLinks.InputSelectors />. This is crucial in <ExternalLinks.Redux /> applications where state references change frequently._
+
+A normal <ExternalLinks.Memoization /> function will compare the arguments, and if they are the same as last time, it will skip running the function and return the cached result. However, Reselect enhances this by introducing a second tier of checks via its <InternalLinks.InputSelectors />. It's possible that the arguments passed to these <InternalLinks.InputSelectors /> may change, yet their results remain the same. When this occurs, Reselect avoids re-executing the <InternalLinks.ResultFunction />, and returns the cached result.
+
+This feature becomes crucial in <ExternalLinks.Redux /> applications, where the `state` changes its reference anytime an `action` is dispatched.
+
+:::note
+
+The <InternalLinks.InputSelectors /> take the same arguments as the <InternalLinks.OutputSelector />.
+
+:::
+
+## Why Reselect Is Often Used With <ExternalLinks.Redux />
+
+While Reselect can be used independently from Redux, it is a standard tool used in most Redux applications to help optimize calculations and UI updates:
+
+Imagine you have a selector like this:
+
+```ts
+const selectCompletedTodos = (state: RootState) =>
+  state.todos.filter(todo => todo.completed === true)
+```
+
+So you decide to memoize it:
+
+```ts
+const selectCompletedTodos = someMemoizeFunction((state: RootState) =>
+  state.todos.filter(todo => todo.completed === true)
+)
+```
+
+Then you update `state.alerts`:
+
+```ts
+store.dispatch(toggleRead(0))
+```
+
+Now when you call `selectCompletedTodos`, it re-runs, because we have effectively broken memoization.
+
+```ts
+selectCompletedTodos(store.getState())
+// Will not run, and the cached result will be returned.
+selectCompletedTodos(store.getState())
+store.dispatch(toggleRead(0))
+// It recalculates.
+selectCompletedTodos(store.getState())
+```
+
+But why? `selectCompletedTodos` only needs to access `state.todos`, and has nothing to do with `state.alerts`, so why have we broken memoization? Well that's because in <ExternalLinks.Redux /> anytime you make a change to the root `state`, it gets shallowly updated, which means its reference changes, therefore a normal memoization function will always fail the comparison check on the arguments.
+
+But with Reselect, we can do something like this:
+
+```ts
+const selectCompletedTodos = createSelector(
+  [(state: RootState) => state.todos],
+  todos => todos.filter(todo => todo.completed === true)
+)
+```
+
+And now we have achieved memoization:
+
+```ts
+selectCompletedTodos(store.getState())
+// Will not run, and the cached result will be returned.
+selectCompletedTodos(store.getState())
+store.dispatch(toggleRead(0))
+// The `input selectors` will run, but the `result function` is
+// skipped and the cached result will be returned.
+selectCompletedTodos(store.getState())
+```
+
+Even when the overall `state` changes, Reselect ensures efficient memoization through its unique approach. The <InternalLinks.ResultFunction /> doesn't re-run if the relevant part of the `state` (in this case `state.todos`), remains unchanged. This is due to Reselect's <InternalLinks.CascadingMemoization text="Cascading Double-Layer Memoization" />. The first layer checks the entire `state`, and the second layer checks the results of the <InternalLinks.InputSelectors />. If the first layer fails (due to a change in the overall `state`) but the second layer succeeds (because `state.todos` is unchanged), Reselect skips recalculating the <InternalLinks.ResultFunction />. This dual-check mechanism makes Reselect particularly effective in <ExternalLinks.Redux /> applications, ensuring computations are only done when truly necessary.
+
+---

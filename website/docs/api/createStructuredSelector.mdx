@@ -1,0 +1,245 @@
+---
+id: createStructuredSelector
+title: createStructuredSelector
+sidebar_label: createStructuredSelector
+hide_title: true
+description: 'createStructuredSelector'
+---
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+import { InternalLinks } from '@site/src/components/InternalLinks'
+
+# `createStructuredSelector`
+
+A convenience function that simplifies returning an object made up of selector results.
+
+## Parameters
+
+| Name                   | Description                                                                          |
+| :--------------------- | :----------------------------------------------------------------------------------- |
+| `inputSelectorsObject` | A key value pair consisting of input selectors.                                      |
+| `selectorCreator?`     | A custom selector creator function. It defaults to <InternalLinks.CreateSelector />. |
+
+## Returns
+
+A memoized structured selector.
+
+## Type Parameters
+
+| Name                   | Description                                                                                                                                               |
+| :--------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `InputSelectorsObject` | The shape of the <InternalLinks.InputSelectors /> object.                                                                                                 |
+| `MemoizeFunction`      | The type of the memoize function that is used to create the structured selector. It defaults to `lruMemoize`.                                             |
+| `ArgsMemoizeFunction`  | The type of the of the memoize function that is used to memoize the arguments passed into the generated structured selector. It defaults to `lruMemoize`. |
+
+## Examples
+
+### Modern Use Case
+
+<!-- START: createStructuredSelector/modernUseCase.ts -->
+
+<Tabs
+  groupId='language'
+  defaultValue='ts'
+  values={[
+    {label: 'TypeScript', value: 'ts'},
+    {label: 'JavaScript', value: 'js'},
+  ]}>
+  <TabItem value='ts'>
+
+```ts title="createStructuredSelector/modernUseCase.ts"
+import { createSelector, createStructuredSelector } from 'reselect'
+
+export interface RootState {
+  todos: {
+    id: number
+    completed: boolean
+    title: string
+    description: string
+  }[]
+  alerts: { id: number; read: boolean }[]
+}
+
+// This:
+export const structuredSelector = createStructuredSelector(
+  {
+    todos: (state: RootState) => state.todos,
+    alerts: (state: RootState) => state.alerts,
+    todoById: (state: RootState, id: number) => state.todos[id]
+  },
+  createSelector
+)
+
+// Is essentially the same as this:
+export const selector = createSelector(
+  [
+    (state: RootState) => state.todos,
+    (state: RootState) => state.alerts,
+    (state: RootState, id: number) => state.todos[id]
+  ],
+  (todos, alerts, todoById) => {
+    return {
+      todos,
+      alerts,
+      todoById
+    }
+  }
+)
+```
+
+  </TabItem>
+  <TabItem value='js'>
+
+```js title="createStructuredSelector/modernUseCase.js"
+import { createSelector, createStructuredSelector } from 'reselect'
+
+// This:
+export const structuredSelector = createStructuredSelector(
+  {
+    todos: state => state.todos,
+    alerts: state => state.alerts,
+    todoById: (state, id) => state.todos[id]
+  },
+  createSelector
+)
+
+// Is essentially the same as this:
+export const selector = createSelector(
+  [state => state.todos, state => state.alerts, (state, id) => state.todos[id]],
+  (todos, alerts, todoById) => {
+    return {
+      todos,
+      alerts,
+      todoById
+    }
+  }
+)
+```
+
+  </TabItem>
+</Tabs>
+
+  <!-- END: createStructuredSelector/modernUseCase.ts -->
+
+In your component:
+
+<!-- START: createStructuredSelector/MyComponent.tsx -->
+
+<Tabs
+  groupId='language'
+  defaultValue='tsx'
+  values={[
+    {label: 'TypeScript', value: 'tsx'},
+    {label: 'JavaScript', value: 'jsx'},
+  ]}>
+  <TabItem value='tsx'>
+
+```tsx title="createStructuredSelector/MyComponent.tsx"
+import type { RootState } from 'createStructuredSelector/modernUseCase'
+import { structuredSelector } from 'createStructuredSelector/modernUseCase'
+import type { FC } from 'react'
+import { useSelector } from 'react-redux'
+
+interface Props {
+  id: number
+}
+
+const MyComponent: FC<Props> = ({ id }) => {
+  const { todos, alerts, todoById } = useSelector((state: RootState) =>
+    structuredSelector(state, id)
+  )
+
+  return (
+    <div>
+      Next to do is:
+      <h2>{todoById.title}</h2>
+      <p>Description: {todoById.description}</p>
+      <ul>
+        <h3>All other to dos:</h3>
+        {todos.map(todo => (
+          <li key={todo.id}>{todo.title}</li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+```
+
+  </TabItem>
+  <TabItem value='jsx'>
+
+```jsx title="createStructuredSelector/MyComponent.jsx"
+import { structuredSelector } from 'createStructuredSelector/modernUseCase'
+import { useSelector } from 'react-redux'
+
+const MyComponent = ({ id }) => {
+  const { todos, alerts, todoById } = useSelector(state =>
+    structuredSelector(state, id)
+  )
+
+  return (
+    <div>
+      Next to do is:
+      <h2>{todoById.title}</h2>
+      <p>Description: {todoById.description}</p>
+      <ul>
+        <h3>All other to dos:</h3>
+        {todos.map(todo => (
+          <li key={todo.id}>{todo.title}</li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+```
+
+  </TabItem>
+</Tabs>
+
+  <!-- END: createStructuredSelector/MyComponent.tsx -->
+
+### Simple Use Case
+
+```ts
+const selectA = state => state.a
+const selectB = state => state.b
+
+// The result function in the following selector
+// is simply building an object from the input selectors
+const structuredSelector = createSelector(selectA, selectB, (a, b) => ({
+  a,
+  b
+}))
+
+const result = structuredSelector({ a: 1, b: 2 }) // will produce { x: 1, y: 2 }
+```
+
+`createStructuredSelector` takes an object whose properties are input selectors and returns a structured selector. The structured selector returns an object with the same keys as the `inputSelectorsObject` argument, but with the selectors replaced with their values.
+
+```ts
+const selectA = state => state.a
+const selectB = state => state.b
+
+const structuredSelector = createStructuredSelector({
+  x: selectA,
+  y: selectB
+})
+
+const result = structuredSelector({ a: 1, b: 2 }) // will produce { x: 1, y: 2 }
+```
+
+Structured selectors can be nested:
+
+```ts
+const nestedSelector = createStructuredSelector({
+  subA: createStructuredSelector({
+    selectorA,
+    selectorB
+  }),
+  subB: createStructuredSelector({
+    selectorC,
+    selectorD
+  })
+})
+```

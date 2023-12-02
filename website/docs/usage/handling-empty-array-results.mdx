@@ -1,0 +1,133 @@
+---
+id: handling-empty-array-results
+title: Handling Empty Array Results
+sidebar_label: Handling Empty Array Results
+hide_title: true
+description: Handling Empty Array Results
+---
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+import { InternalLinks } from '@site/src/components/InternalLinks'
+
+# Handling Empty Array Results
+
+To reduce recalculations, use a predefined empty array when `array.filter` or similar methods result in an empty array.
+
+So you can have a pattern like this:
+
+  <!-- START: handling-empty-array-results/firstPattern.ts -->
+
+<Tabs
+  groupId='language'
+  defaultValue='ts'
+  values={[
+    {label: 'TypeScript', value: 'ts'},
+    {label: 'JavaScript', value: 'js'},
+  ]}>
+  <TabItem value='ts'>
+
+```ts title="handling-empty-array-results/firstPattern.ts"
+import { createSelector } from 'reselect'
+
+export interface RootState {
+  todos: {
+    id: number
+    title: string
+    description: string
+    completed: boolean
+  }[]
+}
+
+const EMPTY_ARRAY: [] = []
+
+const selectCompletedTodos = createSelector(
+  [(state: RootState) => state.todos],
+  todos => {
+    const completedTodos = todos.filter(todo => todo.completed === true)
+    return completedTodos.length === 0 ? EMPTY_ARRAY : completedTodos
+  }
+)
+```
+
+  </TabItem>
+  <TabItem value='js'>
+
+```js title="handling-empty-array-results/firstPattern.js"
+import { createSelector } from 'reselect'
+
+const EMPTY_ARRAY = []
+
+const selectCompletedTodos = createSelector([state => state.todos], todos => {
+  const completedTodos = todos.filter(todo => todo.completed === true)
+  return completedTodos.length === 0 ? EMPTY_ARRAY : completedTodos
+})
+```
+
+  </TabItem>
+</Tabs>
+
+  <!-- END: handling-empty-array-results/firstPattern.ts -->
+
+Or to avoid repetition, you can create a wrapper function and reuse it:
+
+  <!-- START: handling-empty-array-results/fallbackToEmptyArray.ts -->
+
+<Tabs
+  groupId='language'
+  defaultValue='ts'
+  values={[
+    {label: 'TypeScript', value: 'ts'},
+    {label: 'JavaScript', value: 'js'},
+  ]}>
+  <TabItem value='ts'>
+
+```ts title="handling-empty-array-results/fallbackToEmptyArray.ts"
+import { createSelector } from 'reselect'
+import type { RootState } from './firstPattern'
+
+const EMPTY_ARRAY: [] = []
+
+export const fallbackToEmptyArray = <T>(array: T[]) => {
+  return array.length === 0 ? EMPTY_ARRAY : array
+}
+
+const selectCompletedTodos = createSelector(
+  [(state: RootState) => state.todos],
+  todos => {
+    return fallbackToEmptyArray(todos.filter(todo => todo.completed === true))
+  }
+)
+```
+
+  </TabItem>
+  <TabItem value='js'>
+
+```js title="handling-empty-array-results/fallbackToEmptyArray.js"
+import { createSelector } from 'reselect'
+
+const EMPTY_ARRAY = []
+
+export const fallbackToEmptyArray = array => {
+  return array.length === 0 ? EMPTY_ARRAY : array
+}
+
+const selectCompletedTodos = createSelector([state => state.todos], todos => {
+  return fallbackToEmptyArray(todos.filter(todo => todo.completed === true))
+})
+```
+
+  </TabItem>
+</Tabs>
+
+  <!-- END: handling-empty-array-results/fallbackToEmptyArray.ts -->
+
+This way if the <InternalLinks.ResultFunction /> returns an empty array twice in a row, your component will not re-render due to a stable empty array reference:
+
+```ts
+const completedTodos = selectCompletedTodos(store.getState())
+
+store.dispatch(addTodo())
+
+console.log(completedTodos === selectCompletedTodos(store.getState())) //=> true
+```

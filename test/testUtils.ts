@@ -79,63 +79,6 @@ interface UserState {
   appSettings: AppSettings
 }
 
-// For long arrays
-interface BillingAddress {
-  street: string
-  city: string
-  state: string
-  zip: string
-}
-
-interface Address extends BillingAddress {
-  billing: BillingAddress
-}
-
-interface PushNotification {
-  enabled: boolean
-  frequency: string
-}
-
-interface Notifications {
-  email: boolean
-  sms: boolean
-  push: PushNotification
-}
-
-interface Preferences {
-  newsletter: boolean
-  notifications: Notifications
-}
-
-interface Login {
-  lastLogin: string
-  loginCount: number
-}
-
-interface UserDetails {
-  name: string
-  email: string
-  address: Address
-  preferences: Preferences
-}
-
-interface User {
-  id: number
-  details: UserDetails
-  status: string
-  login: Login
-}
-
-interface AppSettings {
-  theme: string
-  language: string
-}
-
-interface UserState {
-  user: User
-  appSettings: AppSettings
-}
-
 let nextTodoId = 0
 
 // For long arrays

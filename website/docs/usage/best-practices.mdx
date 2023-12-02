@@ -1,0 +1,39 @@
+---
+id: best-practices
+title: Best Practices
+sidebar_label: Best Practices
+hide_title: true
+description: Best Practices
+---
+
+import { InternalLinks } from '@site/src/components/InternalLinks'
+import { ExternalLinks } from '@site/src/components/ExternalLinks'
+
+# Best Practices
+
+There are a few details that will help you skip running as many functions as possible and get the best possible performance out of Reselect:
+
+- Due to the <InternalLinks.CascadingMemoization /> in Reselect, The first layer of checks is upon the arguments that are passed to the <InternalLinks.OutputSelector />, therefore it's best to maintain the same reference for the arguments as much as possible.
+- In <ExternalLinks.Redux />, your state will change reference when updated. But it's best to keep the additional arguments as simple as possible, you can pass in objects or array as long as their reference does not change. Or you can pass in primitives like numbers for ids.
+- Keep your <InternalLinks.InputSelectors /> as simple as possible. It's best if they mostly consist of field accessors like `state => state.todos` or argument providers like `(state, id) => id`. You should not be doing any sort of calculation inside <InternalLinks.InputSelectors />, and you should definitely not be returning an object or array with a new reference each time.
+- The <InternalLinks.ResultFunction /> is only re-run as a last resort. So make sure to put any and all calculations inside your <InternalLinks.ResultFunction />. That way, Reselect will only run those calculations if all other checks fail.
+
+This:
+
+```ts
+// ✔️ This is optimal because we have less calculations in input selectors and more in the result function.
+const selectorGood = createSelector(
+  [(state: RootState) => state.todos],
+  todos => someExpensiveComputation(todos)
+)
+```
+
+Is preferable to this:
+
+```ts
+// ❌ This is not optimal!
+const selectorBad = createSelector(
+  [(state: RootState) => someExpensiveComputation(state.todos)],
+  someOtherCalculation
+)
+```

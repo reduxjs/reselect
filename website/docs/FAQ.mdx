@@ -1,0 +1,768 @@
+---
+id: FAQ
+title: FAQ
+sidebar_label: FAQ
+hide_title: true
+description: FAQ
+---
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+import { InternalLinks } from '@site/src/components/InternalLinks'
+import { ExternalLinks } from '@site/src/components/ExternalLinks'
+import Link from '@docusaurus/Link'
+
+# FAQ
+
+## Why isn’t my selector recomputing when the input state changes?
+
+Check that your memoization function is compatible with your state update function (i.e. the reducer if you are using <ExternalLinks.Redux />). For example, a selector created with <InternalLinks.CreateSelector /> will not work with a state update function that mutates an existing object instead of creating a new one each time. <InternalLinks.CreateSelector /> uses an identity check (`===`) to detect that an input has changed, so mutating an existing object will not trigger the selector to recompute because mutating an object does not change its identity. Note that if you are using <ExternalLinks.Redux />, mutating the state object is <Link to='http://redux.js.org/docs/Troubleshooting.html'>almost certainly a mistake</Link>.
+
+## Why is my selector recomputing when the input state stays the same?
+
+To address unexpected recomputations in your selector, first ensure that `inputStabilityCheck` is set to either `'always'` or `'once'`. This setting aids in debugging by monitoring the stability of your inputs. Additionally, utilize <InternalLinks.OutputSelectorFields /> such as `recomputations`, `resetRecomputations`, `dependencyRecomputations`, and `resetDependencyRecomputations`. These tools help identify the source of the issue.
+
+Keep an eye on the `dependencyRecomputations` count. If it increases while `recomputations` remains the same, it suggests that your arguments are changing references but your <InternalLinks.InputSelectors /> are stable which is typically the desired behavior.
+
+To delve deeper, you can determine which arguments are changing references too frequently by using the `argsMemoizeOptions` and `equalityCheck`. Consider the following example:
+
+  <!-- START: FAQ/selectorRecomputing.ts -->
+
+<Tabs
+  groupId='language'
+  defaultValue='ts'
+  values={[
+    {label: 'TypeScript', value: 'ts'},
+    {label: 'JavaScript', value: 'js'},
+  ]}>
+  <TabItem value='ts'>
+
+```ts title="FAQ/selectorRecomputing.ts"
+import { createSelector } from 'reselect'
+
+export interface RootState {
+  todos: { id: number; completed: boolean }[]
+  alerts: { id: number; read: boolean; type: string }[]
+}
+
+const selectAlertsByType = createSelector(
+  [
+    (state: RootState) => state.alerts,
+    (state: RootState, type: string) => type
+  ],
+  (alerts, type) => alerts.filter(todo => todo.type === type),
+  {
+    argsMemoizeOptions: {
+      // This will check the arguments passed to the output selector.
+      equalityCheck: (a, b) => {
+        if (a !== b) {
+          console.log('Changed argument:', a, 'to', b)
+        }
+        return a === b
+      }
+    }
+  }
+)
+```
+
+  </TabItem>
+  <TabItem value='js'>
+
+```js title="FAQ/selectorRecomputing.js"
+import { createSelector } from 'reselect'
+
+const selectAlertsByType = createSelector(
+  [state => state.alerts, (state, type) => type],
+  (alerts, type) => alerts.filter(todo => todo.type === type),
+  {
+    argsMemoizeOptions: {
+      // This will check the arguments passed to the output selector.
+      equalityCheck: (a, b) => {
+        if (a !== b) {
+          console.log('Changed argument:', a, 'to', b)
+        }
+        return a === b
+      }
+    }
+  }
+)
+```
+
+  </TabItem>
+</Tabs>
+
+  <!-- END: FAQ/selectorRecomputing.ts -->
+
+## Can I use Reselect without <ExternalLinks.Redux />?
+
+Yes. Reselect has no dependencies on any other package, so although it was designed to be used with <ExternalLinks.Redux /> it can be used independently. It can be used with any plain JS data, such as typical <ExternalLinks.React /> state values, as long as that data is being updated immutably.
+
+## How do I create a selector that takes an argument?
+
+Each of the <InternalLinks.InputSelectors /> you provide will be called with all of the selector's arguments. You can add additional input selectors to extract arguments and forward them to the <InternalLinks.ResultFunction />, like this:
+
+```ts
+const selectTodosByCategory = createSelector(
+  (state: RootState) => state.todos,
+  // Extract the second argument to pass it on
+  (state: RootState, category: string) => category,
+  (todos, category) => todos.filter(t => t.category === category)
+)
+```
+
+When creating a selector that accepts arguments in Reselect, it's important to structure your input and <InternalLinks.OutputSelector text='output selectors' /> appropriately. Here are key points to consider:
+
+1. **Consistency in Arguments**: Ensure that all positional arguments across <InternalLinks.InputSelectors /> are of the same type for consistency.
+
+2. **Selective Argument Usage**: Design each selector to use only its relevant argument(s) and ignore the rest. This is crucial because all <InternalLinks.InputSelectors /> receive the same arguments that are passed to the <InternalLinks.OutputSelector />.
+
+Suppose we have the following state structure:
+
+```ts
+interface RootState {
+  items: {
+    id: number
+    category: string
+    vendor: { id: number; name: string }
+  }[]
+  // ... other state properties ...
+}
+```
+
+To create a selector that filters `items` based on a `category` and excludes a specific `id`, you can set up your selectors as follows:
+
+```ts
+const selectAvailableItems = createSelector(
+  [
+    // First input selector extracts items from the state
+    (state: RootState) => state.items,
+    // Second input selector forwards the category argument
+    (state: RootState, category: string) => category,
+    // Third input selector forwards the ID argument
+    (state: RootState, category: string, id: number) => id
+  ],
+  // Output selector uses the extracted items, category, and ID
+  (items, category, id) =>
+    items.filter(item => item.category === category && item.id !== id)
+)
+```
+
+Internally Reselect is doing this:
+
+```ts
+// Input selector #1
+const items = (state: RootState, category: string, id: number) => state.items
+// Input selector #2
+const category = (state: RootState, category: string, id: number) => category
+// Input selector #3
+const id = (state: RootState, category: string, id: number) => id
+// result of output selector
+const finalResult =
+  // The result function
+  items.filter(item => item.category === category && item.id !== id)
+```
+
+In this example, `selectItemId` expects that its second argument will be some simple value, while `selectVendorName` expects that the second argument is an object. If you call `selectItemById(state, 42)`, `selectVendorName` will break because it's trying to access `42.name`. Reselect's TS types should detect this and prevent compilation:
+
+```ts
+const selectItems = (state: RootState) => state.items
+
+// expects a number as the second argument
+const selectItemId = (state: RootState, itemId: number) => itemId
+
+// expects an object as the second argument
+const selectVendorName = (
+  state: RootState,
+  vendor: { id: number; name: string }
+) => vendor.name
+
+const selectItemById = createSelector(
+  [selectItems, selectItemId, selectVendorName],
+  (items, itemId, vendorName) => items[itemId]
+)
+```
+
+## Can the memoization behavior be customized?
+
+Yes. The built-in `lruMemoize` memoizer works great for a lot of use cases, but it can be customized or swapped out for a different memoizer. See <Link to='/api/createSelectorCreator#customize-equalitycheck-for-lrumemoize'>these examples</Link>.
+
+## How do I test a selector?
+
+Selectors are pure functions - for a given input, a selector should always produce the same result. For this reason they are simple to unit test: call the selector with a set of inputs, and assert that the result value matches an expected shape.
+
+  <!-- START: FAQ/howToTest.test.ts -->
+
+<Tabs
+  groupId='language'
+  defaultValue='ts'
+  values={[
+    {label: 'TypeScript', value: 'ts'},
+    {label: 'JavaScript', value: 'js'},
+  ]}>
+  <TabItem value='ts'>
+
+```ts title="FAQ/howToTest.test.ts"
+import { createSelector } from 'reselect'
+import { expect, test } from 'vitest'
+
+interface RootState {
+  todos: { id: number; completed: boolean }[]
+  alerts: { id: number; read: boolean }[]
+}
+
+const state: RootState = {
+  todos: [
+    { id: 0, completed: false },
+    { id: 1, completed: true }
+  ],
+  alerts: [
+    { id: 0, read: false },
+    { id: 1, read: true }
+  ]
+}
+
+// With `Vitest` or `Jest`
+test('selector unit test', () => {
+  const selectTodoIds = createSelector(
+    [(state: RootState) => state.todos],
+    todos => todos.map(({ id }) => id)
+  )
+  const firstResult = selectTodoIds(state)
+  const secondResult = selectTodoIds(state)
+  // Reference equality should pass.
+  expect(firstResult).toBe(secondResult)
+  // Deep equality should also pass.
+  expect(firstResult).toStrictEqual(secondResult)
+  selectTodoIds(state)
+  selectTodoIds(state)
+  selectTodoIds(state)
+  // The result function should not recalculate.
+  expect(selectTodoIds.recomputations()).toBe(1)
+  // input selectors should not recalculate.
+  expect(selectTodoIds.dependencyRecomputations()).toBe(1)
+})
+
+// With `Chai`
+test('selector unit test', () => {
+  const selectTodoIds = createSelector(
+    [(state: RootState) => state.todos],
+    todos => todos.map(({ id }) => id)
+  )
+  const firstResult = selectTodoIds(state)
+  const secondResult = selectTodoIds(state)
+  // Reference equality should pass.
+  expect(firstResult).to.equal(secondResult)
+  // Deep equality should also pass.
+  expect(firstResult).to.deep.equal(secondResult)
+  selectTodoIds(state)
+  selectTodoIds(state)
+  selectTodoIds(state)
+  // The result function should not recalculate.
+  expect(selectTodoIds.recomputations()).to.equal(1)
+  // input selectors should not recalculate.
+  expect(selectTodoIds.dependencyRecomputations()).to.equal(1)
+})
+```
+
+  </TabItem>
+  <TabItem value='js'>
+
+```js title="FAQ/howToTest.test.js"
+import { createSelector } from 'reselect'
+import { expect, test } from 'vitest'
+
+const state = {
+  todos: [
+    { id: 0, completed: false },
+    { id: 1, completed: true }
+  ],
+  alerts: [
+    { id: 0, read: false },
+    { id: 1, read: true }
+  ]
+}
+
+// With `Vitest` or `Jest`
+test('selector unit test', () => {
+  const selectTodoIds = createSelector([state => state.todos], todos =>
+    todos.map(({ id }) => id)
+  )
+  const firstResult = selectTodoIds(state)
+  const secondResult = selectTodoIds(state)
+  // Reference equality should pass.
+  expect(firstResult).toBe(secondResult)
+  // Deep equality should also pass.
+  expect(firstResult).toStrictEqual(secondResult)
+  selectTodoIds(state)
+  selectTodoIds(state)
+  selectTodoIds(state)
+  // The result function should not recalculate.
+  expect(selectTodoIds.recomputations()).toBe(1)
+  // input selectors should not recalculate.
+  expect(selectTodoIds.dependencyRecomputations()).toBe(1)
+})
+
+// With `Chai`
+test('selector unit test', () => {
+  const selectTodoIds = createSelector([state => state.todos], todos =>
+    todos.map(({ id }) => id)
+  )
+  const firstResult = selectTodoIds(state)
+  const secondResult = selectTodoIds(state)
+  // Reference equality should pass.
+  expect(firstResult).to.equal(secondResult)
+  // Deep equality should also pass.
+  expect(firstResult).to.deep.equal(secondResult)
+  selectTodoIds(state)
+  selectTodoIds(state)
+  selectTodoIds(state)
+  // The result function should not recalculate.
+  expect(selectTodoIds.recomputations()).to.equal(1)
+  // input selectors should not recalculate.
+  expect(selectTodoIds.dependencyRecomputations()).to.equal(1)
+})
+```
+
+  </TabItem>
+</Tabs>
+
+  <!-- END: FAQ/howToTest.test.ts -->
+
+## Can I share a selector across multiple component instances?
+
+Yes, although if they pass in different arguments, you will need to handle that in order for memoization to work consistently:
+
+- Pass a larger `maxSize` if using `lruMemoize` ( as of 4.1.0+)
+- Use <InternalLinks.WeakMapMemoize /> (as of 5.0.0+)
+
+## Are there TypeScript Typings?
+
+Yes! Reselect is now written in TypeScript itself, so they should Just Work™.
+
+## I am seeing a TypeScript error: `Type instantiation is excessively deep and possibly infinite`
+
+Starting in 5.0.0 you should be able to nest up to 30 selectors, but in case you still run into this issue, you can refer to <Link to='https://github.com/reduxjs/reselect/issues/534#issuecomment-956708953'>this
+comment</Link> for a discussion of the problem, as
+relating to nested selectors.
+
+## How can I make a <Link to='https://github.com/hemanth/functional-programming-jargon#currying'>curried</Link> selector?
+
+Selectors that take arguments are commonly used inside of React-Redux's `useSelector` by using a closure to pass along the extra arguments:
+
+```ts
+function TodosList({ category }) {
+  const filteredTodos = useSelector(state =>
+    selectTodosByCategory(state, category)
+  )
+}
+```
+
+If you prefer to use a curried form instead, you can create a curried selector with this recipe:
+
+  <!-- START: FAQ/currySelector.ts -->
+
+<Tabs
+  groupId='language'
+  defaultValue='ts'
+  values={[
+    {label: 'TypeScript', value: 'ts'},
+    {label: 'JavaScript', value: 'js'},
+  ]}>
+  <TabItem value='ts'>
+
+```ts title="FAQ/currySelector.ts"
+import { createSelector } from 'reselect'
+import type { RootState } from './selectorRecomputing'
+
+export const currySelector = <
+  State,
+  Result,
+  Params extends readonly any[],
+  AdditionalFields
+>(
+  selector: ((state: State, ...args: Params) => Result) & AdditionalFields
+) => {
+  const curriedSelector = (...args: Params) => {
+    return (state: State) => {
+      return selector(state, ...args)
+    }
+  }
+  return Object.assign(curriedSelector, selector)
+}
+
+const selectTodoByIdCurried = currySelector(
+  createSelector(
+    [(state: RootState) => state.todos, (state: RootState, id: number) => id],
+    (todos, id) => todos.find(todo => todo.id === id)
+  )
+)
+```
+
+  </TabItem>
+  <TabItem value='js'>
+
+```js title="FAQ/currySelector.js"
+import { createSelector } from 'reselect'
+
+export const currySelector = selector => {
+  const curriedSelector = (...args) => {
+    return state => {
+      return selector(state, ...args)
+    }
+  }
+  return Object.assign(curriedSelector, selector)
+}
+
+const selectTodoByIdCurried = currySelector(
+  createSelector([state => state.todos, (state, id) => id], (todos, id) =>
+    todos.find(todo => todo.id === id)
+  )
+)
+```
+
+  </TabItem>
+</Tabs>
+
+  <!-- END: FAQ/currySelector.ts -->
+
+Or for reusability you can do this:
+
+  <!-- START: FAQ/createCurriedSelector.ts -->
+
+<Tabs
+  groupId='language'
+  defaultValue='ts'
+  values={[
+    {label: 'TypeScript', value: 'ts'},
+    {label: 'JavaScript', value: 'js'},
+  ]}>
+  <TabItem value='ts'>
+
+```ts title="FAQ/createCurriedSelector.ts"
+import type { defaultMemoize, SelectorArray, UnknownMemoizer } from 'reselect'
+import { createSelector } from 'reselect'
+import { currySelector } from './currySelector'
+
+export const createCurriedSelector = <
+  InputSelectors extends SelectorArray,
+  Result,
+  OverrideMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize,
+  OverrideArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
+>(
+  ...args: Parameters<
+    typeof createSelector<
+      InputSelectors,
+      Result,
+      OverrideMemoizeFunction,
+      OverrideArgsMemoizeFunction
+    >
+  >
+) => {
+  return currySelector(createSelector(...args))
+}
+```
+
+  </TabItem>
+  <TabItem value='js'>
+
+```js title="FAQ/createCurriedSelector.js"
+import { createSelector } from 'reselect'
+import { currySelector } from './currySelector'
+
+export const createCurriedSelector = (...args) => {
+  return currySelector(createSelector(...args))
+}
+```
+
+  </TabItem>
+</Tabs>
+
+  <!-- END: FAQ/createCurriedSelector.ts -->
+
+This:
+
+```ts
+const selectTodoById = createSelector(
+  [(state: RootState) => state.todos, (state: RootState, id: number) => id],
+  (todos, id) => todos.find(todo => todo.id === id)
+)
+
+selectTodoById(state, 0)
+```
+
+Is the same as this:
+
+```ts
+selectTodoByIdCurried(0)(state)
+```
+
+As before you had to do this:
+
+```ts
+const todoById = useSelector(state => selectTodoById(state, id))
+```
+
+Now you can do this:
+
+```ts
+const todoById = useSelector(selectTodoByIdCurried(id))
+```
+
+Another thing you can do if you are using <ExternalLinks.ReactRedux /> is create a custom hook factory function:
+
+  <!-- START: FAQ/createParametricSelectorHook.ts -->
+
+<Tabs
+  groupId='language'
+  defaultValue='ts'
+  values={[
+    {label: 'TypeScript', value: 'ts'},
+    {label: 'JavaScript', value: 'js'},
+  ]}>
+  <TabItem value='ts'>
+
+```ts title="FAQ/createParametricSelectorHook.ts"
+import { useSelector } from 'react-redux'
+import { createSelector } from 'reselect'
+
+interface RootState {
+  todos: {
+    id: number
+    completed: boolean
+    title: string
+    description: string
+  }[]
+  alerts: { id: number; read: boolean }[]
+}
+
+const state: RootState = {
+  todos: [
+    {
+      id: 0,
+      completed: false,
+      title: 'Figure out if plants are really plotting world domination.',
+      description: 'They may be.'
+    },
+    {
+      id: 1,
+      completed: true,
+      title: 'Practice telekinesis for 15 minutes',
+      description: 'Just do it'
+    }
+  ],
+  alerts: [
+    { id: 0, read: false },
+    { id: 1, read: true }
+  ]
+}
+
+const selectTodoById = createSelector(
+  [(state: RootState) => state.todos, (state: RootState, id: number) => id],
+  (todos, id) => todos.find(todo => todo.id === id)
+)
+
+export const createParametricSelectorHook = <
+  Result,
+  Params extends readonly unknown[]
+>(
+  selector: (state: RootState, ...params: Params) => Result
+) => {
+  return (...args: Params) => {
+    return useSelector((state: RootState) => selector(state, ...args))
+  }
+}
+
+export const useSelectTodo = createParametricSelectorHook(selectTodoById)
+```
+
+  </TabItem>
+  <TabItem value='js'>
+
+```js title="FAQ/createParametricSelectorHook.js"
+import { useSelector } from 'react-redux'
+import { createSelector } from 'reselect'
+
+const state = {
+  todos: [
+    {
+      id: 0,
+      completed: false,
+      title: 'Figure out if plants are really plotting world domination.',
+      description: 'They may be.'
+    },
+    {
+      id: 1,
+      completed: true,
+      title: 'Practice telekinesis for 15 minutes',
+      description: 'Just do it'
+    }
+  ],
+  alerts: [
+    { id: 0, read: false },
+    { id: 1, read: true }
+  ]
+}
+
+const selectTodoById = createSelector(
+  [state => state.todos, (state, id) => id],
+  (todos, id) => todos.find(todo => todo.id === id)
+)
+
+export const createParametricSelectorHook = selector => {
+  return (...args) => {
+    return useSelector(state => selector(state, ...args))
+  }
+}
+
+export const useSelectTodo = createParametricSelectorHook(selectTodoById)
+```
+
+  </TabItem>
+</Tabs>
+
+  <!-- END: FAQ/createParametricSelectorHook.ts -->
+
+And then inside your component:
+
+  <!-- START: FAQ/MyComponent.tsx -->
+
+<Tabs
+  groupId='language'
+  defaultValue='tsx'
+  values={[
+    {label: 'TypeScript', value: 'tsx'},
+    {label: 'JavaScript', value: 'jsx'},
+  ]}>
+  <TabItem value='tsx'>
+
+```tsx title="FAQ/MyComponent.tsx"
+import type { FC } from 'react'
+import { useSelectTodo } from './createParametricSelectorHook'
+
+interface Props {
+  id: number
+}
+
+const MyComponent: FC<Props> = ({ id }) => {
+  const todo = useSelectTodo(id)
+  return <div>{todo?.title}</div>
+}
+```
+
+  </TabItem>
+  <TabItem value='jsx'>
+
+```jsx title="FAQ/MyComponent.jsx"
+import { useSelectTodo } from './createParametricSelectorHook'
+
+const MyComponent = ({ id }) => {
+  const todo = useSelectTodo(id)
+  return <div>{todo?.title}</div>
+}
+```
+
+  </TabItem>
+</Tabs>
+
+  <!-- END: FAQ/MyComponent.tsx -->
+
+## How can I make pre-typed version of <InternalLinks.CreateSelector /> for my root state?
+
+When used with Redux, it's typical to have all input selectors take `(state: RootState)` as their first argument. Creating a pre-typed version of `createSelector` can shorten that repetition.
+
+You can create a custom typed version of <InternalLinks.CreateSelector /> by defining a utility type that extends the original <InternalLinks.CreateSelector /> function. Here's an example:
+
+```ts
+import type {
+  OutputSelector,
+  Selector,
+  SelectorArray,
+  UnknownMemoizer
+} from 'reselect'
+import { createSelector } from 'reselect'
+
+interface RootState {
+  todos: { id: number; completed: boolean }[]
+  alerts: { id: number; read: boolean }[]
+}
+
+export type TypedCreateSelector<
+  State,
+  MemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize,
+  ArgsMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize
+> = <
+  InputSelectors extends readonly Selector<State>[],
+  Result,
+  OverrideMemoizeFunction extends UnknownMemoizer = MemoizeFunction,
+  OverrideArgsMemoizeFunction extends UnknownMemoizer = ArgsMemoizeFunction
+>(
+  ...createSelectorArgs: Parameters<
+    typeof createSelector<
+      InputSelectors,
+      Result,
+      OverrideMemoizeFunction,
+      OverrideArgsMemoizeFunction
+    >
+  >
+) => ReturnType<
+  typeof createSelector<
+    InputSelectors,
+    Result,
+    OverrideMemoizeFunction,
+    OverrideArgsMemoizeFunction
+  >
+>
+
+export const createAppSelector: TypedCreateSelector<RootState> = createSelector
+```
+
+:::warning
+
+This approach currently only supports <InternalLinks.InputSelectors /> provided as a single array.
+
+:::
+
+## What if I want to use <InternalLinks.CreateSelector /> without memoization?
+
+There may be rare cases when you might want to use `createSelector` for its composition syntax, but without any memoization applied. In that case, create an <ExternalLinks.IdentityFunction /> and use it as the memoizers:
+
+<!-- START: FAQ/identity.ts -->
+
+<Tabs
+  groupId='language'
+  defaultValue='ts'
+  values={[
+    {label: 'TypeScript', value: 'ts'},
+    {label: 'JavaScript', value: 'js'},
+  ]}>
+  <TabItem value='ts'>
+
+```ts title="FAQ/identity.ts"
+import { createSelectorCreator } from 'reselect'
+
+const identity = <Func extends (...args: any[]) => any>(func: Func) => func
+
+const createNonMemoizedSelector = createSelectorCreator({
+  memoize: identity,
+  argsMemoize: identity
+})
+```
+
+  </TabItem>
+  <TabItem value='js'>
+
+```js title="FAQ/identity.js"
+import { createSelectorCreator } from 'reselect'
+
+const identity = func => func
+
+const createNonMemoizedSelector = createSelectorCreator({
+  memoize: identity,
+  argsMemoize: identity
+})
+```
+
+  </TabItem>
+</Tabs>
+
+  <!-- END: FAQ/identity.ts -->
