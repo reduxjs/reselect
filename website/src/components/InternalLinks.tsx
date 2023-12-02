@@ -55,7 +55,7 @@ export const InternalLinks = {
   ),
   OutputSelectorFields: ({ text = 'Output Selector Fields' }) => (
     <Link
-      to="/debugging-tools/output-selector-fields"
+      to="/api/createSelector#output-selector-fields"
       title="Output Selector Fields"
     >
       {text}
@@ -72,20 +72,17 @@ export const InternalLinks = {
     </Link>
   ),
   LruMemoize: () => (
-    <Link to="/api/memoization-functions/lruMemoize" title="lruMemoize">
+    <Link to="/api/lruMemoize" title="lruMemoize">
       <code>lruMemoize</code>
     </Link>
   ),
   WeakMapMemoize: () => (
-    <Link to="/api/memoization-functions/weakMapMemoize" title="weakMapMemoize">
+    <Link to="/api/weakMapMemoize" title="weakMapMemoize">
       <code>weakMapMemoize</code>
     </Link>
   ),
   UnstableAutotrackMemoize: () => (
-    <Link
-      to="/api/memoization-functions/unstable_autotrackMemoize"
-      title="unstable_autotrackMemoize"
-    >
+    <Link to="/api/unstable_autotrackMemoize" title="unstable_autotrackMemoize">
       <code>unstable_autotrackMemoize</code>
     </Link>
   ),

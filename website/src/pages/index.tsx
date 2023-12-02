@@ -33,7 +33,7 @@ const Home: FC = () => {
   const { siteConfig } = useDocusaurusContext()
   return (
     <Layout
-      title={`Hello from ${siteConfig.title}`}
+      title={`${siteConfig.title}: ${siteConfig.tagline}`}
       description="Description will go into a meta tag in <head />"
     >
       <HomepageHeader />
