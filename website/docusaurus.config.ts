@@ -1,4 +1,4 @@
-import { Options, ThemeConfig } from '@docusaurus/preset-classic'
+import type { Options, ThemeConfig } from '@docusaurus/preset-classic'
 import type { Config } from '@docusaurus/types'
 import { themes as prismThemes } from 'prism-react-renderer'
 

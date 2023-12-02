@@ -1,8 +1,8 @@
 import Link from '@docusaurus/Link'
-import type { FC } from 'react'
+import type { FC, ReactNode } from 'react'
 
 interface Props {
-  readonly text?: string
+  readonly text?: ReactNode
 }
 
 export const ExternalLinks = {
@@ -51,7 +51,7 @@ export const ExternalLinks = {
       <code>{text}</code>
     </Link>
   ),
-  ReReselect: ({ text = 're-reselect' }) => (
+  ReReselect: ({ text = 'Re-reselect' }) => (
     <Link to="https://github.com/toomuchdesign/re-reselect" title="re-reselect">
       {text}
     </Link>
