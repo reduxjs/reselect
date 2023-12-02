@@ -8569,6 +8569,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"netlify-plugin-cache@npm:^1.0.3":
+  version: 1.0.3
+  resolution: "netlify-plugin-cache@npm:1.0.3"
+  checksum: 967b9b7855711843ec1412a58be703850e46582e1df3e0edf086b5bcc3ac9b358a307eefed4520eafaeeec9011ecd4bf9b2919261454ece4699754653645891e
+  languageName: node
+  linkType: hard
+
 "no-case@npm:^3.0.4":
   version: 3.0.4
   resolution: "no-case@npm:3.0.4"
@@ -11950,6 +11957,7 @@ __metadata:
     "@docusaurus/types": 3.0.0
     "@mdx-js/react": ^3.0.0
     clsx: ^1.2.1
+    netlify-plugin-cache: ^1.0.3
     prettier: ^3.1.0
     prism-react-renderer: ^2.1.0
     react: ^18.2.0
