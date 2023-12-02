@@ -70,9 +70,15 @@ function createCacheNode<T>(): CacheNode<T> {
 }
 
 /**
+ * Configuration options for a memoization function utilizing `WeakMap` for
+ * its caching mechanism.
+ *
+ * @template Result - The type of the return value of the memoized function.
+ *
+ * @since 5.0.0
  * @public
  */
-export interface WeakMapMemoizeOptions<T = any> {
+export interface WeakMapMemoizeOptions<Result = any> {
   /**
    * If provided, used to compare a newly generated output value against previous values in the cache.
    * If a match is found, the old value is returned. This addresses the common
@@ -81,8 +87,10 @@ export interface WeakMapMemoizeOptions<T = any> {
    * ```
    * use case, where an update to another field in the original data causes a recalculation
    * due to changed references, but the output is still effectively the same.
+   *
+   * @since 5.0.0
    */
-  resultEqualityCheck?: EqualityFn<T>
+  resultEqualityCheck?: EqualityFn<Result>
 }
 
 /**
@@ -152,7 +160,7 @@ export interface WeakMapMemoizeOptions<T = any> {
  *
  * @template Func - The type of the function that is memoized.
  *
- * @see {@link https://github.com/reduxjs/reselect#weakmapmemoizefunc---since-500 weakMapMemoize}
+ * @see {@link https://reselect-docs.netlify.app/api/weakMapMemoize `weakMapMemoize`}
  *
  * @since 5.0.0
  * @public

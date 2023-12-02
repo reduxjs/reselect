@@ -8,6 +8,11 @@ import type { CreateSelectorOptions, UnknownMemoizer } from '../types'
  * @param inputSelectorResultsObject - An object containing two arrays: `inputSelectorResults` and `inputSelectorResultsCopy`, representing the results of input selectors.
  * @param options - Options object consisting of a `memoize` function and a `memoizeOptions` object.
  * @param inputSelectorArgs - List of arguments being passed to the input selectors.
+ *
+ * @see {@link https://reselect-docs.netlify.app/api/development-only-stability-checks/#inputstabilitycheck `inputStabilityCheck`}
+ *
+ * @since 5.0.0
+ * @internal
  */
 export const runInputStabilityCheck = (
   inputSelectorResultsObject: {
