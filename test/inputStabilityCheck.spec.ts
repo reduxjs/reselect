@@ -1,9 +1,5 @@
-import {
-  createSelector,
-  defaultMemoize,
-  setGlobalDevModeChecks
-} from 'reselect'
 import { shallowEqual } from 'react-redux'
+import { createSelector, lruMemoize, setGlobalDevModeChecks } from 'reselect'
 
 describe('inputStabilityCheck', () => {
   const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
@@ -45,7 +41,8 @@ describe('inputStabilityCheck', () => {
         ]),
         secondInputs: expect.arrayContaining([
           expect.objectContaining({ a: 1, b: 2 })
-        ])
+        ]),
+        stack: expect.any(String)
       })
     )
   })
@@ -153,7 +150,7 @@ describe('inputStabilityCheck', () => {
       [unstableInput],
       ({ a, b }) => a + b,
       {
-        memoize: defaultMemoize,
+        memoize: lruMemoize,
         memoizeOptions: {
           equalityCheck: shallowEqual
         }

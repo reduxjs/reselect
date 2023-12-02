@@ -31,7 +31,13 @@ export const runInputStabilityCheck = (
     createAnEmptyObject.apply(null, inputSelectorResults) ===
     createAnEmptyObject.apply(null, inputSelectorResultsCopy)
   if (!areInputSelectorResultsEqual) {
-    // do we want to log more information about the selector?
+    let stack: string | undefined = undefined
+    try {
+      throw new Error()
+    } catch (e) {
+      // eslint-disable-next-line @typescript-eslint/no-extra-semi, no-extra-semi
+      ;({ stack } = e as Error)
+    }
     console.warn(
       'An input selector returned a different result when passed same arguments.' +
         '\nThis means your output selector will likely run more frequently than intended.' +
@@ -40,7 +46,8 @@ export const runInputStabilityCheck = (
       {
         arguments: inputSelectorArgs,
         firstInputs: inputSelectorResults,
-        secondInputs: inputSelectorResultsCopy
+        secondInputs: inputSelectorResultsCopy,
+        stack
       }
     )
   }

@@ -8,19 +8,14 @@ import type { TypedUseSelectorHook } from 'react-redux'
 import { Provider, shallowEqual, useSelector } from 'react-redux'
 import {
   createSelector,
+  lruMemoize,
   unstable_autotrackMemoize,
-  weakMapMemoize,
-  defaultMemoize
+  weakMapMemoize
 } from 'reselect'
 
 import type { OutputSelector } from 'reselect'
 import type { RootState, Todo } from './testUtils'
-import {
-  addTodo,
-  logSelectorRecomputations,
-  setupStore,
-  toggleCompleted
-} from './testUtils'
+import { addTodo, setupStore, toggleCompleted } from './testUtils'
 
 describe('Computations and re-rendering with React components', () => {
   const selector = createSelector(
@@ -44,8 +39,8 @@ describe('Computations and re-rendering with React components', () => {
   type SelectTodoIds = OutputSelector<
     [(state: RootState) => RootState['todos']],
     number[],
-    typeof defaultMemoize | typeof weakMapMemoize,
-    typeof defaultMemoize | typeof weakMapMemoize
+    typeof lruMemoize | typeof weakMapMemoize,
+    typeof lruMemoize | typeof weakMapMemoize
   >
 
   type SelectTodoById = OutputSelector<
@@ -54,8 +49,8 @@ describe('Computations and re-rendering with React components', () => {
       (state: RootState, id: number) => number
     ],
     readonly [todo: Todo | undefined],
-    typeof defaultMemoize | typeof weakMapMemoize,
-    typeof defaultMemoize | typeof weakMapMemoize
+    typeof lruMemoize | typeof weakMapMemoize,
+    typeof lruMemoize | typeof weakMapMemoize
   >
 
   const selectTodos = (state: RootState) => state.todos
@@ -99,7 +94,7 @@ describe('Computations and re-rendering with React components', () => {
     [selectTodos, selectTodoId],
     mapTodoById,
     {
-      memoize: defaultMemoize,
+      memoize: lruMemoize,
       memoizeOptions: { resultEqualityCheck: shallowEqual, maxSize: 500 }
     }
   )

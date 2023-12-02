@@ -3,10 +3,10 @@
 import lodashMemoize from 'lodash/memoize'
 import microMemoize from 'micro-memoize'
 import {
+  unstable_autotrackMemoize as autotrackMemoize,
   createSelector,
   createSelectorCreator,
-  defaultMemoize,
-  unstable_autotrackMemoize as autotrackMemoize,
+  lruMemoize,
   weakMapMemoize
 } from 'reselect'
 
@@ -299,7 +299,7 @@ describe('Combining selectors', () => {
   test('override valueEquals', () => {
     // a rather absurd equals operation we can verify in tests
     const createOverridenSelector = createSelectorCreator(
-      defaultMemoize,
+      lruMemoize,
       (a, b) => typeof a === typeof b
     )
     const selector = createOverridenSelector(
@@ -343,12 +343,12 @@ describe('Customizing selectors', () => {
     let memoizer2Calls = 0
     let memoizer3Calls = 0
 
-    const defaultMemoizeAcceptsFirstArgDirectly = createSelector(
+    const lruMemoizeAcceptsFirstArgDirectly = createSelector(
       (state: StateAB) => state.a,
       (state: StateAB) => state.b,
       (a, b) => a + b,
       {
-        memoize: defaultMemoize,
+        memoize: lruMemoize,
         memoizeOptions: (a, b) => {
           memoizer1Calls++
           return a === b
@@ -356,17 +356,17 @@ describe('Customizing selectors', () => {
       }
     )
 
-    defaultMemoizeAcceptsFirstArgDirectly({ a: 1, b: 2 })
-    defaultMemoizeAcceptsFirstArgDirectly({ a: 1, b: 3 })
+    lruMemoizeAcceptsFirstArgDirectly({ a: 1, b: 2 })
+    lruMemoizeAcceptsFirstArgDirectly({ a: 1, b: 3 })
 
     expect(memoizer1Calls).toBeGreaterThan(0)
 
-    const defaultMemoizeAcceptsArgsAsArray = createSelector(
+    const lruMemoizeAcceptsArgsAsArray = createSelector(
       (state: StateAB) => state.a,
       (state: StateAB) => state.b,
       (a, b) => a + b,
       {
-        memoize: defaultMemoize,
+        memoize: lruMemoize,
         memoizeOptions: [
           (a, b) => {
             memoizer2Calls++
@@ -376,27 +376,27 @@ describe('Customizing selectors', () => {
       }
     )
 
-    defaultMemoizeAcceptsArgsAsArray({ a: 1, b: 2 })
-    defaultMemoizeAcceptsArgsAsArray({ a: 1, b: 3 })
+    lruMemoizeAcceptsArgsAsArray({ a: 1, b: 2 })
+    lruMemoizeAcceptsArgsAsArray({ a: 1, b: 3 })
 
     expect(memoizer2Calls).toBeGreaterThan(0)
 
     const createSelectorWithSeparateArg = createSelectorCreator(
-      defaultMemoize,
+      lruMemoize,
       (a, b) => {
         memoizer3Calls++
         return a === b
       }
     )
 
-    const defaultMemoizeAcceptsArgFromCSC = createSelectorWithSeparateArg(
+    const lruMemoizeAcceptsArgFromCSC = createSelectorWithSeparateArg(
       (state: StateAB) => state.a,
       (state: StateAB) => state.b,
       (a, b) => a + b
     )
 
-    defaultMemoizeAcceptsArgFromCSC({ a: 1, b: 2 })
-    defaultMemoizeAcceptsArgFromCSC({ a: 1, b: 3 })
+    lruMemoizeAcceptsArgFromCSC({ a: 1, b: 2 })
+    lruMemoizeAcceptsArgFromCSC({ a: 1, b: 3 })
 
     expect(memoizer3Calls).toBeGreaterThan(0)
   })
@@ -409,7 +409,7 @@ describe('Customizing selectors', () => {
         (state: RootState) => state.todos,
         todos => todos.map(({ id }) => id),
         {
-          memoize: defaultMemoize,
+          memoize: lruMemoize,
           devModeChecks: { inputStabilityCheck: 'always' },
           memoizeOptions: {
             equalityCheck: (a, b) => false,
@@ -442,7 +442,7 @@ describe('argsMemoize and memoize', () => {
     const selectorDefaultParametric = createSelector(
       [(state: RootState, id: number) => id, (state: RootState) => state.todos],
       (id, todos) => todos.filter(todo => todo.id === id),
-      { memoize: defaultMemoize }
+      { memoize: lruMemoize }
     )
     selectorDefaultParametric(state, 0)
     selectorDefaultParametric(state, 1)
@@ -590,7 +590,7 @@ describe('argsMemoize and memoize', () => {
     const selectorDefault = otherCreateSelector(
       [(state: RootState) => state.todos],
       todos => todos.map(({ id }) => id),
-      { memoize: defaultMemoize, argsMemoize: defaultMemoize }
+      { memoize: lruMemoize, argsMemoize: lruMemoize }
     )
     const selectorAutotrack = createSelector(
       [(state: RootState) => state.todos],
@@ -675,7 +675,7 @@ describe('argsMemoize and memoize', () => {
       [(state: RootState) => state.todos],
       todos => todos.map(({ id }) => id),
       {
-        memoize: defaultMemoize,
+        memoize: lruMemoize,
         // WARNING!! This is just for testing purposes, do not use `autotrackMemoize` to memoize the arguments,
         // it can return false positives, since it's not tracking a nested field.
         argsMemoize: autotrackMemoize
@@ -730,7 +730,7 @@ describe('argsMemoize and memoize', () => {
     ).toBe(2)
     selectorDefaultParametricArgsWeakMap(store.getState(), 2)
     // If we call the selector with 1, then 2, then 1 and back to 2 again,
-    // `defaultMemoize` will recompute a total of 4 times,
+    // `lruMemoize` will recompute a total of 4 times,
     // but weakMapMemoize will recompute only twice.
     expect(selectorDefaultParametricArgsWeakMap.recomputations()).toBe(2)
     expect(
@@ -827,7 +827,7 @@ describe('argsMemoize and memoize', () => {
     const selectorMicroMemoizeOverridden = createSelectorMicroMemoize(
       [(state: RootState) => state.todos],
       todos => todos.map(({ id }) => id),
-      { memoize: defaultMemoize, argsMemoize: defaultMemoize }
+      { memoize: lruMemoize, argsMemoize: lruMemoize }
     )
     expect(selectorMicroMemoizeOverridden(state)).to.be.an('array').that.is.not
       .empty
@@ -894,7 +894,7 @@ describe('argsMemoize and memoize', () => {
         (state: RootState) => state.todos,
         todos => todos.map(({ id }) => id),
         {
-          argsMemoize: defaultMemoize,
+          argsMemoize: lruMemoize,
           argsMemoizeOptions: { resultEqualityCheck: (a, b) => a === b }
         }
       )
@@ -969,7 +969,7 @@ describe('argsMemoize and memoize', () => {
     const selectorMicroMemoizeOverrideMemoizeOnly = createSelectorMicroMemoize(
       [(state: RootState) => state.todos],
       todos => todos.map(({ id }) => id),
-      { memoize: defaultMemoize }
+      { memoize: lruMemoize }
     )
     expect(selectorMicroMemoizeOverrideMemoizeOnly(state)).to.be.an('array')
       .that.is.not.empty

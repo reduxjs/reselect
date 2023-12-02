@@ -1,4 +1,4 @@
-import { createSelector, defaultMemoize } from 'reselect'
+import { createSelector, lruMemoize } from 'reselect'
 import type { StateA, StateAB } from 'testTypes'
 
 describe('createSelector exposed utils', () => {
@@ -7,8 +7,8 @@ describe('createSelector exposed utils', () => {
       (state: StateA) => state.a,
       a => a,
       {
-        memoize: defaultMemoize,
-        argsMemoize: defaultMemoize,
+        memoize: lruMemoize,
+        argsMemoize: lruMemoize,
         devModeChecks: { identityFunctionCheck: 'never' }
       }
     )

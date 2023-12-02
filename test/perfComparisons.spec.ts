@@ -3,7 +3,7 @@ import { configureStore, createSlice } from '@reduxjs/toolkit'
 import {
   unstable_autotrackMemoize as autotrackMemoize,
   createSelectorCreator,
-  defaultMemoize,
+  lruMemoize,
   weakMapMemoize
 } from 'reselect'
 import { vi } from 'vitest'
@@ -18,7 +18,7 @@ describe('More perf comparisons', () => {
     process.env.NODE_NV = originalEnv
   })
 
-  const csDefault = createSelectorCreator(defaultMemoize)
+  const csDefault = createSelectorCreator(lruMemoize)
   const csAutotrack = createSelectorCreator(autotrackMemoize)
 
   interface Todo {
