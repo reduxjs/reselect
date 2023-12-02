@@ -31,7 +31,7 @@ It determines if an argument has changed by calling the `equalityCheck` function
   <TabItem value='ts'>
 
 ```ts title="defaultMemoize/defaultEqualityCheck.ts"
-const defaultEqualityCheck = (previousValue: any, currentValue: any) => {
+const referenceEqualityCheck = (previousValue: any, currentValue: any) => {
   return previousValue === currentValue
 }
 ```
@@ -40,7 +40,7 @@ const defaultEqualityCheck = (previousValue: any, currentValue: any) => {
   <TabItem value='js'>
 
 ```js title="defaultMemoize/defaultEqualityCheck.js"
-const defaultEqualityCheck = (previousValue, currentValue) => {
+const referenceEqualityCheck = (previousValue, currentValue) => {
   return previousValue === currentValue
 }
 ```
@@ -108,7 +108,7 @@ A memoized function with a `.clearCache()` method attached.
 
 ```ts title="defaultMemoize/usingWithCreateSelector.ts"
 import { shallowEqual } from 'react-redux'
-import { createSelector } from 'reselect'
+import { createSelector, lruMemoize } from 'reselect'
 
 export interface RootState {
   todos: {
@@ -124,11 +124,13 @@ const selectTodoIds = createSelector(
   [(state: RootState) => state.todos],
   todos => todos.map(todo => todo.id),
   {
+    memoize: lruMemoize,
     memoizeOptions: {
       equalityCheck: shallowEqual,
       resultEqualityCheck: shallowEqual,
       maxSize: 10
     },
+    argsMemoize: lruMemoize,
     argsMemoizeOptions: {
       equalityCheck: shallowEqual,
       resultEqualityCheck: shallowEqual,
@@ -143,17 +145,19 @@ const selectTodoIds = createSelector(
 
 ```js title="defaultMemoize/usingWithCreateSelector.js"
 import { shallowEqual } from 'react-redux'
-import { createSelector } from 'reselect'
+import { createSelector, lruMemoize } from 'reselect'
 
 const selectTodoIds = createSelector(
   [state => state.todos],
   todos => todos.map(todo => todo.id),
   {
+    memoize: lruMemoize,
     memoizeOptions: {
       equalityCheck: shallowEqual,
       resultEqualityCheck: shallowEqual,
       maxSize: 10
     },
+    argsMemoize: lruMemoize,
     argsMemoizeOptions: {
       equalityCheck: shallowEqual,
       resultEqualityCheck: shallowEqual,
