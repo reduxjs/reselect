@@ -60,16 +60,16 @@ const config: Config = {
       },
       items: [
         {
-          type: 'docSidebar',
-          sidebarId: 'tutorialSidebar',
+          type: 'doc',
           position: 'right',
-          label: 'Getting Started'
+          label: 'Getting Started',
+          docId: 'introduction/getting-started'
         },
         {
-          type: 'docSidebar',
-          sidebarId: 'tutorialSidebar',
+          type: 'doc',
           position: 'right',
-          label: 'API'
+          label: 'API',
+          docId: 'api/createSelector'
         },
         {
           href: 'https://www.github.com/reduxjs/reselect',

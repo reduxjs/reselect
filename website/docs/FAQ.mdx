@@ -439,15 +439,15 @@ Or for reusability you can do this:
   <TabItem value='ts'>
 
 ```ts title="FAQ/createCurriedSelector.ts"
-import type { weakMapMemoize, SelectorArray, UnknownMemoizer } from 'reselect'
+import type { defaultMemoize, SelectorArray, UnknownMemoizer } from 'reselect'
 import { createSelector } from 'reselect'
 import { currySelector } from './currySelector'
 
 export const createCurriedSelector = <
   InputSelectors extends SelectorArray,
   Result,
-  OverrideMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize,
-  OverrideArgsMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize
+  OverrideMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize,
+  OverrideArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
 >(
   ...args: Parameters<
     typeof createSelector<

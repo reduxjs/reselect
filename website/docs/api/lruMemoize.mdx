@@ -183,7 +183,7 @@ const selectTodoIds = createSelector(
 
 ```ts title="defaultMemoize/usingWithCreateSelectorCreator.ts"
 import { shallowEqual } from 'react-redux'
-import { createSelectorCreator, defaultMemoize } from 'reselect'
+import { createSelectorCreator, lruMemoize } from 'reselect'
 
 export interface RootState {
   todos: {
@@ -196,13 +196,13 @@ export interface RootState {
 }
 
 const createSelectorShallowEqual = createSelectorCreator({
-  memoize: defaultMemoize,
+  memoize: lruMemoize,
   memoizeOptions: {
     equalityCheck: shallowEqual,
     resultEqualityCheck: shallowEqual,
     maxSize: 10
   },
-  argsMemoize: defaultMemoize,
+  argsMemoize: lruMemoize,
   argsMemoizeOptions: {
     equalityCheck: shallowEqual,
     resultEqualityCheck: shallowEqual,
@@ -221,16 +221,16 @@ const selectTodoIds = createSelectorShallowEqual(
 
 ```js title="defaultMemoize/usingWithCreateSelectorCreator.js"
 import { shallowEqual } from 'react-redux'
-import { createSelectorCreator, defaultMemoize } from 'reselect'
+import { createSelectorCreator, lruMemoize } from 'reselect'
 
 const createSelectorShallowEqual = createSelectorCreator({
-  memoize: defaultMemoize,
+  memoize: lruMemoize,
   memoizeOptions: {
     equalityCheck: shallowEqual,
     resultEqualityCheck: shallowEqual,
     maxSize: 10
   },
-  argsMemoize: defaultMemoize,
+  argsMemoize: lruMemoize,
   argsMemoizeOptions: {
     equalityCheck: shallowEqual,
     resultEqualityCheck: shallowEqual,
