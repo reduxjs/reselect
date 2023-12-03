@@ -30,34 +30,24 @@ npm install reselect
 
 # Yarn
 yarn add reselect
-
-# Bun
-bun add reselect
-
-# PNPM
-pnpm add reselect
 ```
 
 ---
 
 ## Documentation
 
-The Reselect docs are available at **https://reselect-docs.netlify.app**, and include usage guides and API references:
+The Reselect docs are available at **https://reselect.js.org**, and include usage guides and API references:
 
-- [**Introduction**](#https://reselect-docs.netlify.app/introduction/getting-started)
-- [**How Does Reselect Work?**](#https://reselect-docs.netlify.app/introduction/how-does-reselect-work)
+- [**Introduction**](#https://reselect.js.org/introduction/getting-started)
+- [**How Does Reselect Work?**](#https://reselect.js.org/introduction/how-does-reselect-work)
 - **API Reference**:
   - **[`createSelector`]**
   - **[`createSelectorCreator`]**
   - **[`createStructuredSelector`]**
-  - [**Development-Only Stability Checks**](#https://reselect-docs.netlify.app/api/development-only-stability-checks)
+  - [**Development-Only Stability Checks**](#https://reselect.js.org/api/development-only-stability-checks)
   - **[`lruMemoize`]**
   - **[`weakMapMemoize`]**
-  - **[`unstable_autotrackMemoize`]**
-- [**Best Practices**](#https://reselect-docs.netlify.app/usage/best-practices)
-- [**Common Mistakes**](#https://reselect-docs.netlify.app/usage/common-mistakes)
-- [**Handling Empty Array Results**](#https://reselect-docs.netlify.app/usage/handling-empty-array-results)
-- [**FAQ**](#https://reselect-docs.netlify.app/FAQ)
+- [**FAQ**](#https://reselect.js.org/FAQ)
 
 ## Basic Usage
 
@@ -135,8 +125,6 @@ const outputSelector = createSelector(
 )
 ```
 
-<div align="right">[ <a href="installation">↑ Back to top ↑</a> ]</div>
-
 ---
 
 ## What's New in 5.0.0?
@@ -183,9 +171,9 @@ These updates aim to enhance flexibility, performance, and developer experience.
 
 MIT
 
-## Prior Art and Inspiration
+## References
 
-<details><summary><b>Click to expand</b></summary>
+<details><summary><b>Click to Expand</b></summary>
 
 Originally inspired by getters in [NuclearJS](https://github.com/optimizely/nuclear-js.git), [subscriptions](https://github.com/Day8/re-frame#just-a-read-only-cursor) in [re-frame](https://github.com/Day8/re-frame) and this [proposal](https://github.com/reduxjs/redux/pull/169) from [speedskater](https://github.com/speedskater).
 
@@ -199,13 +187,6 @@ Originally inspired by getters in [NuclearJS](https://github.com/optimizely/nucl
 
 <!-- External Links -->
 
-[`WeakMap`]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap 'WeakMap'
-[Reference Equality Check]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Strict_equality 'Reference Equality Check'
-[Memoization]: https://en.wikipedia.org/wiki/Memoization 'Memoization'
-[Identity Function]: https://en.wikipedia.org/wiki/Identity_function 'Identity Function'
-[`useMemo`]: https://react.dev/reference/react/useMemo#usememo 'useMemo'
-[`useCallback`]: https://react.dev/reference/react/useCallback#usecallback 'useCallback'
-[`re-reselect`]: https://github.com/toomuchdesign/re-reselect 're-reselect'
 [Redux]: https://redux.js.org 'Redux'
 [React]: https://react.dev 'React'
 [React-Redux]: https://react-redux.js.org 'React-Redux'
@@ -216,18 +197,11 @@ Originally inspired by getters in [NuclearJS](https://github.com/optimizely/nucl
 [input selectors]: #input-selectors 'Input Selectors'
 [output selector]: #output-selector 'Output Selector'
 [result function]: #result-function 'Result Function'
-[`dependencies`]: #dependencies 'Dependencies'
-[**_Cascading Memoization_**]: https://reselect-docs.netlify.app/introduction/how-does-reselect-work#cascading-memoization 'Cascading Memoization'
-[output selector fields]: https://reselect-docs.netlify.app/api/createSelector#output-selector-fields 'Output Selector Fields'
-[`createSelector`]: https://reselect-docs.netlify.app/api/createSelector 'createSelector'
-[`createSelectorCreator`]: https://reselect-docs.netlify.app/api/createSelectorCreator 'createSelectorCreator'
-[`lruMemoize`]: https://reselect-docs.netlify.app/api/lruMemoize 'lruMemoize'
-[`weakMapMemoize`]: https://reselect-docs.netlify.app/api/weakMapMemoize 'weakMapMemoize'
-[`unstable_autotrackMemoize`]: https://reselect-docs.netlify.app/api/unstable_autotrackMemoize 'unstable_autotrackMemoize'
-[`createStructuredSelector`]: https://reselect-docs.netlify.app/api/createStructuredSelector 'createStructuredSelector'
+[output selector fields]: https://reselect.js.org/api/createSelector#output-selector-fields 'Output Selector Fields'
+[`createSelector`]: https://reselect.js.org/api/createSelector 'createSelector'
+[`createSelectorCreator`]: https://reselect.js.org/api/createSelectorCreator 'createSelectorCreator'
+[`lruMemoize`]: https://reselect.js.org/api/lruMemoize 'lruMemoize'
+[`weakMapMemoize`]: https://reselect.js.org/api/weakMapMemoize 'weakMapMemoize'
+[`createStructuredSelector`]: https://reselect.js.org/api/createStructuredSelector 'createStructuredSelector'
 
 </details>
-
-<div align="right">[ <a href="#installation">↑ Back to top ↑</a> ]</div>
-
----
