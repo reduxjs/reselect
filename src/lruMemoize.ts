@@ -181,7 +181,7 @@ export interface LruMemoizeOptions<Result = any> {
  *
  * @template Func - The type of the function that is memoized.
  *
- * @see {@link https://github.com/reduxjs/reselect#lrumemoizefunc-equalitycheckoroptions--referenceequalitycheck lruMemoize}
+ * @see {@link https://reselect.js.org/api/lruMemoize `lruMemoize`}
  *
  * @public
  */

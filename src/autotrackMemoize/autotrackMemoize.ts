@@ -1,10 +1,7 @@
 import { createNode, updateNode } from './proxy'
 import type { Node } from './tracking'
 
-import {
-  createCacheKeyComparator,
-  referenceEqualityCheck
-} from '../lruMemoize'
+import { createCacheKeyComparator, referenceEqualityCheck } from '../lruMemoize'
 import type { AnyFunction, DefaultMemoizeFields, Simplify } from '../types'
 import { createCache } from './autotracking'
 
@@ -65,7 +62,7 @@ import { createCache } from './autotracking'
  *
  * @template Func - The type of the function that is memoized.
  *
- * @see {@link https://github.com/reduxjs/reselect#unstable_autotrackmemoizefunc---since-500 autotrackMemoize}
+ * @see {@link https://reselect.js.org/api/unstable_autotrackMemoize autotrackMemoize}
  *
  * @since 5.0.0
  * @public

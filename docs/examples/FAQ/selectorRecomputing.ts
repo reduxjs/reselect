@@ -1,4 +1,4 @@
-import { createSelector } from 'reselect'
+import { createSelector, lruMemoize } from 'reselect'
 
 export interface RootState {
   todos: { id: number; completed: boolean }[]
@@ -12,6 +12,7 @@ const selectAlertsByType = createSelector(
   ],
   (alerts, type) => alerts.filter(todo => todo.type === type),
   {
+    argsMemoize: lruMemoize,
     argsMemoizeOptions: {
       // This will check the arguments passed to the output selector.
       equalityCheck: (a, b) => {

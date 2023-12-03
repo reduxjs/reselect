@@ -17,9 +17,9 @@ A memoization function that uses a provided equality check function to compare i
 
 It has a default cache size of 1. This means it always recalculates when the value of an argument changes. However, this can be customized as needed with a specific max cache size (since 4.1.0).
 
-It determines if an argument has changed by calling the `equalityCheck` function. As `defaultMemoize` is designed to be used with immutable data, the default `equalityCheck` function checks for changes using <ExternalLinks.ReferenceEqualityCheck text="reference equality" />:
+It determines if an argument has changed by calling the `equalityCheck` function. As `lruMemoize` is designed to be used with immutable data, the default `equalityCheck` function checks for changes using <ExternalLinks.ReferenceEqualityCheck text="reference equality" />:
 
-<!-- START: defaultMemoize/defaultEqualityCheck.ts -->
+<!-- START: lruMemoize/referenceEqualityCheck.ts -->
 
 <Tabs
   groupId='language'
@@ -30,8 +30,8 @@ It determines if an argument has changed by calling the `equalityCheck` function
   ]}>
   <TabItem value='ts'>
 
-```ts title="defaultMemoize/defaultEqualityCheck.ts"
-const defaultEqualityCheck = (previousValue: any, currentValue: any) => {
+```ts title="lruMemoize/referenceEqualityCheck.ts"
+const referenceEqualityCheck = (previousValue: any, currentValue: any) => {
   return previousValue === currentValue
 }
 ```
@@ -39,8 +39,8 @@ const defaultEqualityCheck = (previousValue: any, currentValue: any) => {
   </TabItem>
   <TabItem value='js'>
 
-```js title="defaultMemoize/defaultEqualityCheck.js"
-const defaultEqualityCheck = (previousValue, currentValue) => {
+```js title="lruMemoize/referenceEqualityCheck.js"
+const referenceEqualityCheck = (previousValue, currentValue) => {
   return previousValue === currentValue
 }
 ```
@@ -48,23 +48,23 @@ const defaultEqualityCheck = (previousValue, currentValue) => {
   </TabItem>
 </Tabs>
 
-  <!-- END: defaultMemoize/defaultEqualityCheck.ts -->
+  <!-- END: lruMemoize/referenceEqualityCheck.ts -->
 
 ## Parameters
 
-| Name                     | Description                                                 |
-| :----------------------- | :---------------------------------------------------------- |
-| `func`                   | The function to be memoized.                                |
-| `equalityCheckOrOptions` | Either an `equality check` function or an `options` object. |
+| Name                     | Description                                               |
+| :----------------------- | :-------------------------------------------------------- |
+| `func`                   | The function to be memoized.                              |
+| `equalityCheckOrOptions` | Either an equality check function or an `options` object. |
 
-Since 4.1.0, `defaultMemoize` also accepts an options object as its first argument instead of an `equalityCheck` function. The `options` object may contain:
+Since 4.1.0, `lruMemoize` also accepts an options object as its first argument instead of an `equalityCheck` function. The `options` object may contain:
 
 ```ts
-type EqualityFn = (a: any, b: any) => boolean
+type EqualityFn<T = any> = (a: T, b: T) => boolean
 
-interface DefaultMemoizeOptions {
+interface LruMemoizeOptions<Result = any> {
   equalityCheck?: EqualityFn
-  resultEqualityCheck?: EqualityFn
+  resultEqualityCheck?: EqualityFn<Result>
   maxSize?: number
 }
 ```
@@ -93,9 +93,9 @@ A memoized function with a `.clearCache()` method attached.
 
 ## Examples
 
-### Using `defaultMemoize` with `createSelector`
+### Using `lruMemoize` with `createSelector`
 
-<!-- START: defaultMemoize/usingWithCreateSelector.ts -->
+<!-- START: lruMemoize/usingWithCreateSelector.ts -->
 
 <Tabs
   groupId='language'
@@ -106,9 +106,9 @@ A memoized function with a `.clearCache()` method attached.
   ]}>
   <TabItem value='ts'>
 
-```ts title="defaultMemoize/usingWithCreateSelector.ts"
+```ts title="lruMemoize/usingWithCreateSelector.ts"
 import { shallowEqual } from 'react-redux'
-import { createSelector } from 'reselect'
+import { createSelector, lruMemoize } from 'reselect'
 
 export interface RootState {
   todos: {
@@ -124,11 +124,13 @@ const selectTodoIds = createSelector(
   [(state: RootState) => state.todos],
   todos => todos.map(todo => todo.id),
   {
+    memoize: lruMemoize,
     memoizeOptions: {
       equalityCheck: shallowEqual,
       resultEqualityCheck: shallowEqual,
       maxSize: 10
     },
+    argsMemoize: lruMemoize,
     argsMemoizeOptions: {
       equalityCheck: shallowEqual,
       resultEqualityCheck: shallowEqual,
@@ -141,19 +143,21 @@ const selectTodoIds = createSelector(
   </TabItem>
   <TabItem value='js'>
 
-```js title="defaultMemoize/usingWithCreateSelector.js"
+```js title="lruMemoize/usingWithCreateSelector.js"
 import { shallowEqual } from 'react-redux'
-import { createSelector } from 'reselect'
+import { createSelector, lruMemoize } from 'reselect'
 
 const selectTodoIds = createSelector(
   [state => state.todos],
   todos => todos.map(todo => todo.id),
   {
+    memoize: lruMemoize,
     memoizeOptions: {
       equalityCheck: shallowEqual,
       resultEqualityCheck: shallowEqual,
       maxSize: 10
     },
+    argsMemoize: lruMemoize,
     argsMemoizeOptions: {
       equalityCheck: shallowEqual,
       resultEqualityCheck: shallowEqual,
@@ -166,11 +170,11 @@ const selectTodoIds = createSelector(
   </TabItem>
 </Tabs>
 
-  <!-- END: defaultMemoize/usingWithCreateSelector.ts -->
+  <!-- END: lruMemoize/usingWithCreateSelector.ts -->
 
-### Using `defaultMemoize` with `createSelectorCreator`
+### Using `lruMemoize` with `createSelectorCreator`
 
-<!-- START: defaultMemoize/usingWithCreateSelectorCreator.ts -->
+<!-- START: lruMemoize/usingWithCreateSelectorCreator.ts -->
 
 <Tabs
   groupId='language'
@@ -181,7 +185,7 @@ const selectTodoIds = createSelector(
   ]}>
   <TabItem value='ts'>
 
-```ts title="defaultMemoize/usingWithCreateSelectorCreator.ts"
+```ts title="lruMemoize/usingWithCreateSelectorCreator.ts"
 import { shallowEqual } from 'react-redux'
 import { createSelectorCreator, lruMemoize } from 'reselect'
 
@@ -219,7 +223,7 @@ const selectTodoIds = createSelectorShallowEqual(
   </TabItem>
   <TabItem value='js'>
 
-```js title="defaultMemoize/usingWithCreateSelectorCreator.js"
+```js title="lruMemoize/usingWithCreateSelectorCreator.js"
 import { shallowEqual } from 'react-redux'
 import { createSelectorCreator, lruMemoize } from 'reselect'
 
@@ -247,4 +251,4 @@ const selectTodoIds = createSelectorShallowEqual(
   </TabItem>
 </Tabs>
 
-  <!-- END: defaultMemoize/usingWithCreateSelectorCreator.ts -->
+  <!-- END: lruMemoize/usingWithCreateSelectorCreator.ts -->

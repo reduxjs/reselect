@@ -2,6 +2,7 @@ import CodeBlock from '@theme/CodeBlock'
 import TabItem from '@theme/TabItem'
 import Tabs from '@theme/Tabs'
 import type { FC } from 'react'
+import { memo } from 'react'
 
 const PACKAGE_NAME = 'reselect'
 
@@ -26,4 +27,4 @@ const PackageManagerTabs: FC = () => {
   )
 }
 
-export default PackageManagerTabs
+export default memo(PackageManagerTabs)

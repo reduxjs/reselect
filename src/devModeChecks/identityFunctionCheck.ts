@@ -9,6 +9,11 @@ import type { AnyFunction } from '../types'
  * extraction logic in input selectors.
  *
  * @param resultFunc - The result function to be checked.
+ *
+ * @see {@link https://reselect.js.org/api/development-only-stability-checks#identityfunctioncheck `identityFunctionCheck`}
+ *
+ * @since 5.0.0
+ * @internal
  */
 export const runIdentityFunctionCheck = (resultFunc: AnyFunction) => {
   let isInputSameAsOutput = false

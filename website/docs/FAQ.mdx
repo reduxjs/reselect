@@ -38,7 +38,7 @@ To delve deeper, you can determine which arguments are changing references too f
   <TabItem value='ts'>
 
 ```ts title="FAQ/selectorRecomputing.ts"
-import { createSelector } from 'reselect'
+import { createSelector, lruMemoize } from 'reselect'
 
 export interface RootState {
   todos: { id: number; completed: boolean }[]
@@ -52,6 +52,7 @@ const selectAlertsByType = createSelector(
   ],
   (alerts, type) => alerts.filter(todo => todo.type === type),
   {
+    argsMemoize: lruMemoize,
     argsMemoizeOptions: {
       // This will check the arguments passed to the output selector.
       equalityCheck: (a, b) => {
@@ -69,12 +70,13 @@ const selectAlertsByType = createSelector(
   <TabItem value='js'>
 
 ```js title="FAQ/selectorRecomputing.js"
-import { createSelector } from 'reselect'
+import { createSelector, lruMemoize } from 'reselect'
 
 const selectAlertsByType = createSelector(
   [state => state.alerts, (state, type) => type],
   (alerts, type) => alerts.filter(todo => todo.type === type),
   {
+    argsMemoize: lruMemoize,
     argsMemoizeOptions: {
       // This will check the arguments passed to the output selector.
       equalityCheck: (a, b) => {
@@ -439,15 +441,15 @@ Or for reusability you can do this:
   <TabItem value='ts'>
 
 ```ts title="FAQ/createCurriedSelector.ts"
-import type { defaultMemoize, SelectorArray, UnknownMemoizer } from 'reselect'
+import type { weakMapMemoize, SelectorArray, UnknownMemoizer } from 'reselect'
 import { createSelector } from 'reselect'
 import { currySelector } from './currySelector'
 
 export const createCurriedSelector = <
   InputSelectors extends SelectorArray,
   Result,
-  OverrideMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize,
-  OverrideArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
+  OverrideMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize,
+  OverrideArgsMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize
 >(
   ...args: Parameters<
     typeof createSelector<

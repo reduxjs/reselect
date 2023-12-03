@@ -129,7 +129,7 @@ Before you could solve this in a number of different ways:
   <TabItem value='ts'>
 
 ```ts title="weakMapMemoize/setMaxSize.ts"
-import { createSelector } from 'reselect'
+import { createSelector, lruMemoize } from 'reselect'
 import type { RootState } from './cacheSizeProblem'
 
 const selectItemsByCategory = createSelector(
@@ -139,6 +139,7 @@ const selectItemsByCategory = createSelector(
   ],
   (items, category) => items.filter(item => item.category === category),
   {
+    memoize: lruMemoize,
     memoizeOptions: {
       maxSize: 10
     }
@@ -150,12 +151,13 @@ const selectItemsByCategory = createSelector(
   <TabItem value='js'>
 
 ```js title="weakMapMemoize/setMaxSize.js"
-import { createSelector } from 'reselect'
+import { createSelector, lruMemoize } from 'reselect'
 
 const selectItemsByCategory = createSelector(
   [state => state.items, (state, category) => category],
   (items, category) => items.filter(item => item.category === category),
   {
+    memoize: lruMemoize,
     memoizeOptions: {
       maxSize: 10
     }
@@ -337,7 +339,7 @@ const MyComponent = ({ category }) => {
 
   <!-- END: weakMapMemoize/withUseCallback.tsx -->
 
-4. Use `<ExternalLinks.ReReselect />`:
+4. Use <ExternalLinks.ReReselect />:
 
 ```ts
 import { createCachedSelector } from 're-reselect'

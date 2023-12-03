@@ -5,9 +5,10 @@ import Heading from '@theme/Heading'
 import Layout from '@theme/Layout'
 import clsx from 'clsx'
 import type { FC } from 'react'
+import { memo } from 'react'
 import styles from './index.module.css'
 
-const HomepageHeader: FC = () => {
+const HomepageHeader: FC = memo(() => {
   const { siteConfig } = useDocusaurusContext()
   return (
     <header className={clsx('hero hero--primary', styles.heroBanner)}>
@@ -27,7 +28,7 @@ const HomepageHeader: FC = () => {
       </div>
     </header>
   )
-}
+})
 
 const Home: FC = () => {
   const { siteConfig } = useDocusaurusContext()
@@ -44,4 +45,4 @@ const Home: FC = () => {
   )
 }
 
-export default Home
+export default memo(Home)

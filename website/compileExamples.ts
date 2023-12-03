@@ -387,12 +387,13 @@ export const getTSConfig = (filePath: string) => {
 
 /**
  * Compiles a single TypeScript file to JavaScript, preserving whitespaces.
- * This function takes a path to a TypeScript file (.ts or .tsx), compiles it into
- * JavaScript (.js or .jsx), and maintains whitespace formatting during the process.
- * It applies TypeScript compilation with custom configurations and handles the
- * preservation and restoration of whitespaces.
+ * This function takes a path to a TypeScript file (.ts or .tsx),
+ * compiles it into JavaScript (.js or .jsx), and maintains whitespace
+ * formatting during the process. It applies TypeScript compilation with custom
+ * configurations and handles the preservation and restoration of whitespaces.
  *
  * @param filePath - The file path of the TypeScript file to compile.
+ * @param tsconfigPath - The file path of the tsconfig file.
  */
 const compileTSFile = (filePath: string, tsconfigPath?: string) => {
   const fileContents = readFileSync(filePath, 'utf8')
@@ -437,6 +438,7 @@ const compileTSFile = (filePath: string, tsconfigPath?: string) => {
  * during the compilation process to ensure the output closely mirrors the source format.
  *
  * @param directory - The directory path where TypeScript files are located.
+ * @param tsconfigPath - The file path of the tsconfig file.
  */
 const compileTSWithWhitespace = (directory: string, tsconfigPath: string) => {
   readdirSync(directory, { withFileTypes: true }).forEach(entry => {

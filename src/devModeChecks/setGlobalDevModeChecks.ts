@@ -30,7 +30,7 @@ export const globalDevModeChecks: DevModeChecks = {
  * @example
  * ```ts
  * import { setGlobalDevModeChecks } from 'reselect'
-import { DevModeChecks } from '../types';
+ * import { DevModeChecks } from '../types'
  *
  * // Run only the first time the selector is called. (default)
  * setGlobalDevModeChecks({ inputStabilityCheck: 'once' })
@@ -50,8 +50,8 @@ import { DevModeChecks } from '../types';
  * // Never run the identity function check.
  * setGlobalDevModeChecks({ identityFunctionCheck: 'never' })
  * ```
- * @see {@link https://github.com/reduxjs/reselect#debugging-tools debugging-tools}
- * @see {@link https://github.com/reduxjs/reselect#1-globally-through-setglobaldevmodechecks global-configuration}
+ * @see {@link https://reselect.js.org/api/development-only-stability-checks Development-Only Stability Checks}
+ * @see {@link https://reselect.js.org/api/development-only-stability-checks#1-globally-through-setglobaldevmodechecks global-configuration}
  *
  * @since 5.0.0
  * @public

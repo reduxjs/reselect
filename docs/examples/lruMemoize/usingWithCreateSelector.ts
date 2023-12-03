@@ -1,5 +1,5 @@
 import { shallowEqual } from 'react-redux'
-import { createSelector } from 'reselect'
+import { createSelector, lruMemoize } from 'reselect'
 
 export interface RootState {
   todos: {
@@ -15,11 +15,13 @@ const selectTodoIds = createSelector(
   [(state: RootState) => state.todos],
   todos => todos.map(todo => todo.id),
   {
+    memoize: lruMemoize,
     memoizeOptions: {
       equalityCheck: shallowEqual,
       resultEqualityCheck: shallowEqual,
       maxSize: 10
     },
+    argsMemoize: lruMemoize,
     argsMemoizeOptions: {
       equalityCheck: shallowEqual,
       resultEqualityCheck: shallowEqual,
