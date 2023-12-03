@@ -9,7 +9,7 @@ import type { CreateSelectorOptions, UnknownMemoizer } from '../types'
  * @param options - Options object consisting of a `memoize` function and a `memoizeOptions` object.
  * @param inputSelectorArgs - List of arguments being passed to the input selectors.
  *
- * @see {@link https://reselect-docs.netlify.app/api/development-only-stability-checks/#inputstabilitycheck `inputStabilityCheck`}
+ * @see {@link https://reselect.js.org/api/development-only-stability-checks/#inputstabilitycheck `inputStabilityCheck`}
  *
  * @since 5.0.0
  * @internal

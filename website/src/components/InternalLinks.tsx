@@ -49,9 +49,7 @@ export const InternalLinks = {
       to="/introduction/how-does-reselect-work#cascading-memoization"
       title="Cascading Memoization"
     >
-      <b>
-        <i>{text}</i>
-      </b>
+      "{text}"
     </Link>
   )),
   OutputSelectorFields: memo(({ text = 'Output Selector Fields' }) => (

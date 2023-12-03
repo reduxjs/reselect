@@ -10,7 +10,7 @@ import type { AnyFunction } from '../types'
  *
  * @param resultFunc - The result function to be checked.
  *
- * @see {@link https://reselect-docs.netlify.app/api/development-only-stability-checks#identityfunctioncheck `identityFunctionCheck`}
+ * @see {@link https://reselect.js.org/api/development-only-stability-checks#identityfunctioncheck `identityFunctionCheck`}
  *
  * @since 5.0.0
  * @internal

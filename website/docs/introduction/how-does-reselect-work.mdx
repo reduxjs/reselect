@@ -50,7 +50,7 @@ The way Reselect works can be broken down into multiple parts:
      - If the results are the same, it returns the cached result without running the <InternalLinks.ResultFunction />.
      - If the results differ, it runs the <InternalLinks.ResultFunction />.
 
-This behavior is what we call **_Cascading Double-Layer Memoization_**.
+This behavior is what we call **_Cascading Memoization_**.
 
 ### Reselect Vs Standard Memoization
 
@@ -135,6 +135,6 @@ store.dispatch(toggleRead(0))
 selectCompletedTodos(store.getState())
 ```
 
-Even when the overall `state` changes, Reselect ensures efficient memoization through its unique approach. The <InternalLinks.ResultFunction /> doesn't re-run if the relevant part of the `state` (in this case `state.todos`), remains unchanged. This is due to Reselect's <InternalLinks.CascadingMemoization text="Cascading Double-Layer Memoization" />. The first layer checks the entire `state`, and the second layer checks the results of the <InternalLinks.InputSelectors />. If the first layer fails (due to a change in the overall `state`) but the second layer succeeds (because `state.todos` is unchanged), Reselect skips recalculating the <InternalLinks.ResultFunction />. This dual-check mechanism makes Reselect particularly effective in <ExternalLinks.Redux /> applications, ensuring computations are only done when truly necessary.
+Even when the overall `state` changes, Reselect ensures efficient memoization through its unique approach. The <InternalLinks.ResultFunction /> doesn't re-run if the relevant part of the `state` (in this case `state.todos`), remains unchanged. This is due to Reselect's <InternalLinks.CascadingMemoization text="Cascading Memoization" />. The first layer checks the entire `state`, and the second layer checks the results of the <InternalLinks.InputSelectors />. If the first layer fails (due to a change in the overall `state`) but the second layer succeeds (because `state.todos` is unchanged), Reselect skips recalculating the <InternalLinks.ResultFunction />. This dual-check mechanism makes Reselect particularly effective in <ExternalLinks.Redux /> applications, ensuring computations are only done when truly necessary.
 
 ---

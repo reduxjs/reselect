@@ -14,6 +14,22 @@ Accepts one or more "<InternalLinks.InputSelectors />" (either as separate argum
 a single "<InternalLinks.ResultFunction />", and an optional options object, and
 generates a memoized selector function.
 
+The **Redux docs usage page on [Deriving Data with Selectors](https://redux.js.org/usage/deriving-data-selectors)** covers the purpose and motivation for selectors, why memoized selectors are useful, and typical Reselect usage patterns.
+
+```ts no-emit
+const selectTodosByCategory = createSelector(
+  [
+    // Pass input selectors with typed arguments
+    (state: RootState) => state.todos,
+    (state: RootState, category: string) => category
+  ],
+  // Extracted values are passed to the result function for recalculation
+  (todos, category) => {
+    return todos.filter(t => t.category === category)
+  }
+)
+```
+
 ## Parameters
 
 | Name                     | Description                                                                                      |

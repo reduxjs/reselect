@@ -50,8 +50,8 @@ export const globalDevModeChecks: DevModeChecks = {
  * // Never run the identity function check.
  * setGlobalDevModeChecks({ identityFunctionCheck: 'never' })
  * ```
- * @see {@link https://reselect-docs.netlify.app/api/development-only-stability-checks Development-Only Stability Checks}
- * @see {@link https://reselect-docs.netlify.app/api/development-only-stability-checks#1-globally-through-setglobaldevmodechecks global-configuration}
+ * @see {@link https://reselect.js.org/api/development-only-stability-checks Development-Only Stability Checks}
+ * @see {@link https://reselect.js.org/api/development-only-stability-checks#1-globally-through-setglobaldevmodechecks global-configuration}
  *
  * @since 5.0.0
  * @public

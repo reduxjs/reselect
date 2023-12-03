@@ -61,7 +61,7 @@ interface SelectorsObject {
  * The structured selector can take multiple input selectors
  * and map their output to an object with specific keys.
  *
- * @see {@link https://reselect-docs.netlify.app/api/createStructuredSelector `createStructuredSelector`}
+ * @see {@link https://reselect.js.org/api/createStructuredSelector `createStructuredSelector`}
  *
  * @public
  */
@@ -136,7 +136,7 @@ export interface StructuredSelectorCreator {
    * @template MemoizeFunction - The type of the memoize function that is used to create the structured selector. It defaults to `weakMapMemoize`.
    * @template ArgsMemoizeFunction - The type of the of the memoize function that is used to memoize the arguments passed into the generated structured selector. It defaults to `weakMapMemoize`.
    *
-   * @see {@link https://reselect-docs.netlify.app/api/createStructuredSelector `createStructuredSelector`}
+   * @see {@link https://reselect.js.org/api/createStructuredSelector `createStructuredSelector`}
    */
   <
     InputSelectorsObject extends SelectorsObject,
@@ -203,7 +203,7 @@ export interface StructuredSelectorCreator {
  * )
  * ```
  *
- * @see {@link https://reselect-docs.netlify.app/api/createStructuredSelector `createStructuredSelector`}
+ * @see {@link https://reselect.js.org/api/createStructuredSelector `createStructuredSelector`}
  *
  * @public
  */

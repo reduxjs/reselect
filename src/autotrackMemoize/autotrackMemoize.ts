@@ -62,7 +62,7 @@ import { createCache } from './autotracking'
  *
  * @template Func - The type of the function that is memoized.
  *
- * @see {@link https://reselect-docs.netlify.app/api/unstable_autotrackMemoize autotrackMemoize}
+ * @see {@link https://reselect.js.org/api/unstable_autotrackMemoize autotrackMemoize}
  *
  * @since 5.0.0
  * @public

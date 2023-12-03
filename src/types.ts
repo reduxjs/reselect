@@ -72,7 +72,7 @@ export interface CreateSelectorOptions<
    * and warn about potential issues in selector behavior. This option
    * allows you to customize the behavior of these checks per selector.
    *
-   * @see {@link https://reselect-docs.netlify.app/api/development-only-stability-checks Development-Only Stability Checks}
+   * @see {@link https://reselect.js.org/api/development-only-stability-checks Development-Only Stability Checks}
    *
    * @since 5.0.0
    */
@@ -315,9 +315,9 @@ export interface DevModeChecks {
    *
    * @default 'once'
    *
-   * @see {@link https://reselect-docs.netlify.app/api/development-only-stability-checks Development-Only Stability Checks}
-   * @see {@link https://reselect-docs.netlify.app/api/development-only-stability-checks#inputstabilitycheck `inputStabilityCheck`}
-   * @see {@link https://reselect-docs.netlify.app/api/development-only-stability-checks#2-per-selector-by-passing-an-inputstabilitycheck-option-directly-to- per-selector-configuration}
+   * @see {@link https://reselect.js.org/api/development-only-stability-checks Development-Only Stability Checks}
+   * @see {@link https://reselect.js.org/api/development-only-stability-checks#inputstabilitycheck `inputStabilityCheck`}
+   * @see {@link https://reselect.js.org/api/development-only-stability-checks#2-per-selector-by-passing-an-inputstabilitycheck-option-directly-to- per-selector-configuration}
    *
    * @since 5.0.0
    */
@@ -331,9 +331,9 @@ export interface DevModeChecks {
    *
    * @default 'once'
    *
-   * @see {@link https://reselect-docs.netlify.app/api/development-only-stability-checks Development-Only Stability Checks}
-   * @see {@link https://reselect-docs.netlify.app/api/development-only-stability-checks#identityfunctioncheck `identityFunctionCheck`}
-   * @see {@link https://reselect-docs.netlify.app/api/development-only-stability-checks#2-per-selector-by-passing-an-identityfunctioncheck-option-directly-to- per-selector-configuration}
+   * @see {@link https://reselect.js.org/api/development-only-stability-checks Development-Only Stability Checks}
+   * @see {@link https://reselect.js.org/api/development-only-stability-checks#identityfunctioncheck `identityFunctionCheck`}
+   * @see {@link https://reselect.js.org/api/development-only-stability-checks#2-per-selector-by-passing-an-identityfunctioncheck-option-directly-to- per-selector-configuration}
    *
    * @since 5.0.0
    */
