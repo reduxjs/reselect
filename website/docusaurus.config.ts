@@ -8,7 +8,7 @@ const config: Config = {
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
-  url: 'https://reselect-docs.netlify.app',
+  url: 'https://reselect.js.org',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/',
@@ -54,10 +54,7 @@ const config: Config = {
     // image: 'img/docusaurus-social-card.jpg',
     navbar: {
       title: 'Reselect',
-      logo: {
-        alt: 'My Site Logo',
-        src: 'img/logo.svg'
-      },
+
       items: [
         {
           type: 'doc',
@@ -107,8 +104,7 @@ const config: Config = {
       copyright: `Copyright © ${new Date().getFullYear()} by the Redux Maintainers. Built with Docusaurus.`
     },
     prism: {
-      theme: prismThemes.github,
-      darkTheme: prismThemes.dracula
+      theme: require('./monokaiTheme.js')
     }
   } satisfies ThemeConfig
 }
