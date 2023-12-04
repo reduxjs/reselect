@@ -15,7 +15,10 @@ class StrongRef<T> {
   }
 }
 
-const Ref = WeakRef ?? StrongRef
+const Ref =
+  typeof WeakRef !== 'undefined'
+    ? WeakRef
+    : (StrongRef as unknown as typeof WeakRef)
 
 const UNTERMINATED = 0
 const TERMINATED = 1
