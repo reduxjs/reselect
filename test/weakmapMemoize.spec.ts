@@ -148,7 +148,7 @@ describe('Basic selector behavior with weakMapMemoize', () => {
     )
     expect(() => selector({ a: 1 })).toThrow('test error')
     expect(() => selector({ a: 1 })).toThrow('test error')
-    expect(called).toBe(3)
+    expect(called).toBe(2)
   })
 
   test('memoizes previous result before exception', () => {
