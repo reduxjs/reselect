@@ -364,11 +364,20 @@ export function createSelectorCreator<
         arguments
       )
 
+      // apply arguments instead of spreading for performance.
+      // @ts-ignore
+      lastResult = memoizedResultFunc.apply(null, inputSelectorResults)
+
       if (process.env.NODE_ENV !== 'production') {
-        const { inputStabilityCheck } = getDevModeChecksExecutionInfo(
-          firstRun,
-          devModeChecks
-        )
+        const { identityFunctionCheck, inputStabilityCheck } =
+          getDevModeChecksExecutionInfo(firstRun, devModeChecks)
+        if (identityFunctionCheck.shouldRun) {
+          identityFunctionCheck.run(
+            resultFunc as Combiner<InputSelectors, Result>,
+            inputSelectorResults,
+            lastResult
+          )
+        }
 
         if (inputStabilityCheck.shouldRun) {
           // make a second copy of the params, to check if we got the same results
@@ -383,27 +392,7 @@ export function createSelectorCreator<
             arguments
           )
         }
-      }
 
-      // apply arguments instead of spreading for performance.
-      // @ts-ignore
-      lastResult = memoizedResultFunc.apply(null, inputSelectorResults)
-
-      if (process.env.NODE_ENV !== 'production') {
-        const { identityFunctionCheck } = getDevModeChecksExecutionInfo(
-          firstRun,
-          devModeChecks
-        )
-        if (identityFunctionCheck.shouldRun) {
-          identityFunctionCheck.run(
-            resultFunc as Combiner<InputSelectors, Result>,
-            inputSelectorResults,
-            lastResult
-          )
-        }
-      }
-
-      if (process.env.NODE_ENV !== 'production') {
         if (firstRun) firstRun = false
       }
 
