@@ -181,4 +181,38 @@ describe('identityFunctionCheck', () => {
 
     expect(consoleSpy).toHaveBeenCalledOnce()
   })
+
+  localTest(
+    'does not warn if result function is not identity function (case 1)',
+    ({ state }) => {
+      // This test demonstrates why in some cases it can be useful to compare the first argument of the result
+      // function with the returned value (and not just checking for an identity function by passing `{}` to the result
+      // function).
+      const getFirstAlertIfMessageIsEmpty = createSelector(
+        [(state: RootState) => state.alerts[0]],
+        firstAlert => (!firstAlert.message ? firstAlert : null)
+      )
+
+      expect(getFirstAlertIfMessageIsEmpty(state)).toBeNull()
+
+      expect(consoleSpy).not.toHaveBeenCalled()
+    }
+  )
+
+  localTest(
+    'does not warn if result function is not identity function (case 2)',
+    ({ state }) => {
+      // This test demonstrates why in some cases it can be useful to pass `{}` into the result function and compare it
+      // with the returned value (and not just checking for an identity function by passing the first argument to the
+      // result function).
+      const getFirstAlertIfMessageIsNotEmpty = createSelector(
+        [(state: RootState) => state.alerts[0]],
+        firstAlert => (firstAlert.message ? firstAlert : null)
+      )
+
+      expect(getFirstAlertIfMessageIsNotEmpty(state)).toBe(state.alerts[0])
+
+      expect(consoleSpy).not.toHaveBeenCalled()
+    }
+  )
 })
