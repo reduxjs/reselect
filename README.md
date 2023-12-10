@@ -1,4 +1,4 @@
-# Reselect
+# Reselec
 
 [![npm package][npm-badge]][npm][![Coveralls][coveralls-badge]][coveralls][![GitHub Workflow Status][build-badge]][build]![TypeScript][typescript-badge]
 
