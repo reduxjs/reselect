@@ -215,4 +215,22 @@ describe('identityFunctionCheck', () => {
       expect(consoleSpy).not.toHaveBeenCalled()
     }
   )
+
+  localTest(
+    'does not warn if result function is passed more than one argument',
+    ({ state }) => {
+      const getAllNotificationsIfSmsNotEnabled = createSelector(
+        [
+          (state: RootState) => state.alerts,
+          (state: RootState) =>
+            state.users.user.details.preferences.notifications.sms
+        ],
+        (alerts, smsEnabled) => (!smsEnabled ? alerts : [])
+      )
+
+      expect(getAllNotificationsIfSmsNotEnabled(state)).toBe(state.alerts)
+
+      expect(consoleSpy).not.toHaveBeenCalled()
+    }
+  )
 })
