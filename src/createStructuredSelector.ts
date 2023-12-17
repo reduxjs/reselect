@@ -13,7 +13,12 @@ import { assertIsObject } from './utils'
 import type { weakMapMemoize } from './weakMapMemoize'
 
 /**
+ * Represents a mapping of selectors to their return types.
  *
+ * @template T - An object type where each property is a selector function.
+ *                Must extend `SelectorsObject`.
+ *
+ * @public
  * @WIP
  */
 type SelectorsMap<T extends SelectorsObject> = {
