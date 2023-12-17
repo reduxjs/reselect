@@ -95,7 +95,7 @@ const selectAlertsByType = createSelector(
 
   <!-- END: FAQ/selectorRecomputing.ts -->
 
-## Can I use Reselect without <ExternalLinks.Redux />?
+## Can I use Reselect without <ExternalLinks.Redux>Redux</ExternalLinks.Redux>?
 
 Yes. Reselect has no dependencies on any other package, so although it was designed to be used with <ExternalLinks.Redux /> it can be used independently. It can be used with any plain JS data, such as typical <ExternalLinks.React /> state values, as long as that data is being updated immutably.
 
@@ -668,7 +668,7 @@ const MyComponent = ({ id }) => {
 
   <!-- END: FAQ/MyComponent.tsx -->
 
-## How can I make pre-typed version of <InternalLinks.CreateSelector /> for my root state?
+## How can I make a pre-typed version of <InternalLinks.CreateSelector>`createSelector`</InternalLinks.CreateSelector> for my root state?
 
 When used with Redux, it's typical to have all input selectors take `(state: RootState)` as their first argument. Creating a pre-typed version of `createSelector` can shorten that repetition.
 
@@ -724,7 +724,7 @@ This approach currently only supports <InternalLinks.InputSelectors /> provided 
 
 :::
 
-## What if I want to use <InternalLinks.CreateSelector /> without memoization?
+## What if I want to use <InternalLinks.CreateSelector>`createSelector`</InternalLinks.CreateSelector> without memoization?
 
 There may be rare cases when you might want to use `createSelector` for its composition syntax, but without any memoization applied. In that case, create an <ExternalLinks.IdentityFunction /> and use it as the memoizers:
 
