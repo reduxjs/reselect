@@ -31,8 +31,8 @@
     "test": "node --expose-gc ./node_modules/vitest/dist/cli-wrapper.js run",
     "test:watch": "node --expose-gc ./node_modules/vitest/dist/cli-wrapper.js watch",
     "test:cov": "vitest run --coverage",
-    "type-check": "vitest --run typecheck",
-    "type-check:trace": "vitest --run typecheck && tsc --noEmit -p typescript_test/tsconfig.json --generateTrace trace && npx @typescript/analyze-trace trace && rimraf trace",
+    "type-check": "vitest --run --typecheck",
+    "type-check:trace": "vitest --run --typecheck && tsc --noEmit -p typescript_test/tsconfig.json --generateTrace trace && npx @typescript/analyze-trace trace && rimraf trace",
     "test:typescript": "tsc --noEmit -p typescript_test/tsconfig.json",
     "docs:start": "yarn --cwd website start",
     "docs:build": "yarn --cwd website build",
@@ -82,6 +82,6 @@
     "shelljs": "^0.8.5",
     "tsup": "^6.7.0",
     "typescript": "5.2",
-    "vitest": "^0.34"
+    "vitest": "^1.1.1"
   }
 }
