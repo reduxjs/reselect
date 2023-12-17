@@ -25,10 +25,30 @@ type SelectorsMap<T extends SelectorsObject> = {
   [Key in keyof T]: ReturnType<T[Key]>
 }
 
+/**
+ * Represents a mapping of selectors for each key in a given root state.
+ *
+ * This type is a utility that takes a root state object type and
+ * generates a corresponding set of selectors. Each selector is associated
+ * with a key in the root state, allowing for the selection
+ * of specific parts of the state.
+ *
+ * @template RootState - The type of the root state object.
+ *
+ * @since 5.0.0
+ * @public
+ */
+export type RootStateSelectors<RootState = any> = {
+  [Key in keyof RootState]: Selector<RootState, RootState[Key], []>
+}
+
 // TODO: Write more type tests for `TypedStructuredSelectorCreator`.
 /**
- * Allows you to create a pre-typed version of {@linkcode createStructuredSelector createStructuredSelector}
+ * Allows you to create a pre-typed version of
+ * {@linkcode createStructuredSelector createStructuredSelector}
  * For your root state.
+ *
+ * @template RootState - The type of the root state object.
  *
  * @since 5.0.0
  * @public
@@ -36,11 +56,7 @@ type SelectorsMap<T extends SelectorsObject> = {
  */
 export interface TypedStructuredSelectorCreator<RootState = any> {
   <
-    InputSelectorsObject extends {
-      [Key in keyof RootState]: Selector<RootState, RootState[Key], []>
-    } = {
-      [Key in keyof RootState]: Selector<RootState, RootState[Key], []>
-    },
+    InputSelectorsObject extends RootStateSelectors<RootState> = RootStateSelectors<RootState>,
     MemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize,
     ArgsMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize
   >(
