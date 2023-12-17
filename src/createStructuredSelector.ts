@@ -15,13 +15,12 @@ import type { weakMapMemoize } from './weakMapMemoize'
 /**
  * Represents a mapping of selectors to their return types.
  *
- * @template T - An object type where each property is a selector function.
+ * @template TObject - An object type where each property is a selector function.
  *
  * @public
- * @WIP
  */
-type SelectorResultsMap<T extends SelectorsObject> = {
-  [Key in keyof T]: ReturnType<T[Key]>
+export type SelectorResultsMap<TObject extends SelectorsObject> = {
+  [Key in keyof TObject]: ReturnType<TObject[Key]>
 }
 
 /**
