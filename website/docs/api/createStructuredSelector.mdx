@@ -243,3 +243,62 @@ const nestedSelector = createStructuredSelector({
   })
 })
 ```
+
+## `TypedStructuredSelectorCreator` (since 5.0.0)
+
+A helper type that allows you to create a pre-typed version of <InternalLinks.CreateStructuredSelector /> tailored to the provided root state type.
+
+<!-- START: createStructuredSelector/typedStructuredSelectorCreator.ts -->
+
+<Tabs
+  groupId='language'
+  defaultValue='ts'
+  values={[
+    {label: 'TypeScript', value: 'ts'},
+    {label: 'JavaScript', value: 'js'},
+  ]}>
+  <TabItem value='ts'>
+
+```ts title="createStructuredSelector/typedStructuredSelectorCreator.ts"
+import type { TypedStructuredSelectorCreator } from 'reselect'
+import { createStructuredSelector } from 'reselect'
+
+interface RootState {
+  todos: {
+    id: number
+    completed: boolean
+    title: string
+    description: string
+  }[]
+  alerts: { id: number; read: boolean }[]
+}
+
+const typedStructuredSelectorCreator: TypedStructuredSelectorCreator<RootState> =
+  createStructuredSelector
+
+const structuredSelector = typedStructuredSelectorCreator({
+  // The `state` argument is correctly typed as `RootState`
+  todos: state => state.todos,
+  alerts: state => state.alerts
+})
+```
+
+  </TabItem>
+  <TabItem value='js'>
+
+```js title="createStructuredSelector/typedStructuredSelectorCreator.js"
+import { createStructuredSelector } from 'reselect'
+
+const typedStructuredSelectorCreator = createStructuredSelector
+
+const structuredSelector = typedStructuredSelectorCreator({
+  // The `state` argument is correctly typed as `RootState`
+  todos: state => state.todos,
+  alerts: state => state.alerts
+})
+```
+
+  </TabItem>
+</Tabs>
+
+  <!-- END: createStructuredSelector/typedStructuredSelectorCreator.ts -->
