@@ -73,6 +73,8 @@ export type RootStateSelectors<RootState = any> = {
  *
  * @template RootState - The type of the root state object.
  *
+ * @see {@link https://reselect.js.org/api/createStructuredSelector#typedstructuredselectorcreator-since-500 `TypedStructuredSelectorCreator`}
+ *
  * @since 5.0.0
  * @public
  */
