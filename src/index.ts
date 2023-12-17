@@ -3,6 +3,7 @@ export { createSelector, createSelectorCreator } from './createSelectorCreator'
 export type { CreateSelectorFunction } from './createSelectorCreator'
 export { createStructuredSelector } from './createStructuredSelector'
 export type {
+  SelectorsObject,
   StructuredSelectorCreator,
   TypedStructuredSelectorCreator
 } from './createStructuredSelector'
