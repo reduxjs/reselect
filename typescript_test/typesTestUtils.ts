@@ -18,6 +18,12 @@ type Equals<T, U> = IsAny<
   IsAny<U, never, [T] extends [U] ? ([U] extends [T] ? any : never) : never>
 >
 
+export type IsEqual<A, B> = (<G>() => G extends A ? 1 : 2) extends <
+  G
+>() => G extends B ? 1 : 2
+  ? true
+  : false
+
 export function expectExactType<T>(t: T) {
   return <U extends Equals<T, U>>(u: U) => {}
 }
