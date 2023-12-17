@@ -1,19 +1,17 @@
 import Heading from '@theme/Heading'
 import clsx from 'clsx'
-import type { ComponentProps, ComponentType, FC } from 'react'
+import type { FC } from 'react'
 import { memo } from 'react'
 import styles from './styles.module.css'
 
 interface FeatureItem {
   title: string
-  Svg: ComponentType<ComponentProps<'svg'>>
   description: JSX.Element
 }
 
 const FeatureList: FeatureItem[] = [
   {
     title: 'Predictable',
-    Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
     description: (
       <>
         Like Redux, Reselect gives users a <b>consistent mental model</b> for
@@ -24,7 +22,6 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: 'Optimized',
-    Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
     description: (
       <>
         Reselect{' '}
@@ -38,7 +35,6 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: 'Customizable',
-    Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
     description: (
       <>
         Reselect comes with fast defaults, but provides{' '}
@@ -49,7 +45,6 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: 'Type-Safe',
-    Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
     description: (
       <>
         Reselect is designed for <b>great TypeScript support</b>. Generated
@@ -59,12 +54,9 @@ const FeatureList: FeatureItem[] = [
   }
 ]
 
-const Feature: FC<FeatureItem> = memo(({ title, Svg, description }) => {
+const Feature: FC<FeatureItem> = memo(({ title, description }) => {
   return (
     <div className={clsx('col col--3')}>
-      <div className="text--center">
-        {/* <Svg className={styles.featureSvg} role="img" /> */}
-      </div>
       <div className="text--center padding-horiz--md">
         <Heading as="h3">{title}</Heading>
         <p>{description}</p>
