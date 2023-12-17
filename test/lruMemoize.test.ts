@@ -274,12 +274,12 @@ describe(lruMemoize, () => {
     )
 
     fooChangeHandler(state)
-    expect(fooChangeSpy.mock.calls.length).toEqual(2)
+    expect(fooChangeSpy.mock.calls.length).toEqual(1)
 
     // no change
     fooChangeHandler(state)
     // this would fail
-    expect(fooChangeSpy.mock.calls.length).toEqual(2)
+    expect(fooChangeSpy.mock.calls.length).toEqual(1)
 
     const state2 = { a: 1 }
     let count = 0
