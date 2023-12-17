@@ -73,7 +73,12 @@ export interface TypedStructuredSelectorCreator<RootState = any> {
   >
 }
 
-interface SelectorsObject {
+/**
+ * Represents an object where each property is a selector function.
+ *
+ * @public
+ */
+export interface SelectorsObject {
   [key: string]: Selector
 }
 
