@@ -34,7 +34,8 @@ import {
  */
 export interface CreateSelectorFunction<
   MemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize,
-  ArgsMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize
+  ArgsMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize,
+  in State = any
 > {
   /**
    * Creates a memoized selector function.
@@ -49,7 +50,7 @@ export interface CreateSelectorFunction<
    *
    * @see {@link https://github.com/reduxjs/reselect#createselectorinputselectors--inputselectors-resultfunc-createselectoroptions createSelector}
    */
-  <InputSelectors extends SelectorArray, Result>(
+  <InputSelectors extends SelectorArray<State>, Result>(
     ...createSelectorArgs: [
       ...inputSelectors: InputSelectors,
       combiner: Combiner<InputSelectors, Result>
@@ -76,7 +77,7 @@ export interface CreateSelectorFunction<
    * @see {@link https://github.com/reduxjs/reselect#createselectorinputselectors--inputselectors-resultfunc-createselectoroptions createSelector}
    */
   <
-    InputSelectors extends SelectorArray,
+    InputSelectors extends SelectorArray<State>,
     Result,
     OverrideMemoizeFunction extends UnknownMemoizer = MemoizeFunction,
     OverrideArgsMemoizeFunction extends UnknownMemoizer = ArgsMemoizeFunction
@@ -117,7 +118,7 @@ export interface CreateSelectorFunction<
    * @see {@link https://github.com/reduxjs/reselect#createselectorinputselectors--inputselectors-resultfunc-createselectoroptions createSelector}
    */
   <
-    InputSelectors extends SelectorArray,
+    InputSelectors extends SelectorArray<State>,
     Result,
     OverrideMemoizeFunction extends UnknownMemoizer = MemoizeFunction,
     OverrideArgsMemoizeFunction extends UnknownMemoizer = ArgsMemoizeFunction
@@ -139,6 +140,12 @@ export interface CreateSelectorFunction<
     OverrideArgsMemoizeFunction
   > &
     InterruptRecursion
+
+  withTypes<StateType extends State>(): CreateSelectorFunction<
+    MemoizeFunction,
+    ArgsMemoizeFunction,
+    StateType
+  >
 }
 
 /**
@@ -426,6 +433,11 @@ export function createSelectorCreator<
       OverrideArgsMemoizeFunction
     >
   }
+
+  Object.assign(createSelector, {
+    withTypes: () => createSelector
+  })
+
   return createSelector as CreateSelectorFunction<
     MemoizeFunction,
     ArgsMemoizeFunction
