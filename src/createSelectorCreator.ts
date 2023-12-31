@@ -35,7 +35,7 @@ import {
 export interface CreateSelectorFunction<
   MemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize,
   ArgsMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize,
-  in State = any
+  in StateType = any
 > {
   /**
    * Creates a memoized selector function.
@@ -50,7 +50,7 @@ export interface CreateSelectorFunction<
    *
    * @see {@link https://github.com/reduxjs/reselect#createselectorinputselectors--inputselectors-resultfunc-createselectoroptions createSelector}
    */
-  <InputSelectors extends SelectorArray<State>, Result>(
+  <InputSelectors extends SelectorArray<StateType>, Result>(
     ...createSelectorArgs: [
       ...inputSelectors: InputSelectors,
       combiner: Combiner<InputSelectors, Result>
@@ -77,7 +77,7 @@ export interface CreateSelectorFunction<
    * @see {@link https://github.com/reduxjs/reselect#createselectorinputselectors--inputselectors-resultfunc-createselectoroptions createSelector}
    */
   <
-    InputSelectors extends SelectorArray<State>,
+    InputSelectors extends SelectorArray<StateType>,
     Result,
     OverrideMemoizeFunction extends UnknownMemoizer = MemoizeFunction,
     OverrideArgsMemoizeFunction extends UnknownMemoizer = ArgsMemoizeFunction
@@ -118,7 +118,7 @@ export interface CreateSelectorFunction<
    * @see {@link https://github.com/reduxjs/reselect#createselectorinputselectors--inputselectors-resultfunc-createselectoroptions createSelector}
    */
   <
-    InputSelectors extends SelectorArray<State>,
+    InputSelectors extends SelectorArray<StateType>,
     Result,
     OverrideMemoizeFunction extends UnknownMemoizer = MemoizeFunction,
     OverrideArgsMemoizeFunction extends UnknownMemoizer = ArgsMemoizeFunction
@@ -141,10 +141,34 @@ export interface CreateSelectorFunction<
   > &
     InterruptRecursion
 
-  withTypes<StateType extends State>(): CreateSelectorFunction<
+  /**
+   * Creates a "pre-typed" version of {@linkcode createSelector createSelector}
+   * where the `state` type is predefined.
+   *
+   * This allows you to set the `state` type once, eliminating the need to
+   * specify it with every {@linkcode createSelector createSelector} call.
+   *
+   * @returns A `CreateSelectorFunction` with the state type already defined.
+   *
+   * @example
+   * ```ts
+   * const createAppSelector = createSelector.withTypes<RootState>()
+   * const selectTodoIds = createAppSelector(
+   *   [
+   *     // Type of `state` is set to `RootState`, no need to manually set the type
+   *     state => state.todos
+   *   ],
+   *   todos => todos.map(({ id }) => id)
+   * )
+   * ```
+   * @template OverrideStateType - The specific type of state used by all selectors created with this selector creator.
+   *
+   * @since 5.0.2
+   */
+  withTypes<OverrideStateType extends StateType>(): CreateSelectorFunction<
     MemoizeFunction,
     ArgsMemoizeFunction,
-    StateType
+    OverrideStateType
   >
 }
 
