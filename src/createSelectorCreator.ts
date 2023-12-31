@@ -49,7 +49,7 @@ export interface CreateSelectorFunction<
    * @template OverrideMemoizeFunction - The type of the optional `memoize` function that could be passed into the options object to override the original `memoize` function that was initially passed into `createSelectorCreator`.
    * @template OverrideArgsMemoizeFunction - The type of the optional `argsMemoize` function that could be passed into the options object to override the original `argsMemoize` function that was initially passed into `createSelectorCreator`.
    *
-   * @see {@link https://github.com/reduxjs/reselect#createselectorinputselectors--inputselectors-resultfunc-createselectoroptions createSelector}
+   * @see {@link https://reselect.js.org/api/createselector `createSelector`}
    */
   <InputSelectors extends SelectorArray<StateType>, Result>(
     ...createSelectorArgs: [
@@ -75,7 +75,7 @@ export interface CreateSelectorFunction<
    * @template OverrideMemoizeFunction - The type of the optional `memoize` function that could be passed into the options object to override the original `memoize` function that was initially passed into `createSelectorCreator`.
    * @template OverrideArgsMemoizeFunction - The type of the optional `argsMemoize` function that could be passed into the options object to override the original `argsMemoize` function that was initially passed into `createSelectorCreator`.
    *
-   * @see {@link https://github.com/reduxjs/reselect#createselectorinputselectors--inputselectors-resultfunc-createselectoroptions createSelector}
+   * @see {@link https://reselect.js.org/api/createselector `createSelector`}
    */
   <
     InputSelectors extends SelectorArray<StateType>,
@@ -116,7 +116,7 @@ export interface CreateSelectorFunction<
    * @template OverrideMemoizeFunction - The type of the optional `memoize` function that could be passed into the options object to override the original `memoize` function that was initially passed into `createSelectorCreator`.
    * @template OverrideArgsMemoizeFunction - The type of the optional `argsMemoize` function that could be passed into the options object to override the original `argsMemoize` function that was initially passed into `createSelectorCreator`.
    *
-   * @see {@link https://github.com/reduxjs/reselect#createselectorinputselectors--inputselectors-resultfunc-createselectoroptions createSelector}
+   * @see {@link https://reselect.js.org/api/createselector `createSelector`}
    */
   <
     InputSelectors extends SelectorArray<StateType>,
@@ -149,11 +149,19 @@ export interface CreateSelectorFunction<
    * This allows you to set the `state` type once, eliminating the need to
    * specify it with every {@linkcode createSelector createSelector} call.
    *
-   * @returns A `CreateSelectorFunction` with the state type already defined.
+   * @returns A pre-typed `createSelector` with the state type already defined.
    *
    * @example
    * ```ts
-   * const createAppSelector = createSelector.withTypes<RootState>()
+   * import { createSelector } from 'reselect'
+   *
+   * export interface RootState {
+   *   todos: { id: number; completed: boolean }[]
+   *   alerts: { id: number; read: boolean }[]
+   * }
+   *
+   * export const createAppSelector = createSelector.withTypes<RootState>()
+   *
    * const selectTodoIds = createAppSelector(
    *   [
    *     // Type of `state` is set to `RootState`, no need to manually set the type
@@ -163,6 +171,8 @@ export interface CreateSelectorFunction<
    * )
    * ```
    * @template OverrideStateType - The specific type of state used by all selectors created with this selector creator.
+   *
+   * @see {@link https://reselect.js.org/api/createselector#defining-a-pre-typed-createselector `createSelector.withTypes`}
    *
    * @since 5.0.2
    */
