@@ -32,6 +32,10 @@ describe('createSelector.withTypes<RootState>()', () => {
 
   describe('when input selectors are provided as a single array', () => {
     test('locks down state type and infers result function parameter types correctly', () => {
+      expectTypeOf(createSelector.withTypes).returns.toEqualTypeOf(
+        createSelector
+      )
+
       // Type of state is locked and the parameter types of the result function
       // are correctly inferred when input selectors are provided as a single array.
       createAppSelector(
