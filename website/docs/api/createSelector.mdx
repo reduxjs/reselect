@@ -77,7 +77,7 @@ As of Reselect 5.0.2, you can create a "pre-typed" version of <InternalLinks.Cre
 
 To do this, you can call `createSelector.withTypes<StateType>()`:
 
-<!-- START: createSelector/withTypes.ts -->
+{/* START: createSelector/withTypes.ts */}
 
 <Tabs
   groupId='language'
@@ -131,7 +131,7 @@ const selectTodoIds = createAppSelector(
   </TabItem>
 </Tabs>
 
-  <!-- END: createSelector/withTypes.ts -->
+{/* END: createSelector/withTypes.ts */}
 
 Import and use the pre-typed `createAppSelector` instead of the original, and the type for state will be used automatically.
 
@@ -145,7 +145,7 @@ As a workaround you can either
 1. Wrap your input selectors in a single array
 2. You can annotate the parameter types of the result function:
 
-<!-- START: createSelector/annotateResultFunction.ts -->
+{/* START: createSelector/annotateResultFunction.ts */}
 
 <Tabs
   groupId='language'
@@ -209,7 +209,7 @@ const selectTodoIds = createAppSelector(
   </TabItem>
 </Tabs>
 
-  <!-- END: createSelector/annotateResultFunction.ts -->
+{/* END: createSelector/annotateResultFunction.ts */}
 
 :::
 
@@ -217,7 +217,7 @@ const selectTodoIds = createAppSelector(
 
 You can also use this API with <InternalLinks.CreateSelectorCreator /> to create a pre-typed custom selector creator:
 
-<!-- START: createSelector/typedSelectorCreator.ts -->
+{/* START: createSelector/typedSelectorCreator.ts */}
 
 <Tabs
   groupId='language'
@@ -307,6 +307,6 @@ const selectReadAlerts = createAppSelector(
   </TabItem>
 </Tabs>
 
-  <!-- END: createSelector/typedSelectorCreator.ts -->
+{/* END: createSelector/typedSelectorCreator.ts */}
 
 :::

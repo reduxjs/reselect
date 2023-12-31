@@ -7,7 +7,8 @@ import {
   tsExtensionRegex
 } from './compileExamples'
 
-const placeholderRegex = /<!-- START: (.*?) -->([\s\S]*?)<!-- END: \1 -->/g
+const placeholderRegex =
+  /\{\/\* START: (.*?) \*\/\}([\s\S]*?)\{\/\* END: \1 \*\/\}/g
 
 const collectMarkdownFiles = (
   directory: string,
@@ -67,7 +68,7 @@ const insertCodeExamples = (examplesDirectory: string) => {
         const tsFileContent = readFileSync(tsFilePath, 'utf-8')
         const jsFileContent = readFileSync(jsFilePath, 'utf-8')
 
-        return `<!-- START: ${tsFileName} -->
+        return `{/* START: ${tsFileName} */}
 
 <Tabs
   groupId='language'
@@ -90,7 +91,7 @@ const insertCodeExamples = (examplesDirectory: string) => {
   </TabItem>
 </Tabs>
 
-  <!-- END: ${tsFileName} -->`
+{/* END: ${tsFileName} */}`
       }
     )
     writeFileSync(markdownFilePath, content)
