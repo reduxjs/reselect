@@ -190,6 +190,11 @@ describe('Basic selector behavior', () => {
     expect(selector.recomputations()).toBe(2)
   })
 
+  test('only a result function is passed in, no input selectors', () => {
+    const selector = createSelector((a: string, b: number, c: string) => `${a}|${b}|${c}`)
+    expect(selector('foo', 3, 'baz')).toBe('foo|3|baz')
+  })
+
   test('can accept props', () => {
     let called = 0
     const selector = createSelector(

@@ -116,6 +116,11 @@ export function collectInputSelectorResults(
 ) {
   const inputSelectorResults = []
   const { length } = dependencies
+  if (!length) {
+    // no input selectors -> only one selector function was passed to `createSelector`
+    // pass all arguments to that selector function
+    return [...inputSelectorArgs]
+  }
   for (let i = 0; i < length; i++) {
     // @ts-ignore
     // apply arguments instead of spreading and mutate a local list of params for performance.
