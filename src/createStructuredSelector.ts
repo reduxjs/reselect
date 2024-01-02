@@ -60,10 +60,10 @@ export type RootStateSelectors<RootState = any> = {
  *   alerts: { id: number; read: boolean }[]
  * }
  *
- * const typedStructuredSelectorCreator: TypedStructuredSelectorCreator<RootState> =
+ * export const createStructuredAppSelector: TypedStructuredSelectorCreator<RootState> =
  *   createStructuredSelector
  *
- * const structuredSelector = typedStructuredSelectorCreator({
+ * const structuredSelector = createStructuredAppSelector({
  *   // The `state` argument is correctly typed as `RootState`
  *   todos: state => state.todos,
  *   alerts: state => state.alerts
@@ -78,7 +78,7 @@ export type RootStateSelectors<RootState = any> = {
  * @since 5.0.0
  * @public
  */
-export interface TypedStructuredSelectorCreator<RootState = any> {
+export type TypedStructuredSelectorCreator<RootState = any> =
   /**
    * A convenience function that simplifies returning an object
    * made up of selector results.
@@ -189,18 +189,18 @@ export interface TypedStructuredSelectorCreator<RootState = any> {
     MemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize,
     ArgsMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize
   >(
-    selectors: InputSelectorsObject,
+    inputSelectorsObject: InputSelectorsObject,
     selectorCreator?: CreateSelectorFunction<
       MemoizeFunction,
       ArgsMemoizeFunction
     >
-  ): OutputSelector<
+  ) => OutputSelector<
     ObjectValuesToTuple<InputSelectorsObject>,
-    SelectorResultsMap<InputSelectorsObject>,
+    Simplify<SelectorResultsMap<InputSelectorsObject>>,
     MemoizeFunction,
     ArgsMemoizeFunction
-  >
-}
+  > &
+    InterruptRecursion
 
 /**
  * Represents an object where each property is a selector function.
@@ -220,7 +220,7 @@ export interface SelectorsObject {
  *
  * @public
  */
-export interface StructuredSelectorCreator {
+export type StructuredSelectorCreator =
   /**
    * A convenience function that simplifies returning an object
    * made up of selector results.
@@ -336,14 +336,13 @@ export interface StructuredSelectorCreator {
       MemoizeFunction,
       ArgsMemoizeFunction
     >
-  ): OutputSelector<
+  ) => OutputSelector<
     ObjectValuesToTuple<InputSelectorsObject>,
     Simplify<SelectorResultsMap<InputSelectorsObject>>,
     MemoizeFunction,
     ArgsMemoizeFunction
   > &
     InterruptRecursion
-}
 
 /**
  * A convenience function that simplifies returning an object
