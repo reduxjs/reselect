@@ -44,7 +44,7 @@ For standalone usage, install the `reselect` package:
 
 ## Basic Usage
 
-Reselect exports a `createSelector` API, which generates memoized selector functions. `createSelector` accepts one or more input selectors, which extract values from arguments, and a result function function that receives the extracted values and should return a derived value. If the generated output selector is called multiple times, the output will only be recalculated when the extracted values have changed.
+Reselect exports a `createSelector` API, which generates memoized selector functions. `createSelector` accepts one or more input selectors, which extract values from arguments, and a result function that receives the extracted values and should return a derived value. If the generated output selector is called multiple times, the output will only be recalculated when the extracted values have changed.
 
 You can play around with the following **example** in <Link to='https://codesandbox.io/s/reselect-example-g3k9gf?file=/src/index.js'>this CodeSandbox</Link>:
 
