@@ -217,7 +217,7 @@ const selectTodoIds = createAppSelector(
 
 You can also use this API with <InternalLinks.CreateSelectorCreator /> to create a pre-typed custom selector creator:
 
-{/* START: createSelector/typedSelectorCreator.ts */}
+{/* START: createSelector/createAppSelector.ts */}
 
 <Tabs
   groupId='language'
@@ -228,7 +228,7 @@ You can also use this API with <InternalLinks.CreateSelectorCreator /> to create
   ]}>
   <TabItem value='ts'>
 
-```ts title="createSelector/typedSelectorCreator.ts"
+```ts title="createSelector/createAppSelector.ts"
 import microMemoize from 'micro-memoize'
 import { shallowEqual } from 'react-redux'
 import { createSelectorCreator, lruMemoize } from 'reselect'
@@ -270,7 +270,7 @@ const selectReadAlerts = createAppSelector(
   </TabItem>
   <TabItem value='js'>
 
-```js title="createSelector/typedSelectorCreator.js"
+```js title="createSelector/createAppSelector.js"
 import microMemoize from 'micro-memoize'
 import { shallowEqual } from 'react-redux'
 import { createSelectorCreator, lruMemoize } from 'reselect'
@@ -307,6 +307,6 @@ const selectReadAlerts = createAppSelector(
   </TabItem>
 </Tabs>
 
-{/* END: createSelector/typedSelectorCreator.ts */}
+{/* END: createSelector/createAppSelector.ts */}
 
 :::
