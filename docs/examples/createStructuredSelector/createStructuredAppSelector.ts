@@ -11,10 +11,10 @@ interface RootState {
   alerts: { id: number; read: boolean }[]
 }
 
-const typedStructuredSelectorCreator: TypedStructuredSelectorCreator<RootState> =
+export const createStructuredAppSelector: TypedStructuredSelectorCreator<RootState> =
   createStructuredSelector
 
-const structuredSelector = typedStructuredSelectorCreator({
+const structuredSelector = createStructuredAppSelector({
   // The `state` argument is correctly typed as `RootState`
   todos: state => state.todos,
   alerts: state => state.alerts

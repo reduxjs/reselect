@@ -248,7 +248,7 @@ const nestedSelector = createStructuredSelector({
 
 A helper type that allows you to create a pre-typed version of <InternalLinks.CreateStructuredSelector /> tailored to the provided root state type.
 
-<!-- START: createStructuredSelector/typedStructuredSelectorCreator.ts -->
+<!-- START: createStructuredSelector/createStructuredAppSelector.ts -->
 
 <Tabs
   groupId='language'
@@ -259,7 +259,7 @@ A helper type that allows you to create a pre-typed version of <InternalLinks.Cr
   ]}>
   <TabItem value='ts'>
 
-```ts title="createStructuredSelector/typedStructuredSelectorCreator.ts"
+```ts title="createStructuredSelector/createStructuredAppSelector.ts"
 import type { TypedStructuredSelectorCreator } from 'reselect'
 import { createStructuredSelector } from 'reselect'
 
@@ -273,10 +273,10 @@ interface RootState {
   alerts: { id: number; read: boolean }[]
 }
 
-const typedStructuredSelectorCreator: TypedStructuredSelectorCreator<RootState> =
+export const createStructuredAppSelector: TypedStructuredSelectorCreator<RootState> =
   createStructuredSelector
 
-const structuredSelector = typedStructuredSelectorCreator({
+const structuredSelector = createStructuredAppSelector({
   // The `state` argument is correctly typed as `RootState`
   todos: state => state.todos,
   alerts: state => state.alerts
@@ -286,12 +286,12 @@ const structuredSelector = typedStructuredSelectorCreator({
   </TabItem>
   <TabItem value='js'>
 
-```js title="createStructuredSelector/typedStructuredSelectorCreator.js"
+```js title="createStructuredSelector/createStructuredAppSelector.js"
 import { createStructuredSelector } from 'reselect'
 
-const typedStructuredSelectorCreator = createStructuredSelector
+export const createStructuredAppSelector = createStructuredSelector
 
-const structuredSelector = typedStructuredSelectorCreator({
+const structuredSelector = createStructuredAppSelector({
   // The `state` argument is correctly typed as `RootState`
   todos: state => state.todos,
   alerts: state => state.alerts
@@ -301,4 +301,4 @@ const structuredSelector = typedStructuredSelectorCreator({
   </TabItem>
 </Tabs>
 
-  <!-- END: createStructuredSelector/typedStructuredSelectorCreator.ts -->
+  <!-- END: createStructuredSelector/createStructuredAppSelector.ts -->
