@@ -120,12 +120,18 @@ export interface WeakMapMemoizeOptions<Result = any> {
  *   ```ts
  *   useSelector(state => selectSomeData(state, props.category))
  *   ```
+ *
+ * **Note**: Starting in Reselect 5.0.0, `weakMapMemoize` is the default
+ * memoizer used in `createSelector`.
+ *
  * @param func - The function to be memoized.
+ * @param options - An options object containing an optional `resultEqualityCheck` function.
  * @returns A memoized function with a `.clearCache()` method attached.
  *
  * @example
  * <caption>Using `createSelector`</caption>
  * ```ts
+ * import { shallowEqual } from 'react-redux'
  * import { createSelector, weakMapMemoize } from 'reselect'
  *
  * interface RootState {
@@ -140,7 +146,13 @@ export interface WeakMapMemoizeOptions<Result = any> {
  *   (items, category) => items.filter(item => item.category === category),
  *   {
  *     memoize: weakMapMemoize,
- *     argsMemoize: weakMapMemoize
+ *     argsMemoize: weakMapMemoize,
+ *     argsMemoizeOptions: {
+ *       resultEqualityCheck: shallowEqual
+ *     },
+ *     memoizeOptions: {
+ *       resultEqualityCheck: shallowEqual
+ *     }
  *   }
  * )
  * ```
@@ -148,9 +160,19 @@ export interface WeakMapMemoizeOptions<Result = any> {
  * @example
  * <caption>Using `createSelectorCreator`</caption>
  * ```ts
+ * import { shallowEqual } from 'react-redux'
  * import { createSelectorCreator, weakMapMemoize } from 'reselect'
  *
- * const createSelectorWeakMap = createSelectorCreator({ memoize: weakMapMemoize, argsMemoize: weakMapMemoize })
+ * const createSelectorWeakMap = createSelectorCreator({
+ *   memoize: weakMapMemoize,
+ *   argsMemoize: weakMapMemoize,
+ *   argsMemoizeOptions: {
+ *     resultEqualityCheck: shallowEqual
+ *   },
+ *   memoizeOptions: {
+ *     resultEqualityCheck: shallowEqual
+ *   }
+ * })
  *
  * const selectItemsByCategory = createSelectorWeakMap(
  *   [
