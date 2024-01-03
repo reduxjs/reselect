@@ -545,23 +545,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@reduxjs/toolkit@npm:^2.0.0-rc.1":
-  version: 2.0.0-rc.1
-  resolution: "@reduxjs/toolkit@npm:2.0.0-rc.1"
+"@reduxjs/toolkit@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "@reduxjs/toolkit@npm:2.0.1"
   dependencies:
     immer: ^10.0.3
-    redux: ^5.0.0-rc.1
-    redux-thunk: ^3.0.0-rc.0
-    reselect: ^5.0.0-beta.1
+    redux: ^5.0.0
+    redux-thunk: ^3.1.0
+    reselect: ^5.0.1
   peerDependencies:
     react: ^16.9.0 || ^17.0.0 || ^18
-    react-redux: ^7.2.1 || ^8.1.3 || ^9.0.0-rc.0
+    react-redux: ^7.2.1 || ^8.1.3 || ^9.0.0
   peerDependenciesMeta:
     react:
       optional: true
     react-redux:
       optional: true
-  checksum: 71b1b43bc09b0b97a45174bcd6f5fca41f5702ab1463005cb6f06954809d1b09f4e520c8d6ffb8d5bfc39cd8ac8a3b397ece392b9cc7ed47353a1e088c38446d
+  checksum: d7e4783263dc79cb85c8d50db41209f16f0994520193ac2b378e63dc12f336cc6f58323e37d66ccf09493c49ead2f4827aac3e8d9c6ca7def21f842efb4f5f3d
   languageName: node
   linkType: hard
 
@@ -4033,31 +4033,25 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-redux@npm:^9.0.0-rc.0":
-  version: 9.0.0-rc.0
-  resolution: "react-redux@npm:9.0.0-rc.0"
+"react-redux@npm:^9.0.4":
+  version: 9.0.4
+  resolution: "react-redux@npm:9.0.4"
   dependencies:
     "@types/use-sync-external-store": ^0.0.3
     use-sync-external-store: ^1.0.0
   peerDependencies:
-    "@types/react": ^18.0
-    "@types/react-dom": ^18.0
+    "@types/react": ^18.2.25
     react: ^18.0
-    react-dom: ^18.0
-    react-native: ">=0.71"
-    redux: ^5.0.0-rc.0
+    react-native: ">=0.69"
+    redux: ^5.0.0
   peerDependenciesMeta:
     "@types/react":
-      optional: true
-    "@types/react-dom":
-      optional: true
-    react-dom:
       optional: true
     react-native:
       optional: true
     redux:
       optional: true
-  checksum: 7acc5760b7a4f6e43fb08d8e2ba4bf67638a604c15974e58c1597c37b0b55ee96db89c54bfc753c915a48081684f2051606fe430556cdf83204cceed3aaa64a3
+  checksum: acc69b85e003f4367e0fa9716ca441a2536aa513fcb1b9404e33188fa68938acf455806eba2ff639553fbba24c06b6e96982998178bb9a2669227e7e4bcd441e
   languageName: node
   linkType: hard
 
@@ -4099,19 +4093,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"redux-thunk@npm:^3.0.0-rc.0":
-  version: 3.0.0-rc.0
-  resolution: "redux-thunk@npm:3.0.0-rc.0"
+"redux-thunk@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "redux-thunk@npm:3.1.0"
   peerDependencies:
-    redux: ^5.0.0-rc.0
-  checksum: d56a4bb700c742294496699366090bad22d13112cacc16b4858321cb6d88e05dcbab3c0f0d3b34848bbfedf4a04cdcc1b999e6cfdf7a9af713018fe35a35016e
+    redux: ^5.0.0
+  checksum: bea96f8233975aad4c9f24ca1ffd08ac7ec91eaefc26e7ba9935544dc55d7f09ba2aa726676dab53dc79d0c91e8071f9729cddfea927f4c41839757d2ade0f50
   languageName: node
   linkType: hard
 
-"redux@npm:^5.0.0-rc.1":
-  version: 5.0.0-rc.1
-  resolution: "redux@npm:5.0.0-rc.1"
-  checksum: e3a26c5df84fb5705c82e17ca59c19374e3da3e87e5582201ca9b727e2569671bc1f01d738044f34bf38baaa296646a42714207a3dbc83d92ddf186ee0fc21c8
+"redux@npm:^5.0.0":
+  version: 5.0.1
+  resolution: "redux@npm:5.0.1"
+  checksum: e74affa9009dd5d994878b9a1ce30d6569d986117175056edb003de2651c05b10fe7819d6fa94aea1a94de9a82f252f986547f007a2fbeb35c317a2e5f5ecf2c
   languageName: node
   linkType: hard
 
@@ -4168,10 +4162,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"reselect@npm:^5.0.0-beta.1":
-  version: 5.0.0-beta.1
-  resolution: "reselect@npm:5.0.0-beta.1"
-  checksum: dd707e2285c6c4d27c245634e87cf12ef5043cf01c48478f80b3e178efa8f4cd8576d56ac2691180a63704532fb3f12861df81b66ddd7819decbf64d6908779e
+"reselect@npm:^5.0.1":
+  version: 5.0.1
+  resolution: "reselect@npm:5.0.1"
+  checksum: 7663b4c28a0e908e74dc25262e1d813d028b9c2ee96160cb0f40a16f09c5ac632fa16af6bafede7eb0ff16ab2d5bea2cd8814d9a9488e0262b8317fef90b1dc0
   languageName: node
   linkType: hard
 
@@ -4179,7 +4173,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "reselect@workspace:."
   dependencies:
-    "@reduxjs/toolkit": ^2.0.0-rc.1
+    "@reduxjs/toolkit": ^2.0.1
     "@testing-library/react": ^14.1.2
     "@types/lodash": ^4.14.175
     "@types/react": ^18.2.38
@@ -4201,7 +4195,7 @@ __metadata:
     prettier: ^2.7.1
     react: ^18.2.0
     react-dom: ^18.2.0
-    react-redux: ^9.0.0-rc.0
+    react-redux: ^9.0.4
     rimraf: ^3.0.2
     shelljs: ^0.8.5
     tsup: ^6.7.0
