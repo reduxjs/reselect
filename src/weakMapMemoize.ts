@@ -8,6 +8,17 @@ import type {
   Simplify
 } from './types'
 
+/**
+ * A pseudo-polyfill class for `WeakRef`, implemented as `StrongRef`.
+ * It holds a strong reference to a value, ensuring that it is not subject to garbage collection.
+ * This class ensures that the value is strongly held and not subject to garbage collection.
+ * It is primarily used in environments where `WeakRef` is not available.
+ *
+ * @template T - The type of the value that is strongly referenced
+ *
+ * @since 5.0.0
+ * @internal
+ */
 class StrongRef<T> {
   constructor(private value: T) {}
   deref() {
@@ -23,47 +34,110 @@ const Ref =
 const UNTERMINATED = 0
 const TERMINATED = 1
 
-interface UnterminatedCacheNode<T> {
+/**
+ * Represents an unterminated cache node in a caching system.
+ * This type is used to define the structure of a cache node
+ * that has not yet completed its computation.
+ *
+ * @template CachedValueType - The type of the value that will be cached in the node.
+ *
+ * @since 5.0.0
+ * @internal
+ */
+interface UnterminatedCacheNode<CachedValueType> {
   /**
    * Status, represents whether the cached computation returned a value or threw an error.
+   * A status of 0 indicates that the computation is unterminated.
    */
   s: 0
+
   /**
    * Value, either the cached result or an error, depending on status.
+   * In the case of an unterminated cache node, this is typically `undefined` or `void`.
    */
   v: void
+
   /**
    * Object cache, a `WeakMap` where non-primitive arguments are stored.
+   * This allows for efficient caching and garbage collection of objects and functions.
    */
-  o: null | WeakMap<Function | Object, CacheNode<T>>
+  o: null | WeakMap<Function | Object, CacheNode<CachedValueType>>
+
   /**
    * Primitive cache, a regular Map where primitive arguments are stored.
+   * This is used for caching values associated with primitive data types.
    */
-  p: null | Map<string | number | null | void | symbol | boolean, CacheNode<T>>
+  p: null | Map<
+    string | number | null | void | symbol | boolean,
+    CacheNode<CachedValueType>
+  >
 }
 
-interface TerminatedCacheNode<T> {
+/**
+ * Represents a terminated cache node in a caching system.
+ * This type is used to define the structure of a cache node
+ * that has completed its computation.
+ *
+ * @template CachedValueType - The type of the value that is cached in the node, which can include the result of a computation or an error.
+ *
+ * @since 5.0.0
+ * @internal
+ */
+interface TerminatedCacheNode<CachedValueType> {
   /**
    * Status, represents whether the cached computation returned a value or threw an error.
+   * A status of 1 indicates that the computation is terminated.
    */
   s: 1
+
   /**
    * Value, either the cached result or an error, depending on status.
+   * This holds the final value or error of the computation.
    */
-  v: T
+  v: CachedValueType
+
   /**
    * Object cache, a `WeakMap` where non-primitive arguments are stored.
+   * This is used for caching object and function references efficiently.
    */
-  o: null | WeakMap<Function | Object, CacheNode<T>>
+  o: null | WeakMap<Function | Object, CacheNode<CachedValueType>>
+
   /**
    * Primitive cache, a regular `Map` where primitive arguments are stored.
+   * This is used for efficiently caching values associated with primitive data types.
    */
-  p: null | Map<string | number | null | void | symbol | boolean, CacheNode<T>>
+  p: null | Map<
+    string | number | null | void | symbol | boolean,
+    CacheNode<CachedValueType>
+  >
 }
 
-type CacheNode<T> = TerminatedCacheNode<T> | UnterminatedCacheNode<T>
+/**
+ * Represents a cache node which can either be
+ * in a terminated or unterminated state.
+ *
+ * @template CachedValueType - The type of the value that will be stored in the cache node.
+ *
+ * @since 5.0.0
+ * @internal
+ */
+type CacheNode<CachedValueType> =
+  | TerminatedCacheNode<CachedValueType>
+  | UnterminatedCacheNode<CachedValueType>
 
-function createCacheNode<T>(): CacheNode<T> {
+/**
+ * Creates and returns a new cache node.
+ * It initializes a cache node with default properties,
+ * setting it to an unterminated state.
+ *
+ * @returns A new cache node with default initialization, ready for use in caching operations.
+ *
+ * @template CachedValueType - The type of the value that will be stored in the cache node.
+ *
+ * @since 5.0.0
+ * @internal
+ */
+function createCacheNode<CachedValueType>(): CacheNode<CachedValueType> {
   return {
     s: UNTERMINATED,
     v: undefined,
