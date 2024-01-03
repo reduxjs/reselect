@@ -36,7 +36,7 @@ import {
 export interface CreateSelectorFunction<
   MemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize,
   ArgsMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize,
-  in StateType = any
+  StateType = any
 > {
   /**
    * Creates a memoized selector function.
