@@ -127,8 +127,8 @@ export function collectInputSelectorResults(
 /**
  * Retrieves execution information for development mode checks.
  *
- * @param devModeChecks - Custom Settings for development mode checks. These settings will override the global defaults.
  * @param firstRun - Indicates whether it is the first time the selector has run.
+ * @param devModeChecks - Custom Settings for development mode checks. These settings will override the global defaults.
  * @returns  An object containing the execution information for each development mode check.
  */
 export const getDevModeChecksExecutionInfo = (
