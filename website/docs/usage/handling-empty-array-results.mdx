@@ -16,7 +16,7 @@ To reduce recalculations, use a predefined empty array when `array.filter` or si
 
 So you can have a pattern like this:
 
-  <!-- START: handling-empty-array-results/firstPattern.ts -->
+{/* START: handling-empty-array-results/firstPattern.ts */}
 
 <Tabs
   groupId='language'
@@ -67,11 +67,11 @@ const selectCompletedTodos = createSelector([state => state.todos], todos => {
   </TabItem>
 </Tabs>
 
-  <!-- END: handling-empty-array-results/firstPattern.ts -->
+{/* END: handling-empty-array-results/firstPattern.ts */}
 
 Or to avoid repetition, you can create a wrapper function and reuse it:
 
-  <!-- START: handling-empty-array-results/fallbackToEmptyArray.ts -->
+{/* START: handling-empty-array-results/fallbackToEmptyArray.ts */}
 
 <Tabs
   groupId='language'
@@ -120,7 +120,7 @@ const selectCompletedTodos = createSelector([state => state.todos], todos => {
   </TabItem>
 </Tabs>
 
-  <!-- END: handling-empty-array-results/fallbackToEmptyArray.ts -->
+{/* END: handling-empty-array-results/fallbackToEmptyArray.ts */}
 
 This way if the <InternalLinks.ResultFunction /> returns an empty array twice in a row, your component will not re-render due to a stable empty array reference:
 

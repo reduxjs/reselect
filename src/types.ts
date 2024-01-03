@@ -41,7 +41,7 @@ export type Selector<
  *
  * @public
  */
-export type SelectorArray = readonly Selector[]
+export type SelectorArray<State = any> = readonly Selector<State>[]
 
 /**
  * Extracts an array of all return types from all input selectors.

@@ -15,6 +15,7 @@ import type { RootState } from './testUtils'
 import {
   addTodo,
   deepClone,
+  isMemoizedSelector,
   localTest,
   setEnvToProd,
   toggleCompleted
@@ -479,43 +480,9 @@ describe('argsMemoize and memoize', () => {
     const hasUndefinedValues = (object: object) => {
       return Object.values(object).some(e => e == null)
     }
-    const isMemoizedSelector = (selector: object) => {
-      return (
-        typeof selector === 'function' &&
-        'resultFunc' in selector &&
-        'memoizedResultFunc' in selector &&
-        'lastResult' in selector &&
-        'dependencies' in selector &&
-        'recomputations' in selector &&
-        'dependencyRecomputations' in selector &&
-        'resetRecomputations' in selector &&
-        'resetDependencyRecomputations' in selector &&
-        'memoize' in selector &&
-        'argsMemoize' in selector &&
-        typeof selector.resultFunc === 'function' &&
-        typeof selector.memoizedResultFunc === 'function' &&
-        typeof selector.lastResult === 'function' &&
-        Array.isArray(selector.dependencies) &&
-        typeof selector.recomputations === 'function' &&
-        typeof selector.dependencyRecomputations === 'function' &&
-        typeof selector.resetRecomputations === 'function' &&
-        typeof selector.resetDependencyRecomputations === 'function' &&
-        typeof selector.memoize === 'function' &&
-        typeof selector.argsMemoize === 'function' &&
-        selector.dependencies.length >= 1 &&
-        selector.dependencies.every(
-          (dependency): dependency is Function =>
-            typeof dependency === 'function'
-        ) &&
-        !selector.lastResult.length &&
-        !selector.recomputations.length &&
-        !selector.resetRecomputations.length &&
-        typeof selector.recomputations() === 'number'
-      )
-    }
     const isArrayOfFunctions = (array: any[]) =>
       array.every(e => typeof e === 'function')
-    expect(selectorDefault).toSatisfy(isMemoizedSelector)
+    expect(selectorDefault).toBeMemoizedSelector()
     expect(selectorDefault)
       .to.be.a('function')
       .that.has.all.keys(allFields)

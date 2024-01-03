@@ -832,7 +832,7 @@ function memoizeAndArgsMemoizeInCreateSelectorCreator() {
   )
 
   const createSelectorWithWrongArgsMemoizeOptions =
-    // @ts-expect-error If we don't pass in `argsMemoize`, the type for `argsMemoizeOptions` falls back to the options parameter of `lruMemoize`.
+    // @ts-expect-error If we don't pass in `argsMemoize`, the type for `argsMemoizeOptions` falls back to the options parameter of `weakMapMemoize`.
     createSelectorCreator({
       memoize: microMemoize,
       memoizeOptions: { isEqual: (a, b) => a === b },
