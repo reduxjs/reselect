@@ -161,6 +161,10 @@ export interface StructuredSelectorCreator {
  * A convenience function that simplifies returning an object
  * made up of selector results.
  *
+ * @param inputSelectorsObject - A key value pair consisting of input selectors.
+ * @param selectorCreator - A custom selector creator function. It defaults to `createSelector`.
+ * @returns A memoized structured selector.
+ *
  * @example
  * <caption>Modern Use Case</caption>
  * ```ts
