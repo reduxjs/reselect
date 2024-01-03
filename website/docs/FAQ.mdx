@@ -26,7 +26,7 @@ Keep an eye on the `dependencyRecomputations` count. If it increases while `reco
 
 To delve deeper, you can determine which arguments are changing references too frequently by using the `argsMemoizeOptions` and `equalityCheck`. Consider the following example:
 
-  <!-- START: FAQ/selectorRecomputing.ts -->
+{/* START: FAQ/selectorRecomputing.ts */}
 
 <Tabs
   groupId='language'
@@ -93,7 +93,7 @@ const selectAlertsByType = createSelector(
   </TabItem>
 </Tabs>
 
-  <!-- END: FAQ/selectorRecomputing.ts -->
+{/* END: FAQ/selectorRecomputing.ts */}
 
 ## Can I use Reselect without <ExternalLinks.Redux>Redux</ExternalLinks.Redux>?
 
@@ -192,7 +192,7 @@ Yes. The built-in `lruMemoize` memoizer works great for a lot of use cases, but 
 
 Selectors are pure functions - for a given input, a selector should always produce the same result. For this reason they are simple to unit test: call the selector with a set of inputs, and assert that the result value matches an expected shape.
 
-  <!-- START: FAQ/howToTest.test.ts -->
+{/* START: FAQ/howToTest.test.ts */}
 
 <Tabs
   groupId='language'
@@ -328,7 +328,7 @@ test('selector unit test', () => {
   </TabItem>
 </Tabs>
 
-  <!-- END: FAQ/howToTest.test.ts -->
+{/* END: FAQ/howToTest.test.ts */}
 
 ## Can I share a selector across multiple component instances?
 
@@ -361,7 +361,7 @@ function TodosList({ category }) {
 
 If you prefer to use a curried form instead, you can create a curried selector with this recipe:
 
-  <!-- START: FAQ/currySelector.ts -->
+{/* START: FAQ/currySelector.ts */}
 
 <Tabs
   groupId='language'
@@ -425,11 +425,11 @@ const selectTodoByIdCurried = currySelector(
   </TabItem>
 </Tabs>
 
-  <!-- END: FAQ/currySelector.ts -->
+{/* END: FAQ/currySelector.ts */}
 
 Or for reusability you can do this:
 
-  <!-- START: FAQ/createCurriedSelector.ts -->
+{/* START: FAQ/createCurriedSelector.ts */}
 
 <Tabs
   groupId='language'
@@ -479,7 +479,7 @@ export const createCurriedSelector = (...args) => {
   </TabItem>
 </Tabs>
 
-  <!-- END: FAQ/createCurriedSelector.ts -->
+{/* END: FAQ/createCurriedSelector.ts */}
 
 This:
 
@@ -512,7 +512,7 @@ const todoById = useSelector(selectTodoByIdCurried(id))
 
 Another thing you can do if you are using <ExternalLinks.ReactRedux /> is create a custom hook factory function:
 
-  <!-- START: FAQ/createParametricSelectorHook.ts -->
+{/* START: FAQ/createParametricSelectorHook.ts */}
 
 <Tabs
   groupId='language'
@@ -622,11 +622,11 @@ export const useSelectTodo = createParametricSelectorHook(selectTodoById)
   </TabItem>
 </Tabs>
 
-  <!-- END: FAQ/createParametricSelectorHook.ts -->
+{/* END: FAQ/createParametricSelectorHook.ts */}
 
 And then inside your component:
 
-  <!-- START: FAQ/MyComponent.tsx -->
+{/* START: FAQ/MyComponent.tsx */}
 
 <Tabs
   groupId='language'
@@ -666,7 +666,7 @@ const MyComponent = ({ id }) => {
   </TabItem>
 </Tabs>
 
-  <!-- END: FAQ/MyComponent.tsx -->
+{/* END: FAQ/MyComponent.tsx */}
 
 ## How can I make a pre-typed version of <InternalLinks.CreateSelector>`createSelector`</InternalLinks.CreateSelector> for my root state?
 
@@ -728,7 +728,7 @@ This approach currently only supports <InternalLinks.InputSelectors /> provided 
 
 There may be rare cases when you might want to use `createSelector` for its composition syntax, but without any memoization applied. In that case, create an <ExternalLinks.IdentityFunction /> and use it as the memoizers:
 
-<!-- START: FAQ/identity.ts -->
+{/* START: FAQ/identity.ts */}
 
 <Tabs
   groupId='language'
@@ -767,4 +767,4 @@ const createNonMemoizedSelector = createSelectorCreator({
   </TabItem>
 </Tabs>
 
-  <!-- END: FAQ/identity.ts -->
+{/* END: FAQ/identity.ts */}
