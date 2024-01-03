@@ -41,7 +41,7 @@ useSelector(state => selectSomeData(state, id))
 
 Prior to `weakMapMemoize`, you had this problem:
 
-  <!-- START: weakMapMemoize/cacheSizeProblem.ts -->
+{/* START: weakMapMemoize/cacheSizeProblem.ts */}
 
 <Tabs
   groupId='language'
@@ -111,13 +111,13 @@ selectItemsByCategory(state, 'Electronics') // Selector runs again!
   </TabItem>
 </Tabs>
 
-  <!-- END: weakMapMemoize/cacheSizeProblem.ts -->
+{/* END: weakMapMemoize/cacheSizeProblem.ts */}
 
 Before you could solve this in a number of different ways:
 
 1. Set the `maxSize` with <InternalLinks.LruMemoize />:
 
-  <!-- START: weakMapMemoize/setMaxSize.ts -->
+{/* START: weakMapMemoize/setMaxSize.ts */}
 
 <Tabs
   groupId='language'
@@ -168,13 +168,13 @@ const selectItemsByCategory = createSelector(
   </TabItem>
 </Tabs>
 
-  <!-- END: weakMapMemoize/setMaxSize.ts -->
+{/* END: weakMapMemoize/setMaxSize.ts */}
 
 But this required having to know the cache size ahead of time.
 
 2. Create unique selector instances using <ExternalLinks.UseMemo />.
 
-  <!-- START: weakMapMemoize/withUseMemo.tsx -->
+{/* START: weakMapMemoize/withUseMemo.tsx */}
 
 <Tabs
   groupId='language'
@@ -253,11 +253,11 @@ const MyComponent = ({ category }) => {
   </TabItem>
 </Tabs>
 
-  <!-- END: weakMapMemoize/withUseMemo.tsx -->
+{/* END: weakMapMemoize/withUseMemo.tsx */}
 
 3. Using <ExternalLinks.UseCallback />.
 
-  <!-- START: weakMapMemoize/withUseCallback.tsx -->
+{/* START: weakMapMemoize/withUseCallback.tsx */}
 
 <Tabs
   groupId='language'
@@ -337,7 +337,7 @@ const MyComponent = ({ category }) => {
   </TabItem>
 </Tabs>
 
-  <!-- END: weakMapMemoize/withUseCallback.tsx -->
+{/* END: weakMapMemoize/withUseCallback.tsx */}
 
 4. Use <ExternalLinks.ReReselect />:
 
@@ -355,7 +355,7 @@ const selectItemsByCategory = createCachedSelector(
 
 Starting in 5.0.0, you can eliminate this problem using `weakMapMemoize`.
 
-  <!-- START: weakMapMemoize/cacheSizeSolution.ts -->
+{/* START: weakMapMemoize/cacheSizeSolution.ts */}
 
 <Tabs
   groupId='language'
@@ -430,7 +430,7 @@ selectItemsByCategory(state, 'Electronics') // Still cached!
   </TabItem>
 </Tabs>
 
-  <!-- END: weakMapMemoize/cacheSizeSolution.ts -->
+{/* END: weakMapMemoize/cacheSizeSolution.ts */}
 
 This solves the problem of having to know and set the cache size prior to creating a memoized selector. Because `weakMapMemoize` essentially provides a dynamic cache size out of the box.
 
@@ -454,7 +454,7 @@ A memoized function with a `.clearCache()` method attached.
 
 ### Using `weakMapMemoize` with `createSelector`
 
-  <!-- START: weakMapMemoize/usingWithCreateSelector.ts -->
+{/* START: weakMapMemoize/usingWithCreateSelector.ts */}
 
 <Tabs
   groupId='language'
@@ -529,11 +529,11 @@ selectItemsByCategory(state, 'Electronics')
   </TabItem>
 </Tabs>
 
-  <!-- END: weakMapMemoize/usingWithCreateSelector.ts -->
+{/* END: weakMapMemoize/usingWithCreateSelector.ts */}
 
 ### Using `weakMapMemoize` with `createSelectorCreator`
 
-  <!-- START: weakMapMemoize/usingWithCreateSelectorCreator.ts -->
+{/* START: weakMapMemoize/usingWithCreateSelectorCreator.ts */}
 
 <Tabs
   groupId='language'
@@ -610,4 +610,4 @@ selectItemsByCategory(state, 'Electronics')
   </TabItem>
 </Tabs>
 
-  <!-- END: weakMapMemoize/usingWithCreateSelectorCreator.ts -->
+{/* END: weakMapMemoize/usingWithCreateSelectorCreator.ts */}

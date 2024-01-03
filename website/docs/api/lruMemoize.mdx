@@ -19,7 +19,7 @@ It has a default cache size of 1. This means it always recalculates when the val
 
 It determines if an argument has changed by calling the `equalityCheck` function. As `lruMemoize` is designed to be used with immutable data, the default `equalityCheck` function checks for changes using <ExternalLinks.ReferenceEqualityCheck text="reference equality" />:
 
-<!-- START: lruMemoize/referenceEqualityCheck.ts -->
+{/* START: lruMemoize/referenceEqualityCheck.ts */}
 
 <Tabs
   groupId='language'
@@ -48,7 +48,7 @@ const referenceEqualityCheck = (previousValue, currentValue) => {
   </TabItem>
 </Tabs>
 
-  <!-- END: lruMemoize/referenceEqualityCheck.ts -->
+{/* END: lruMemoize/referenceEqualityCheck.ts */}
 
 ## Parameters
 
@@ -95,7 +95,7 @@ A memoized function with a `.clearCache()` method attached.
 
 ### Using `lruMemoize` with `createSelector`
 
-<!-- START: lruMemoize/usingWithCreateSelector.ts -->
+{/* START: lruMemoize/usingWithCreateSelector.ts */}
 
 <Tabs
   groupId='language'
@@ -170,11 +170,11 @@ const selectTodoIds = createSelector(
   </TabItem>
 </Tabs>
 
-  <!-- END: lruMemoize/usingWithCreateSelector.ts -->
+{/* END: lruMemoize/usingWithCreateSelector.ts */}
 
 ### Using `lruMemoize` with `createSelectorCreator`
 
-<!-- START: lruMemoize/usingWithCreateSelectorCreator.ts -->
+{/* START: lruMemoize/usingWithCreateSelectorCreator.ts */}
 
 <Tabs
   groupId='language'
@@ -251,4 +251,4 @@ const selectTodoIds = createSelectorShallowEqual(
   </TabItem>
 </Tabs>
 
-  <!-- END: lruMemoize/usingWithCreateSelectorCreator.ts -->
+{/* END: lruMemoize/usingWithCreateSelectorCreator.ts */}
