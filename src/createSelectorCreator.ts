@@ -46,8 +46,6 @@ export interface CreateSelectorFunction<
    *
    * @template InputSelectors - The type of the input selectors as an array.
    * @template Result - The return type of the `combiner` as well as the output selector.
-   * @template OverrideMemoizeFunction - The type of the optional `memoize` function that could be passed into the options object to override the original `memoize` function that was initially passed into `createSelectorCreator`.
-   * @template OverrideArgsMemoizeFunction - The type of the optional `argsMemoize` function that could be passed into the options object to override the original `argsMemoize` function that was initially passed into `createSelectorCreator`.
    *
    * @see {@link https://reselect.js.org/api/createselector `createSelector`}
    */
