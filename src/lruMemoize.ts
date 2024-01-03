@@ -179,6 +179,79 @@ export interface LruMemoizeOptions<Result = any> {
  * @param equalityCheckOrOptions - Either an equality check function or an options object.
  * @returns A memoized function with a `.clearCache()` method attached.
  *
+ * @example
+ * <caption>Using `createSelector`</caption>
+ * ```ts
+ * import { shallowEqual } from 'react-redux'
+ * import { createSelector, lruMemoize } from 'reselect'
+ *
+ * export interface RootState {
+ *   todos: {
+ *     id: number
+ *     completed: boolean
+ *     title: string
+ *     description: string
+ *   }[]
+ *   alerts: { id: number; read: boolean }[]
+ * }
+ *
+ * const selectTodoIds = createSelector(
+ *   [(state: RootState) => state.todos],
+ *   todos => todos.map(todo => todo.id),
+ *   {
+ *     memoize: lruMemoize,
+ *     memoizeOptions: {
+ *       equalityCheck: shallowEqual,
+ *       resultEqualityCheck: shallowEqual,
+ *       maxSize: 10
+ *     },
+ *     argsMemoize: lruMemoize,
+ *     argsMemoizeOptions: {
+ *       equalityCheck: shallowEqual,
+ *       resultEqualityCheck: shallowEqual,
+ *       maxSize: 10
+ *     }
+ *   }
+ * )
+ * ```
+ *
+ * @example
+ * <caption>Using `createSelectorCreator`</caption>
+ * ```ts
+ * import { shallowEqual } from 'react-redux'
+ * import { createSelectorCreator, lruMemoize } from 'reselect'
+ *
+ * export interface RootState {
+ *   todos: {
+ *     id: number
+ *     completed: boolean
+ *     title: string
+ *     description: string
+ *   }[]
+ *   alerts: { id: number; read: boolean }[]
+ * }
+ *
+ * const createSelectorShallowEqual = createSelectorCreator({
+ *   memoize: lruMemoize,
+ *   memoizeOptions: {
+ *     equalityCheck: shallowEqual,
+ *     resultEqualityCheck: shallowEqual,
+ *     maxSize: 10
+ *   },
+ *   argsMemoize: lruMemoize,
+ *   argsMemoizeOptions: {
+ *     equalityCheck: shallowEqual,
+ *     resultEqualityCheck: shallowEqual,
+ *     maxSize: 10
+ *   }
+ * })
+ *
+ * const selectTodoIds = createSelectorShallowEqual(
+ *   [(state: RootState) => state.todos],
+ *   todos => todos.map(todo => todo.id)
+ * )
+ * ```
+ *
  * @template Func - The type of the function that is memoized.
  *
  * @see {@link https://reselect.js.org/api/lruMemoize `lruMemoize`}
