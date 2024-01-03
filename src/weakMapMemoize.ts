@@ -232,7 +232,7 @@ export function weakMapMemoize<Func extends AnyFunction>(
     terminatedNode.s = TERMINATED
 
     if (resultEqualityCheck) {
-      const lastResultValue = lastResult?.deref() ?? lastResult
+      const lastResultValue = lastResult?.deref?.() ?? lastResult
       if (
         lastResultValue != null &&
         resultEqualityCheck(lastResultValue as ReturnType<Func>, result)
