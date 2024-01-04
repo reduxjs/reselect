@@ -345,9 +345,9 @@ export interface StructuredSelectorCreator<StateType = any> {
   > &
     InterruptRecursion
 
-  withTypes<
+  withTypes: <
     OverrideStateType extends StateType
-  >(): StructuredSelectorCreator<OverrideStateType>
+  >() => StructuredSelectorCreator<OverrideStateType>
 }
 /**
  * A convenience function that simplifies returning an object
