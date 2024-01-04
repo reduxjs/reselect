@@ -349,13 +349,55 @@ export interface StructuredSelectorCreator<StateType = any> {
   > &
     InterruptRecursion
 
+  /**
+   * Creates a "pre-typed" version of
+   * {@linkcode createStructuredSelector createStructuredSelector}
+   * where the `state` type is predefined.
+   *
+   * This allows you to set the `state` type once, eliminating the need to
+   * specify it with every
+   * {@linkcode createStructuredSelector createStructuredSelector} call.
+   *
+   * @returns A pre-typed `createStructuredSelector` with the state type already defined.
+   *
+   * @example
+   * ```ts
+   * import { createStructuredSelector } from 'reselect'
+   *
+   * export interface RootState {
+   *   todos: { id: number; completed: boolean }[]
+   *   alerts: { id: number; read: boolean }[]
+   * }
+   *
+   * export const createStructuredAppSelector =
+   *   createStructuredSelector.withTypes<RootState>()
+   *
+   * const structuredAppSelector = createStructuredAppSelector({
+   *   // Type of `state` is set to `RootState`, no need to manually set the type
+   *   todos: state => state.todos,
+   *   alerts: state => state.alerts,
+   *   todoById: (state, id: number) => state.todos[id]
+   * })
+   *
+   * ```
+   * @template OverrideStateType - The specific type of state used by all structured selectors created with this structured selector creator.
+   *
+   * @see {@link https://reselect.js.org/api/createstructuredselector#defining-a-pre-typed-createstructuredselector `createSelector.withTypes`}
+   *
+   * @since 5.0.2
+   */
   withTypes: <
     OverrideStateType extends StateType
   >() => StructuredSelectorCreator<OverrideStateType>
 }
+
 /**
  * A convenience function that simplifies returning an object
  * made up of selector results.
+ *
+ * @param inputSelectorsObject - A key value pair consisting of input selectors.
+ * @param selectorCreator - A custom selector creator function. It defaults to `createSelector`.
+ * @returns A memoized structured selector.
  *
  * @example
  * <caption>Modern Use Case</caption>
