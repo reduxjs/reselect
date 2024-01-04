@@ -207,8 +207,8 @@ export type TypedStructuredSelectorCreator<RootState = any> =
  *
  * @public
  */
-export interface SelectorsObject {
-  [key: string]: Selector
+export interface SelectorsObject<StateType = any> {
+  [key: string]: Selector<StateType>
 }
 
 /**
@@ -220,7 +220,7 @@ export interface SelectorsObject {
  *
  * @public
  */
-export type StructuredSelectorCreator =
+export interface StructuredSelectorCreator<StateType = any> {
   /**
    * A convenience function that simplifies returning an object
    * made up of selector results.
@@ -327,7 +327,7 @@ export type StructuredSelectorCreator =
    * @see {@link https://reselect.js.org/api/createStructuredSelector `createStructuredSelector`}
    */
   <
-    InputSelectorsObject extends SelectorsObject,
+    InputSelectorsObject extends SelectorsObject<StateType>,
     MemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize,
     ArgsMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize
   >(
@@ -336,7 +336,7 @@ export type StructuredSelectorCreator =
       MemoizeFunction,
       ArgsMemoizeFunction
     >
-  ) => OutputSelector<
+  ): OutputSelector<
     ObjectValuesToTuple<InputSelectorsObject>,
     Simplify<SelectorResultsMap<InputSelectorsObject>>,
     MemoizeFunction,
@@ -344,6 +344,10 @@ export type StructuredSelectorCreator =
   > &
     InterruptRecursion
 
+  withTypes<
+    OverrideStateType extends StateType
+  >(): StructuredSelectorCreator<OverrideStateType>
+}
 /**
  * A convenience function that simplifies returning an object
  * made up of selector results.
@@ -394,35 +398,41 @@ export type StructuredSelectorCreator =
  *
  * @public
  */
-export const createStructuredSelector: StructuredSelectorCreator = (<
-  InputSelectorsObject extends SelectorsObject,
-  MemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize,
-  ArgsMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize
->(
-  inputSelectorsObject: InputSelectorsObject,
-  selectorCreator: CreateSelectorFunction<
-    MemoizeFunction,
-    ArgsMemoizeFunction
-  > = createSelector as CreateSelectorFunction<
-    MemoizeFunction,
-    ArgsMemoizeFunction
-  >
-) => {
-  assertIsObject(
-    inputSelectorsObject,
-    'createStructuredSelector expects first argument to be an object ' +
-      `where each property is a selector, instead received a ${typeof inputSelectorsObject}`
-  )
-  const inputSelectorKeys = Object.keys(inputSelectorsObject)
-  const dependencies = inputSelectorKeys.map(key => inputSelectorsObject[key])
-  const structuredSelector = selectorCreator(
-    dependencies,
-    (...inputSelectorResults: any[]) => {
-      return inputSelectorResults.reduce((composition, value, index) => {
-        composition[inputSelectorKeys[index]] = value
-        return composition
-      }, {})
-    }
-  )
-  return structuredSelector
-}) as StructuredSelectorCreator
+export const createStructuredSelector: StructuredSelectorCreator =
+  Object.assign(
+    <
+      InputSelectorsObject extends SelectorsObject,
+      MemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize,
+      ArgsMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize
+    >(
+      inputSelectorsObject: InputSelectorsObject,
+      selectorCreator: CreateSelectorFunction<
+        MemoizeFunction,
+        ArgsMemoizeFunction
+      > = createSelector as CreateSelectorFunction<
+        MemoizeFunction,
+        ArgsMemoizeFunction
+      >
+    ) => {
+      assertIsObject(
+        inputSelectorsObject,
+        'createStructuredSelector expects first argument to be an object ' +
+          `where each property is a selector, instead received a ${typeof inputSelectorsObject}`
+      )
+      const inputSelectorKeys = Object.keys(inputSelectorsObject)
+      const dependencies = inputSelectorKeys.map(
+        key => inputSelectorsObject[key]
+      )
+      const structuredSelector = selectorCreator(
+        dependencies,
+        (...inputSelectorResults: any[]) => {
+          return inputSelectorResults.reduce((composition, value, index) => {
+            composition[inputSelectorKeys[index]] = value
+            return composition
+          }, {})
+        }
+      )
+      return structuredSelector
+    },
+    { withTypes: () => createStructuredSelector }
+  ) as StructuredSelectorCreator
