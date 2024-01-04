@@ -248,7 +248,7 @@ const nestedSelector = createStructuredSelector({
 
 A helper type that allows you to create a pre-typed version of <InternalLinks.CreateStructuredSelector /> tailored to the provided root state type.
 
-<!-- START: createStructuredSelector/createStructuredAppSelector.ts -->
+{/* START: createStructuredSelector/createStructuredAppSelector.ts */}
 
 <Tabs
   groupId='language'
@@ -301,4 +301,65 @@ const structuredSelector = createStructuredAppSelector({
   </TabItem>
 </Tabs>
 
-  <!-- END: createStructuredSelector/createStructuredAppSelector.ts -->
+{/* END: createStructuredSelector/createStructuredAppSelector.ts */}
+
+## Defining a Pre-Typed <InternalLinks.CreateStructuredSelector>`createSelector`</InternalLinks.CreateStructuredSelector>
+
+As of Reselect 5.0.2, you can create a "pre-typed" version of <InternalLinks.CreateStructuredSelector /> where the `state` type is predefined. This allows you to set the `state` type once, eliminating the need to specify it with every <InternalLinks.CreateStructuredSelector /> call.
+
+To do this, you can call `CreateStructuredSelector.withTypes<StateType>()`:
+
+{/* START: createStructuredSelector/withTypes.ts */}
+
+<Tabs
+  groupId='language'
+  defaultValue='ts'
+  values={[
+    {label: 'TypeScript', value: 'ts'},
+    {label: 'JavaScript', value: 'js'},
+  ]}>
+  <TabItem value='ts'>
+
+```ts title="createStructuredSelector/withTypes.ts"
+import { createStructuredSelector } from 'reselect'
+
+export interface RootState {
+  todos: { id: number; completed: boolean }[]
+  alerts: { id: number; read: boolean }[]
+}
+
+export const createStructuredAppSelector =
+  createStructuredSelector.withTypes<RootState>()
+
+const structuredAppSelector = createStructuredAppSelector({
+  // Type of `state` is set to `RootState`, no need to manually set the type
+  // highlight-start
+  todos: state => state.todos,
+  // highlight-end
+  alerts: state => state.alerts,
+  todoById: (state, id: number) => state.todos[id]
+})
+```
+
+  </TabItem>
+  <TabItem value='js'>
+
+```js title="createStructuredSelector/withTypes.js"
+import { createStructuredSelector } from 'reselect'
+
+export const createStructuredAppSelector = createStructuredSelector.withTypes()
+
+const structuredAppSelector = createStructuredAppSelector({
+  // Type of `state` is set to `RootState`, no need to manually set the type
+  // highlight-start
+  todos: state => state.todos,
+  // highlight-end
+  alerts: state => state.alerts,
+  todoById: (state, id) => state.todos[id]
+})
+```
+
+  </TabItem>
+</Tabs>
+
+{/* END: createStructuredSelector/withTypes.ts */}

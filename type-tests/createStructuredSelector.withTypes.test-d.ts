@@ -44,6 +44,10 @@ describe('createStructuredSelector.withTypes<RootState>()', () => {
     createStructuredSelector.withTypes<RootState>()
 
   test('locks down state type and infers types correctly', () => {
+    expectTypeOf(createStructuredSelector.withTypes).returns.toEqualTypeOf(
+      createStructuredSelector
+    )
+
     const structuredAppSelector = createStructuredAppSelector({
       todos: state => {
         expectTypeOf(state).toEqualTypeOf<RootState>(rootState)
