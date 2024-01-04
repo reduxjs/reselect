@@ -77,6 +77,7 @@ export type RootStateSelectors<RootState = any> = {
  *
  * @since 5.0.0
  * @public
+ * @deprecated Please use {@linkcode StructuredSelectorCreator.withTypes createstructuredselector.withTypes<RootState>()} instead.
  */
 export type TypedStructuredSelectorCreator<RootState = any> =
   /**
