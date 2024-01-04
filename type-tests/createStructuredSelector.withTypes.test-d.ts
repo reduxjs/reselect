@@ -1,4 +1,5 @@
 import microMemoize from 'micro-memoize'
+import type { Selector, TypedStructuredSelectorCreator } from 'reselect'
 import {
   createSelectorCreator,
   createStructuredSelector,
@@ -182,5 +183,185 @@ describe('createStructuredSelector.withTypes<RootState>()', () => {
     expectTypeOf(structuredSelector.resultFunc).returns.toEqualTypeOf<
       ReturnType<typeof structuredSelector.lastResult>
     >(structuredSelector.lastResult())
+  })
+
+  test('supports additional parameters', () => {
+    const structuredAppSelector = createStructuredAppSelector({
+      todos: state => {
+        expectTypeOf(state).toEqualTypeOf<RootState>(rootState)
+
+        return state.todos
+      },
+      alerts: state => {
+        expectTypeOf(state).toEqualTypeOf<RootState>(rootState)
+
+        return state.alerts
+      },
+      todoById: (state, id: number) => {
+        expectTypeOf(state).toEqualTypeOf<RootState>(rootState)
+
+        return state.todos[id]
+      }
+    })
+
+    const { alerts, todos, todoById } = structuredAppSelector(rootState, 0)
+
+    expectTypeOf(todos).toEqualTypeOf<Todo[]>()
+
+    expectTypeOf(alerts).toEqualTypeOf<Alert[]>()
+
+    expectTypeOf(todoById).toEqualTypeOf<Todo>()
+
+    expectTypeOf(structuredAppSelector.argsMemoize).toEqualTypeOf<
+      typeof weakMapMemoize
+    >(weakMapMemoize)
+
+    expectTypeOf(structuredAppSelector.memoize).toEqualTypeOf<
+      typeof weakMapMemoize
+    >(weakMapMemoize)
+
+    expectTypeOf(structuredAppSelector.clearCache).returns.toBeVoid()
+
+    expectTypeOf(structuredAppSelector.clearCache).parameters.toEqualTypeOf<
+      []
+    >()
+
+    expectTypeOf(structuredAppSelector.dependencies).items.toMatchTypeOf<
+      Selector<RootState>
+    >()
+
+    expectTypeOf(structuredAppSelector.dependencyRecomputations).toEqualTypeOf<
+      () => number
+    >()
+
+    expectTypeOf(structuredAppSelector.recomputations).toEqualTypeOf<
+      () => number
+    >()
+
+    expectTypeOf(
+      structuredAppSelector.resetDependencyRecomputations
+    ).returns.toBeVoid()
+
+    expectTypeOf(
+      structuredAppSelector.resetDependencyRecomputations
+    ).parameters.items.toBeNever()
+
+    expectTypeOf(structuredAppSelector.resetRecomputations).returns.toBeVoid()
+
+    expectTypeOf(
+      structuredAppSelector.resetRecomputations
+    ).parameters.items.toBeNever()
+
+    // Use `.branded` for intersection types https://github.com/mmkal/expect-type#why-is-my-assertion-failing
+    expectTypeOf(
+      structuredAppSelector.lastResult
+    ).returns.branded.toEqualTypeOf<RootState & { todoById: Todo }>()
+
+    expectTypeOf(
+      structuredAppSelector.memoizedResultFunc
+    ).parameters.toEqualTypeOf<[Todo[], Alert[], Todo]>([
+      rootState.todos,
+      rootState.alerts,
+      rootState.todos[0]
+    ])
+
+    expectTypeOf(structuredAppSelector.resultFunc).parameters.toEqualTypeOf<
+      [Todo[], Alert[], Todo]
+    >([rootState.todos, rootState.alerts, rootState.todos[0]])
+
+    expectTypeOf(
+      structuredAppSelector.memoizedResultFunc
+    ).returns.toEqualTypeOf<
+      ReturnType<typeof structuredAppSelector.lastResult>
+    >(structuredAppSelector.lastResult())
+
+    expectTypeOf(structuredAppSelector.memoizedResultFunc).toHaveProperty(
+      'clearCache'
+    )
+
+    expectTypeOf(structuredAppSelector.resultFunc).returns.toEqualTypeOf<
+      ReturnType<typeof structuredAppSelector.lastResult>
+    >(structuredAppSelector.lastResult())
+  })
+
+  test('should work alongside TypedStructuredSelectorCreator', () => {
+    const createStructuredAppSelector: TypedStructuredSelectorCreator<RootState> =
+      createStructuredSelector.withTypes<RootState>()
+
+    const structuredAppSelector = createStructuredAppSelector({
+      todos: state => {
+        expectTypeOf(state).toEqualTypeOf<RootState>(rootState)
+
+        return state.todos
+      },
+      alerts: state => {
+        expectTypeOf(state).toEqualTypeOf<RootState>(rootState)
+
+        return state.alerts
+      }
+    })
+
+    const { todos, alerts } = structuredAppSelector(rootState)
+
+    expectTypeOf(todos).toEqualTypeOf<Todo[]>()
+
+    expectTypeOf(alerts).toEqualTypeOf<Alert[]>()
+
+    expectTypeOf(structuredAppSelector.argsMemoize).toEqualTypeOf<
+      typeof weakMapMemoize
+    >(weakMapMemoize)
+
+    expectTypeOf(structuredAppSelector.memoize).toEqualTypeOf<
+      typeof weakMapMemoize
+    >(weakMapMemoize)
+
+    expectTypeOf(structuredAppSelector.clearCache).returns.toBeVoid()
+
+    expectTypeOf(structuredAppSelector.clearCache).parameters.toEqualTypeOf<
+      []
+    >()
+
+    expectTypeOf(structuredAppSelector.dependencies).items.toBeFunction()
+
+    expectTypeOf(structuredAppSelector.dependencyRecomputations).toEqualTypeOf<
+      () => number
+    >()
+
+    expectTypeOf(structuredAppSelector.recomputations).toEqualTypeOf<
+      () => number
+    >()
+
+    expectTypeOf(
+      structuredAppSelector.resetDependencyRecomputations
+    ).toEqualTypeOf<() => void>()
+
+    expectTypeOf(structuredAppSelector.resetRecomputations).toEqualTypeOf<
+      () => void
+    >()
+
+    expectTypeOf(
+      structuredAppSelector.lastResult
+    ).returns.toEqualTypeOf<RootState>(rootState)
+
+    expectTypeOf(
+      structuredAppSelector.memoizedResultFunc
+    ).parameters.toEqualTypeOf<[Todo[], Alert[]]>([
+      rootState.todos,
+      rootState.alerts
+    ])
+
+    expectTypeOf(
+      structuredAppSelector.memoizedResultFunc
+    ).returns.toEqualTypeOf<
+      ReturnType<typeof structuredAppSelector.lastResult>
+    >(structuredAppSelector.lastResult())
+
+    expectTypeOf(structuredAppSelector.memoizedResultFunc).toHaveProperty(
+      'clearCache'
+    )
+
+    expectTypeOf(structuredAppSelector.resultFunc).returns.toEqualTypeOf<
+      ReturnType<typeof structuredAppSelector.lastResult>
+    >(structuredAppSelector.lastResult())
   })
 })
