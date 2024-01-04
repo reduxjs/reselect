@@ -207,9 +207,10 @@ export type TypedStructuredSelectorCreator<RootState = any> =
  *
  * @public
  */
-export interface SelectorsObject<StateType = any> {
-  [key: string]: Selector<StateType>
-}
+export type SelectorsObject<StateType = any> = Record<
+  string,
+  Selector<StateType>
+>
 
 /**
  * It provides a way to create structured selectors.
