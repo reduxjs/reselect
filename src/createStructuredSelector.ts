@@ -205,6 +205,8 @@ export type TypedStructuredSelectorCreator<RootState = any> =
 /**
  * Represents an object where each property is a selector function.
  *
+ * @template StateType - The type of state that all the selectors operate on.
+ *
  * @public
  */
 export type SelectorsObject<StateType = any> = Record<
