@@ -217,6 +217,8 @@ export type SelectorsObject<StateType = any> = Record<
  * The structured selector can take multiple input selectors
  * and map their output to an object with specific keys.
  *
+ * @template StateType - The type of state that the structured selectors created with this structured selector creator will operate on.
+ *
  * @see {@link https://reselect.js.org/api/createStructuredSelector `createStructuredSelector`}
  *
  * @public
