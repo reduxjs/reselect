@@ -55,7 +55,7 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@reduxjs/toolkit": "^2.0.0-rc.1",
+    "@reduxjs/toolkit": "^2.0.1",
     "@testing-library/react": "^14.1.2",
     "@types/lodash": "^4.14.175",
     "@types/react": "^18.2.38",
@@ -77,7 +77,7 @@
     "prettier": "^2.7.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-redux": "^9.0.0-rc.0",
+    "react-redux": "^9.0.4",
     "rimraf": "^3.0.2",
     "shelljs": "^0.8.5",
     "tsup": "^6.7.0",

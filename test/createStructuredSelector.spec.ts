@@ -12,7 +12,7 @@ interface StateAB {
   b: number
 }
 
-describe('createStructureSelector', () => {
+describe(createStructuredSelector, () => {
   test('structured selector', () => {
     const selector = createStructuredSelector({
       x: (state: StateAB) => state.a,
