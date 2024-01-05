@@ -294,6 +294,7 @@ describe('createStructuredSelector.withTypes<RootState>()', () => {
     >(structuredAppSelector.lastResult())
   })
 
+  // TODO: Remove this test block once `TypedStructuredSelectorCreator` is removed.
   test('should work alongside TypedStructuredSelectorCreator', () => {
     const createStructuredAppSelector: TypedStructuredSelectorCreator<RootState> =
       createStructuredSelector.withTypes<RootState>()

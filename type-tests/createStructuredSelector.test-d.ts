@@ -35,6 +35,8 @@ const rootState: RootState = {
 }
 
 describe('createStructuredSelector', () => {
+
+  // TODO: Remove this test block once `TypedStructuredSelectorCreator` is removed.
   test('TypedStructuredSelectorCreator should lock down state type', () => {
     const createStructuredAppSelector: TypedStructuredSelectorCreator<RootState> =
       createStructuredSelector
@@ -112,6 +114,7 @@ describe('createStructuredSelector', () => {
     >(structuredSelector.lastResult())
   })
 
+  // TODO: Remove this test block once `TypedStructuredSelectorCreator` is removed.
   test('TypedStructuredSelectorCreator should correctly infer memoize and argsMemoize', () => {
     const createSelectorLru = createSelectorCreator({
       memoize: lruMemoize,

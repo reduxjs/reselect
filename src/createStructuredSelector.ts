@@ -41,11 +41,11 @@ export type RootStateSelectors<RootState = any> = {
 }
 
 /**
+ * @deprecated Please use {@linkcode StructuredSelectorCreator.withTypes createStructuredSelector.withTypes<RootState>()} instead. This type will be removed in the future.
  * @template RootState - The type of the root state object.
  *
  * @since 5.0.0
  * @public
- * @deprecated Please use {@linkcode StructuredSelectorCreator.withTypes createStructuredSelector.withTypes<RootState>()} instead. This type will be removed in the future.
  */
 export type TypedStructuredSelectorCreator<RootState = any> =
   /**
