@@ -174,7 +174,7 @@ export interface CreateSelectorFunction<
    *
    * @since 5.0.2
    */
-  withTypes<OverrideStateType extends StateType>(): CreateSelectorFunction<
+  withTypes: <OverrideStateType extends StateType>() => CreateSelectorFunction<
     MemoizeFunction,
     ArgsMemoizeFunction,
     OverrideStateType

@@ -89,13 +89,5 @@ export const InternalLinks = {
     <Link to="/api/createStructuredSelector" title="createStructuredSelector">
       <code>createStructuredSelector</code>
     </Link>
-  )),
-  TypedStructuredSelectorCreator: memo(() => (
-    <Link
-      to="/api/createStructuredSelector#typedstructuredselectorcreator-since-500"
-      title="TypedStructuredSelectorCreator"
-    >
-      <code>TypedStructuredSelectorCreator</code>
-    </Link>
   ))
 } as const satisfies Record<string, FC<Props>>

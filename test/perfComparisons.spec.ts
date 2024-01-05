@@ -347,6 +347,8 @@ describe('More perf comparisons', () => {
     reduxStates[0] = null
     if (global.gc) {
       global.gc()
+    } else {
+      return
     }
 
     await promise
