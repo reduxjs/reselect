@@ -174,7 +174,7 @@ export interface CreateSelectorFunction<
    *
    * @see {@link https://reselect.js.org/api/createselector#defining-a-pre-typed-createselector `createSelector.withTypes`}
    *
-   * @since 5.0.2
+   * @since 5.1.0
    */
   withTypes: <OverrideStateType extends StateType>() => CreateSelectorFunction<
     MemoizeFunction,

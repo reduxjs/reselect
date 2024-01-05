@@ -353,7 +353,7 @@ export interface StructuredSelectorCreator<StateType = any> {
    *
    * @see {@link https://reselect.js.org/api/createstructuredselector#defining-a-pre-typed-createstructuredselector `createSelector.withTypes`}
    *
-   * @since 5.0.2
+   * @since 5.1.0
    */
   withTypes: <
     OverrideStateType extends StateType
