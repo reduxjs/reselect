@@ -244,65 +244,6 @@ const nestedSelector = createStructuredSelector({
 })
 ```
 
-## `TypedStructuredSelectorCreator` (since 5.0.0)
-
-A helper type that allows you to create a pre-typed version of <InternalLinks.CreateStructuredSelector /> tailored to the provided root state type.
-
-{/* START: createStructuredSelector/createStructuredAppSelector.ts */}
-
-<Tabs
-  groupId='language'
-  defaultValue='ts'
-  values={[
-    {label: 'TypeScript', value: 'ts'},
-    {label: 'JavaScript', value: 'js'},
-  ]}>
-  <TabItem value='ts'>
-
-```ts title="createStructuredSelector/createStructuredAppSelector.ts"
-import type { TypedStructuredSelectorCreator } from 'reselect'
-import { createStructuredSelector } from 'reselect'
-
-interface RootState {
-  todos: {
-    id: number
-    completed: boolean
-    title: string
-    description: string
-  }[]
-  alerts: { id: number; read: boolean }[]
-}
-
-export const createStructuredAppSelector: TypedStructuredSelectorCreator<RootState> =
-  createStructuredSelector
-
-const structuredSelector = createStructuredAppSelector({
-  // The `state` argument is correctly typed as `RootState`
-  todos: state => state.todos,
-  alerts: state => state.alerts
-})
-```
-
-  </TabItem>
-  <TabItem value='js'>
-
-```js title="createStructuredSelector/createStructuredAppSelector.js"
-import { createStructuredSelector } from 'reselect'
-
-export const createStructuredAppSelector = createStructuredSelector
-
-const structuredSelector = createStructuredAppSelector({
-  // The `state` argument is correctly typed as `RootState`
-  todos: state => state.todos,
-  alerts: state => state.alerts
-})
-```
-
-  </TabItem>
-</Tabs>
-
-{/* END: createStructuredSelector/createStructuredAppSelector.ts */}
-
 ## Defining a Pre-Typed <InternalLinks.CreateStructuredSelector>`createStructuredSelector`</InternalLinks.CreateStructuredSelector>
 
 As of Reselect 5.0.2, you can create a "pre-typed" version of <InternalLinks.CreateStructuredSelector /> where the `state` type is predefined. This allows you to set the `state` type once, eliminating the need to specify it with every <InternalLinks.CreateStructuredSelector /> call.
