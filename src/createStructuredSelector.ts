@@ -41,43 +41,11 @@ export type RootStateSelectors<RootState = any> = {
 }
 
 /**
- * Allows you to create a pre-typed version of
- * {@linkcode createStructuredSelector createStructuredSelector}
- * tailored to the provided root state type.
- *
- * @example
- * ```ts
- * import type { TypedStructuredSelectorCreator } from 'reselect'
- * import { createStructuredSelector } from 'reselect'
- *
- * interface RootState {
- *   todos: {
- *     id: number
- *     completed: boolean
- *     title: string
- *     description: string
- *   }[]
- *   alerts: { id: number; read: boolean }[]
- * }
- *
- * export const createStructuredAppSelector: TypedStructuredSelectorCreator<RootState> =
- *   createStructuredSelector
- *
- * const structuredSelector = createStructuredAppSelector({
- *   // The `state` argument is correctly typed as `RootState`
- *   todos: state => state.todos,
- *   alerts: state => state.alerts
- * })
- *
- * ```
- *
  * @template RootState - The type of the root state object.
- *
- * @see {@link https://reselect.js.org/api/createStructuredSelector#typedstructuredselectorcreator-since-500 `TypedStructuredSelectorCreator`}
  *
  * @since 5.0.0
  * @public
- * @deprecated Please use {@linkcode StructuredSelectorCreator.withTypes createStructuredSelector.withTypes<RootState>()} instead.
+ * @deprecated Please use {@linkcode StructuredSelectorCreator.withTypes createStructuredSelector.withTypes<RootState>()} instead. This type will be removed in the future.
  */
 export type TypedStructuredSelectorCreator<RootState = any> =
   /**
