@@ -41,39 +41,8 @@ export type RootStateSelectors<RootState = any> = {
 }
 
 /**
- * Allows you to create a pre-typed version of
- * {@linkcode createStructuredSelector createStructuredSelector}
- * tailored to the provided root state type.
- *
- * @example
- * ```ts
- * import type { TypedStructuredSelectorCreator } from 'reselect'
- * import { createStructuredSelector } from 'reselect'
- *
- * interface RootState {
- *   todos: {
- *     id: number
- *     completed: boolean
- *     title: string
- *     description: string
- *   }[]
- *   alerts: { id: number; read: boolean }[]
- * }
- *
- * export const createStructuredAppSelector: TypedStructuredSelectorCreator<RootState> =
- *   createStructuredSelector
- *
- * const structuredSelector = createStructuredAppSelector({
- *   // The `state` argument is correctly typed as `RootState`
- *   todos: state => state.todos,
- *   alerts: state => state.alerts
- * })
- *
- * ```
- *
+ * @deprecated Please use {@linkcode StructuredSelectorCreator.withTypes createStructuredSelector.withTypes<RootState>()} instead. This type will be removed in the future.
  * @template RootState - The type of the root state object.
- *
- * @see {@link https://reselect.js.org/api/createStructuredSelector#typedstructuredselectorcreator-since-500 `TypedStructuredSelectorCreator`}
  *
  * @since 5.0.0
  * @public
@@ -205,22 +174,27 @@ export type TypedStructuredSelectorCreator<RootState = any> =
 /**
  * Represents an object where each property is a selector function.
  *
+ * @template StateType - The type of state that all the selectors operate on.
+ *
  * @public
  */
-export interface SelectorsObject {
-  [key: string]: Selector
-}
+export type SelectorsObject<StateType = any> = Record<
+  string,
+  Selector<StateType>
+>
 
 /**
  * It provides a way to create structured selectors.
  * The structured selector can take multiple input selectors
  * and map their output to an object with specific keys.
  *
+ * @template StateType - The type of state that the structured selectors created with this structured selector creator will operate on.
+ *
  * @see {@link https://reselect.js.org/api/createStructuredSelector `createStructuredSelector`}
  *
  * @public
  */
-export type StructuredSelectorCreator =
+export interface StructuredSelectorCreator<StateType = any> {
   /**
    * A convenience function that simplifies returning an object
    * made up of selector results.
@@ -327,7 +301,7 @@ export type StructuredSelectorCreator =
    * @see {@link https://reselect.js.org/api/createStructuredSelector `createStructuredSelector`}
    */
   <
-    InputSelectorsObject extends SelectorsObject,
+    InputSelectorsObject extends SelectorsObject<StateType>,
     MemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize,
     ArgsMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize
   >(
@@ -336,7 +310,7 @@ export type StructuredSelectorCreator =
       MemoizeFunction,
       ArgsMemoizeFunction
     >
-  ) => OutputSelector<
+  ): OutputSelector<
     ObjectValuesToTuple<InputSelectorsObject>,
     Simplify<SelectorResultsMap<InputSelectorsObject>>,
     MemoizeFunction,
@@ -344,9 +318,55 @@ export type StructuredSelectorCreator =
   > &
     InterruptRecursion
 
+  /**
+   * Creates a "pre-typed" version of
+   * {@linkcode createStructuredSelector createStructuredSelector}
+   * where the `state` type is predefined.
+   *
+   * This allows you to set the `state` type once, eliminating the need to
+   * specify it with every
+   * {@linkcode createStructuredSelector createStructuredSelector} call.
+   *
+   * @returns A pre-typed `createStructuredSelector` with the state type already defined.
+   *
+   * @example
+   * ```ts
+   * import { createStructuredSelector } from 'reselect'
+   *
+   * export interface RootState {
+   *   todos: { id: number; completed: boolean }[]
+   *   alerts: { id: number; read: boolean }[]
+   * }
+   *
+   * export const createStructuredAppSelector =
+   *   createStructuredSelector.withTypes<RootState>()
+   *
+   * const structuredAppSelector = createStructuredAppSelector({
+   *   // Type of `state` is set to `RootState`, no need to manually set the type
+   *   todos: state => state.todos,
+   *   alerts: state => state.alerts,
+   *   todoById: (state, id: number) => state.todos[id]
+   * })
+   *
+   * ```
+   * @template OverrideStateType - The specific type of state used by all structured selectors created with this structured selector creator.
+   *
+   * @see {@link https://reselect.js.org/api/createstructuredselector#defining-a-pre-typed-createstructuredselector `createSelector.withTypes`}
+   *
+   * @since 5.0.2
+   */
+  withTypes: <
+    OverrideStateType extends StateType
+  >() => StructuredSelectorCreator<OverrideStateType>
+}
+
 /**
  * A convenience function that simplifies returning an object
  * made up of selector results.
+ *
+ * @param inputSelectorsObject - A key value pair consisting of input selectors.
+ * @param selectorCreator - A custom selector creator function. It defaults to `createSelector`.
+ * @returns A memoized structured selector.
  *
  * @example
  * <caption>Modern Use Case</caption>
@@ -394,35 +414,41 @@ export type StructuredSelectorCreator =
  *
  * @public
  */
-export const createStructuredSelector: StructuredSelectorCreator = (<
-  InputSelectorsObject extends SelectorsObject,
-  MemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize,
-  ArgsMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize
->(
-  inputSelectorsObject: InputSelectorsObject,
-  selectorCreator: CreateSelectorFunction<
-    MemoizeFunction,
-    ArgsMemoizeFunction
-  > = createSelector as CreateSelectorFunction<
-    MemoizeFunction,
-    ArgsMemoizeFunction
-  >
-) => {
-  assertIsObject(
-    inputSelectorsObject,
-    'createStructuredSelector expects first argument to be an object ' +
-      `where each property is a selector, instead received a ${typeof inputSelectorsObject}`
-  )
-  const inputSelectorKeys = Object.keys(inputSelectorsObject)
-  const dependencies = inputSelectorKeys.map(key => inputSelectorsObject[key])
-  const structuredSelector = selectorCreator(
-    dependencies,
-    (...inputSelectorResults: any[]) => {
-      return inputSelectorResults.reduce((composition, value, index) => {
-        composition[inputSelectorKeys[index]] = value
-        return composition
-      }, {})
-    }
-  )
-  return structuredSelector
-}) as StructuredSelectorCreator
+export const createStructuredSelector: StructuredSelectorCreator =
+  Object.assign(
+    <
+      InputSelectorsObject extends SelectorsObject,
+      MemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize,
+      ArgsMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize
+    >(
+      inputSelectorsObject: InputSelectorsObject,
+      selectorCreator: CreateSelectorFunction<
+        MemoizeFunction,
+        ArgsMemoizeFunction
+      > = createSelector as CreateSelectorFunction<
+        MemoizeFunction,
+        ArgsMemoizeFunction
+      >
+    ) => {
+      assertIsObject(
+        inputSelectorsObject,
+        'createStructuredSelector expects first argument to be an object ' +
+          `where each property is a selector, instead received a ${typeof inputSelectorsObject}`
+      )
+      const inputSelectorKeys = Object.keys(inputSelectorsObject)
+      const dependencies = inputSelectorKeys.map(
+        key => inputSelectorsObject[key]
+      )
+      const structuredSelector = selectorCreator(
+        dependencies,
+        (...inputSelectorResults: any[]) => {
+          return inputSelectorResults.reduce((composition, value, index) => {
+            composition[inputSelectorKeys[index]] = value
+            return composition
+          }, {})
+        }
+      )
+      return structuredSelector
+    },
+    { withTypes: () => createStructuredSelector }
+  ) as StructuredSelectorCreator

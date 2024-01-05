@@ -17,8 +17,8 @@ import {
   createSelector,
   createSelectorCreator,
   createStructuredSelector,
-  referenceEqualityCheck,
-  lruMemoize
+  lruMemoize,
+  referenceEqualityCheck
 } from 'reselect'
 import { expectExactType } from './typesTestUtils'
 
@@ -748,8 +748,8 @@ function testCreateStructuredSelector() {
     bar: number
   }
 
-  const typedStructuredSelectorCreator: TypedStructuredSelectorCreator<RootState> =
-    createStructuredSelector
+  const typedStructuredSelectorCreator =
+    createStructuredSelector.withTypes<RootState>()
 
   const selector = typedStructuredSelectorCreator({
     foo: state => state.foo,
@@ -772,12 +772,10 @@ function testCreateStructuredSelector() {
   })
 
   typedStructuredSelectorCreator({
-    // @ts-expect-error
     bar: state => state.foo
   })
 
   typedStructuredSelectorCreator({
-    // @ts-expect-error
     baz: state => state.foo
   })
 
@@ -820,6 +818,7 @@ function testCreateStructuredSelector() {
   selectorGenerics({ bar: '42' })
 }
 
+// TODO: Remove this function once `TypedStructuredSelectorCreator` is removed.
 function testTypedCreateStructuredSelector() {
   type RootState = {
     foo: string
@@ -921,20 +920,6 @@ function testStructuredSelectorTypeParams() {
     // bar: selectBar,
     // ^^^ because this is missing, an error is thrown
   })
-
-  const typedStructuredSelectorCreator: TypedStructuredSelectorCreator<GlobalState> =
-    createStructuredSelector
-
-  // This works
-  typedStructuredSelectorCreator({
-    foo: selectFoo,
-    bar: selectBar
-  })
-
-  // // So does this
-  // typedStructuredSelectorCreator<Omit<GlobalState, 'bar'>>({
-  //   foo: selectFoo
-  // })
 }
 
 function multiArgMemoize<F extends (...args: any[]) => any>(

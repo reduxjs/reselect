@@ -149,7 +149,6 @@ Version 5.0.0 introduces several new features and improvements:
 - **Selector API Enhancements**:
 
   - Removed the second overload of `createStructuredSelector` due to its susceptibility to runtime errors.
-  - Added the `TypedStructuredSelectorCreator` utility type (_currently a work-in-progress_) to facilitate the creation of a pre-typed version of `createStructuredSelector` for your root state.
 
 - **Additional Functionalities**:
 
