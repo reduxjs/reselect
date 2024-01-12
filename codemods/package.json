@@ -1,11 +1,16 @@
 {
+  "name": "reselect-codemods",
   "version": "0.1.0",
+  "type": "module",
   "scripts": {
+    "dev": "node --inspect ./node_modules/jscodeshift/bin/jscodeshift.sh -t transforms/convertInputSelectorsToArray/transform.ts ./transforms/convertInputSelectorsToArray/__testfixtures__/separate-inline-arguments.input.ts --dry -p --run-in-band --extensions ts",
+    "start": "jscodeshift -t ./transforms/convertInputSelectorsToArray/index.ts ./transforms/convertInputSelectorsToArray/__testfixtures__/separate-inline-arguments.input.ts --extensions=ts",
     "lint": "eslint .",
     "test": "vitest",
     "test:coverage": "vitest --coverage",
     "update-docs": "codemod-cli update-docs"
   },
+  "bin": "./bin/cli.js",
   "files": [
     "bin/*",
     "transforms/**/index.ts",
@@ -14,18 +19,19 @@
     "README.md"
   ],
   "keywords": [
-    "codemod-cli",
     "redux",
     "redux-toolkit",
     "codemod"
   ],
   "dependencies": {
-    "@types/jscodeshift": "^0.11.11",
-    "codemod-cli": "^3.2.0",
+    "execa": "^8.0.1",
+    "globby": "^14.0.0",
     "jscodeshift": "^0.15.1",
+    "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   },
   "devDependencies": {
+    "@types/jscodeshift": "^0.11.11",
     "@typescript-eslint/parser": "^6.18.1",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",

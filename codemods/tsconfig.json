@@ -1,5 +1,26 @@
 {
   "compilerOptions": {
-    
-  }
+    "allowSyntheticDefaultImports": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "isolatedModules": true,
+    "checkJs": true,
+    "baseUrl": ".",
+    "noEmit": true,
+    "strict": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "jsx": "preserve",
+    "noErrorTruncation": true,
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "reselect": ["../src/index"], // @remap-prod-remove-line
+      "@internal/*": ["../src/*"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx", "bin/cli.js"]
 }

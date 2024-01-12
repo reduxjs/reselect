@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitest/config'
 
-import { fileURLToPath } from 'url'
-import path from 'path'
+import { fileURLToPath } from 'node:url'
+import path from 'node:path'
 
 // No __dirname under Node ESM
 const __filename = fileURLToPath(import.meta.url)
