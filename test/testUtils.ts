@@ -1,15 +1,15 @@
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { combineReducers, configureStore, createSlice } from '@reduxjs/toolkit'
 import { test } from 'vitest'
+import type { lruMemoize } from '../src/lruMemoize'
 import type {
   AnyFunction,
   OutputSelector,
-  Selector,
   SelectorArray,
   Simplify
 } from '../src/types'
 
-interface Todo {
+export interface Todo {
   id: number
   title: string
   description: string
@@ -79,53 +79,56 @@ interface UserState {
   appSettings: AppSettings
 }
 
+let nextTodoId = 0
+
 // For long arrays
 const todoState = [
   {
-    id: 0,
+    id: nextTodoId++,
     title: 'Buy groceries',
     description: 'Milk, bread, eggs, and fruits',
     completed: false
   },
   {
-    id: 1,
+    id: nextTodoId++,
     title: 'Schedule dentist appointment',
     description: 'Check available slots for next week',
     completed: false
   },
   {
-    id: 2,
+    id: nextTodoId++,
     title: 'Convince the cat to get a job',
     description: 'Need extra income for cat treats',
     completed: false
   },
   {
-    id: 3,
+    id: nextTodoId++,
     title: 'Figure out if plants are plotting world domination',
     description: 'That cactus looks suspicious...',
     completed: false
   },
   {
-    id: 4,
+    id: nextTodoId++,
     title: 'Practice telekinesis',
     description: 'Try moving the remote without getting up',
     completed: false
   },
   {
-    id: 5,
+    id: nextTodoId++,
     title: 'Determine location of El Dorado',
     description: 'Might need it for the next vacation',
     completed: false
   },
   {
-    id: 6,
+    id: nextTodoId++,
     title: 'Master the art of invisible potato juggling',
     description: 'Great party trick',
     completed: false
   }
 ]
 
-export const createTodoItem = (id: number) => {
+export const createTodoItem = () => {
+  const id = nextTodoId++
   return {
     id,
     title: `Task ${id}`,
@@ -134,11 +137,11 @@ export const createTodoItem = (id: number) => {
   }
 }
 
-export const pushToTodos = (howMany: number) => {
+export const pushToTodos = (limit: number) => {
   const { length: todoStateLength } = todoState
-  const limit = howMany + todoStateLength
+  // const limit = howMany + todoStateLength
   for (let i = todoStateLength; i < limit; i++) {
-    todoState.push(createTodoItem(i))
+    todoState.push(createTodoItem())
   }
 }
 
@@ -242,7 +245,8 @@ const todoSlice = createSlice({
     },
 
     addTodo: (state, action: PayloadAction<Omit<Todo, 'id' | 'completed'>>) => {
-      const newId = state.length > 0 ? state[state.length - 1].id + 1 : 0
+      // const newId = state.length > 0 ? state[state.length - 1].id + 1 : 0
+      const newId = nextTodoId++
       state.push({
         ...action.payload,
         id: newId,
@@ -415,20 +419,14 @@ export const localTest = test.extend<LocalTestContext>({
   state
 })
 
-export const resetSelector = <S extends OutputSelector>(
-  selector: S
-) => {
+export const resetSelector = <S extends OutputSelector>(selector: S) => {
   selector.clearCache()
   selector.resetRecomputations()
   selector.resetDependencyRecomputations()
   selector.memoizedResultFunc.clearCache()
 }
 
-export const logRecomputations = <
-  S extends OutputSelector
->(
-  selector: S
-) => {
+export const logRecomputations = <S extends OutputSelector>(selector: S) => {
   console.log(
     `${selector.name} result function recalculated:`,
     selector.recomputations(),
@@ -436,5 +434,127 @@ export const logRecomputations = <
     `input selectors recalculated:`,
     selector.dependencyRecomputations(),
     `time(s)`
+  )
+}
+
+export const logSelectorRecomputations = <
+  S extends OutputSelector<SelectorArray, unknown, typeof lruMemoize, any>
+>(
+  selector: S
+) => {
+  console.log(
+    `\x1B[32m\x1B[1m${selector.name}\x1B[0m result function recalculated:`,
+    {
+      resultFunc: selector.recomputations(),
+      inputSelectors: selector.dependencyRecomputations(),
+      newResults:
+        typeof selector.memoizedResultFunc.resultsCount === 'function'
+          ? selector.memoizedResultFunc.resultsCount()
+          : undefined
+    }
+  )
+  // console.log(
+  //   `\x1B[32m\x1B[1m${selector.name}\x1B[0m result function recalculated:`,
+  //   `\x1B[33m${selector.recomputations().toLocaleString('en-US')}\x1B[0m`,
+  //   'time(s)',
+  //   `input selectors recalculated:`,
+  //   `\x1B[33m${selector
+  //     .dependencyRecomputations()
+  //     .toLocaleString('en-US')}\x1B[0m`,
+  //   'time(s)'
+  // )
+}
+
+export const logFunctionInfo = (func: AnyFunction, recomputations: number) => {
+  console.log(
+    `\x1B[32m\x1B[1m${func.name}\x1B[0m was called:`,
+    recomputations,
+    'time(s)'
+  )
+}
+
+export const safeApply = <Params extends any[], Result>(
+  func: (...args: Params) => Result,
+  args: Params
+) => func.apply<null, Params, Result>(null, args)
+
+export const countRecomputations = <
+  Params extends any[],
+  Result,
+  AdditionalFields
+>(
+  func: ((...args: Params) => Result) & AdditionalFields
+) => {
+  let recomputations = 0
+  const wrapper = (...args: Params) => {
+    recomputations++
+    return safeApply(func, args)
+  }
+  return Object.assign(
+    wrapper,
+    {
+      recomputations: () => recomputations,
+      resetRecomputations: () => (recomputations = 0)
+    },
+    func
+  )
+}
+
+export const runMultipleTimes = <Params extends any[]>(
+  func: (...args: Params) => any,
+  times: number,
+  ...args: Params
+) => {
+  for (let i = 0; i < times; i++) {
+    safeApply(func, args)
+  }
+}
+
+export const expensiveComputation = (times = 1_000_000) => {
+  for (let i = 0; i < times; i++) {
+    // Do nothing
+  }
+}
+
+export const setEnvToProd = () => {
+  const originalEnv = process.env.NODE_ENV
+  process.env.NODE_ENV = 'production'
+  return () => {
+    process.env.NODE_ENV = originalEnv
+  }
+}
+
+export const isMemoizedSelector = (selector: object) => {
+  return (
+    typeof selector === 'function' &&
+    'resultFunc' in selector &&
+    'memoizedResultFunc' in selector &&
+    'lastResult' in selector &&
+    'dependencies' in selector &&
+    'recomputations' in selector &&
+    'dependencyRecomputations' in selector &&
+    'resetRecomputations' in selector &&
+    'resetDependencyRecomputations' in selector &&
+    'memoize' in selector &&
+    'argsMemoize' in selector &&
+    typeof selector.resultFunc === 'function' &&
+    typeof selector.memoizedResultFunc === 'function' &&
+    typeof selector.lastResult === 'function' &&
+    Array.isArray(selector.dependencies) &&
+    typeof selector.recomputations === 'function' &&
+    typeof selector.dependencyRecomputations === 'function' &&
+    typeof selector.resetRecomputations === 'function' &&
+    typeof selector.resetDependencyRecomputations === 'function' &&
+    typeof selector.memoize === 'function' &&
+    typeof selector.argsMemoize === 'function' &&
+    selector.dependencies.length >= 1 &&
+    selector.dependencies.every(
+      (dependency): dependency is Function => typeof dependency === 'function'
+    ) &&
+    !selector.lastResult.length &&
+    !selector.recomputations.length &&
+    !selector.resetRecomputations.length &&
+    typeof selector.recomputations() === 'number' &&
+    typeof selector.dependencyRecomputations() === 'number'
   )
 }

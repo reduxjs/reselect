@@ -126,7 +126,7 @@ jobs:
       fail-fast: false
       matrix:
         node: ['16.x']
-        example: ['cra4', 'cra5', 'next', 'vite', 'node-standard', 'node-esm']
+        example: ['cra4', 'cra5', 'next', 'vite', 'node-standard', 'node-esm', 'expo']
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -139,10 +139,6 @@ jobs:
 
       - name: Clone RTK repo
         run: git clone https://github.com/reduxjs/redux-toolkit.git ./redux-toolkit
-
-      - name: Check out v2.0-integration
-        working-directory: ./redux-toolkit
-        run: git checkout v2.0-integration
 
       - name: Check folder contents
         run: ls -l .

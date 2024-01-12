@@ -1,6 +1,11 @@
 # Change log
 
-All notable changes to this project will be documented in this file.
+Changes in this project are primarily documented in the Github release notes:
+
+- https://github.com/reduxjs/reselect/releases
+
+Changes from v4.0.0 and earlier are documented in this file
+
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [v4.0.0](https://github.com/reduxjs/reselect/releases/tag/v4.0.0) - 2018/09/30
@@ -8,11 +13,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### New Features
 
 Exposed selector dependencies (#251)  
-Use provided memoize function for selectors (#297)  
+Use provided memoize function for selectors (#297)
 
 ### Breaking Changes
 
-Updated TypeScript typings (#274, #315)  
+Updated TypeScript typings (#274, #315)
 
 ## [v3.0.0](https://github.com/reduxjs/reselect/releases/tag/v3.0.0) - 2017/03/24
 
@@ -28,7 +33,7 @@ For performance reasons, a selector is now not recalculated if its input is equa
 #### Example:
 
 ```js
-import { createSelector } from 'reselect';
+import { createSelector } from 'reselect'
 
 const mySelector = createSelector(
   state => state.values.filter(val => val < 5),
@@ -38,7 +43,7 @@ const mySelector = createSelector(
   }
 )
 
-var createSelector = require('./dist/reselect.js').createSelector;
+var createSelector = require('./dist/reselect.js').createSelector
 
 const mySelector = createSelector(
   state => state.values.filter(val => val < 5),
@@ -48,14 +53,14 @@ const mySelector = createSelector(
   }
 )
 
-var state1 = {values: [1,2,3,4,5,6,7,8,9]};
-console.log(mySelector(state1));
-state1.values = [3,4,5,6,7,8,9];
-console.log(mySelector(state1));
-var state2 = {values: [1,2,3,4,5,6,7,8,9]};
-console.log(mySelector(state2));
-var state3 = {values: [3,4,5,6,7]};
-console.log(mySelector(state3));
+var state1 = { values: [1, 2, 3, 4, 5, 6, 7, 8, 9] }
+console.log(mySelector(state1))
+state1.values = [3, 4, 5, 6, 7, 8, 9]
+console.log(mySelector(state1))
+var state2 = { values: [1, 2, 3, 4, 5, 6, 7, 8, 9] }
+console.log(mySelector(state2))
+var state3 = { values: [3, 4, 5, 6, 7] }
+console.log(mySelector(state3))
 ```
 
 #### Output in v2.5.4:
@@ -171,36 +176,36 @@ There is a small chance that this could cause a breaking change in code that con
 
 #### `createStructuredSelector`
 
-`createStructuredSelector` is a convenience function that helps with a common pattern when using Reselect.  The selector passed to a connect decorator often just takes other selectors and maps them to keys in an object:
+`createStructuredSelector` is a convenience function that helps with a common pattern when using Reselect. The selector passed to a connect decorator often just takes other selectors and maps them to keys in an object:
 
 ```js
-const mySelectorA = state => state.a;
-const mySelectorB = state => state.b;
+const mySelectorA = state => state.a
+const mySelectorB = state => state.b
 
 const structuredSelector = createSelector(
-   mySelectorA,
-   mySelectorB,
-   mySelectorC,
-   (a, b, c) => ({
-     a, 
-     b,
-     c
-   })
-);
+  mySelectorA,
+  mySelectorB,
+  mySelectorC,
+  (a, b, c) => ({
+    a,
+    b,
+    c
+  })
+)
 ```
 
 `createStructuredSelector` takes an object whose properties are input-selectors and returns a structured selector. The structured selector returns an object with the same keys as the `inputSelectors` argument, but with the selectors replaced with their values.
 
 ```js
-const mySelectorA = state => state.a;
-const mySelectorB = state => state.b;
+const mySelectorA = state => state.a
+const mySelectorB = state => state.b
 
 const structuredSelector = createStructuredSelector({
   x: mySelectorA,
   y: mySelectorB
-});
+})
 
-const result = structuredSelector({a: 1, b: 2}); // will produce {x: 1, y: 2}
+const result = structuredSelector({ a: 1, b: 2 }) // will produce {x: 1, y: 2}
 ```
 
 ## [v1.0.0](https://github.com/reduxjs/reselect/releases/tag/v1.0.0) - 2015/09/09
@@ -225,22 +230,19 @@ js:next field added to package.json
 #### Before
 
 ```js
-import { isEqual } from 'lodash';
-import { createSelectorCreator } from 'reselect';
+import { isEqual } from 'lodash'
+import { createSelectorCreator } from 'reselect'
 
-const deepEqualsSelectorCreator = createSelectorCreator(isEqual);
+const deepEqualsSelectorCreator = createSelectorCreator(isEqual)
 ```
 
 #### After
 
 ```js
-import { isEqual } from 'lodash';
-import { createSelectorCreator, defaultMemoize } from 'reselect';
+import { isEqual } from 'lodash'
+import { createSelectorCreator, defaultMemoize } from 'reselect'
 
-const deepEqualsSelectorCreator = createSelectorCreator(
-  defaultMemoize,
-  isEqual
-);
+const deepEqualsSelectorCreator = createSelectorCreator(defaultMemoize, isEqual)
 ```
 
 ### New features
@@ -255,7 +257,7 @@ Selector creators can receive a variadic number of dependencies as well as an ar
 const selector = createSelector(
   [state => state.a, state => state.b],
   (a, b) => a * b
-);
+)
 ```
 
 #### After
@@ -265,7 +267,7 @@ const selector = createSelector(
   state => state.a,
   state => state.b,
   (a, b) => a * b
-);
+)
 ```
 
 #### Access `ownProps` in Selector
@@ -274,32 +276,32 @@ Selector dependencies can receive a variadic number of parameters allowing a sel
 
 ```js
 const selector = createSelector(
-  (state) => state.a,
+  state => state.a,
   (state, props) => state.b * props.c,
   (_, props) => props.d,
   (a, bc, d) => a + bc + d
-);
+)
 ```
 
 #### Configurable Memoize Function
 
 ```js
-import { createSelectorCreator } from 'reselect';
-import memoize from 'lodash.memoize';
+import { createSelectorCreator } from 'reselect'
+import memoize from 'lodash.memoize'
 
-let called = 0;
-const customSelectorCreator = createSelectorCreator(memoize, JSON.stringify);
+let called = 0
+const customSelectorCreator = createSelectorCreator(memoize, JSON.stringify)
 const selector = customSelectorCreator(
   state => state.a,
   state => state.b,
   (a, b) => {
-    called++;
-    return a + b;
+    called++
+    return a + b
   }
-);
-assert.equal(selector({a: 1, b: 2}), 3);
-assert.equal(selector({a: 1, b: 2}), 3);
-assert.equal(called, 1);
-assert.equal(selector({a: 2, b: 3}), 5);
-assert.equal(called, 2);
+)
+assert.equal(selector({ a: 1, b: 2 }), 3)
+assert.equal(selector({ a: 1, b: 2 }), 3)
+assert.equal(called, 1)
+assert.equal(selector({ a: 2, b: 3 }), 5)
+assert.equal(called, 2)
 ```

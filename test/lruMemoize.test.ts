@@ -1,12 +1,17 @@
 // TODO: Add test for React Redux connect function
 
-import { createSelector, defaultMemoize } from 'reselect'
+import { createSelectorCreator, lruMemoize } from 'reselect'
 import { vi } from 'vitest'
 
-describe('defaultMemoize', () => {
+const createSelector = createSelectorCreator({
+  memoize: lruMemoize,
+  argsMemoize: lruMemoize
+})
+
+describe(lruMemoize, () => {
   test('Basic memoization', () => {
     let called = 0
-    const memoized = defaultMemoize(state => {
+    const memoized = lruMemoize(state => {
       called++
       return state.a
     })
@@ -21,7 +26,7 @@ describe('defaultMemoize', () => {
   })
 
   test('Memoizes with multiple arguments', () => {
-    const memoized = defaultMemoize((...args) =>
+    const memoized = lruMemoize((...args) =>
       args.reduce((sum, value) => sum + value, 0)
     )
     expect(memoized(1, 2)).toBe(3)
@@ -32,7 +37,7 @@ describe('defaultMemoize', () => {
     // a rather absurd equals operation we can verify in tests
     let called = 0
     const valueEquals = (a: any, b: any) => typeof a === typeof b
-    const memoized = defaultMemoize(a => {
+    const memoized = lruMemoize(a => {
       called++
       return a
     }, valueEquals)
@@ -68,9 +73,9 @@ describe('defaultMemoize', () => {
 
     const someObject = { foo: 'bar' }
     const anotherObject = { foo: 'bar' }
-    const memoized = defaultMemoize(a => a, shallowEqual)
+    const memoized = lruMemoize(a => a, shallowEqual)
 
-    // the first call to `memoized` doesn't hit because `defaultMemoize.lastArgs` is uninitialized
+    // the first call to `memoized` doesn't hit because `lruMemoize.lastArgs` is uninitialized
     // and so `equalityCheck` is never called
     memoized(someObject)
     // first call does not shallow compare
@@ -86,7 +91,7 @@ describe('defaultMemoize', () => {
     This test was useful when we had a cache size of 1 previously, and always saved `lastArgs`.
     But, with the new implementation, this doesn't make sense any more.
 
-    // the third call does not fall through because `defaultMemoize` passes `anotherObject` as
+    // the third call does not fall through because `lruMemoize` passes `anotherObject` as
     // both the `newVal` and `oldVal` params. This allows `shallowEqual` to be much more performant
     // than if it had passed `someObject` as `oldVal`, even though `someObject` and `anotherObject`
     // are shallowly equal
@@ -100,7 +105,7 @@ describe('defaultMemoize', () => {
   test('Accepts a max size greater than 1 with LRU cache behavior', () => {
     let funcCalls = 0
 
-    const memoizer = defaultMemoize(
+    const memoizer = lruMemoize(
       (state: any) => {
         funcCalls++
         return state
@@ -201,7 +206,7 @@ describe('defaultMemoize', () => {
     for (const maxSize of [1, 3]) {
       let funcCalls = 0
 
-      const memoizer = defaultMemoize(
+      const memoizer = lruMemoize(
         (state: Todo[]) => {
           funcCalls++
           return state.map(todo => todo.id)
@@ -230,7 +235,7 @@ describe('defaultMemoize', () => {
     const equalityCheck = vi.fn((a, b) => a === b)
     const resultEqualityCheck = vi.fn((a, b) => typeof a === typeof b)
 
-    const memoizedFn = defaultMemoize(selector, {
+    const memoizedFn = lruMemoize(selector, {
       maxSize: 1,
       resultEqualityCheck,
       equalityCheck
@@ -285,15 +290,15 @@ describe('defaultMemoize', () => {
     })
 
     selector(state)
-    expect(count).toBe(1)
+    expect(count).toBe(2)
     selector(state)
-    expect(count).toBe(1)
+    expect(count).toBe(2)
   })
 
   test('Accepts an options object as an arg', () => {
     let memoizer1Calls = 0
 
-    const acceptsEqualityCheckAsOption = defaultMemoize((a: any) => a, {
+    const acceptsEqualityCheckAsOption = lruMemoize((a: any) => a, {
       equalityCheck: (a, b) => {
         memoizer1Calls++
         return a === b
@@ -306,7 +311,7 @@ describe('defaultMemoize', () => {
     expect(memoizer1Calls).toBeGreaterThan(0)
 
     let called = 0
-    const fallsBackToDefaultEqualityIfNoArgGiven = defaultMemoize(
+    const fallsBackToDefaultEqualityIfNoArgGiven = lruMemoize(
       state => {
         called++
         return state.a
@@ -329,7 +334,7 @@ describe('defaultMemoize', () => {
     let funcCalls = 0
 
     // Cache size of 1
-    const memoizer = defaultMemoize(
+    const memoizer = lruMemoize(
       (state: any) => {
         funcCalls++
         return state
@@ -363,7 +368,8 @@ describe('defaultMemoize', () => {
         return state
       },
       {
-        memoizeOptions: { maxSize: 3 }
+        memoizeOptions: { maxSize: 3 },
+        devModeChecks: { identityFunctionCheck: 'never' }
       }
     )
 
@@ -405,13 +411,7 @@ describe('defaultMemoize', () => {
     // 'a' here would _not_ recalculate
     selector('b') // ['b']
     expect(funcCalls).toBe(5)
-
-    try {
-      //@ts-expect-error issue 591
-      selector.resultFunc.clearCache()
-      fail('should have thrown for issue 591')
-    } catch (err) {
-      //expected catch
-    }
+    // @ts-expect-error
+    expect(selector.resultFunc.clearCache).toBeUndefined()
   })
 })

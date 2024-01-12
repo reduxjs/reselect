@@ -30,7 +30,8 @@
       "files": ["**/*.ts", "**/*.tsx"],
       "parserOptions": {
         "ecmaVersion": 2020,
-        "sourceType": "module"
+        "sourceType": "module",
+        "project": true
       },
       "env": { "jest": true },
       "extends": [
@@ -50,7 +51,11 @@
         "@typescript-eslint/ban-types": "off",
         "prefer-rest-params": "off",
         "prefer-spread": "off",
-        "@typescript-eslint/consistent-type-imports": [2]
+        "@typescript-eslint/consistent-type-imports": [
+          2,
+          { "fixStyle": "separate-type-imports" }
+        ],
+        "@typescript-eslint/consistent-type-exports": [2]
       }
     },
     {
@@ -66,6 +71,18 @@
         "@typescript-eslint/no-non-null-assertion": "off",
         "@typescript-eslint/no-unused-vars": "off",
         "@typescript-eslint/no-shadow": "off"
+      }
+    },
+    {
+      "parser": "@typescript-eslint/parser",
+      "files": ["./docs/examples/**/*.{js,ts,jsx,tsx}"],
+      "parserOptions": {
+        "ecmaVersion": 2023,
+        "sourceType": "module",
+        "ecmaFeatures": { "jsx": true }
+      },
+      "rules": {
+        "no-unused-vars": [0]
       }
     }
   ]

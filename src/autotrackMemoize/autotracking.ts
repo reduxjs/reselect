@@ -3,8 +3,8 @@
 // Additional references:
 // - https://www.pzuraq.com/blog/how-autotracking-works
 // - https://v5.chriskrycho.com/journal/autotracking-elegant-dx-via-cutting-edge-cs/
-import type { EqualityFn } from '@internal/types'
-import { assertIsFunction } from '@internal/utils'
+import type { EqualityFn } from '../types'
+import { assertIsFunction } from '../utils'
 
 // The global revision clock. Every time state changes, the clock increments.
 export let $REVISION = 0

@@ -1,7 +1,24 @@
 // Original source:
 // - https://github.com/facebook/react/blob/0b974418c9a56f6c560298560265dcf4b65784bc/packages/react/src/ReactCache.js
 
-import type { AnyFunction, DefaultMemoizeFields, Simplify } from './types'
+import type {
+  AnyFunction,
+  DefaultMemoizeFields,
+  EqualityFn,
+  Simplify
+} from './types'
+
+class StrongRef<T> {
+  constructor(private value: T) {}
+  deref() {
+    return this.value
+  }
+}
+
+const Ref =
+  typeof WeakRef !== 'undefined'
+    ? WeakRef
+    : (StrongRef as unknown as typeof WeakRef)
 
 const UNTERMINATED = 0
 const TERMINATED = 1
@@ -56,6 +73,30 @@ function createCacheNode<T>(): CacheNode<T> {
 }
 
 /**
+ * Configuration options for a memoization function utilizing `WeakMap` for
+ * its caching mechanism.
+ *
+ * @template Result - The type of the return value of the memoized function.
+ *
+ * @since 5.0.0
+ * @public
+ */
+export interface WeakMapMemoizeOptions<Result = any> {
+  /**
+   * If provided, used to compare a newly generated output value against previous values in the cache.
+   * If a match is found, the old value is returned. This addresses the common
+   * ```ts
+   * todos.map(todo => todo.id)
+   * ```
+   * use case, where an update to another field in the original data causes a recalculation
+   * due to changed references, but the output is still effectively the same.
+   *
+   * @since 5.0.0
+   */
+  resultEqualityCheck?: EqualityFn<Result>
+}
+
+/**
  * Creates a tree of `WeakMap`-based cache nodes based on the identity of the
  * arguments it's been called with (in this case, the extracted values from your input selectors).
  * This allows `weakMapMemoize` to have an effectively infinite cache size.
@@ -69,7 +110,7 @@ function createCacheNode<T>(): CacheNode<T> {
  * - Cons:
  *   - There's currently no way to alter the argument comparisons.
  *   They're based on strict reference equality.
- *   - It's roughly the same speed as `defaultMemoize`, although likely a fraction slower.
+ *   - It's roughly the same speed as `lruMemoize`, although likely a fraction slower.
  *
  * __Use Cases for `weakMapMemoize`:__
  * - This memoizer is likely best used for cases where you need to call the
@@ -122,14 +163,22 @@ function createCacheNode<T>(): CacheNode<T> {
  *
  * @template Func - The type of the function that is memoized.
  *
- * @see {@link https://github.com/reduxjs/reselect#weakmapmemoizefunc---since-500 weakMapMemoize}
+ * @see {@link https://reselect.js.org/api/weakMapMemoize `weakMapMemoize`}
  *
  * @since 5.0.0
  * @public
  * @experimental
  */
-export function weakMapMemoize<Func extends AnyFunction>(func: Func) {
+export function weakMapMemoize<Func extends AnyFunction>(
+  func: Func,
+  options: WeakMapMemoizeOptions<ReturnType<Func>> = {}
+) {
   let fnNode = createCacheNode()
+  const { resultEqualityCheck } = options
+
+  let lastResult: WeakRef<object> | undefined
+
+  let resultsCount = 0
 
   function memoized() {
     let cacheNode = fnNode
@@ -167,19 +216,49 @@ export function weakMapMemoize<Func extends AnyFunction>(func: Func) {
         }
       }
     }
-    if (cacheNode.s === TERMINATED) {
-      return cacheNode.v
-    }
-    // Allow errors to propagate
-    const result = func.apply(null, arguments as unknown as any[])
+
     const terminatedNode = cacheNode as unknown as TerminatedCacheNode<any>
+
+    let result
+
+    if (cacheNode.s === TERMINATED) {
+      result = cacheNode.v
+    } else {
+      // Allow errors to propagate
+      result = func.apply(null, arguments as unknown as any[])
+      resultsCount++
+    }
+
     terminatedNode.s = TERMINATED
+
+    if (resultEqualityCheck) {
+      const lastResultValue = lastResult?.deref?.() ?? lastResult
+      if (
+        lastResultValue != null &&
+        resultEqualityCheck(lastResultValue as ReturnType<Func>, result)
+      ) {
+        result = lastResultValue
+        resultsCount !== 0 && resultsCount--
+      }
+
+      const needsWeakRef =
+        (typeof result === 'object' && result !== null) ||
+        typeof result === 'function'
+      lastResult = needsWeakRef ? new Ref(result) : result
+    }
     terminatedNode.v = result
     return result
   }
 
   memoized.clearCache = () => {
     fnNode = createCacheNode()
+    memoized.resetResultsCount()
+  }
+
+  memoized.resultsCount = () => resultsCount
+
+  memoized.resetResultsCount = () => {
+    resultsCount = 0
   }
 
   return memoized as Func & Simplify<DefaultMemoizeFields>

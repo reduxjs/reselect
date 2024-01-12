@@ -5,10 +5,10 @@ import type {
   UnknownMemoizer
 } from 'reselect'
 import {
+  unstable_autotrackMemoize as autotrackMemoize,
   createSelector,
   createSelectorCreator,
-  defaultMemoize,
-  unstable_autotrackMemoize as autotrackMemoize,
+  lruMemoize,
   weakMapMemoize
 } from 'reselect'
 import { test } from 'vitest'
@@ -47,7 +47,7 @@ test('identity', () => {
   const nonMemoizedSelector = createNonMemoizedSelector(
     [(state: RootState) => state.todos],
     todos => todos.filter(todo => todo.completed === true),
-    { inputStabilityCheck: 'never' }
+    { devModeChecks: { inputStabilityCheck: 'never' } }
   )
 
   nonMemoizedSelector(store.getState())
@@ -81,7 +81,7 @@ test.todo('Find Fastest Selector', () => {
     selector: S,
     ...selectorArgs: Parameters<S>
   ) => {
-    const memoizeFuncs = [defaultMemoize, weakMapMemoize, autotrackMemoize]
+    const memoizeFuncs = [lruMemoize, weakMapMemoize, autotrackMemoize]
     const results = memoizeFuncs
       .map(memoize => {
         const alternateSelector = createSelector(
@@ -126,8 +126,8 @@ test.todo('Find Fastest Selector', () => {
 test('TypedCreateSelector', () => {
   type TypedCreateSelector<
     State,
-    MemoizeFunction extends UnknownMemoizer = typeof defaultMemoize,
-    ArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
+    MemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize,
+    ArgsMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize
   > = <
     InputSelectors extends readonly Selector<State>[],
     Result,
@@ -178,8 +178,8 @@ test('createCurriedSelector copy paste pattern', () => {
   const createCurriedSelector = <
     InputSelectors extends SelectorArray,
     Result,
-    OverrideMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize,
-    OverrideArgsMemoizeFunction extends UnknownMemoizer = typeof defaultMemoize
+    OverrideMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize,
+    OverrideArgsMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize
   >(
     ...args: Parameters<
       typeof createSelector<

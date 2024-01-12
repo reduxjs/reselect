@@ -1,0 +1,312 @@
+---
+id: createSelector
+title: createSelector
+sidebar_label: createSelector
+hide_title: true
+description: 'createSelector'
+---
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+
+import { InternalLinks } from '@site/src/components/InternalLinks'
+
+# `createSelector`
+
+Accepts one or more "<InternalLinks.InputSelectors />" (either as separate arguments or a single array),
+a single "<InternalLinks.ResultFunction />", and an optional options object, and
+generates a memoized selector function.
+
+The **Redux docs usage page on [Deriving Data with Selectors](https://redux.js.org/usage/deriving-data-selectors)** covers the purpose and motivation for selectors, why memoized selectors are useful, and typical Reselect usage patterns.
+
+```ts no-emit
+const selectTodosByCategory = createSelector(
+  [
+    // Pass input selectors with typed arguments
+    (state: RootState) => state.todos,
+    (state: RootState, category: string) => category
+  ],
+  // Extracted values are passed to the result function for recalculation
+  (todos, category) => {
+    return todos.filter(t => t.category === category)
+  }
+)
+```
+
+## Parameters
+
+| Name                     | Description                                                                                      |
+| :----------------------- | :----------------------------------------------------------------------------------------------- |
+| `inputSelectors`         | An array of <InternalLinks.InputSelectors />, can also be passed as separate arguments.          |
+| `resultFunc`             | A function that takes the results of the <InternalLinks.InputSelectors /> as separate arguments. |
+| `createSelectorOptions?` | An optional options object that allows for further customization per selector.                   |
+
+## Returns
+
+A memoized <InternalLinks.OutputSelector />.
+
+### Output Selector Fields
+
+The output selectors created by `createSelector` have several additional properties attached to them:
+
+| Name                            | Description                                                                                                                                                                                                                                                                |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `resultFunc`                    | The final function passed to <InternalLinks.CreateSelector />.                                                                                                                                                                                                             |
+| `memoizedResultFunc`            | The memoized version of `resultFunc`.                                                                                                                                                                                                                                      |
+| `lastResult`                    | Returns the last result calculated by `memoizedResultFunc`.                                                                                                                                                                                                                |
+| `dependencies`                  | The array of the input selectors used by <InternalLinks.CreateSelector /> to compose `resultFunc`.                                                                                                                                                                         |
+| `recomputations`                | Counts the number of times `memoizedResultFunc` has been recalculated.                                                                                                                                                                                                     |
+| `resetRecomputations`           | Resets the count of `recomputations` count to 0.                                                                                                                                                                                                                           |
+| `dependencyRecomputations`      | Counts the number of times the <InternalLinks.InputSelectors /> (<InternalLinks.Dependencies text={<code>dependencies</code>} />) have been recalculated. This is distinct from `recomputations`, which tracks the recalculations of the <InternalLinks.ResultFunction />. |
+| `resetDependencyRecomputations` | Resets the `dependencyRecomputations` count to 0.                                                                                                                                                                                                                          |
+| `memoize`                       | Function used to memoize the `resultFunc`.                                                                                                                                                                                                                                 |
+| `argsMemoize`                   | Function used to memoize the arguments passed into the <InternalLinks.OutputSelector />.                                                                                                                                                                                   |
+
+## Type Parameters
+
+| Name                          | Description                                                                                                                                                                                                          |
+| :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `InputSelectors`              | The type of the <InternalLinks.InputSelectors /> array.                                                                                                                                                              |
+| `Result`                      | The return type of the <InternalLinks.ResultFunction /> as well as the <InternalLinks.OutputSelector />.                                                                                                             |
+| `OverrideMemoizeFunction`     | The type of the optional `memoize` function that could be passed into the options object to override the original `memoize` function that was initially passed into <InternalLinks.CreateSelectorCreator />.         |
+| `OverrideArgsMemoizeFunction` | The type of the optional `argsMemoize` function that could be passed into the options object to override the original `argsMemoize` function that was initially passed into <InternalLinks.CreateSelectorCreator />. |
+
+## Defining a Pre-Typed <InternalLinks.CreateSelector>`createSelector`</InternalLinks.CreateSelector>
+
+As of Reselect 5.1.0, you can create a "pre-typed" version of <InternalLinks.CreateSelector /> where the `state` type is predefined. This allows you to set the `state` type once, eliminating the need to specify it with every <InternalLinks.CreateSelector /> call.
+
+To do this, you can call `createSelector.withTypes<StateType>()`:
+
+{/* START: createSelector/withTypes.ts */}
+
+<Tabs
+  groupId='language'
+  defaultValue='ts'
+  values={[
+    {label: 'TypeScript', value: 'ts'},
+    {label: 'JavaScript', value: 'js'},
+  ]}>
+  <TabItem value='ts'>
+
+```ts title="createSelector/withTypes.ts"
+import { createSelector } from 'reselect'
+
+export interface RootState {
+  todos: { id: number; completed: boolean }[]
+  alerts: { id: number; read: boolean }[]
+}
+
+export const createAppSelector = createSelector.withTypes<RootState>()
+
+const selectTodoIds = createAppSelector(
+  [
+    // Type of `state` is set to `RootState`, no need to manually set the type
+    // highlight-start
+    state => state.todos
+    // highlight-end
+  ],
+  todos => todos.map(({ id }) => id)
+)
+```
+
+  </TabItem>
+  <TabItem value='js'>
+
+```js title="createSelector/withTypes.js"
+import { createSelector } from 'reselect'
+
+export const createAppSelector = createSelector.withTypes()
+
+const selectTodoIds = createAppSelector(
+  [
+    // Type of `state` is set to `RootState`, no need to manually set the type
+    // highlight-start
+    state => state.todos
+    // highlight-end
+  ],
+  todos => todos.map(({ id }) => id)
+)
+```
+
+  </TabItem>
+</Tabs>
+
+{/* END: createSelector/withTypes.ts */}
+
+Import and use the pre-typed `createAppSelector` instead of the original, and the type for state will be used automatically.
+
+:::danger Known Limitations
+
+Currently this approach only works if input selectors are provided as a single array.
+
+If you pass the input selectors as separate inline arguments, the parameter types of the result function will not be inferred.
+As a workaround you can either
+
+1. Wrap your input selectors in a single array
+2. You can annotate the parameter types of the result function:
+
+{/* START: createSelector/annotateResultFunction.ts */}
+
+<Tabs
+  groupId='language'
+  defaultValue='ts'
+  values={[
+    {label: 'TypeScript', value: 'ts'},
+    {label: 'JavaScript', value: 'js'},
+  ]}>
+  <TabItem value='ts'>
+
+```ts title="createSelector/annotateResultFunction.ts"
+import { createSelector } from 'reselect'
+
+interface Todo {
+  id: number
+  completed: boolean
+}
+
+interface Alert {
+  id: number
+  read: boolean
+}
+
+export interface RootState {
+  todos: Todo[]
+  alerts: Alert[]
+}
+
+export const createAppSelector = createSelector.withTypes<RootState>()
+
+const selectTodoIds = createAppSelector(
+  // Type of `state` is set to `RootState`, no need to manually set the type
+  state => state.todos,
+  // ❌ Known limitation: Parameter types are not inferred in this scenario
+  // so you will have to manually annotate them.
+  // highlight-start
+  (todos: Todo[]) => todos.map(({ id }) => id)
+  // highlight-end
+)
+```
+
+  </TabItem>
+  <TabItem value='js'>
+
+```js title="createSelector/annotateResultFunction.js"
+import { createSelector } from 'reselect'
+
+export const createAppSelector = createSelector.withTypes()
+
+const selectTodoIds = createAppSelector(
+  // Type of `state` is set to `RootState`, no need to manually set the type
+  state => state.todos,
+  // ❌ Known limitation: Parameter types are not inferred in this scenario
+  // so you will have to manually annotate them.
+  // highlight-start
+  todos => todos.map(({ id }) => id)
+  // highlight-end
+)
+```
+
+  </TabItem>
+</Tabs>
+
+{/* END: createSelector/annotateResultFunction.ts */}
+
+:::
+
+:::tip
+
+You can also use this API with <InternalLinks.CreateSelectorCreator /> to create a pre-typed custom selector creator:
+
+{/* START: createSelector/createAppSelector.ts */}
+
+<Tabs
+  groupId='language'
+  defaultValue='ts'
+  values={[
+    {label: 'TypeScript', value: 'ts'},
+    {label: 'JavaScript', value: 'js'},
+  ]}>
+  <TabItem value='ts'>
+
+```ts title="createSelector/createAppSelector.ts"
+import microMemoize from 'micro-memoize'
+import { shallowEqual } from 'react-redux'
+import { createSelectorCreator, lruMemoize } from 'reselect'
+
+export interface RootState {
+  todos: { id: number; completed: boolean }[]
+  alerts: { id: number; read: boolean }[]
+}
+
+export const createAppSelector = createSelectorCreator({
+  memoize: lruMemoize,
+  argsMemoize: microMemoize,
+  memoizeOptions: {
+    maxSize: 10,
+    equalityCheck: shallowEqual,
+    resultEqualityCheck: shallowEqual
+  },
+  argsMemoizeOptions: {
+    isEqual: shallowEqual,
+    maxSize: 10
+  },
+  devModeChecks: {
+    identityFunctionCheck: 'never',
+    inputStabilityCheck: 'always'
+  }
+}).withTypes<RootState>()
+
+const selectReadAlerts = createAppSelector(
+  [
+    // Type of `state` is set to `RootState`, no need to manually set the type
+    // highlight-start
+    state => state.alerts
+    // highlight-end
+  ],
+  alerts => alerts.filter(({ read }) => read)
+)
+```
+
+  </TabItem>
+  <TabItem value='js'>
+
+```js title="createSelector/createAppSelector.js"
+import microMemoize from 'micro-memoize'
+import { shallowEqual } from 'react-redux'
+import { createSelectorCreator, lruMemoize } from 'reselect'
+
+export const createAppSelector = createSelectorCreator({
+  memoize: lruMemoize,
+  argsMemoize: microMemoize,
+  memoizeOptions: {
+    maxSize: 10,
+    equalityCheck: shallowEqual,
+    resultEqualityCheck: shallowEqual
+  },
+  argsMemoizeOptions: {
+    isEqual: shallowEqual,
+    maxSize: 10
+  },
+  devModeChecks: {
+    identityFunctionCheck: 'never',
+    inputStabilityCheck: 'always'
+  }
+}).withTypes()
+
+const selectReadAlerts = createAppSelector(
+  [
+    // Type of `state` is set to `RootState`, no need to manually set the type
+    // highlight-start
+    state => state.alerts
+    // highlight-end
+  ],
+  alerts => alerts.filter(({ read }) => read)
+)
+```
+
+  </TabItem>
+</Tabs>
+
+{/* END: createSelector/createAppSelector.ts */}
+
+:::

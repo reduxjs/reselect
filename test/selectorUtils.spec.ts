@@ -1,11 +1,16 @@
-import { createSelector } from 'reselect'
+import { createSelector, lruMemoize } from 'reselect'
 import type { StateA, StateAB } from 'testTypes'
 
 describe('createSelector exposed utils', () => {
   test('resetRecomputations', () => {
     const selector = createSelector(
       (state: StateA) => state.a,
-      a => a
+      a => a,
+      {
+        memoize: lruMemoize,
+        argsMemoize: lruMemoize,
+        devModeChecks: { identityFunctionCheck: 'never' }
+      }
     )
     expect(selector({ a: 1 })).toBe(1)
     expect(selector({ a: 1 })).toBe(1)

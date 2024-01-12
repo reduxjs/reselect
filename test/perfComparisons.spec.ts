@@ -3,7 +3,7 @@ import { configureStore, createSlice } from '@reduxjs/toolkit'
 import {
   unstable_autotrackMemoize as autotrackMemoize,
   createSelectorCreator,
-  defaultMemoize,
+  lruMemoize,
   weakMapMemoize
 } from 'reselect'
 import { vi } from 'vitest'
@@ -18,7 +18,7 @@ describe('More perf comparisons', () => {
     process.env.NODE_NV = originalEnv
   })
 
-  const csDefault = createSelectorCreator(defaultMemoize)
+  const csDefault = createSelectorCreator(lruMemoize)
   const csAutotrack = createSelectorCreator(autotrackMemoize)
 
   interface Todo {
@@ -337,16 +337,18 @@ describe('More perf comparisons', () => {
 
     cdTodoIdsAndNames(reduxStates[0])
 
-    expect(cdTodoIdsAndNames.recomputations()).toBe(NUM_ITEMS + 1)
+    expect(cdTodoIdsAndNames.recomputations()).toBe(NUM_ITEMS)
 
     cdTodoIdsAndNames(reduxStates[1])
 
-    expect(cdTodoIdsAndNames.recomputations()).toBe(NUM_ITEMS + 2)
+    expect(cdTodoIdsAndNames.recomputations()).toBe(NUM_ITEMS)
 
     // @ts-ignore
     reduxStates[0] = null
     if (global.gc) {
       global.gc()
+    } else {
+      return
     }
 
     await promise
