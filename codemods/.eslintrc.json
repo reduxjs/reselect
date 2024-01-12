@@ -1,0 +1,10 @@
+{
+  "env": { "node": true },
+  "extends": ["eslint:recommended"],
+  "ignorePatterns": ["node_modules"],
+  "parserOptions": { "ecmaVersion": 2018 },
+  "plugins": ["node"],
+  "rules": {
+    "no-unused-vars": [0]
+  }
+}
