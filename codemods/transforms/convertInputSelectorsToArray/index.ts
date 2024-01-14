@@ -21,26 +21,33 @@ interface CallExpressionWithFirstArgumentAsArray
   arguments: FirstArgumentAsArray
 }
 
-interface SelectorCreator extends CallExpression {
+interface NamedFunctionCallExpression extends CallExpression {
   callee: Identifier
 }
 
-interface SelectorCreatorDeclarator extends VariableDeclarator {
+interface NamedVariableDeclarator extends VariableDeclarator {
   id: Identifier
 }
 
-interface SelectorCreatorDeclaration extends VariableDeclaration {
-  declarations: SelectorCreatorDeclarator[]
+interface NamedVariableDeclaration extends VariableDeclaration {
+  declarations: NamedVariableDeclarator[]
 }
 
 const CREATE_SELECTOR_CREATOR = 'createSelectorCreator'
 
 const CREATE_SELECTOR = 'createSelector'
 
-const isSelectorCreator = (
+const isNamedFunctionCallExpression = (
+  j: JSCodeshift,
+  path: ASTPath<CallExpression>
+): path is ASTPath<NamedFunctionCallExpression> => {
+  return j.Identifier.check(path.value.callee)
+}
+
+const isNamedVariableDeclaration = (
   j: JSCodeshift,
   path: ASTPath<VariableDeclaration>
-): path is ASTPath<SelectorCreatorDeclaration> => {
+): path is ASTPath<NamedVariableDeclaration> => {
   const [selectorCreatorDeclarator] = path.value.declarations
 
   return (
@@ -51,14 +58,24 @@ const isSelectorCreator = (
 
 const collectSelectorCreators = (j: JSCodeshift, root: Collection) => {
   return root
-    .find(j.VariableDeclaration, {
-      declarations: [{ init: { callee: { name: CREATE_SELECTOR_CREATOR } } }]
-    })
+    .find(j.VariableDeclaration)
     .filter(
       (
         variableDeclaration
-      ): variableDeclaration is ASTPath<SelectorCreatorDeclaration> =>
-        isSelectorCreator(j, variableDeclaration)
+      ): variableDeclaration is ASTPath<NamedVariableDeclaration> => {
+        return isNamedVariableDeclaration(j, variableDeclaration)
+      }
+    )
+    .filter(
+      (namedVariableDeclaration) =>
+        j.CallExpression.check(
+          namedVariableDeclaration.value.declarations[0].init
+        ) &&
+        j.Identifier.check(
+          namedVariableDeclaration.value.declarations[0].init.callee
+        ) &&
+        namedVariableDeclaration.value.declarations[0].init.callee.name ===
+          CREATE_SELECTOR_CREATOR
     )
 }
 
@@ -72,6 +89,34 @@ const collectSelectorCreatorsNames = (j: JSCodeshift, root: Collection) => {
   })
 
   return selectorCreatorsNames
+}
+
+const collectSelectorCreatorsNamesWithTypes = (
+  j: JSCodeshift,
+  root: Collection
+) => {
+  const selectorCreatorsNamesWithTypes: string[] = []
+
+  const selectorCreatorsNames = collectSelectorCreatorsNames(j, root)
+
+  root.find(j.VariableDeclarator).forEach((path) => {
+    if (
+      j.CallExpression.check(path.value.init) &&
+      j.Identifier.check(path.value.id) &&
+      j.MemberExpression.check(path.value.init.callee) &&
+      j.Identifier.check(path.value.init.callee.property) &&
+      ((j.Identifier.check(path.value.init.callee.object) &&
+        selectorCreatorsNames.includes(path.value.init.callee.object.name)) ||
+        (j.CallExpression.check(path.value.init.callee.object) &&
+          j.Identifier.check(path.value.init.callee.object.callee) &&
+          path.value.init.callee.object.callee.name ===
+            CREATE_SELECTOR_CREATOR))
+    ) {
+      selectorCreatorsNamesWithTypes.push(path.value.id.name)
+    }
+  })
+
+  return selectorCreatorsNamesWithTypes.concat(selectorCreatorsNames)
 }
 
 const isLastArgumentObject = (
@@ -88,13 +133,13 @@ const transform: Transform = (file, api) => {
 
   const root = j(file.source)
 
-  const allCallExpressions = root
+  const allNamedFunctionCallExpressions = root
     .find(j.CallExpression)
-    .filter((path): path is ASTPath<SelectorCreator> =>
-      j.Identifier.check(path.value.callee)
-    )
+    .filter((path): path is ASTPath<NamedFunctionCallExpression> => {
+      return isNamedFunctionCallExpression(j, path)
+    })
 
-  const selectorCreatorsNames = collectSelectorCreatorsNames(j, root)
+  const selectorCreatorsNames = collectSelectorCreatorsNamesWithTypes(j, root)
 
   const isFirstArgumentArray = (path: ASTPath<CallExpression>) => {
     if (path.value.arguments.length < 2) return true
@@ -130,8 +175,7 @@ const transform: Transform = (file, api) => {
     return false
   }
 
-  const needsToBeTransformed = allCallExpressions
-  .filter(
+  const needsToBeTransformed = allNamedFunctionCallExpressions.filter(
     (path) =>
       selectorCreatorsNames.includes(path.value.callee.name) &&
       !isFirstArgumentArray(path)
@@ -141,20 +185,19 @@ const transform: Transform = (file, api) => {
     return file.source
   }
 
-  needsToBeTransformed
-    .replaceWith((path) => {
-      const { arguments: args, callee } = path.value
+  needsToBeTransformed.replaceWith((path) => {
+    const { arguments: args, callee } = path.value
 
-      const transformedArguments = isLastArgumentObject(j, path)
-        ? [
-            j.arrayExpression(args.slice(0, -2)),
-            args[args.length - 2],
-            args[args.length - 1]
-          ]
-        : [j.arrayExpression(args.slice(0, -1)), args[args.length - 1]]
+    const transformedArguments = isLastArgumentObject(j, path)
+      ? [
+          j.arrayExpression(args.slice(0, -2)),
+          args[args.length - 2],
+          args[args.length - 1]
+        ]
+      : [j.arrayExpression(args.slice(0, -1)), args[args.length - 1]]
 
-      return j.callExpression(j.identifier(callee.name), transformedArguments)
-    })
+    return j.callExpression(j.identifier(callee.name), transformedArguments)
+  })
 
   return root.toSource({ lineTerminator: '\n' })
 }
