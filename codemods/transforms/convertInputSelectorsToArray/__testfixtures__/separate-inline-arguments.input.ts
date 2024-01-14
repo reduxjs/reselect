@@ -221,3 +221,9 @@ const inputSelector = (state: RootState) => state.todos
 const selector = createSelector(inputSelector, (todos) =>
   todos.map(({ id }) => id)
 )
+
+const selectTodoById = createSelector(
+  (state: RootState) => state.todos,
+  (state: RootState, id: number) => id,
+  (todos, id) => todos.find((todo) => todo.id === id)
+)
