@@ -325,6 +325,14 @@ export function createSelectorCreator<
       >
     ]
   ) => {
+    let creationStack: string | undefined = undefined
+    if (process.env.NODE_ENV !== 'production') {
+      try {
+        throw new Error()
+      } catch (error) {
+        creationStack = (error as Error).stack
+      }
+    }
     let recomputations = 0
     let dependencyRecomputations = 0
     let lastResult: Result
@@ -418,7 +426,8 @@ export function createSelectorCreator<
           identityFunctionCheck.run(
             resultFunc as Combiner<InputSelectors, Result>,
             inputSelectorResults,
-            lastResult
+            lastResult,
+            creationStack
           )
         }
 
@@ -432,7 +441,8 @@ export function createSelectorCreator<
           inputStabilityCheck.run(
             { inputSelectorResults, inputSelectorResultsCopy },
             { memoize, memoizeOptions: finalMemoizeOptions },
-            arguments
+            arguments,
+            creationStack
           )
         }
 
