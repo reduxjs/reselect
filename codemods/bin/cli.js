@@ -30,7 +30,7 @@ execaSync(
     extensions,
     ...(process.argv.slice(3).length === 1
       ? globbySync(process.argv[3])
-      : process.argv.slice(3))
+      : globbySync(process.argv.slice(3)))
   ],
   {
     stdio: 'inherit',
