@@ -15,9 +15,10 @@ export const runTransformTest = (
   describe(name, () => {
     globbySync('**/*.input.*', {
       cwd: fixturePath,
-      absolute: true
+      absolute: true,
+      objectMode: true
     })
-      .map((entry) => entry.slice(fixturePath.length))
+      .map((entry) => entry.name)
       .forEach((filename) => {
         const extension = path.extname(filename)
         const testName = filename.replace(`.input${extension}`, '')
@@ -30,29 +31,21 @@ export const runTransformTest = (
           fixturePath,
           `${testName}.output${extension}`
         )
-        // const optionsPath = path.join(fixturePath, `${testName}.options.json`)
-        // const options = fs.existsSync(optionsPath)
-        //   ? fs.readFileSync(optionsPath, 'utf-8')
-        //   : '{}'
 
-        describe(testName, () => {
-          // beforeEach(() => {
-          //   process.env.CODEMOD_CLI_ARGS = options
-          // })
+        const inputFileContent = fs.readFileSync(inputPath, 'utf8')
 
-          // afterEach(() => {
-          //   process.env.CODEMOD_CLI_ARGS = ''
-          // })
+        const expectedOutput = fs.readFileSync(outputPath, 'utf8')
 
+        describe(`${testName}${extension}`, () => {
           it('transforms correctly', () => {
             runInlineTest(
               transform,
               {},
               {
                 path: testInputPath,
-                source: fs.readFileSync(inputPath, 'utf8')
+                source: inputFileContent
               },
-              fs.readFileSync(outputPath, 'utf8'),
+              expectedOutput,
               { parser }
             )
           })
@@ -63,9 +56,9 @@ export const runTransformTest = (
               {},
               {
                 path: testInputPath,
-                source: fs.readFileSync(outputPath, 'utf8')
+                source: inputFileContent
               },
-              fs.readFileSync(outputPath, 'utf8'),
+              expectedOutput,
               { parser }
             )
           })
