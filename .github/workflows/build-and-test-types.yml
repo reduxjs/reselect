@@ -179,6 +179,13 @@ jobs:
         working-directory: ./redux-toolkit/examples/publish-ci/${{ matrix.example }}
         run: yarn info reselect && yarn why reselect
 
+      - name: Set up JDK 17 for React Native build
+        if: matrix.example == 'react-native'
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17.x'
+          distribution: 'temurin'
+
       - name: Check MSW version
         working-directory: ./redux-toolkit/examples/publish-ci/${{ matrix.example }}
         run: yarn why msw
