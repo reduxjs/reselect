@@ -16,7 +16,7 @@
     "experimentalDecorators": true,
     "rootDirs": ["./src"],
     "rootDir": "./src",
-    "types": ["vitest/globals"],
+    "types": ["vitest/globals", "vitest/importMeta"],
     "baseUrl": ".",
     "paths": {
       "reselect": ["src/index.ts"], // @remap-prod-remove-line
