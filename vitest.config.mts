@@ -9,7 +9,6 @@ const __dirname = path.dirname(__filename)
 
 export default defineConfig({
   test: {
-    isolate: false,
     typecheck: { tsconfig: 'type-tests/tsconfig.json' },
     globals: true,
     include: ['./test/**/*.(spec|test).[jt]s?(x)'],
