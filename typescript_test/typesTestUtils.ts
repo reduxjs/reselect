@@ -25,5 +25,5 @@ export type IsEqual<A, B> = (<G>() => G extends A ? 1 : 2) extends <
   : false
 
 export function expectExactType<T>(t: T) {
-  return <U extends Equals<T, U>>(u: U) => {}
+  return <U extends T>(u: U & Equals<T, U>) => {}
 }
