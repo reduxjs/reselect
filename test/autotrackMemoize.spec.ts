@@ -102,7 +102,7 @@ describe('Basic selector behavior with autotrack', () => {
 
   // don't run performance tests for coverage
   describe.skipIf(isCoverage)('performance checks', () => {
-    beforeAll(setEnvToProd)
+    beforeEach(setEnvToProd)
 
     test('basic selector cache hit performance', () => {
       const selector = createSelector(
