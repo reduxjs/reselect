@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitest/config'
 
-import { fileURLToPath } from 'url'
-import path from 'path'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 // No __dirname under Node ESM
 const __filename = fileURLToPath(import.meta.url)
@@ -18,9 +18,6 @@ export default defineConfig({
 
       // this mapping is disabled as we want `dist` imports in the tests only to be used for "type-only" imports which don't play a role for jest
       '@internal/': path.join(__dirname, 'src')
-    },
-    deps: {
-      interopDefault: true
     }
   }
 })
