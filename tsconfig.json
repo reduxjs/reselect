@@ -11,11 +11,11 @@
     "noErrorTruncation": true,
     "declaration": true,
     "emitDeclarationOnly": true,
-    "outDir": "./es",
+    "outDir": "dist",
     "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true,
     "rootDirs": ["./src"],
-    "rootDir": "./src",
+    "rootDir": ".",
     "types": ["vitest/globals", "vitest/importMeta"],
     "baseUrl": ".",
     "paths": {
