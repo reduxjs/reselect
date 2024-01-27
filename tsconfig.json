@@ -11,12 +11,12 @@
     "noErrorTruncation": true,
     "declaration": true,
     "emitDeclarationOnly": true,
-    "outDir": "./es",
+    "outDir": "dist",
     "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true,
     "rootDirs": ["./src"],
-    "rootDir": "./src",
-    "types": ["vitest/globals"],
+    "rootDir": ".",
+    "types": ["vitest/globals", "vitest/importMeta"],
     "baseUrl": ".",
     "paths": {
       "reselect": ["src/index.ts"], // @remap-prod-remove-line
