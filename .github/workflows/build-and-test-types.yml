@@ -88,7 +88,7 @@ jobs:
 
         # Remove config line that points "reselect" to the `src` folder,
         # so that the typetest will use the installed version instead
-      - run: sed -i -e /@remap-prod-remove-line/d ./typescript_test/tsconfig.json vitest.config.ts
+      - run: sed -i -e /@remap-prod-remove-line/d ./typescript_test/tsconfig.json vitest.config.mts
 
       - name: Test types
         run: |
