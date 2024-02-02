@@ -27,6 +27,7 @@ export default defineConfig(options => {
     {
       ...commonOptions,
       format: ['esm'],
+      target: 'es2019',
       outExtension: () => ({ js: '.mjs' }),
       dts: true,
       clean: true
