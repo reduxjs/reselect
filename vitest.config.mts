@@ -1,7 +1,6 @@
-import { defineConfig } from 'vitest/config'
-
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { defineConfig } from 'vitest/config'
 
 // No __dirname under Node ESM
 const __filename = fileURLToPath(import.meta.url)
@@ -9,9 +8,7 @@ const __dirname = path.dirname(__filename)
 
 export default defineConfig({
   test: {
-    typecheck: { tsconfig: 'type-tests/tsconfig.json' },
     globals: true,
-    include: ['./test/**/*.(spec|test).[jt]s?(x)'],
     setupFiles: ['test/setup.vitest.ts'],
     alias: {
       reselect: path.join(__dirname, 'src/index.ts'), // @remap-prod-remove-line
