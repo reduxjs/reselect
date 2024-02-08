@@ -126,7 +126,17 @@ jobs:
       fail-fast: false
       matrix:
         node: ['18.x']
-        example: ['cra4', 'cra5', 'next', 'vite', 'node-standard', 'node-esm', 'react-native', 'expo']
+        example:
+          [
+            'cra4',
+            'cra5',
+            'next',
+            'vite',
+            'node-standard',
+            'node-esm',
+            'react-native',
+            'expo'
+          ]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -179,12 +189,12 @@ jobs:
         working-directory: ./redux-toolkit/examples/publish-ci/${{ matrix.example }}
         run: yarn info reselect && yarn why reselect
 
-      # - name: Set up JDK 17 for React Native build
-      #   if: matrix.example == 'react-native'
-      #   uses: actions/setup-java@v4
-      #   with:
-      #     java-version: '17.x'
-      #     distribution: 'temurin'
+      - name: Set up JDK 17 for React Native build
+        if: matrix.example == 'react-native'
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17.x'
+          distribution: 'temurin'
 
       - name: Check MSW version
         working-directory: ./redux-toolkit/examples/publish-ci/${{ matrix.example }}
