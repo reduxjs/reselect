@@ -34,3 +34,5 @@ website/.yarn/
 
 docs/examples/**/*.js
 docs/examples/**/*.jsx
+
+tsconfig.vitest-temp.json
