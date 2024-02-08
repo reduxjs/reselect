@@ -33,7 +33,7 @@
     "test:cov": "vitest run --coverage",
     "type-check": "vitest --run --typecheck.only",
     "type-check:trace": "vitest --run --typecheck.only && tsc --noEmit -p typescript_test/tsconfig.json --generateTrace trace && npx @typescript/analyze-trace trace && rimraf trace",
-    "test:typescript": "tsc --noEmit -p tsconfig.test.json",
+    "type-tests": "tsc --noEmit -p tsconfig.test.json",
     "docs:start": "yarn --cwd website start",
     "docs:build": "yarn --cwd website build",
     "docs:clear": "yarn --cwd website clear",

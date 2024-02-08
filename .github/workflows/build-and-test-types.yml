@@ -89,7 +89,7 @@ jobs:
       - name: Test types
         run: |
           ./node_modules/.bin/tsc --version
-          yarn test:typescript
+          yarn type-tests
 
   are-the-types-wrong:
     name: Check package config with are-the-types-wrong
