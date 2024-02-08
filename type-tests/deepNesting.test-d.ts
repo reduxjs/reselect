@@ -1,3 +1,4 @@
+import type { Cache } from 'micro-memoize'
 import microMemoize from 'micro-memoize'
 import { createSelector, lruMemoize } from 'reselect'
 import { describe, test } from 'vitest'
@@ -16,12 +17,13 @@ const state: RootState = {
   ]
 }
 
+type AnyFunction = (...args: any[]) => any
+
 describe('deep nesting', () => {
   test('Deep Nesting First And Second createSelector Overload', () => {
-    type State = { foo: string }
-    const readOne = (state: State) => state.foo
+    const selectTodos = (state: RootState) => state.todos
 
-    const selector0 = createSelector(readOne, one => one)
+    const selector0 = createSelector(selectTodos, todos => todos)
     const selector1 = createSelector(selector0, s => s)
     const selector2 = createSelector(selector1, s => s)
     const selector3 = createSelector(selector2, s => s)
@@ -34,9 +36,15 @@ describe('deep nesting', () => {
     const selector10 = createSelector(selector9, s => s, {
       memoize: microMemoize
     })
-    selector10.dependencies[0].dependencies[0].dependencies[0].dependencies[0]
-      .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
-      .dependencies[0].dependencies[0].memoizedResultFunc.clearCache
+
+    expectTypeOf(selector10).toBeCallableWith(state)
+
+    expectTypeOf(
+      selector10.dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].memoizedResultFunc.clearCache
+    ).toEqualTypeOf<() => void>()
+
     const selector11 = createSelector(selector10, s => s)
     const selector12 = createSelector(selector11, s => s)
     const selector13 = createSelector(selector12, s => s)
@@ -47,9 +55,15 @@ describe('deep nesting', () => {
     const selector18 = createSelector(selector17, s => s)
     const selector19 = createSelector(selector18, s => s)
     const selector20 = createSelector(selector19, s => s)
-    selector20.dependencies[0].dependencies[0].dependencies[0].dependencies[0]
-      .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
-      .dependencies[0].dependencies[0].memoizedResultFunc.cache
+
+    expectTypeOf(selector20).toBeCallableWith(state)
+
+    expectTypeOf(
+      selector20.dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].memoizedResultFunc.cache
+    ).toEqualTypeOf<Cache<AnyFunction>>()
+
     const selector21 = createSelector(selector20, s => s)
     const selector22 = createSelector(selector21, s => s)
     const selector23 = createSelector(selector22, s => s)
@@ -60,20 +74,25 @@ describe('deep nesting', () => {
     const selector28 = createSelector(selector27, s => s)
     const selector29 = createSelector(selector28, s => s)
     const selector30 = createSelector(selector29, s => s)
-    selector30.dependencies[0].dependencies[0].dependencies[0].dependencies[0]
-      .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
-      .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
-      .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
-      .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
-      .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
-      .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
-      .dependencies[0].dependencies[0].memoizedResultFunc.clearCache
-  })
-  test('Deep Nesting Second createSelector Overload', () => {
-    type State = { foo: string }
-    const readOne = (state: State) => state.foo
 
-    const selector0 = createSelector(readOne, one => one)
+    expectTypeOf(selector30).toBeCallableWith(state)
+
+    expectTypeOf(
+      selector30.dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].memoizedResultFunc.clearCache
+    ).toEqualTypeOf<() => void>()
+  })
+
+  test('Deep Nesting Second createSelector Overload', () => {
+    const selectTodos = (state: RootState) => state.todos
+
+    const selector0 = createSelector(selectTodos, todos => todos)
     const selector1 = createSelector(selector0, s => s, {
       memoize: lruMemoize
     })
@@ -104,6 +123,15 @@ describe('deep nesting', () => {
     const selector10 = createSelector(selector9, s => s, {
       memoize: lruMemoize
     })
+
+    expectTypeOf(selector10).toBeCallableWith(state)
+
+    expectTypeOf(
+      selector10.dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].memoizedResultFunc.clearCache
+    ).toEqualTypeOf<() => void>()
+
     const selector11 = createSelector(selector10, s => s, {
       memoize: lruMemoize
     })
@@ -134,6 +162,15 @@ describe('deep nesting', () => {
     const selector20 = createSelector(selector19, s => s, {
       memoize: lruMemoize
     })
+
+    expectTypeOf(selector20).toBeCallableWith(state)
+
+    expectTypeOf(
+      selector20.dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].memoizedResultFunc.clearCache
+    ).toEqualTypeOf<() => void>()
+
     const selector21 = createSelector(selector20, s => s, {
       memoize: lruMemoize
     })
@@ -161,13 +198,28 @@ describe('deep nesting', () => {
     const selector29 = createSelector(selector28, s => s, {
       memoize: lruMemoize
     })
+    const selector30 = createSelector(selector29, s => s, {
+      memoize: lruMemoize
+    })
+
+    expectTypeOf(selector30).toBeCallableWith(state)
+
+    expectTypeOf(
+      selector30.dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].memoizedResultFunc.clearCache
+    ).toEqualTypeOf<() => void>()
   })
 
   test('Deep Nesting Third createSelector Overload', () => {
-    type State = { foo: string }
-    const readOne = (state: State) => state.foo
+    const selectTodos = (state: RootState) => state.todos
 
-    const selector0 = createSelector(readOne, one => one)
+    const selector0 = createSelector(selectTodos, todos => todos)
     const selector1 = createSelector([selector0], s => s)
     const selector2 = createSelector([selector1], s => s)
     const selector3 = createSelector([selector2], s => s)
@@ -178,6 +230,15 @@ describe('deep nesting', () => {
     const selector8 = createSelector([selector7], s => s)
     const selector9 = createSelector([selector8], s => s)
     const selector10 = createSelector([selector9], s => s)
+
+    expectTypeOf(selector10).toBeCallableWith(state)
+
+    expectTypeOf(
+      selector10.dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].memoizedResultFunc.clearCache
+    ).toEqualTypeOf<() => void>()
+
     const selector11 = createSelector([selector10], s => s)
     const selector12 = createSelector([selector11], s => s)
     const selector13 = createSelector([selector12], s => s)
@@ -188,6 +249,15 @@ describe('deep nesting', () => {
     const selector18 = createSelector([selector17], s => s)
     const selector19 = createSelector([selector18], s => s)
     const selector20 = createSelector([selector19], s => s)
+
+    expectTypeOf(selector20).toBeCallableWith(state)
+
+    expectTypeOf(
+      selector20.dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].memoizedResultFunc.clearCache
+    ).toEqualTypeOf<() => void>()
+
     const selector21 = createSelector([selector20], s => s)
     const selector22 = createSelector([selector21], s => s)
     const selector23 = createSelector([selector22], s => s)
@@ -198,6 +268,19 @@ describe('deep nesting', () => {
     const selector28 = createSelector([selector27], s => s)
     const selector29 = createSelector([selector28], s => s)
     const selector30 = createSelector([selector29], s => s)
+
+    expectTypeOf(selector30).toBeCallableWith(state)
+
+    expectTypeOf(
+      selector30.dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].dependencies[0].dependencies[0]
+        .dependencies[0].dependencies[0].memoizedResultFunc.clearCache
+    ).toEqualTypeOf<() => void>()
   })
 
   test('createSelector Parameter Limit', () => {
