@@ -19,8 +19,10 @@ const state: RootState = {
 
 type AnyFunction = (...args: any[]) => any
 
-describe('deep nesting', () => {
+describe('deep nesting #525', () => {
   test('Deep Nesting First And Second createSelector Overload', () => {
+    // Verify more than 12 selectors are accepted
+
     const selectTodos = (state: RootState) => state.todos
 
     const selector0 = createSelector(selectTodos, todos => todos)
