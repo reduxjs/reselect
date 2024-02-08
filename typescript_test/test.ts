@@ -10,8 +10,7 @@ import { useSelector } from 'react-redux'
 import type {
   GetStateFromSelectors,
   Selector,
-  SelectorResultArray,
-  TypedStructuredSelectorCreator
+  SelectorResultArray
 } from 'reselect'
 import {
   createSelector,
@@ -801,51 +800,6 @@ function testCreateStructuredSelector() {
   selectorGenerics({ bar: '42' })
 }
 
-// TODO: Remove this function once `TypedStructuredSelectorCreator` is removed.
-function testTypedCreateStructuredSelector() {
-  type RootState = {
-    foo: string
-    bar: number
-  }
-
-  const selectFoo = (state: RootState) => state.foo
-  const selectBar = (state: RootState) => state.bar
-
-  const typedStructuredSelectorCreator: TypedStructuredSelectorCreator<RootState> =
-    createStructuredSelector
-
-  typedStructuredSelectorCreator({
-    foo: selectFoo,
-    bar: selectBar
-  })
-
-  // @ts-expect-error Because `bar` is missing.
-  typedStructuredSelectorCreator({
-    foo: selectFoo
-  })
-
-  // This works
-  const selectorGenerics = createStructuredSelector<{
-    foo: typeof selectFoo
-    bar: typeof selectBar
-  }>({
-    foo: state => state.foo,
-    bar: state => +state.foo
-  })
-
-  // This also works
-  const selectorGenerics1 = typedStructuredSelectorCreator<{
-    foo: typeof selectFoo
-    bar: typeof selectBar
-  }>({
-    foo: state => state.foo,
-    bar: state => +state.foo
-  })
-
-  // Their types are the same.
-  expectTypeOf(selectorGenerics).toEqualTypeOf(selectorGenerics1)
-}
-
 function testDynamicArrayArgument() {
   interface Elem {
     val1: string
@@ -942,7 +896,7 @@ function multiArgMemoize<F extends (...args: any[]) => any>(
 
   const select = createMultiMemoizeArgSelector(
     (state: { foo: string }) => state.foo,
-    foo => foo + '!'
+    foo => `${foo}!`
   )
   // error is not applicable anymore
   select.clearCache()
