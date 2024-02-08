@@ -354,10 +354,14 @@ describe('memoize and argsMemoize', () => {
       (state: RootState) => state.todos,
       todos => todos.map(({ id }) => id)
     )
-    assertType<number[]>(selectorMicroMemoize(state))
-    // @ts-expect-error
-    selectorMicroMemoize()
+
+    expectTypeOf(selectorMicroMemoize(state)).items.toBeNumber()
+
+    expectTypeOf(selectorMicroMemoize).parameter(0).not.toBeNever()
+
     // Checking existence of fields related to `argsMemoize`
+    expectTypeOf(selectorMicroMemoize).parameter(0).not.toBeNever()
+
     selectorMicroMemoize.cache
     selectorMicroMemoize.fn()
     selectorMicroMemoize.isMemoized
@@ -373,27 +377,34 @@ describe('memoize and argsMemoize', () => {
     selectorMicroMemoize.memoizedResultFunc.clearCache()
     // Checking existence of fields related to the actual memoized selector
     selectorMicroMemoize.dependencies
-    assertType<
+
+    expectTypeOf(selectorMicroMemoize.dependencies).toEqualTypeOf<
       [
         (state: RootState) => {
           id: number
           completed: boolean
         }[]
       ]
-    >(selectorMicroMemoize.dependencies)
-    assertType<number[]>(selectorMicroMemoize.lastResult())
-    // @ts-expect-error
-    selectorMicroMemoize.memoizedResultFunc()
-    assertType<number[]>(
+    >()
+
+    expectTypeOf(selectorMicroMemoize.lastResult()).items.toBeNumber()
+
+    expectTypeOf(selectorMicroMemoize.memoizedResultFunc)
+      .parameter(0)
+      .not.toBeNever()
+
+    expectTypeOf(
       selectorMicroMemoize.memoizedResultFunc([{ id: 0, completed: true }])
-    )
-    selectorMicroMemoize.recomputations()
-    selectorMicroMemoize.resetRecomputations()
-    // @ts-expect-error
-    selectorMicroMemoize.resultFunc()
-    assertType<number[]>(
+    ).items.toBeNumber()
+
+    expectTypeOf(selectorMicroMemoize.recomputations).toBeCallableWith()
+    expectTypeOf(selectorMicroMemoize.resetRecomputations).toBeCallableWith()
+
+    expectTypeOf(selectorMicroMemoize.resultFunc).parameter(0).not.toBeNever()
+
+    expectTypeOf(
       selectorMicroMemoize.resultFunc([{ id: 0, completed: true }])
-    )
+    ).items.toBeNumber()
 
     // Checking to see if types dynamically change if memoize or argsMemoize are overridden inside `createSelector`.
     // `microMemoize` was initially passed into `createSelectorCreator`
@@ -411,9 +422,11 @@ describe('memoize and argsMemoize', () => {
         argsMemoizeOptions: { equalityCheck: (a, b) => a === b, maxSize: 3 }
       }
     )
-    assertType<number[]>(selectorMicroMemoizeOverridden(state))
-    // @ts-expect-error
-    selectorMicroMemoizeOverridden()
+
+    expectTypeOf(selectorMicroMemoizeOverridden(state)).items.toBeNumber()
+
+    expectTypeOf(selectorMicroMemoizeOverridden).parameter(0).not.toBeNever()
+
     // Checking existence of fields related to `argsMemoize`
     selectorMicroMemoizeOverridden.clearCache() // Prior to override, this field did NOT exist.
     // @ts-expect-error Prior to override, this field DID exist.
@@ -435,28 +448,40 @@ describe('memoize and argsMemoize', () => {
     // @ts-expect-error Prior to override, this field DID exist.
     selectorMicroMemoizeOverridden.memoizedResultFunc.options
     // Checking existence of fields related to the actual memoized selector
-    assertType<
+
+    expectTypeOf(selectorMicroMemoizeOverridden.dependencies).toEqualTypeOf<
       [
         (state: RootState) => {
           id: number
           completed: boolean
         }[]
       ]
-    >(selectorMicroMemoizeOverridden.dependencies)
-    assertType<number[]>(
+    >()
+
+    expectTypeOf(
       selectorMicroMemoizeOverridden.memoizedResultFunc([
         { id: 0, completed: true }
       ])
-    )
-    // @ts-expect-error
-    selectorMicroMemoizeOverridden.memoizedResultFunc()
-    selectorMicroMemoizeOverridden.recomputations()
-    selectorMicroMemoizeOverridden.resetRecomputations()
-    // @ts-expect-error
-    selectorMicroMemoizeOverridden.resultFunc()
-    assertType<number[]>(
+    ).items.toBeNumber()
+
+    expectTypeOf(
+      selectorMicroMemoizeOverridden.memoizedResultFunc
+    ).not.toBeNever()
+
+    expectTypeOf(
+      selectorMicroMemoizeOverridden.recomputations
+    ).toBeCallableWith()
+
+    expectTypeOf(
+      selectorMicroMemoizeOverridden.resetRecomputations
+    ).toBeCallableWith()
+
+    expectTypeOf(selectorMicroMemoizeOverridden.resultFunc).not.toBeNever()
+
+    expectTypeOf(
       selectorMicroMemoizeOverridden.resultFunc([{ id: 0, completed: true }])
-    )
+    ).items.toBeNumber()
+
     // Making sure the type behavior is consistent when args are passed in as an array.
     const selectorMicroMemoizeOverriddenArray = createSelectorMicroMemoize(
       [(state: RootState) => state.todos],
@@ -468,9 +493,13 @@ describe('memoize and argsMemoize', () => {
         argsMemoizeOptions: { equalityCheck: (a, b) => a === b, maxSize: 3 }
       }
     )
-    assertType<number[]>(selectorMicroMemoizeOverriddenArray(state))
-    // @ts-expect-error
-    selectorMicroMemoizeOverriddenArray()
+
+    expectTypeOf(selectorMicroMemoizeOverriddenArray(state)).items.toBeNumber()
+
+    expectTypeOf(selectorMicroMemoizeOverriddenArray)
+      .parameter(0)
+      .not.toBeNever()
+
     // Checking existence of fields related to `argsMemoize`
     selectorMicroMemoizeOverriddenArray.clearCache() // Prior to override, this field did NOT exist.
     // @ts-expect-error Prior to override, this field DID exist.
@@ -492,30 +521,48 @@ describe('memoize and argsMemoize', () => {
     // @ts-expect-error Prior to override, this field DID exist.
     selectorMicroMemoizeOverriddenArray.memoizedResultFunc.options
     // Checking existence of fields related to the actual memoized selector
-    assertType<
+
+    expectTypeOf(
+      selectorMicroMemoizeOverriddenArray.dependencies
+    ).toEqualTypeOf<
       [
         (state: RootState) => {
           id: number
           completed: boolean
         }[]
       ]
-    >(selectorMicroMemoizeOverriddenArray.dependencies)
-    assertType<number[]>(
+    >()
+
+    expectTypeOf(
+      selectorMicroMemoizeOverriddenArray.lastResult()
+    ).items.toBeNumber()
+
+    expectTypeOf(
       selectorMicroMemoizeOverriddenArray.memoizedResultFunc([
         { id: 0, completed: true }
       ])
-    )
-    // @ts-expect-error
-    selectorMicroMemoizeOverriddenArray.memoizedResultFunc()
-    selectorMicroMemoizeOverriddenArray.recomputations()
-    selectorMicroMemoizeOverriddenArray.resetRecomputations()
-    // @ts-expect-error
-    selectorMicroMemoizeOverriddenArray.resultFunc()
-    assertType<number[]>(
+    ).items.toBeNumber()
+
+    expectTypeOf(
+      selectorMicroMemoizeOverriddenArray.memoizedResultFunc
+    ).not.toBeNever()
+
+    expectTypeOf(
+      selectorMicroMemoizeOverriddenArray.recomputations
+    ).toBeCallableWith()
+
+    expectTypeOf(
+      selectorMicroMemoizeOverriddenArray.resetRecomputations
+    ).toBeCallableWith()
+
+    expectTypeOf(selectorMicroMemoizeOverriddenArray.resultFunc).not.toBeNever()
+
+    expectTypeOf(
       selectorMicroMemoizeOverriddenArray.resultFunc([
         { id: 0, completed: true }
       ])
-    )
+    ).items.toBeNumber()
+
     const selectorMicroMemoizeOverrideArgsMemoizeOnlyWrong =
       // @ts-expect-error Because `memoizeOptions` should not contain `resultEqualityCheck`.
       createSelectorMicroMemoize(
@@ -542,9 +589,15 @@ describe('memoize and argsMemoize', () => {
           argsMemoizeOptions: { resultEqualityCheck: (a, b) => a === b }
         }
       )
-    assertType<number[]>(selectorMicroMemoizeOverrideArgsMemoizeOnly(state))
-    // @ts-expect-error
-    selectorMicroMemoizeOverrideArgsMemoizeOnly()
+
+    expectTypeOf(
+      selectorMicroMemoizeOverrideArgsMemoizeOnly(state)
+    ).items.toBeNumber()
+
+    expectTypeOf(selectorMicroMemoizeOverrideArgsMemoizeOnly)
+      .parameter(0)
+      .not.toBeNever()
+
     // Checking existence of fields related to `argsMemoize`
     selectorMicroMemoizeOverrideArgsMemoizeOnly.clearCache() // Prior to override, this field did NOT exist.
     // @ts-expect-error Prior to override, this field DID exist.
@@ -565,33 +618,49 @@ describe('memoize and argsMemoize', () => {
     // `memoizedResultFunc.clearCache` is still an invalid field access.
     selectorMicroMemoizeOverrideArgsMemoizeOnly.memoizedResultFunc.clearCache()
     // Checking existence of fields related to the actual memoized selector
-    assertType<
+
+    expectTypeOf(
+      selectorMicroMemoizeOverrideArgsMemoizeOnly.dependencies
+    ).toEqualTypeOf<
       [
         (state: RootState) => {
           id: number
           completed: boolean
         }[]
       ]
-    >(selectorMicroMemoizeOverrideArgsMemoizeOnly.dependencies)
-    assertType<number[]>(
+    >()
+
+    expectTypeOf(
       selectorMicroMemoizeOverrideArgsMemoizeOnly.lastResult()
-    )
-    assertType<number[]>(
+    ).items.toBeNumber()
+
+    expectTypeOf(
       selectorMicroMemoizeOverrideArgsMemoizeOnly.memoizedResultFunc([
         { id: 0, completed: true }
       ])
-    )
-    // @ts-expect-error
-    selectorMicroMemoizeOverrideArgsMemoizeOnly.memoizedResultFunc()
-    selectorMicroMemoizeOverrideArgsMemoizeOnly.recomputations()
-    selectorMicroMemoizeOverrideArgsMemoizeOnly.resetRecomputations()
-    // @ts-expect-error
-    selectorMicroMemoizeOverrideArgsMemoizeOnly.resultFunc()
-    assertType<number[]>(
+    ).items.toBeNumber()
+
+    expectTypeOf(
+      selectorMicroMemoizeOverrideArgsMemoizeOnly.memoizedResultFunc
+    ).not.toBeNever()
+
+    expectTypeOf(
+      selectorMicroMemoizeOverrideArgsMemoizeOnly.recomputations
+    ).toBeCallableWith()
+
+    expectTypeOf(
+      selectorMicroMemoizeOverrideArgsMemoizeOnly.resetRecomputations
+    ).toBeCallableWith()
+
+    expectTypeOf(
+      selectorMicroMemoizeOverrideArgsMemoizeOnly.resultFunc
+    ).not.toBeNever()
+
+    expectTypeOf(
       selectorMicroMemoizeOverrideArgsMemoizeOnly.resultFunc([
         { id: 0, completed: true }
       ])
-    )
+    ).items.toBeNumber()
 
     const selectorMicroMemoizeOverrideMemoizeOnly = createSelectorMicroMemoize(
       (state: RootState) => state.todos,
@@ -601,9 +670,14 @@ describe('memoize and argsMemoize', () => {
         memoizeOptions: { resultEqualityCheck: (a, b) => a === b }
       }
     )
-    assertType<number[]>(selectorMicroMemoizeOverrideMemoizeOnly(state))
-    // @ts-expect-error
-    selectorMicroMemoizeOverrideMemoizeOnly()
+
+    expectTypeOf(
+      selectorMicroMemoizeOverrideMemoizeOnly(state)
+    ).items.toBeNumber()
+
+    expectTypeOf(selectorMicroMemoizeOverrideMemoizeOnly)
+      .parameter(0)
+      .not.toBeNever()
 
     // Checking existence of fields related to `argsMemoize`
     selectorMicroMemoizeOverrideMemoizeOnly.cache
@@ -626,31 +700,49 @@ describe('memoize and argsMemoize', () => {
     selectorMicroMemoizeOverrideMemoizeOnly.memoizedResultFunc.clearCache() // Prior to override, this field did NOT exist.
 
     // Checking existence of fields related to the actual memoized selector
-    assertType<
+
+    expectTypeOf(
+      selectorMicroMemoizeOverrideMemoizeOnly.dependencies
+    ).toEqualTypeOf<
       [
         (state: RootState) => {
           id: number
           completed: boolean
         }[]
       ]
-    >(selectorMicroMemoizeOverrideMemoizeOnly.dependencies)
-    assertType<number[]>(selectorMicroMemoizeOverrideMemoizeOnly.lastResult())
-    assertType<number[]>(
+    >()
+
+    expectTypeOf(
+      selectorMicroMemoizeOverrideMemoizeOnly.lastResult()
+    ).items.toBeNumber()
+
+    expectTypeOf(
       selectorMicroMemoizeOverrideMemoizeOnly.memoizedResultFunc([
         { id: 0, completed: true }
       ])
-    )
-    // @ts-expect-error
-    selectorMicroMemoizeOverrideMemoizeOnly.memoizedResultFunc()
-    selectorMicroMemoizeOverrideMemoizeOnly.recomputations()
-    selectorMicroMemoizeOverrideMemoizeOnly.resetRecomputations()
-    // @ts-expect-error
-    selectorMicroMemoizeOverrideMemoizeOnly.resultFunc()
-    assertType<number[]>(
+    ).items.toBeNumber()
+
+    expectTypeOf(
+      selectorMicroMemoizeOverrideMemoizeOnly.memoizedResultFunc
+    ).not.toBeNever()
+
+    expectTypeOf(
+      selectorMicroMemoizeOverrideMemoizeOnly.recomputations
+    ).toBeCallableWith()
+
+    expectTypeOf(
+      selectorMicroMemoizeOverrideMemoizeOnly.resetRecomputations
+    ).toBeCallableWith()
+
+    expectTypeOf(
+      selectorMicroMemoizeOverrideMemoizeOnly.resultFunc
+    ).not.toBeNever()
+
+    expectTypeOf(
       selectorMicroMemoizeOverrideMemoizeOnly.resultFunc([
         { id: 0, completed: true }
       ])
-    )
+    ).items.toBeNumber()
 
     const selectorMicroMemoizePartiallyOverridden =
       // @ts-expect-error Since `argsMemoize` is set to `lruMemoize`, `argsMemoizeOptions` must match the options object parameter of `lruMemoize`
@@ -693,17 +785,7 @@ describe('memoize and argsMemoize', () => {
     const selectorMicroMemoizePartiallyOverridden2 = createSelectorMicroMemoize(
       (state: RootState) => state.todos,
       todos => todos.map(t => t.id),
-      {
-        // memoizeOptions: [
-        //   {
-        //     equalityCheck:
-        //       // @ts-expect-error
-        //       (a, b) => a === b,
-        //     maxSize: 2
-        //   }
-        // ],
-        argsMemoizeOptions: [{ isPromise: false }]
-      }
+      { argsMemoizeOptions: [{ isPromise: false }] }
     )
 
     const selectorDefaultParametric = createSelector(
@@ -718,26 +800,30 @@ describe('memoize and argsMemoize', () => {
         memoizeOptions: [(a, b) => a === b]
       }
     )
-    assertType<
+
+    expectTypeOf(selectorDefaultParametric(state, 0)).toEqualTypeOf<
       {
         id: number
         completed: boolean
       }[]
-    >(selectorDefaultParametric(state, 0))
-    assertType<
-      {
-        id: number
-        completed: boolean
-      }[]
-    >(selectorDefaultParametric(state, 1))
-    // @ts-expect-error
-    selectorDefaultParametric(state)
-    // @ts-expect-error
-    selectorDefaultParametric(1)
-    // @ts-expect-error
-    selectorDefaultParametric(state, '')
-    // @ts-expect-error
-    selectorDefaultParametric(state, 1, 1)
+    >()
+
+    expectTypeOf(selectorDefaultParametric).parameters.not.toMatchTypeOf<
+      [RootState]
+    >()
+
+    expectTypeOf(selectorDefaultParametric).parameters.not.toMatchTypeOf<
+      [number]
+    >()
+
+    expectTypeOf(selectorDefaultParametric).parameters.not.toMatchTypeOf<
+      [RootState, string]
+    >()
+
+    expectTypeOf(selectorDefaultParametric).parameters.not.toMatchTypeOf<
+      [RootState, number, number]
+    >()
+
     // Checking existence of fields related to `argsMemoize`
     // Prior to override, this field did NOT exist.
     selectorDefaultParametric.cache
@@ -757,29 +843,45 @@ describe('memoize and argsMemoize', () => {
     selectorDefaultParametric.memoizedResultFunc.clear()
 
     // Checking existence of fields related to the actual memoized selector
-    assertType<
+
+    expectTypeOf(selectorDefaultParametric.dependencies).toEqualTypeOf<
       [
         (state: RootState, id: number) => number,
         (state: RootState) => { id: number; completed: boolean }[]
       ]
-    >(selectorDefaultParametric.dependencies)
-    assertType<{ id: number; completed: boolean }[]>(
-      selectorDefaultParametric.lastResult()
+    >()
+
+    expectTypeOf(selectorDefaultParametric.lastResult()).toEqualTypeOf<
+      {
+        id: number
+        completed: boolean
+      }[]
+    >()
+
+    expectTypeOf(selectorDefaultParametric.memoizedResultFunc)
+      .parameter(0)
+      .not.toBeNever()
+
+    expectTypeOf(selectorDefaultParametric.memoizedResultFunc).toBeCallableWith(
+      0,
+      [{ id: 0, completed: true }]
     )
-    assertType<{ id: number; completed: boolean }[]>(
+
+    expectTypeOf(
       selectorDefaultParametric.memoizedResultFunc(0, [
         { id: 0, completed: true }
       ])
-    )
-    // @ts-expect-error
-    selectorDefaultParametric.memoizedResultFunc()
-    selectorDefaultParametric.recomputations()
-    selectorDefaultParametric.resetRecomputations()
-    // @ts-expect-error
-    selectorDefaultParametric.resultFunc()
-    assertType<{ id: number; completed: boolean }[]>(
-      selectorDefaultParametric.resultFunc(0, [{ id: 0, completed: true }])
-    )
+    ).toEqualTypeOf<{ id: number; completed: boolean }[]>()
+
+    expectTypeOf(selectorDefaultParametric.recomputations).toBeCallableWith()
+
+    expectTypeOf(
+      selectorDefaultParametric.resetRecomputations
+    ).toBeCallableWith()
+
+    expectTypeOf(selectorDefaultParametric.resultFunc).toBeCallableWith(0, [
+      { id: 0, completed: true }
+    ])
   })
 
   test('memoize And argsMemoize In createSelectorCreator', () => {
@@ -796,11 +898,15 @@ describe('memoize and argsMemoize', () => {
         (state: RootState) => state.todos,
         todos => todos.map(({ id }) => id)
       )
-    assertType<number[]>(
+
+    expectTypeOf(
       selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault(state)
-    )
-    // @ts-expect-error
-    selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault()
+    ).items.toBeNumber()
+
+    expectTypeOf(selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault)
+      .parameter(0)
+      .not.toBeNever()
+
     selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault.resultFunc
     selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault.clearCache()
     // @ts-expect-error
@@ -822,36 +928,52 @@ describe('memoize and argsMemoize', () => {
     // @ts-expect-error
     selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault.memoizedResultFunc.clearCache()
     // Checking existence of fields related to the actual memoized selector
-    assertType<
+
+    expectTypeOf(
+      selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault.dependencies
+    ).toEqualTypeOf<
       [
         (state: RootState) => {
           id: number
           completed: boolean
         }[]
       ]
-    >(selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault.dependencies)
-    assertType<number[]>(
+    >()
+
+    expectTypeOf(
       selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault.lastResult()
+    ).items.toBeNumber()
+
+    expectTypeOf(
+      selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault.memoizedResultFunc
     )
-    assertType<number[]>(
-      selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault.memoizedResultFunc(
-        [{ id: 0, completed: true }]
-      )
+      .parameter(0)
+      .not.toBeNever()
+
+    expectTypeOf(
+      selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault.recomputations
+    ).toBeCallableWith()
+
+    expectTypeOf(
+      selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault.resetRecomputations
+    ).toBeCallableWith()
+
+    expectTypeOf(
+      selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault.resultFunc
     )
-    // @ts-expect-error
-    selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault.memoizedResultFunc()
-    selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault.recomputations()
-    selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault.resetRecomputations()
-    // @ts-expect-error
-    selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault.resultFunc()
-    assertType<number[]>(
+      .parameter(0)
+      .not.toBeNever()
+
+    expectTypeOf(
       selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault.resultFunc([
         { id: 0, completed: true }
       ])
-    )
+    ).items.toBeNumber()
+
     expectTypeOf(
       selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault.memoize
     ).toEqualTypeOf(microMemoize)
+
     expectTypeOf(
       selectorMicroMemoizeArgsMemoizeOptionsFallbackToDefault.argsMemoize
     ).toEqualTypeOf(weakMapMemoize)
