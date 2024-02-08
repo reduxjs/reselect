@@ -20,17 +20,6 @@ import {
   lruMemoize,
   referenceEqualityCheck
 } from 'reselect'
-import { expectExactType } from './typesTestUtils'
-
-type Exact<A, B> = (<T>() => T extends A ? 1 : 0) extends <T>() => T extends B
-  ? 1
-  : 0
-  ? A extends B
-    ? B extends A
-      ? unknown
-      : never
-    : never
-  : never
 
 interface StateA {
   a: number
@@ -39,12 +28,6 @@ interface StateA {
 interface StateAB {
   a: number
   b: number
-}
-
-interface StateSub {
-  sub: {
-    a: number
-  }
 }
 
 // Test exporting
@@ -860,7 +843,7 @@ function testTypedCreateStructuredSelector() {
   })
 
   // Their types are the same.
-  expectExactType<typeof selectorGenerics1>(selectorGenerics)
+  expectTypeOf(selectorGenerics).toEqualTypeOf(selectorGenerics1)
 }
 
 function testDynamicArrayArgument() {
@@ -1611,7 +1594,8 @@ function issue554b() {
 
   type selectTestParams = Parameters<typeof selectTest>
   const p1: selectTestParams = [{ counter1: 1, counter2: 2 }, 42]
-  expectExactType<[State, number?]>(p1)
+
+  expectTypeOf(p1).toEqualTypeOf<[State, number?]>()
 
   const result = selectTest({ counter1: 1, counter2: 2 }, 42)
 }
@@ -1724,15 +1708,21 @@ function testCreateStructuredSelectorNew() {
   multiArgsStructuredSelector.memoizedResultFunc.options
 
   multiArgsStructuredSelector(state, 2, true).selectedCompletedTodos
-  expectExactType<typeof microMemoize>(multiArgsStructuredSelector.argsMemoize)
-  expectExactType<typeof microMemoize>(multiArgsStructuredSelector.memoize)
-  expectExactType<
+
+  expectTypeOf(multiArgsStructuredSelector.argsMemoize).toEqualTypeOf(
+    microMemoize
+  )
+
+  expectTypeOf(multiArgsStructuredSelector.memoize).toEqualTypeOf(microMemoize)
+
+  expectTypeOf(multiArgsStructuredSelector.dependencies).toEqualTypeOf<
     [
       (state: State) => State['todos'],
       (state: State, id: number) => State['todos'][number],
       (state: State, id: number, isCompleted: boolean) => State['todos']
     ]
-  >(multiArgsStructuredSelector.dependencies)
+  >()
+
   // @ts-expect-error Wrong number of arguments.
   multiArgsStructuredSelector(state, 2)
 }
