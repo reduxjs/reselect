@@ -1,3 +1,4 @@
+import type { AnyFunction } from '@internal/types'
 import type { Cache } from 'micro-memoize'
 import microMemoize from 'micro-memoize'
 import { createSelector, lruMemoize } from 'reselect'
@@ -16,8 +17,6 @@ const state: RootState = {
     { id: 1, completed: false }
   ]
 }
-
-type AnyFunction = (...args: any[]) => any
 
 describe('type tests', () => {
   test('issue #525: verify more than 12 selectors are accepted', () => {
