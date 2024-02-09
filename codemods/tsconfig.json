@@ -23,5 +23,5 @@
       "@internal/*": ["../src/*"]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", "bin/cli.js"]
+  "include": ["**/*.ts", "**/*.tsx", "bin/cli.mjs"]
 }

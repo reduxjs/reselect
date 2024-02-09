@@ -18,7 +18,7 @@ reselect-codemods convertInputSelectorsToArray path/of/files/ or/some**/*glob.js
 ## Local Usage
 
 ```
-node ./bin/cli.js convertInputSelectorsToArray path/of/files/ or/some**/*glob.js
+node ./bin/cli.mjs convertInputSelectorsToArray path/of/files/ or/some**/*glob.js
 ```
 
 ## Input / Output

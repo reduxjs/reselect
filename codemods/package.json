@@ -9,7 +9,7 @@
     "test": "vitest",
     "test:coverage": "vitest --coverage"
   },
-  "bin": "./bin/cli.js",
+  "bin": "./bin/cli.mjs",
   "files": [
     "bin/*",
     "transforms/**/index.ts",
