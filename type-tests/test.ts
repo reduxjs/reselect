@@ -9,7 +9,6 @@ import type { Selector } from 'reselect'
 import {
   createSelector,
   createSelectorCreator,
-  createStructuredSelector,
   lruMemoize,
   referenceEqualityCheck
 } from 'reselect'
@@ -650,58 +649,6 @@ describe('type tests', () => {
     selector8({} as State, 2)
   })
 
-  test('createStructuredSelector', () => {
-    const oneParamSelector = createStructuredSelector({
-      foo: (state: StateAB) => state.a,
-      bar: (state: StateAB) => state.b
-    })
-
-    const threeParamSelector = createStructuredSelector({
-      foo: (state: StateAB, c: number, d: string) => state.a,
-      bar: (state: StateAB, c: number, d: string) => state.b
-    })
-
-    // Test automatic inference of types for createStructuredSelector via overload
-    interface State {
-      foo: string
-    }
-
-    const FooSelector = (state: State, a: number, b: string) => state.foo
-    const BarSelector = (state: State, a: number, b: string) => +state.foo
-
-    const selector2 = createStructuredSelector({
-      foo: FooSelector,
-      bar: BarSelector
-    })
-
-    const selectorGenerics = createStructuredSelector<{
-      foo: typeof FooSelector
-      bar: typeof BarSelector
-    }>({
-      foo: state => state.foo,
-      bar: state => +state.foo
-    })
-
-    interface ExpectedResult {
-      foo: string
-      bar: number
-    }
-
-    const resOneParam = oneParamSelector({ a: 1, b: 2 })
-    const resThreeParams = threeParamSelector({ a: 1, b: 2 }, 99, 'blah')
-    const res3: ExpectedResult = selector2({ foo: '42' }, 99, 'test')
-    const resGenerics: ExpectedResult = selectorGenerics(
-      { foo: '42' },
-      99,
-      'test'
-    )
-
-    //@ts-expect-error
-    selector2({ bar: '42' })
-    // @ts-expect-error
-    selectorGenerics({ bar: '42' })
-  })
-
   test('dynamic array argument', () => {
     interface Elem {
       val1: string
@@ -741,24 +688,6 @@ describe('type tests', () => {
     s({ a: 42 }, 'val2')
     // @ts-expect-error
     s({ a: 42 }, 'val3')
-  })
-})
-
-test('structured selector type parameters', () => {
-  interface GlobalState {
-    foo: string
-    bar: number
-  }
-
-  const selectFoo = (state: GlobalState) => state.foo
-  const selectBar = (state: GlobalState) => state.bar
-
-  // Output state should be the same as input, if not provided
-  // @ts-expect-error
-  createStructuredSelector<GlobalState>({
-    foo: selectFoo
-    // bar: selectBar,
-    // ^^^ because this is missing, an error is thrown
   })
 
   test('#384: check for lruMemoize', () => {
@@ -1165,30 +1094,6 @@ test('structured selector type parameters', () => {
     selectProp2({ a: 42 }, { prop2: 2 })
   })
 
-  test('issue548', () => {
-    interface State {
-      value: Record<string, any> | null
-      loading: boolean
-    }
-
-    interface Props {
-      currency: string
-    }
-
-    const isLoading = createSelector(
-      (state: State) => state,
-      (_: State, props: Props) => props.currency,
-      ({ loading }, currency) => loading
-    )
-
-    const mapData = createStructuredSelector({
-      isLoading,
-      test2: (state: State) => 42
-    })
-
-    const result = mapData({ value: null, loading: false }, { currency: 'EUR' })
-  })
-
   test('issue550', () => {
     const some = createSelector(
       (a: number) => a,
@@ -1403,80 +1308,5 @@ test('structured selector type parameters', () => {
     const selectorResult1 = someSelector1(state, undefined)
     const selectorResult2 = someSelector2(state, undefined)
     const selectorResult3 = someSelector3(state, null)
-  })
-
-  test('createStructuredSelector new', () => {
-    interface State {
-      todos: {
-        id: number
-        completed: boolean
-      }[]
-    }
-
-    const state: State = {
-      todos: [
-        { id: 0, completed: false },
-        { id: 1, completed: false }
-      ]
-    }
-
-    const selectorDefaultParametric = createSelector(
-      (state: State, id: number) => id,
-      (state: State) => state.todos,
-      (id, todos) => todos.filter(todo => todo.id === id)
-    )
-    const multiArgsStructuredSelector = createStructuredSelector(
-      {
-        selectedTodos: (state: State) => state.todos,
-        selectedTodoById: (state: State, id: number) => state.todos[id],
-        selectedCompletedTodos: (
-          state: State,
-          id: number,
-          isCompleted: boolean
-        ) => state.todos.filter(({ completed }) => completed === isCompleted)
-      },
-      createSelectorCreator({
-        memoize: microMemoize,
-        argsMemoize: microMemoize
-      })
-    )
-
-    multiArgsStructuredSelector.resultFunc(
-      [{ id: 2, completed: true }],
-      { id: 0, completed: false },
-      [{ id: 0, completed: false }]
-    ).selectedCompletedTodos
-
-    multiArgsStructuredSelector.memoizedResultFunc(
-      [{ id: 2, completed: true }],
-      { id: 0, completed: false },
-      [{ id: 0, completed: false }]
-    ).selectedCompletedTodos
-
-    multiArgsStructuredSelector.memoizedResultFunc.cache
-    multiArgsStructuredSelector.memoizedResultFunc.fn
-    multiArgsStructuredSelector.memoizedResultFunc.isMemoized
-    multiArgsStructuredSelector.memoizedResultFunc.options
-
-    multiArgsStructuredSelector(state, 2, true).selectedCompletedTodos
-
-    expectTypeOf(multiArgsStructuredSelector.argsMemoize).toEqualTypeOf(
-      microMemoize
-    )
-
-    expectTypeOf(multiArgsStructuredSelector.memoize).toEqualTypeOf(
-      microMemoize
-    )
-
-    expectTypeOf(multiArgsStructuredSelector.dependencies).toEqualTypeOf<
-      [
-        (state: State) => State['todos'],
-        (state: State, id: number) => State['todos'][number],
-        (state: State, id: number, isCompleted: boolean) => State['todos']
-      ]
-    >()
-
-    // @ts-expect-error Wrong number of arguments.
-    multiArgsStructuredSelector(state, 2)
   })
 })
