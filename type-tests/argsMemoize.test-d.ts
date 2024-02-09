@@ -23,7 +23,7 @@ const state: RootState = {
   ]
 }
 
-describe('memoize and argsMemoize', () => {
+describe('type tests', () => {
   test('Override Only Memoize In createSelector', () => {
     const selectorDefaultSeparateInlineArgs = createSelector(
       (state: RootState) => state.todos,
