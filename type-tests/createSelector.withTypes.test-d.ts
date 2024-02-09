@@ -27,7 +27,7 @@ const rootState: RootState = {
   ]
 }
 
-describe('createSelector.withTypes<RootState>()', () => {
+describe('type tests', () => {
   const createAppSelector = createSelector.withTypes<RootState>()
 
   describe('when input selectors are provided as a single array', () => {

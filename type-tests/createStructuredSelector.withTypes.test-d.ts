@@ -39,7 +39,7 @@ const rootState: RootState = {
   ]
 }
 
-describe('createStructuredSelector.withTypes<RootState>()', () => {
+describe('type tests', () => {
   const createStructuredAppSelector =
     createStructuredSelector.withTypes<RootState>()
 

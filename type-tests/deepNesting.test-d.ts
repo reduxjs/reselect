@@ -19,9 +19,9 @@ const state: RootState = {
 
 type AnyFunction = (...args: any[]) => any
 
-describe('deep nesting #525', () => {
-  test('Deep Nesting First And Second createSelector Overload', () => {
-    // Verify more than 12 selectors are accepted
+describe('type tests', () => {
+  test('issue #525: verify more than 12 selectors are accepted', () => {
+    // https://github.com/reduxjs/reselect/issues/525
 
     const selectTodos = (state: RootState) => state.todos
 
@@ -432,5 +432,4 @@ describe('deep nesting #525', () => {
       }
     )
   })
-
 })
