@@ -4,7 +4,6 @@ import type { TestOptions } from 'jscodeshift/src/testUtils'
 import { runInlineTest } from 'jscodeshift/src/testUtils'
 import fs from 'node:fs'
 import path from 'node:path'
-import { describe, it } from 'vitest'
 
 export const runTransformTest = (
   name: string,
@@ -18,15 +17,19 @@ export const runTransformTest = (
       absolute: true,
       objectMode: true
     })
-      .map((entry) => entry.name)
-      .forEach((filename) => {
+      .map(entry => entry.name)
+      .forEach(filename => {
         const extension = path.extname(filename)
+
         const testName = filename.replace(`.input${extension}`, '')
+
         const testInputPath = path.join(fixturePath, `${testName}${extension}`)
+
         const inputPath = path.join(
           fixturePath,
           `${testName}.input${extension}`
         )
+
         const outputPath = path.join(
           fixturePath,
           `${testName}.output${extension}`

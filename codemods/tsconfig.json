@@ -17,6 +17,7 @@
     "jsx": "preserve",
     "noErrorTruncation": true,
     "forceConsistentCasingInFileNames": true,
+    "types": ["vitest/globals", "vitest/importMeta"],
     "paths": {
       "reselect": ["../src/index.ts"]
     }
