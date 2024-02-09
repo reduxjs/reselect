@@ -1,6 +1,6 @@
 # convertInputSelectorsToArray
 
-Transforms the usage of the Reselect's `createSelector` API by consolidating multiple inline input selector arguments into a single array.
+Transforms the usage of Reselect's `createSelector` API by consolidating multiple inline input selector arguments into a single array.
 
 Should work with both JS and TS files.
 
