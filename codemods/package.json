@@ -37,7 +37,7 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^5.1.3",
-    "prettier": "^3.2.2",
+    "prettier": "^3.2.5",
     "vitest": "^1.2.2"
   },
   "engines": {
