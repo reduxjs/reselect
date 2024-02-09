@@ -14,14 +14,11 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "allowJs": true,
-    "noUncheckedIndexedAccess": true,
     "jsx": "preserve",
     "noErrorTruncation": true,
     "forceConsistentCasingInFileNames": true,
     "paths": {
-      "reselect": ["../src/index"], // @remap-prod-remove-line
-      "@internal/*": ["../src/*"]
+      "reselect": ["../src/index.ts"]
     }
-  },
-  "include": ["**/*.ts", "**/*.tsx", "bin/cli.mjs"]
+  }
 }
