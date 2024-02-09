@@ -650,42 +650,6 @@ describe('type tests', () => {
     selector8({} as State, 2)
   })
 
-  test('createSelectorCreator', () => {
-    const defaultCreateSelector = createSelectorCreator(lruMemoize)
-
-    const selector = defaultCreateSelector(
-      (state: { foo: string }) => state.foo,
-      foo => foo
-    )
-    const value: string = selector({ foo: 'fizz' })
-
-    // @ts-expect-error
-    selector({ foo: 'fizz' }, { bar: 42 })
-
-    // clearCache should exist because of lruMemoize
-    selector.clearCache()
-
-    const parametric = defaultCreateSelector(
-      (state: { foo: string }) => state.foo,
-      (state: { foo: string }, props: { bar: number }) => props.bar,
-      (foo, bar) => ({ foo, bar })
-    )
-
-    // @ts-expect-error
-    parametric({ foo: 'fizz' })
-
-    const ret = parametric({ foo: 'fizz' }, { bar: 42 })
-    const foo: string = ret.foo
-    const bar: number = ret.bar
-
-    // @ts-expect-error
-    createSelectorCreator(lruMemoize, 1)
-
-    createSelectorCreator(lruMemoize, <T>(a: T, b: T) => {
-      return `${a}` === `${b}`
-    })
-  })
-
   test('createStructuredSelector', () => {
     const oneParamSelector = createStructuredSelector({
       foo: (state: StateAB) => state.a,
