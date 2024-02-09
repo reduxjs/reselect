@@ -1,3 +1,4 @@
+import type { AnyFunction } from '@internal/types'
 import { groupBy, isEqual } from 'lodash'
 import {
   createSelectorCreator,
@@ -33,7 +34,7 @@ describe('type tests', () => {
   test('issue #384', () => {
     // https://github.com/reduxjs/reselect/issues/384
 
-    function multiArgMemoize<F extends (...args: any[]) => any>(
+    function multiArgMemoize<F extends AnyFunction>(
       func: F,
       a: number,
       b: string,

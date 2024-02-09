@@ -1,3 +1,4 @@
+import type { AnyFunction } from '@internal/types'
 import lodashMemoize from 'lodash/memoize'
 import memoizeOne from 'memoize-one'
 import microMemoize from 'micro-memoize'
@@ -100,7 +101,7 @@ describe('type tests', () => {
 
   test('custom memoization option types', () => {
     const customMemoize = (
-      f: (...args: any[]) => any,
+      f: AnyFunction,
       a: string,
       b: number,
       c: boolean
