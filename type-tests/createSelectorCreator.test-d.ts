@@ -9,6 +9,12 @@ import {
 } from 'reselect'
 import { describe, test } from 'vitest'
 
+// Test for exporting declaration of created selector creator
+export const testExportStructured = createSelectorCreator(
+  lruMemoize,
+  (a, b) => typeof a === typeof b
+)
+
 interface RootState {
   todos: { id: number; completed: boolean }[]
   alerts: { id: number; read: boolean }[]
@@ -92,4 +98,28 @@ describe('type tests', () => {
     })
   })
 
+  test('custom memoization option types', () => {
+    const customMemoize = (
+      f: (...args: any[]) => any,
+      a: string,
+      b: number,
+      c: boolean
+    ) => {
+      return f
+    }
+
+    const customSelectorCreatorCustomMemoizeWorking = createSelectorCreator(
+      customMemoize,
+      'a',
+      42,
+      true
+    )
+
+    // @ts-expect-error
+    const customSelectorCreatorCustomMemoizeMissingArg = createSelectorCreator(
+      customMemoize,
+      'a',
+      true
+    )
+  })
 })
