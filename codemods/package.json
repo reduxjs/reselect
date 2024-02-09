@@ -1,7 +1,6 @@
 {
   "name": "reselect-codemods",
   "version": "0.1.0",
-  "type": "module",
   "scripts": {
     "dev": "node --inspect ./node_modules/jscodeshift/bin/jscodeshift.sh -t transforms/convertInputSelectorsToArray/index.ts ./transforms/convertInputSelectorsToArray/__testfixtures__/*.input.* --dry -p --run-in-band --extensions=ts,js",
     "start": "jscodeshift -t ./transforms/convertInputSelectorsToArray/index.ts ./transforms/convertInputSelectorsToArray/__testfixtures__/separate-inline-arguments.input.ts --extensions=ts",
