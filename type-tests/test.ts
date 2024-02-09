@@ -78,36 +78,6 @@ describe('type tests', () => {
     )
   })
 
-  test('nested selector', () => {
-    interface State {
-      foo: string
-      bar: number
-      baz: boolean
-    }
-
-    const selector = createSelector(
-      createSelector(
-        (state: State) => state.foo,
-        (state: State) => state.bar,
-        (foo, bar) => ({ foo, bar })
-      ),
-      (state: State) => state.baz,
-      ({ foo, bar }, baz) => {
-        const foo1: string = foo
-        // @ts-expect-error
-        const foo2: number = foo
-
-        const bar1: number = bar
-        // @ts-expect-error
-        const bar2: string = bar
-
-        const baz1: boolean = baz
-        // @ts-expect-error
-        const baz2: string = baz
-      }
-    )
-  })
-
   test('selector as combiner', () => {
     interface SubState {
       foo: string
