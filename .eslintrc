@@ -27,7 +27,7 @@
   "overrides": [
     {
       "parser": "@typescript-eslint/parser",
-      "files": ["**/*.ts", "**/*.tsx"],
+      "files": ["*.{c,m,}{t,j}s", "*.{t,j}sx"],
       "parserOptions": {
         "ecmaVersion": 2020,
         "sourceType": "module",

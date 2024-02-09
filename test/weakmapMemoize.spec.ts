@@ -175,7 +175,7 @@ const isCoverage = process.env.COVERAGE
 
 // don't run performance tests for coverage
 describe.skipIf(isCoverage)('weakmapMemoize performance tests', () => {
-  beforeAll(setEnvToProd)
+  beforeEach(setEnvToProd)
 
   test('basic selector cache hit performance', () => {
     const selector = createSelector(
