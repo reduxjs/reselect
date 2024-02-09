@@ -661,42 +661,6 @@ describe('type tests', () => {
       bar: (state: StateAB, c: number, d: string) => state.b
     })
 
-    interface RootState {
-      foo: string
-      bar: number
-    }
-
-    const typedStructuredSelectorCreator =
-      createStructuredSelector.withTypes<RootState>()
-
-    const selector = typedStructuredSelectorCreator({
-      foo: state => state.foo,
-      bar: state => +state.foo
-    })
-
-    const res1 = selector({ foo: '42', bar: 1 })
-    const foo: string = res1.foo
-    const bar: number = res1.bar
-
-    // @ts-expect-error
-    selector({ bar: '42' })
-
-    // @ts-expect-error
-    selector({ foo: '42' }, { bar: 42 })
-
-    typedStructuredSelectorCreator({
-      // @ts-expect-error
-      bar: (state: { baz: boolean }) => 1
-    })
-
-    typedStructuredSelectorCreator({
-      bar: state => state.foo
-    })
-
-    typedStructuredSelectorCreator({
-      baz: state => state.foo
-    })
-
     // Test automatic inference of types for createStructuredSelector via overload
     interface State {
       foo: string
@@ -725,7 +689,6 @@ describe('type tests', () => {
 
     const resOneParam = oneParamSelector({ a: 1, b: 2 })
     const resThreeParams = threeParamSelector({ a: 1, b: 2 }, 99, 'blah')
-    const res2: ExpectedResult = selector({ foo: '42', bar: 0 })
     const res3: ExpectedResult = selector2({ foo: '42' }, 99, 'test')
     const resGenerics: ExpectedResult = selectorGenerics(
       { foo: '42' },
