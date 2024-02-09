@@ -36,7 +36,7 @@ const rootState: RootState = {
   ]
 }
 
-describe('createStructuredSelector', () => {
+describe('type tests', () => {
   // TODO: Remove this test block once `TypedStructuredSelectorCreator` is removed.
   test('TypedStructuredSelectorCreator should lock down state type', () => {
     const createStructuredAppSelector: TypedStructuredSelectorCreator<RootState> =
@@ -315,7 +315,9 @@ describe('createStructuredSelector', () => {
     })
   })
 
-  test('issue #548', () => {
+  test("issue #548: createStructuredSelector doesn't infer props typings", () => {
+    // https://github.com/reduxjs/reselect/issues/548
+
     interface State {
       value: Record<string, any> | null
       loading: boolean
