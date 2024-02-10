@@ -21,8 +21,8 @@
     "@docusaurus/core": "^3.1.1",
     "@docusaurus/preset-classic": "^3.1.1",
     "@mdx-js/react": "^3.0.0",
-    "clsx": "^1.2.1",
-    "prism-react-renderer": "^2.1.0",
+    "clsx": "^2.1.0",
+    "prism-react-renderer": "^2.3.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
@@ -31,10 +31,10 @@
     "@docusaurus/tsconfig": "^3.1.1",
     "@docusaurus/types": "^3.1.1",
     "netlify-plugin-cache": "^1.0.3",
-    "prettier": "^3.1.0",
+    "prettier": "^3.2.5",
     "rimraf": "^5.0.5",
-    "ts-node": "^10.9.1",
-    "typescript": "~5.2.2"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
   },
   "browserslist": {
     "production": [
