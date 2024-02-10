@@ -44,14 +44,6 @@ export const ExternalLinks = {
       <code>{text}</code>
     </Link>
   )),
-  UseCallback: memo(({ text = 'useCallback' }) => (
-    <Link
-      to="https://react.dev/reference/react/useCallback#usecallback"
-      title="useCallback"
-    >
-      <code>{text}</code>
-    </Link>
-  )),
   ReReselect: memo(({ text = 'Re-reselect' }) => (
     <Link to="https://github.com/toomuchdesign/re-reselect" title="re-reselect">
       {text}
