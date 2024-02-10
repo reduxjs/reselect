@@ -9,13 +9,13 @@ export const runTransformTest = (
   name: string,
   transform: Transform,
   parser: TestOptions['parser'],
-  fixturePath: string
+  fixturePath: string,
 ) => {
   describe(name, () => {
     globbySync('**/*.input.*', {
       cwd: fixturePath,
       absolute: true,
-      objectMode: true
+      objectMode: true,
     })
       .map(entry => entry.name)
       .forEach(filename => {
@@ -27,12 +27,12 @@ export const runTransformTest = (
 
         const inputPath = path.join(
           fixturePath,
-          `${testName}.input${extension}`
+          `${testName}.input${extension}`,
         )
 
         const outputPath = path.join(
           fixturePath,
-          `${testName}.output${extension}`
+          `${testName}.output${extension}`,
         )
 
         const inputFileContent = fs.readFileSync(inputPath, 'utf8')
@@ -46,10 +46,12 @@ export const runTransformTest = (
               {},
               {
                 path: testInputPath,
-                source: inputFileContent
+                source: inputFileContent,
               },
               expectedOutput,
-              { parser }
+              {
+                parser,
+              },
             )
           })
 
@@ -59,10 +61,12 @@ export const runTransformTest = (
               {},
               {
                 path: testInputPath,
-                source: inputFileContent
+                source: inputFileContent,
               },
               expectedOutput,
-              { parser }
+              {
+                parser,
+              },
             )
           })
         })

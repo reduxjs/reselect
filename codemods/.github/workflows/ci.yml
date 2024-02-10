@@ -10,7 +10,7 @@ on:
       - '*'
   pull_request: {}
   schedule:
-  - cron:  '0 6 * * 0' # weekly, on sundays
+    - cron: '0 6 * * 0' # weekly, on sundays
 
 jobs:
   lint:
@@ -18,14 +18,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-node@v1
-      with:
-        node-version: 12.x
-    - name: install dependencies
-      run: yarn install --frozen-lockfile
-    - name: linting
-      run: yarn lint
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: install dependencies
+        run: yarn install --frozen-lockfile
+      - name: linting
+        run: yarn lint
 
   test:
     name: Tests
@@ -36,25 +36,25 @@ jobs:
         node: ['10', '12', '14']
 
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node }}
-    - name: install dependencies
-      run: yarn install --frozen-lockfile
-    - name: test
-      run: yarn test
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+      - name: install dependencies
+        run: yarn install --frozen-lockfile
+      - name: test
+        run: yarn test
 
   floating-test:
     name: Floating dependencies
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-node@v1
-      with:
-        node-version: '12.x'
-    - name: install dependencies
-      run: yarn install --no-lockfile
-    - name: test
-      run: yarn test
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+      - name: install dependencies
+        run: yarn install --no-lockfile
+      - name: test
+        run: yarn test

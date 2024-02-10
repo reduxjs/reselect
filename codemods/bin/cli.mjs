@@ -14,7 +14,7 @@ const transformerDirectory = path.join(
   __dirname,
   '..',
   'transforms',
-  `${process.argv[2]}/index.ts`
+  `${process.argv[2]}/index.ts`,
 )
 
 const jscodeshiftExecutable = require.resolve('.bin/jscodeshift')
@@ -30,10 +30,10 @@ execaSync(
     extensions,
     ...(process.argv.slice(3).length === 1
       ? globbySync(process.argv[3])
-      : globbySync(process.argv.slice(3)))
+      : globbySync(process.argv.slice(3))),
   ],
   {
     stdio: 'inherit',
-    stripFinalNewline: false
-  }
+    stripFinalNewline: false,
+  },
 )

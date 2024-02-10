@@ -6,9 +6,8 @@ import type {
   JSCodeshift,
   Transform,
   VariableDeclaration,
-  VariableDeclarator
+  VariableDeclarator,
 } from 'jscodeshift'
-
 import type { TestOptions } from 'jscodeshift/src/testUtils'
 
 interface NamedFunctionCallExpression extends CallExpression {
@@ -31,7 +30,7 @@ const WITH_TYPES = 'withTypes'
 
 const collectSelectorCreators = (j: JSCodeshift, root: Collection) => {
   const isNamedVariableDeclaration = (
-    path: ASTPath<VariableDeclaration>
+    path: ASTPath<VariableDeclaration>,
   ): path is ASTPath<NamedVariableDeclaration> => {
     const [selectorCreatorDeclarator] = path.value.declarations
 
@@ -47,13 +46,13 @@ const collectSelectorCreators = (j: JSCodeshift, root: Collection) => {
     .filter(
       namedVariableDeclaration =>
         j.CallExpression.check(
-          namedVariableDeclaration.value.declarations[0]?.init
+          namedVariableDeclaration.value.declarations[0]?.init,
         ) &&
         j.Identifier.check(
-          namedVariableDeclaration.value.declarations[0]?.init.callee
+          namedVariableDeclaration.value.declarations[0]?.init.callee,
         ) &&
         namedVariableDeclaration.value.declarations[0].init.callee.name ===
-          CREATE_SELECTOR_CREATOR
+          CREATE_SELECTOR_CREATOR,
     )
 }
 
@@ -75,7 +74,7 @@ const collectSelectorCreatorsNames = (j: JSCodeshift, root: Collection) => {
 
 const collectSelectorCreatorsNamesWithTypes = (
   j: JSCodeshift,
-  root: Collection
+  root: Collection,
 ) => {
   const selectorCreatorsNamesWithTypes: string[] = []
   const selectorCreatorsNames = collectSelectorCreatorsNames(j, root)
@@ -119,14 +118,14 @@ const collectSelectorCreatorsNamesWithTypes = (
 
 const getIdentifierVariableDeclarator = (
   root: Collection,
-  identifier: Identifier
+  identifier: Identifier,
 ) => {
   return root.findVariableDeclarators(identifier.name).nodes()[0]
 }
 
 const isLastArgumentObject = (
   j: JSCodeshift,
-  path: ASTPath<CallExpression>
+  path: ASTPath<CallExpression>,
 ) => {
   const lastArgument = path.value.arguments[path.value.arguments.length - 1]
 
@@ -139,7 +138,7 @@ const transform: Transform = (file, api) => {
   const root = j(file.source)
 
   const isNamedFunctionCallExpression = (
-    path: ASTPath<CallExpression>
+    path: ASTPath<CallExpression>,
   ): path is ASTPath<NamedFunctionCallExpression> => {
     return j.Identifier.check(path.value.callee)
   }
@@ -161,7 +160,7 @@ const transform: Transform = (file, api) => {
 
     const firstArgumentVariableDeclarator = getIdentifierVariableDeclarator(
       root,
-      firstArgument
+      firstArgument,
     )
 
     if (
@@ -192,7 +191,7 @@ const transform: Transform = (file, api) => {
   const needsToBeTransformed = allNamedFunctionCallExpressions.filter(
     path =>
       selectorCreatorsNames.includes(path.value.callee.name) &&
-      !isFirstArgumentArray(path)
+      !isFirstArgumentArray(path),
   )
 
   if (needsToBeTransformed.length === 0) {
@@ -207,7 +206,7 @@ const transform: Transform = (file, api) => {
         ? [
             j.arrayExpression(args.slice(0, -2)),
             args[args.length - 2],
-            args[args.length - 1]
+            args[args.length - 1],
           ]
         : [j.arrayExpression(args.slice(0, -1)), args[args.length - 1]]
     ).filter((path): path is NamedFunctionCallExpression => path != null)
@@ -215,7 +214,9 @@ const transform: Transform = (file, api) => {
     return j.callExpression(j.identifier(callee.name), transformedArguments)
   })
 
-  return root.toSource({ lineTerminator: '\n' })
+  return root.toSource({
+    lineTerminator: '\n',
+  })
 }
 
 export const parser = 'tsx' satisfies TestOptions['parser']
