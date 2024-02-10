@@ -1,6 +1,6 @@
 {
   "env": { "node": true },
-  "extends": ["eslint:recommended"],
+  "extends": ["eslint:recommended", "prettier"],
   "ignorePatterns": ["node_modules"],
   "parserOptions": { "ecmaVersion": "latest" },
   "plugins": ["node"],
