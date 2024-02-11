@@ -304,18 +304,18 @@ describe('resultEqualityCheck in weakMapMemoize', () => {
     expect(memoized.resultsCount()).toBe(5)
 
     expect(memoizedShallow(state)).toBe(memoizedShallow(state))
-    expect(memoizedShallow.resultsCount()).toBe(0)
+    expect(memoizedShallow.resultsCount()).toBe(1)
     expect(memoizedShallow({ ...state })).toBe(memoizedShallow(state))
-    expect(memoizedShallow.resultsCount()).toBe(0)
+    expect(memoizedShallow.resultsCount()).toBe(1)
     expect(memoizedShallow({ ...state })).toBe(memoizedShallow(state))
     // We spread the state to force the function to re-run but the
     // result maintains the same reference because of `resultEqualityCheck`.
     const first = memoizedShallow({ ...state })
-    expect(memoizedShallow.resultsCount()).toBe(0)
+    expect(memoizedShallow.resultsCount()).toBe(1)
     memoizedShallow({ ...state })
-    expect(memoizedShallow.resultsCount()).toBe(0)
+    expect(memoizedShallow.resultsCount()).toBe(1)
     const second = memoizedShallow({ ...state })
-    expect(memoizedShallow.resultsCount()).toBe(0)
+    expect(memoizedShallow.resultsCount()).toBe(1)
     expect(first).toBe(second)
   })
 })
