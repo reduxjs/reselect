@@ -227,25 +227,29 @@ export function weakMapMemoize<Func extends AnyFunction>(
       // Allow errors to propagate
       result = func.apply(null, arguments as unknown as any[])
       resultsCount++
+
+      if (resultEqualityCheck) {
+        const lastResultValue = lastResult?.deref?.() ?? lastResult
+
+        if (
+          lastResultValue != null &&
+          resultEqualityCheck(lastResultValue as ReturnType<Func>, result)
+        ) {
+          result = lastResultValue
+
+          resultsCount !== 0 && resultsCount--
+        }
+
+        const needsWeakRef =
+          (typeof result === 'object' && result !== null) ||
+          typeof result === 'function'
+
+        lastResult = needsWeakRef ? new Ref(result) : result
+      }
     }
 
     terminatedNode.s = TERMINATED
 
-    if (resultEqualityCheck) {
-      const lastResultValue = lastResult?.deref?.() ?? lastResult
-      if (
-        lastResultValue != null &&
-        resultEqualityCheck(lastResultValue as ReturnType<Func>, result)
-      ) {
-        result = lastResultValue
-        resultsCount !== 0 && resultsCount--
-      }
-
-      const needsWeakRef =
-        (typeof result === 'object' && result !== null) ||
-        typeof result === 'function'
-      lastResult = needsWeakRef ? new Ref(result) : result
-    }
     terminatedNode.v = result
     return result
   }
