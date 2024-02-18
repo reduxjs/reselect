@@ -49,48 +49,68 @@ function createSingletonCache(equals: EqualityFn): Cache {
 }
 
 function createLruCache(maxSize: number, equals: EqualityFn): Cache {
-  let entries: Entry[] = []
+  let cache = new Map();
+  let head = { key: null, value: null, prev: null, next: null };
+  let tail = { key: null, value: null, prev: head, next: null };
+  head.next = tail;
 
-  function get(key: unknown) {
-    const cacheIndex = entries.findIndex(entry => equals(key, entry.key))
+  function get(key) {
+    if (!cache.has(key)) return -1;
 
-    // We found a cached entry
-    if (cacheIndex > -1) {
-      const entry = entries[cacheIndex]
-
-      // Cached entry not at top of cache, move it to the top
-      if (cacheIndex > 0) {
-        entries.splice(cacheIndex, 1)
-        entries.unshift(entry)
-      }
-
-      return entry.value
-    }
-
-    // No entry found in cache, return sentinel
-    return NOT_FOUND
+    const node = cache.get(key);
+    moveToHead(node);
+    return node.value;
   }
 
-  function put(key: unknown, value: unknown) {
-    if (get(key) === NOT_FOUND) {
-      // TODO Is unshift slow?
-      entries.unshift({ key, value })
-      if (entries.length > maxSize) {
-        entries.pop()
+  function put(key, value) {
+    if (cache.has(key)) {
+      const node = cache.get(key);
+      node.value = value;
+      moveToHead(node);
+    } else {
+      const newNode = { key, value, prev: head, next: head.next };
+      head.next.prev = newNode;
+      head.next = newNode;
+      cache.set(key, newNode);
+
+      if (cache.size > capacity) {
+        const tailKey = removeTail();
+        cache.delete(tailKey);
       }
     }
   }
 
-  function getEntries() {
-    return entries
+  function moveToHead(node) {
+    node.prev.next = node.next;
+    node.next.prev = node.prev;
+    node.prev = head;
+    node.next = head.next;
+    head.next.prev = node;
+    head.next = node;
+  }
+
+  function removeTail() {
+    const key = tail.prev.key;
+    tail.prev.prev.next = tail;
+    tail.prev = tail.prev.prev;
+    return key;
   }
 
   function clear() {
-    entries = []
+    cache = new Map();
+    head = { key: null, value: null, prev: null, next: null };
+    tail = { key: null, value: null, prev: head, next: null };
+    head.next = tail;
+  }
+
+  function getEntries() {
+    return cache.entries();
   }
 
   return { get, put, getEntries, clear }
 }
+
+
 
 /**
  * Runs a simple reference equality check.
