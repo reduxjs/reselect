@@ -48,39 +48,64 @@ function createSingletonCache(equals: EqualityFn): Cache {
   }
 }
 
+
+type HeadNode = {
+  prev: null
+  next: ValueNode | TailNode
+  entry: null
+}
+
+type TailNode = {
+    prev: ValueNode | HeadNode
+    next: null
+    entry: null
+}
+
+type ValueNode = {
+  prev: ValueNode | HeadNode
+  next: ValueNode | TailNode
+  entry: Entry
+}
+
 function createLruCache(maxSize: number, equals: EqualityFn): Cache {
-  let cache = new Map();
-  let head = { key: null, value: null, prev: null, next: null };
-  let tail = { key: null, value: null, prev: head, next: null };
+
+  const head = {} as HeadNode
+  const tail = {} as TailNode
   head.next = tail;
+  const cache = new Map<unknown, ValueNode>()
 
-  function get(key) {
-    if (!cache.has(key)) return -1;
+  function get(key: unknown) {
+    if (!cache.has(key)) return NOT_FOUND;
 
-    const node = cache.get(key);
+    const node = cache.get(key) as ValueNode;
     moveToHead(node);
-    return node.value;
+    return node.entry.value;
   }
 
-  function put(key, value) {
+  function put(key: unknown, value: unknown) {
     if (cache.has(key)) {
-      const node = cache.get(key);
-      node.value = value;
+      const node = cache.get(key) as ValueNode
+      node.entry.value = value;
       moveToHead(node);
     } else {
-      const newNode = { key, value, prev: head, next: head.next };
+      const newNode = {
+        prev: head,
+        next: head.next,
+        entry: {key, value}
+      } as ValueNode;
+
       head.next.prev = newNode;
       head.next = newNode;
       cache.set(key, newNode);
 
-      if (cache.size > capacity) {
+      if (cache.size > maxSize) {
         const tailKey = removeTail();
         cache.delete(tailKey);
       }
     }
   }
 
-  function moveToHead(node) {
+  function moveToHead(node: ValueNode) {
     node.prev.next = node.next;
     node.next.prev = node.prev;
     node.prev = head;
@@ -90,27 +115,28 @@ function createLruCache(maxSize: number, equals: EqualityFn): Cache {
   }
 
   function removeTail() {
-    const key = tail.prev.key;
-    tail.prev.prev.next = tail;
-    tail.prev = tail.prev.prev;
+    const key = tail.prev.entry?.key;
+    if (tail.prev?.prev) {
+      tail.prev.prev.next = tail;
+      tail.prev = tail.prev.prev;
+    }
     return key;
   }
 
-  function clear() {
-    cache = new Map();
-    head = { key: null, value: null, prev: null, next: null };
-    tail = { key: null, value: null, prev: head, next: null };
-    head.next = tail;
-  }
-
   function getEntries() {
-    return cache.entries();
+    const entries: Entry[] = [];
+    return [...cache.entries()]
+        .map(([, node]) => node.entry);
   }
 
-  return { get, put, getEntries, clear }
+  function clear() {
+    cache.clear();
+    head.next = tail;
+    tail.prev = head;
+  }
+
+  return {get, put, clear, getEntries}
 }
-
-
 
 /**
  * Runs a simple reference equality check.
