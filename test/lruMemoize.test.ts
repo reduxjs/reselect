@@ -1,7 +1,8 @@
 // TODO: Add test for React Redux connect function
 
 import { createSelectorCreator, lruMemoize } from 'reselect'
-import { vi } from 'vitest'
+import type { RootState } from './testUtils'
+import { localTest, toggleCompleted } from './testUtils'
 
 const createSelector = createSelectorCreator({
   memoize: lruMemoize,
@@ -414,4 +415,41 @@ describe(lruMemoize, () => {
     // @ts-expect-error
     expect(selector.resultFunc.clearCache).toBeUndefined()
   })
+
+  localTest(
+    'maxSize should default to 1 when set to a number that is less than 1',
+    ({ state, store }) => {
+      const createSelectorLru = createSelectorCreator({
+        memoize: lruMemoize,
+        argsMemoize: lruMemoize,
+        memoizeOptions: { maxSize: 0 },
+        argsMemoizeOptions: { maxSize: 0 }
+      }).withTypes<RootState>()
+
+      const selectTodoIds = createSelectorLru([state => state.todos], todos =>
+        todos.map(({ id }) => id)
+      )
+
+      expect(selectTodoIds(store.getState())).toBe(
+        selectTodoIds(store.getState())
+      )
+
+      expect(selectTodoIds.recomputations()).toBe(1)
+
+      store.dispatch(toggleCompleted(0))
+
+      expect(selectTodoIds(store.getState())).toBe(
+        selectTodoIds(store.getState())
+      )
+
+      expect(selectTodoIds.recomputations()).toBe(2)
+
+      const selectTodoIdsLru = lruMemoize(
+        (state: RootState) => state.todos.map(({ id }) => id),
+        { maxSize: -2 }
+      )
+
+      expect(selectTodoIdsLru(state)).toBe(selectTodoIdsLru(state))
+    }
+  )
 })
