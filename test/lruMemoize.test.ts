@@ -420,6 +420,174 @@ describe(lruMemoize, () => {
     // @ts-expect-error
     expect(selector.resultFunc.clearCache).toBeUndefined()
   })
+
+  localTest(
+    'maxSize should default to 1 when set to a number that is less than 1',
+    ({ state, store }) => {
+      const createSelectorLru = createSelectorCreator({
+        memoize: lruMemoize,
+        argsMemoize: lruMemoize,
+        memoizeOptions: { maxSize: 0 },
+        argsMemoizeOptions: { maxSize: 0 }
+      }).withTypes<RootState>()
+
+      const selectTodoIds = createSelectorLru([state => state.todos], todos =>
+        todos.map(({ id }) => id)
+      )
+
+      expect(selectTodoIds(store.getState())).toBe(
+        selectTodoIds(store.getState())
+      )
+
+      expect(selectTodoIds.recomputations()).toBe(1)
+
+      store.dispatch(toggleCompleted(0))
+
+      expect(selectTodoIds(store.getState())).toBe(
+        selectTodoIds(store.getState())
+      )
+
+      expect(selectTodoIds.recomputations()).toBe(2)
+
+      const selectTodoIdsLru = lruMemoize(
+        (state: RootState) => state.todos.map(({ id }) => id),
+        { maxSize: -2 }
+      )
+
+      expect(selectTodoIdsLru(state)).toBe(selectTodoIdsLru(state))
+    }
+  )
+})
+
+describe('lruMemoize integration with resultEqualityCheck', () => {
+  const createAppSelector = createSelectorLru.withTypes<RootState>()
+
+  const resultEqualityCheck = vi
+    .fn(shallowEqual)
+    .mockName('resultEqualityCheck')
+
+  afterEach(() => {
+    resultEqualityCheck.mockClear()
+  })
+
+  localTest(
+    'resultEqualityCheck works when set to shallowEqual',
+    ({ store }) => {
+      const selectTodoIds = lruMemoize(
+        (state: RootState) => state.todos.map(({ id }) => id),
+        { resultEqualityCheck }
+      )
+
+      const firstResult = selectTodoIds(store.getState())
+
+      store.dispatch(toggleCompleted(0))
+
+      const secondResult = selectTodoIds(store.getState())
+
+      expect(firstResult).toBe(secondResult)
+
+      expect(selectTodoIds.resultsCount()).toBe(1)
+    }
+  )
+
+  localTest(
+    'resultEqualityCheck should not be called on the first output selector call',
+    ({ store }) => {
+      const selectTodoIds = createAppSelector(
+        [state => state.todos],
+        todos => todos.map(({ id }) => id),
+        {
+          memoizeOptions: { resultEqualityCheck },
+          devModeChecks: { inputStabilityCheck: 'once' }
+        }
+      )
+
+      expect(selectTodoIds(store.getState())).to.be.an('array').that.is.not
+        .empty
+
+      expect(resultEqualityCheck).not.toHaveBeenCalled()
+
+      store.dispatch(toggleCompleted(0))
+
+      expect(selectTodoIds.lastResult()).toBe(selectTodoIds(store.getState()))
+
+      expect(resultEqualityCheck).toHaveBeenCalledOnce()
+
+      expect(selectTodoIds.memoizedResultFunc.resultsCount()).toBe(1)
+
+      expect(selectTodoIds.recomputations()).toBe(2)
+
+      expect(selectTodoIds.resultsCount()).toBe(2)
+
+      expect(selectTodoIds.dependencyRecomputations()).toBe(2)
+
+      store.dispatch(toggleCompleted(0))
+
+      expect(selectTodoIds.lastResult()).toBe(selectTodoIds(store.getState()))
+
+      expect(resultEqualityCheck).toHaveBeenCalledTimes(2)
+
+      expect(selectTodoIds.memoizedResultFunc.resultsCount()).toBe(1)
+
+      expect(selectTodoIds.recomputations()).toBe(3)
+
+      expect(selectTodoIds.resultsCount()).toBe(3)
+
+      expect(selectTodoIds.dependencyRecomputations()).toBe(3)
+    }
+  )
+
+  localTest(
+    'lruMemoize with resultEqualityCheck set to referenceEqualityCheck works the same as lruMemoize without resultEqualityCheck',
+    ({ store }) => {
+      const resultEqualityCheck = vi
+        .fn(referenceEqualityCheck)
+        .mockName('resultEqualityCheck')
+
+      const selectTodoIdsWithResultEqualityCheck = lruMemoize(
+        (state: RootState) => state.todos.map(({ id }) => id),
+        { resultEqualityCheck }
+      )
+
+      const firstResultWithResultEqualityCheck =
+        selectTodoIdsWithResultEqualityCheck(store.getState())
+
+      expect(resultEqualityCheck).not.toHaveBeenCalled()
+
+      store.dispatch(toggleCompleted(0))
+
+      const secondResultWithResultEqualityCheck =
+        selectTodoIdsWithResultEqualityCheck(store.getState())
+
+      expect(firstResultWithResultEqualityCheck).not.toBe(
+        secondResultWithResultEqualityCheck
+      )
+
+      expect(firstResultWithResultEqualityCheck).toStrictEqual(
+        secondResultWithResultEqualityCheck
+      )
+
+      expect(selectTodoIdsWithResultEqualityCheck.resultsCount()).toBe(2)
+
+      const selectTodoIds = lruMemoize((state: RootState) =>
+        state.todos.map(({ id }) => id)
+      )
+
+      const firstResult = selectTodoIds(store.getState())
+
+      store.dispatch(toggleCompleted(0))
+
+      const secondResult = selectTodoIds(store.getState())
+
+      expect(firstResult).not.toBe(secondResult)
+
+      expect(firstResult).toStrictEqual(secondResult)
+
+      expect(selectTodoIds.resultsCount()).toBe(2)
+
+      resultEqualityCheck.mockClear()
+    }
+  )
 })
 
 describe('lruMemoize integration with resultEqualityCheck', () => {

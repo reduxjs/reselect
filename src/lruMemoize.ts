@@ -205,7 +205,7 @@ export function lruMemoize<Func extends AnyFunction>(
   let resultsCount = 0
 
   const cache =
-    maxSize === 1
+    maxSize <= 1
       ? createSingletonCache(comparator)
       : createLruCache(maxSize, comparator)
 
