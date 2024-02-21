@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename)
 export default defineConfig({
   test: {
     globals: true,
-    setupFiles: ['test/setup.vitest.ts'],
+    setupFiles: ['test/setup.ts'],
     alias: {
       reselect: path.join(__dirname, 'src/index.ts'), // @remap-prod-remove-line
 
