@@ -1,25 +1,24 @@
 {
   "compilerOptions": {
+    "allowJs": true,
     "allowSyntheticDefaultImports": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "isolatedModules": true,
     "checkJs": true,
-    "baseUrl": ".",
-    "noEmit": true,
-    "strict": true,
-    "target": "ESNext",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
     "module": "ESNext",
     "moduleResolution": "Node",
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "allowJs": true,
-    "jsx": "preserve",
+    "noEmit": true,
     "noErrorTruncation": true,
-    "forceConsistentCasingInFileNames": true,
-    "types": ["vitest/globals", "vitest/importMeta"],
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "paths": {
       "reselect": ["../src/index.ts"]
-    }
+    },
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ESNext",
+    "types": ["vitest/globals", "vitest/importMeta"]
   }
 }
