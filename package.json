@@ -32,7 +32,7 @@
     "test:watch": "node --expose-gc $(yarn bin vitest) --watch",
     "test:cov": "vitest run --coverage",
     "type-check": "vitest --run --typecheck.only",
-    "type-check:trace": "vitest --run --typecheck.only && tsc --noEmit -p typescript_test/tsconfig.json --generateTrace trace && npx @typescript/analyze-trace trace && rimraf trace",
+    "type-check:trace": "vitest --run --typecheck.only && tsc --noEmit -p tsconfig.test.json --generateTrace trace && npx @typescript/analyze-trace trace && rimraf trace",
     "type-tests": "tsc --noEmit -p tsconfig.test.json",
     "docs:start": "yarn --cwd website start",
     "docs:build": "yarn --cwd website build",
