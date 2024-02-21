@@ -1,5 +1,12 @@
 import { shallowEqual } from 'react-redux'
-import { createSelector, lruMemoize, setGlobalDevModeChecks } from 'reselect'
+import {
+  createSelector,
+  lruMemoize,
+  referenceEqualityCheck,
+  setGlobalDevModeChecks
+} from 'reselect'
+import type { RootState } from './testUtils'
+import { localTest } from './testUtils'
 
 describe('inputStabilityCheck', () => {
   const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
@@ -163,4 +170,106 @@ describe('inputStabilityCheck', () => {
 
     expect(consoleSpy).not.toHaveBeenCalled()
   })
+})
+
+describe('the effects of inputStabilityCheck with resultEqualityCheck', () => {
+  const createAppSelector = createSelector.withTypes<RootState>()
+
+  const resultEqualityCheck = vi
+    .fn(referenceEqualityCheck)
+    .mockName('resultEqualityCheck')
+
+  afterEach(() => {
+    resultEqualityCheck.mockClear()
+  })
+
+  localTest(
+    'resultEqualityCheck should not be called with empty objects when inputStabilityCheck is set to once and input selectors are stable',
+    ({ store }) => {
+      const selectTodoIds = createAppSelector(
+        [state => state.todos],
+        todos => todos.map(({ id }) => id),
+        {
+          memoizeOptions: { resultEqualityCheck },
+          devModeChecks: { inputStabilityCheck: 'once' }
+        }
+      )
+
+      const firstResult = selectTodoIds(store.getState())
+
+      expect(resultEqualityCheck).not.toHaveBeenCalled()
+
+      const secondResult = selectTodoIds(store.getState())
+
+      expect(firstResult).toBe(secondResult)
+
+      expect(resultEqualityCheck).not.toHaveBeenCalled()
+
+      const thirdResult = selectTodoIds(store.getState())
+
+      expect(secondResult).toBe(thirdResult)
+
+      expect(resultEqualityCheck).not.toHaveBeenCalled()
+    }
+  )
+
+  localTest(
+    'resultEqualityCheck should not be called with empty objects when inputStabilityCheck is set to always and input selectors are stable',
+    ({ store }) => {
+      const selectTodoIds = createAppSelector(
+        [state => state.todos],
+        todos => todos.map(({ id }) => id),
+        {
+          memoizeOptions: { resultEqualityCheck },
+          devModeChecks: { inputStabilityCheck: 'always' }
+        }
+      )
+
+      const firstResult = selectTodoIds(store.getState())
+
+      expect(resultEqualityCheck).not.toHaveBeenCalled()
+
+      const secondResult = selectTodoIds(store.getState())
+
+      expect(firstResult).toBe(secondResult)
+
+      expect(resultEqualityCheck).not.toHaveBeenCalled()
+
+      const thirdResult = selectTodoIds(store.getState())
+
+      expect(secondResult).toBe(thirdResult)
+
+      expect(resultEqualityCheck).not.toHaveBeenCalled()
+    }
+  )
+
+  localTest(
+    'resultEqualityCheck should not be called with empty objects when inputStabilityCheck is set to never and input selectors are unstable',
+    ({ store }) => {
+      const selectTodoIds = createAppSelector(
+        [state => [...state.todos]],
+        todos => todos.map(({ id }) => id),
+        {
+          memoizeOptions: { resultEqualityCheck },
+          devModeChecks: { inputStabilityCheck: 'never' }
+        }
+      )
+
+      const firstResult = selectTodoIds(store.getState())
+
+      expect(resultEqualityCheck).not.toHaveBeenCalled()
+
+      const secondResult = selectTodoIds(store.getState())
+
+      expect(firstResult).toBe(secondResult)
+
+      expect(resultEqualityCheck).not.toHaveBeenCalled()
+
+      const thirdResult = selectTodoIds(store.getState())
+
+      expect(secondResult).toBe(thirdResult)
+
+      expect(resultEqualityCheck).not.toHaveBeenCalled()
+    }
+  )
 })

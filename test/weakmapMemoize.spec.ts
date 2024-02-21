@@ -1,5 +1,12 @@
-import { createSelector, createSelectorCreator, weakMapMemoize } from 'reselect'
-import { setEnvToProd } from './testUtils'
+import { shallowEqual } from 'react-redux'
+import {
+  createSelector,
+  createSelectorCreator,
+  referenceEqualityCheck,
+  weakMapMemoize
+} from 'reselect'
+import type { RootState } from './testUtils'
+import { localTest, setEnvToProd, toggleCompleted } from './testUtils'
 
 // Construct 1E6 states for perf test outside of the perf test so as to not change the execute time of the test function
 const numOfStates = 1_000_000
@@ -223,4 +230,135 @@ describe.skipIf(isCoverage)('weakmapMemoize performance tests', () => {
     // Expected a million calls to a selector with the same arguments to take less than 1 second
     expect(totalTime).toBeLessThan(2000)
   })
+})
+
+describe('weakMapMemoize integration with resultEqualityCheck', () => {
+  const createAppSelector = createSelector.withTypes<RootState>()
+
+  const resultEqualityCheck = vi
+    .fn(shallowEqual)
+    .mockName('resultEqualityCheck')
+
+  afterEach(() => {
+    resultEqualityCheck.mockClear()
+  })
+
+  localTest(
+    'resultEqualityCheck works correctly when set to shallowEqual',
+    ({ store }) => {
+      const selectTodoIds = weakMapMemoize(
+        (state: RootState) => state.todos.map(({ id }) => id),
+        { resultEqualityCheck }
+      )
+
+      const firstResult = selectTodoIds(store.getState())
+
+      store.dispatch(toggleCompleted(0))
+
+      const secondResult = selectTodoIds(store.getState())
+
+      expect(firstResult).toBe(secondResult)
+
+      expect(selectTodoIds.resultsCount()).toBe(1)
+    }
+  )
+
+  localTest(
+    'resultEqualityCheck is not called on the first output selector call',
+    ({ store }) => {
+      const selectTodoIds = createAppSelector(
+        [state => state.todos],
+        todos => todos.map(({ id }) => id),
+        {
+          memoizeOptions: { resultEqualityCheck },
+          devModeChecks: { inputStabilityCheck: 'once' }
+        }
+      )
+
+      expect(selectTodoIds(store.getState())).to.be.an('array').that.is.not
+        .empty
+
+      expect(resultEqualityCheck).not.toHaveBeenCalled()
+
+      store.dispatch(toggleCompleted(0))
+
+      expect(selectTodoIds.lastResult()).toBe(selectTodoIds(store.getState()))
+
+      expect(resultEqualityCheck).toHaveBeenCalledOnce()
+
+      expect(selectTodoIds.memoizedResultFunc.resultsCount()).toBe(1)
+
+      expect(selectTodoIds.recomputations()).toBe(2)
+
+      expect(selectTodoIds.resultsCount()).toBe(2)
+
+      expect(selectTodoIds.dependencyRecomputations()).toBe(2)
+
+      store.dispatch(toggleCompleted(0))
+
+      expect(selectTodoIds.lastResult()).toBe(selectTodoIds(store.getState()))
+
+      expect(resultEqualityCheck).toHaveBeenCalledTimes(2)
+
+      expect(selectTodoIds.memoizedResultFunc.resultsCount()).toBe(1)
+
+      expect(selectTodoIds.recomputations()).toBe(3)
+
+      expect(selectTodoIds.resultsCount()).toBe(3)
+
+      expect(selectTodoIds.dependencyRecomputations()).toBe(3)
+    }
+  )
+
+  localTest(
+    'weakMapMemoize with resultEqualityCheck set to referenceEqualityCheck works the same as weakMapMemoize without resultEqualityCheck',
+    ({ store }) => {
+      const resultEqualityCheck = vi
+        .fn(referenceEqualityCheck)
+        .mockName('resultEqualityCheck')
+
+      const selectTodoIdsWithResultEqualityCheck = weakMapMemoize(
+        (state: RootState) => state.todos.map(({ id }) => id),
+        { resultEqualityCheck }
+      )
+
+      const firstResultWithResultEqualityCheck =
+        selectTodoIdsWithResultEqualityCheck(store.getState())
+
+      expect(resultEqualityCheck).not.toHaveBeenCalled()
+
+      store.dispatch(toggleCompleted(0))
+
+      const secondResultWithResultEqualityCheck =
+        selectTodoIdsWithResultEqualityCheck(store.getState())
+
+      expect(firstResultWithResultEqualityCheck).not.toBe(
+        secondResultWithResultEqualityCheck
+      )
+
+      expect(firstResultWithResultEqualityCheck).toStrictEqual(
+        secondResultWithResultEqualityCheck
+      )
+
+      expect(selectTodoIdsWithResultEqualityCheck.resultsCount()).toBe(2)
+
+      const selectTodoIds = weakMapMemoize((state: RootState) =>
+        state.todos.map(({ id }) => id)
+      )
+
+      const firstResult = selectTodoIds(store.getState())
+
+      store.dispatch(toggleCompleted(0))
+
+      const secondResult = selectTodoIds(store.getState())
+
+      expect(firstResult).not.toBe(secondResult)
+
+      expect(firstResult).toStrictEqual(secondResult)
+
+      expect(selectTodoIds.resultsCount()).toBe(2)
+
+      resultEqualityCheck.mockClear()
+    }
+  )
 })
