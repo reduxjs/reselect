@@ -9,7 +9,9 @@ import type {
   DevModeChecksExecutionInfo
 } from './types'
 
-export const NOT_FOUND = 'NOT_FOUND'
+class NotFound {}
+
+export const NOT_FOUND = new NotFound()
 export type NOT_FOUND_TYPE = typeof NOT_FOUND
 
 /**
