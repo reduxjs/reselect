@@ -5063,15 +5063,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"docusaurus-plugin-image-zoom@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "docusaurus-plugin-image-zoom@npm:1.0.1"
+"docusaurus-plugin-image-zoom@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "docusaurus-plugin-image-zoom@npm:2.0.0"
   dependencies:
-    medium-zoom: ^1.0.6
-    validate-peer-dependencies: ^2.2.0
+    medium-zoom: "npm:^1.0.8"
+    validate-peer-dependencies: "npm:^2.2.0"
   peerDependencies:
-    "@docusaurus/theme-classic": ">=2.2.0"
-  checksum: cf5fc2e7ba2644af4da80072709b4449d32f758d7847cb7ce8e1d701fb7fd09dd405127cce924c47bbd2ca4be9e72b3b6951da7cabd79e39da82bb743e4a74b1
+    "@docusaurus/theme-classic": ">=3.0.0"
+  checksum: 10/dd82db7adb1f59d65324fdc4b203b094908a96a427fe461ea191e67fb0110eabeb9ae2b9ad0f2cd5d00b9ac507a96ea2f89236ca06361445972d0a33a604a722
   languageName: node
   linkType: hard
 
@@ -7775,10 +7775,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"medium-zoom@npm:^1.0.6":
+"medium-zoom@npm:^1.0.8":
   version: 1.1.0
   resolution: "medium-zoom@npm:1.1.0"
-  checksum: c58ea2d3335c3b5d4625b4fa70d09925e35d2eb15e9906f41586e7016aa3059ca9b01656ae6d35e70219c7e3e94dda0e9528cd354fcd2f6614231b529654b0b9
+  checksum: 10/e27692851ce65f03877a1c9f56de16a2c10ea720278b47f06b8a0ff503cef91762e683790d2b7bd3e9136fff36bf4f583e677173f0f0c4070a391a5d849ebbcd
   languageName: node
   linkType: hard
 
@@ -9064,7 +9064,7 @@ __metadata:
 "path-root-regex@npm:^0.1.0":
   version: 0.1.2
   resolution: "path-root-regex@npm:0.1.2"
-  checksum: dcd75d1f8e93faabe35a58e875b0f636839b3658ff2ad8c289463c40bc1a844debe0dab73c3398ef9dc8f6ec6c319720aff390cf4633763ddcf3cf4b1bbf7e8b
+  checksum: 10/dcd75d1f8e93faabe35a58e875b0f636839b3658ff2ad8c289463c40bc1a844debe0dab73c3398ef9dc8f6ec6c319720aff390cf4633763ddcf3cf4b1bbf7e8b
   languageName: node
   linkType: hard
 
@@ -9072,8 +9072,8 @@ __metadata:
   version: 0.1.1
   resolution: "path-root@npm:0.1.1"
   dependencies:
-    path-root-regex: ^0.1.0
-  checksum: ff88aebfc1c59ace510cc06703d67692a11530989920427625e52b66a303ca9b3d4059b0b7d0b2a73248d1ad29bcb342b8b786ec00592f3101d38a45fd3b2e08
+    path-root-regex: "npm:^0.1.0"
+  checksum: 10/ff88aebfc1c59ace510cc06703d67692a11530989920427625e52b66a303ca9b3d4059b0b7d0b2a73248d1ad29bcb342b8b786ec00592f3101d38a45fd3b2e08
   languageName: node
   linkType: hard
 
@@ -10344,8 +10344,8 @@ __metadata:
   version: 4.0.3
   resolution: "resolve-package-path@npm:4.0.3"
   dependencies:
-    path-root: ^0.1.1
-  checksum: ac68180c66036c8d8b75a747592f7aeb5fd1efbbec10256b535f53e8bbc95e242145338d7d309cd665f509435662b530ece0afbc3a10a13ed2d4ce9d24905a20
+    path-root: "npm:^0.1.1"
+  checksum: 10/90996616a8142daf6cc158eaf78f4e89dcb62eb6fe544e0d37aa33a231d133f8867bb514ba4c5e2e042c8f014852e977073f94df556ea76687437bbc74a33c20
   languageName: node
   linkType: hard
 
@@ -11747,9 +11747,9 @@ __metadata:
   version: 2.2.0
   resolution: "validate-peer-dependencies@npm:2.2.0"
   dependencies:
-    resolve-package-path: ^4.0.3
-    semver: ^7.3.8
-  checksum: 0f025e34d9d469c03cf221c34da7e6b53a463ba11bb69294da63a08de67776384e3ef15e3bb479318f304593ae40f502c3e17a9cb671df4d73a9d1005b8b4774
+    resolve-package-path: "npm:^4.0.3"
+    semver: "npm:^7.3.8"
+  checksum: 10/2569ade8dd58391d8d6e2d57dfac2cd5ce1e32113d6b579c5059535054effbbff6db331f41aa35d38b4ea93580dc070be3d16a03d888d36edc1bdbd677f32a78
   languageName: node
   linkType: hard
 
@@ -12004,21 +12004,22 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "website@workspace:."
   dependencies:
-    "@docusaurus/core": 3.0.0
-    "@docusaurus/module-type-aliases": 3.0.0
-    "@docusaurus/preset-classic": 3.0.0
-    "@docusaurus/tsconfig": 3.0.0
-    "@docusaurus/types": 3.0.0
-    "@mdx-js/react": ^3.0.0
-    clsx: ^1.2.1
-    netlify-plugin-cache: ^1.0.3
-    prettier: ^3.1.0
-    prism-react-renderer: ^2.1.0
-    react: ^18.2.0
-    react-dom: ^18.2.0
-    rimraf: ^5.0.5
-    ts-node: ^10.9.1
-    typescript: ~5.2.2
+    "@docusaurus/core": "npm:3.0.0"
+    "@docusaurus/module-type-aliases": "npm:3.0.0"
+    "@docusaurus/preset-classic": "npm:3.0.0"
+    "@docusaurus/tsconfig": "npm:3.0.0"
+    "@docusaurus/types": "npm:3.0.0"
+    "@mdx-js/react": "npm:^3.0.0"
+    clsx: "npm:^1.2.1"
+    docusaurus-plugin-image-zoom: "npm:^2.0.0"
+    netlify-plugin-cache: "npm:^1.0.3"
+    prettier: "npm:^3.1.0"
+    prism-react-renderer: "npm:^2.1.0"
+    react: "npm:^18.2.0"
+    react-dom: "npm:^18.2.0"
+    rimraf: "npm:^5.0.5"
+    ts-node: "npm:^10.9.1"
+    typescript: "npm:~5.2.2"
   languageName: unknown
   linkType: soft
 
