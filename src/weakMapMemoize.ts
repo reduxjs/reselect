@@ -9,32 +9,27 @@ import type {
 } from './types'
 
 /**
- * A pseudo-polyfill class for {@linkcode WeakRef WeakRef}.
+ * A pseudo-polyfill class for `WeakRef`, implemented as `StrongRef`.
+ * It holds a strong reference to a value, ensuring that it is not subject to garbage collection.
+ * This class ensures that the value is strongly held and not subject to garbage collection.
  * It is primarily used in environments where `WeakRef` is not available.
  *
- * @template T - The type of the target value that is strongly referenced.
+ * @template T - The type of the value that is strongly referenced
  *
  * @since 5.0.0
  * @internal
  */
-class StrongRef<T extends object> {
-  /**
-   *
-   * @param target The target value for the StrongRef instance.
-   */
-  public constructor(private target: T) {}
-
-  /**
-   * @returns The target value.
-   */
-  public deref() {
-    return this.target
+class StrongRef<T> {
+  constructor(private value: T) {}
+  deref() {
+    return this.value
   }
 }
 
-const Ref = (
-  typeof WeakRef === 'undefined' ? StrongRef : WeakRef
-) as typeof WeakRef
+const Ref =
+  typeof WeakRef !== 'undefined'
+    ? WeakRef
+    : (StrongRef as unknown as typeof WeakRef)
 
 const UNTERMINATED = 0
 const TERMINATED = 1
