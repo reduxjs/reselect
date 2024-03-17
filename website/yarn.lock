@@ -9686,12 +9686,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:^3.1.0":
-  version: 3.1.0
-  resolution: "prettier@npm:3.1.0"
+"prettier@npm:^3.2.5":
+  version: 3.2.5
+  resolution: "prettier@npm:3.2.5"
   bin:
     prettier: bin/prettier.cjs
-  checksum: 10/e95e8f93c6b9aea2ac1e86bebe329bee90c8c50d9a23d1f593eba8d7f39b33b3641eb28785001505b6723c47895a5322ad12a2fb855b289cb7bae450ffc34425
+  checksum: 10/d509f9da0b70e8cacc561a1911c0d99ec75117faed27b95cc8534cb2349667dee6351b0ca83fa9d5703f14127faa52b798de40f5705f02d843da133fc3aa416a
   languageName: node
   linkType: hard
 
@@ -11976,7 +11976,7 @@ __metadata:
     clsx: "npm:^1.2.1"
     docusaurus-plugin-image-zoom: "npm:^2.0.0"
     netlify-plugin-cache: "npm:^1.0.3"
-    prettier: "npm:^3.1.0"
+    prettier: "npm:^3.2.5"
     prism-react-renderer: "npm:^2.1.0"
     react: "npm:^18.2.0"
     react-dom: "npm:^18.2.0"

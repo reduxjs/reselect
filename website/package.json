@@ -35,7 +35,7 @@
     "@types/node": "^20.11.28",
     "@types/react": "^18.2.66",
     "netlify-plugin-cache": "^1.0.3",
-    "prettier": "^3.1.0",
+    "prettier": "^3.2.5",
     "rimraf": "^5.0.5",
     "ts-node": "^10.9.1",
     "typescript": "~5.2.2"
