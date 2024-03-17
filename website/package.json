@@ -37,7 +37,7 @@
     "netlify-plugin-cache": "^1.0.3",
     "prettier": "^3.2.5",
     "rimraf": "^5.0.5",
-    "ts-node": "^10.9.1",
+    "ts-node": "^10.9.2",
     "typescript": "~5.2.2"
   },
   "browserslist": {
