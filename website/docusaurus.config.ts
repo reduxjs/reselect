@@ -1,5 +1,6 @@
 import type { Options, ThemeConfig } from '@docusaurus/preset-classic'
 import type { Config } from '@docusaurus/types'
+import monokaiTheme from './monokaiTheme.js'
 
 const config: Config = {
   title: 'Reselect',
@@ -107,7 +108,7 @@ const config: Config = {
       copyright: `Copyright © ${new Date().getFullYear()} by the Redux Maintainers. Built with Docusaurus.`
     },
     prism: {
-      theme: require('./monokaiTheme.js')
+      theme: monokaiTheme
     }
   } satisfies ThemeConfig
 }
