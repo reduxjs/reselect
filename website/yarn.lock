@@ -3173,6 +3173,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:^20.11.28":
+  version: 20.11.28
+  resolution: "@types/node@npm:20.11.28"
+  dependencies:
+    undici-types: "npm:~5.26.4"
+  checksum: 10/b03f69213ac6e7cd5f7efa86139f24e23ff70a12fed04adeac5413b62d6982343ce94906f74c401c5afefda48d36ae0efd6a575240996b15a5cf80b456ab4221
+  languageName: node
+  linkType: hard
+
 "@types/parse-json@npm:^4.0.0":
   version: 4.0.2
   resolution: "@types/parse-json@npm:4.0.2"
@@ -3248,6 +3257,17 @@ __metadata:
     "@types/scheduler": "npm:*"
     csstype: "npm:^3.0.2"
   checksum: 10/9f9b9925c979e848d572dce6fff34951708127ba6b1fd4306c93fbcab74f5c6cff2b2e47d4222339eeb6c19d264e93450cb2ad6b255c73c536d0a1e2093cc98a
+  languageName: node
+  linkType: hard
+
+"@types/react@npm:^18.2.66":
+  version: 18.2.66
+  resolution: "@types/react@npm:18.2.66"
+  dependencies:
+    "@types/prop-types": "npm:*"
+    "@types/scheduler": "npm:*"
+    csstype: "npm:^3.0.2"
+  checksum: 10/8a82bda6c254681536fa8348dc15d52345d8203d5d322406feef865f74ebfe2475ebde0be4e2f9a18ffbb587dac946dfb5d0974b598779ff282259aff7e8209a
   languageName: node
   linkType: hard
 
@@ -11921,6 +11941,8 @@ __metadata:
     "@docusaurus/tsconfig": "npm:^3.1.1"
     "@docusaurus/types": "npm:^3.1.1"
     "@mdx-js/react": "npm:^3.0.1"
+    "@types/node": "npm:^20.11.28"
+    "@types/react": "npm:^18.2.66"
     clsx: "npm:^1.2.1"
     docusaurus-plugin-image-zoom: "npm:^2.0.0"
     netlify-plugin-cache: "npm:^1.0.3"
