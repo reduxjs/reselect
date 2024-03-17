@@ -59,7 +59,7 @@
       }
     },
     {
-      "files": ["**/test/**/*.ts", "**/typescript_test/**/*.ts"],
+      "files": ["**/{test,typescript_test,type-tests}/**/*.{ts,tsx}"],
       "rules": {
         "consistent-return": "off",
         "max-lines": "off",
@@ -77,7 +77,7 @@
       "parser": "@typescript-eslint/parser",
       "files": ["./docs/examples/**/*.{js,ts,jsx,tsx}"],
       "parserOptions": {
-        "ecmaVersion": 2023,
+        "ecmaVersion": "latest",
         "sourceType": "module",
         "ecmaFeatures": { "jsx": true }
       },
