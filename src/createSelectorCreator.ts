@@ -391,7 +391,7 @@ export function createSelectorCreator<
       // @ts-ignore
       return (resultFunc as Combiner<InputSelectors, Result>).apply(
         null,
-        arguments
+        arguments as unknown as Parameters<Combiner<InputSelectors, Result>>
       )
     }, ...finalMemoizeOptions) as Combiner<InputSelectors, Result> &
       ExtractMemoizerFields<OverrideMemoizeFunction>
