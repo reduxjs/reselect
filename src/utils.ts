@@ -9,9 +9,7 @@ import type {
   DevModeChecksExecutionInfo
 } from './types'
 
-class NotFound {}
-
-export const NOT_FOUND = new NotFound()
+export const NOT_FOUND = Symbol('NOT_FOUND')
 export type NOT_FOUND_TYPE = typeof NOT_FOUND
 
 /**
