@@ -425,7 +425,7 @@ const compileTSFile = (filePath: string, tsconfigPath?: string) => {
   const restoredWhitespaceContents = restoreWhitespace(result.outputText)
   const outputFilePath = path.join(outputFolder, jsFileName)
   if (!existsSync(outputFolder)) {
-    mkdirSync(outputFolder)
+    mkdirSync(outputFolder, { recursive: true })
   }
 
   writeFileSync(outputFilePath, restoredWhitespaceContents, 'utf8')
