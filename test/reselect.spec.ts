@@ -2,6 +2,7 @@
 
 import lodashMemoize from 'lodash/memoize'
 import microMemoize from 'micro-memoize'
+import type { OutputSelector, OutputSelectorFields } from 'reselect'
 import {
   unstable_autotrackMemoize as autotrackMemoize,
   createSelector,
@@ -9,8 +10,6 @@ import {
   lruMemoize,
   weakMapMemoize
 } from 'reselect'
-
-import type { OutputSelector, OutputSelectorFields } from 'reselect'
 import type { RootState } from './testUtils'
 import {
   addTodo,

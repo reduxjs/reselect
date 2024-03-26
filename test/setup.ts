@@ -1,5 +1,13 @@
 import { isMemoizedSelector } from './testUtils'
 
+declare global {
+  namespace jest {
+    interface Matchers<R> {
+      toBeMemoizedSelector(): R
+    }
+  }
+}
+
 expect.extend({
   toBeMemoizedSelector(received) {
     const { isNot } = this

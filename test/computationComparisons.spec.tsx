@@ -2,18 +2,17 @@
  * @vitest-environment jsdom
  */
 
-import * as rtl from '@testing-library/react'
+import rtl from '@testing-library/react'
 import React, { useLayoutEffect, useMemo } from 'react'
 import type { TypedUseSelectorHook } from 'react-redux'
 import { Provider, shallowEqual, useSelector } from 'react-redux'
+import type { OutputSelector } from 'reselect'
 import {
   createSelector,
   lruMemoize,
   unstable_autotrackMemoize,
   weakMapMemoize
 } from 'reselect'
-
-import type { OutputSelector } from 'reselect'
 import type { RootState, Todo } from './testUtils'
 import { addTodo, setupStore, toggleCompleted } from './testUtils'
 
