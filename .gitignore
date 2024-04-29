@@ -33,3 +33,6 @@ docs/examples/**/*.js
 docs/examples/**/*.jsx
 
 tsconfig.vitest-temp.json
+
+.yalc
+yalc.lock
