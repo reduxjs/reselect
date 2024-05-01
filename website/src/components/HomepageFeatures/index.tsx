@@ -1,6 +1,6 @@
 import Heading from '@theme/Heading'
 import clsx from 'clsx'
-import type { FC } from 'react'
+import type { FC, JSX } from 'react'
 import { memo } from 'react'
 import styles from './styles.module.css'
 
