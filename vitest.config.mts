@@ -2,6 +2,7 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
+    watch: false,
     globals: true,
     setupFiles: ['test/setup.ts'],
     alias: {
