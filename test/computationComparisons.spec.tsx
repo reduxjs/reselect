@@ -18,15 +18,6 @@ import type { RootState, Todo } from './testUtils'
 import { addTodo, setupStore, toggleCompleted } from './testUtils'
 
 describe('Computations and re-rendering with React components', () => {
-  const selector = createSelector(
-    (a: number) => a,
-    a => a
-  )
-
-  test('passes', () => {
-    console.log(selector(1))
-  })
-
   let store: ReturnType<typeof setupStore>
 
   beforeEach(() => {
