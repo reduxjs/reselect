@@ -166,7 +166,7 @@ describe('Computations and re-rendering with React components', () => {
     ]
   ]
 
-  test.each(testCases)(`%s`, async (name, selectTodoIds, selectTodoById) => {
+  test.each(testCases)(`%s`, (name, selectTodoIds, selectTodoById) => {
     selectTodoIds.resetRecomputations()
     selectTodoIds.resetDependencyRecomputations()
     selectTodoById.resetRecomputations()
