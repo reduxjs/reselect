@@ -193,51 +193,7 @@ describe('Computations and re-rendering with React components', () => {
       </Provider>
     )
 
-    // console.log(`Recomputations after render (${name}): `)
-    // console.log('selectTodoIds: ')
-    // logSelectorRecomputations(selectTodoIds as any)
-    // console.log('selectTodoById: ')
-    // logSelectorRecomputations(selectTodoById as any)
-
-    // console.log('Render count: ', {
-    //   listRenders,
-    //   listItemRenders,
-    //   listItemMounts
-    // })
-
     expect(listItemRenders).toBe(numTodos)
-
-    rtl.act(() => {
-      store.dispatch(toggleCompleted(3))
-    })
-
-    // console.log(`\nRecomputations after toggle completed (${name}): `)
-    // console.log('selectTodoIds: ')
-    // logSelectorRecomputations(selectTodoIds as any)
-    // console.log('selectTodoById: ')
-    // logSelectorRecomputations(selectTodoById as any)
-
-    // console.log('Render count: ', {
-    //   listRenders,
-    //   listItemRenders,
-    //   listItemMounts
-    // })
-
-    rtl.act(() => {
-      store.dispatch(addTodo({ title: 'a', description: 'b' }))
-    })
-
-    // console.log(`\nRecomputations after added (${name}): `)
-    // console.log('selectTodoIds: ')
-    // // logSelectorRecomputations(selectTodoIds as any)
-    // console.log('selectTodoById: ')
-    // // logSelectorRecomputations(selectTodoById as any)
-
-    // console.log('Render count: ', {
-    //   listRenders,
-    //   listItemRenders,
-    //   listItemMounts
-    // })
   })
 })
 
