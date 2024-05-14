@@ -1,7 +1,7 @@
 import { globbySync } from 'globby'
 import type { Transform } from 'jscodeshift'
 import type { TestOptions } from 'jscodeshift/src/testUtils'
-import { runInlineTest } from 'jscodeshift/src/testUtils'
+import { applyTransform } from 'jscodeshift/src/testUtils'
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -41,33 +41,29 @@ export const runTransformTest = (
 
         describe(`${testName}${extension}`, () => {
           it('transforms correctly', () => {
-            runInlineTest(
+            const output = applyTransform(
               transform,
               {},
               {
                 path: testInputPath,
                 source: inputFileContent,
               },
-              expectedOutput,
-              {
-                parser,
-              },
+              { parser },
             )
+            expect(output).toBe(expectedOutput.trim().replace('\r\n', '\n'))
           })
 
           it('is idempotent', () => {
-            runInlineTest(
+            const output = applyTransform(
               transform,
               {},
               {
                 path: testInputPath,
                 source: inputFileContent,
               },
-              expectedOutput,
-              {
-                parser,
-              },
+              { parser },
             )
+            expect(output).toBe(expectedOutput.trim().replace('\r\n', '\n'))
           })
         })
       })
