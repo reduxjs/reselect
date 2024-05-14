@@ -24,6 +24,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
+          cache-dependency-path: ./codemods
           cache: 'yarn'
 
       - name: Check folder contents
