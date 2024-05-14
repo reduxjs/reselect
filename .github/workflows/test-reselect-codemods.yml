@@ -2,6 +2,10 @@ name: CI
 
 on: [push, pull_request, workflow_dispatch]
 
+defaults:
+  run:
+    working-directory: codemods
+
 jobs:
   test:
     name: Run test Suite
