@@ -1,60 +1,32 @@
 name: CI
 
-on:
-  push:
-    branches:
-      - master
-      - main
-      - 'v*' # older version branches
-    tags:
-      - '*'
-  pull_request: {}
-  schedule:
-    - cron: '0 6 * * 0' # weekly, on sundays
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
-  lint:
-    name: Linting
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 12.x
-      - name: install dependencies
-        run: yarn install --frozen-lockfile
-      - name: linting
-        run: yarn lint
-
   test:
-    name: Tests
-    runs-on: ubuntu-latest
+    name: Run test Suite
+    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        node: ['10', '12', '14']
+        node: [16, 18, 20, latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-      - name: install dependencies
-        run: yarn install --frozen-lockfile
-      - name: test
-        run: yarn test
+          cache: 'yarn'
 
-  floating-test:
-    name: Floating dependencies
-    runs-on: ubuntu-latest
+      - name: Install dependencies
+        run: yarn install
 
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
-        with:
-          node-version: '12.x'
-      - name: install dependencies
-        run: yarn install --no-lockfile
-      - name: test
+      - name: Lint Files
+        run: yarn lint
+
+      - name: Run test suite
         run: yarn test
