@@ -12,9 +12,9 @@ describe('type tests', () => {
 
     const memoized = lruMemoize(func)
 
-    const ret0: number = memoized('42')
-    // @ts-expect-error
-    const ret1: string = memoized('42')
+    expectTypeOf(memoized('42')).toBeNumber()
+
+    expectTypeOf(memoized('42')).not.toBeString()
 
     const memoized2 = lruMemoize(
       (str: string, arr: string[]): { str: string; arr: string[] } => ({
@@ -27,8 +27,10 @@ describe('type tests', () => {
     )
 
     const ret2 = memoized2('', ['1', '2'])
-    const str: string = ret2.str
-    const arr: string[] = ret2.arr
+
+    expectTypeOf(ret2.str).toBeString()
+
+    expectTypeOf(ret2.arr).items.toBeString()
   })
 
   test('issue #384', () => {
@@ -40,8 +42,7 @@ describe('type tests', () => {
       b: string,
       equalityCheck = referenceEqualityCheck
     ): F {
-      // @ts-ignore
-      return () => {}
+      return func
     }
 
     interface Transaction {
@@ -49,12 +50,14 @@ describe('type tests', () => {
     }
 
     const toId = (transaction: Transaction) => transaction.transactionId
+
     const transactionsIds = (transactions: Transaction[]) =>
       transactions.map(toId)
+
     const collectionsEqual = (ts1: Transaction[], ts2: Transaction[]) =>
       isEqual(transactionsIds(ts1), transactionsIds(ts2))
 
-    const createTransactionsSelector = createSelectorCreator(
+    expectTypeOf(createSelectorCreator).toBeCallableWith(
       lruMemoize,
       collectionsEqual
     )
@@ -70,8 +73,9 @@ describe('type tests', () => {
       (state: { foo: string }) => state.foo,
       foo => `${foo}!`
     )
+
     // error is not applicable anymore
-    select.clearCache()
+    expectTypeOf(select.clearCache).toBeFunction()
 
     const createMultiMemoizeArgSelector2 = createSelectorCreator(
       multiArgMemoize,
@@ -80,7 +84,7 @@ describe('type tests', () => {
       referenceEqualityCheck
     )
 
-    const groupTransactionsByLabel = lruMemoize(
+    expectTypeOf(lruMemoize).toBeCallableWith(
       (transactions: Transaction[]) =>
         groupBy(transactions, item => item.transactionId),
       collectionsEqual
