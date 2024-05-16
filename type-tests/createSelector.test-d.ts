@@ -243,8 +243,10 @@ describe('type tests', () => {
     selector({ foo: 'fizz' }, { bar: 'baz' })
 
     const ret = selector({ foo: 'fizz' }, { bar: 42 })
-    const foo: string = ret.foo
-    const bar: number = ret.bar
+
+    expectTypeOf(ret).toHaveProperty('foo').toBeString()
+
+    expectTypeOf(ret).toHaveProperty('bar').toBeNumber()
 
     const selector2 = createSelector(
       (state: State) => state.foo,
@@ -263,7 +265,7 @@ describe('type tests', () => {
       })
     )
 
-    selector2({ foo: 'fizz' }, { bar: 42 })
+    expectTypeOf(selector2).toBeCallableWith({ foo: 'fizz' }, { bar: 42 })
 
     const selector3 = createSelector(
       (s: State) => s.foo,
@@ -274,8 +276,7 @@ describe('type tests', () => {
       }
     )
 
-    // @ts-expect-error
-    selector3({ foo: 'fizz' }, 42)
+    expectTypeOf(selector3).parameter(1).toBeNever()
 
     const selector4 = createSelector(
       (s: State, val: number) => s.foo,
@@ -285,7 +286,7 @@ describe('type tests', () => {
       }
     )
 
-    selector4({ foo: 'fizz' }, 42)
+    expectTypeOf(selector4).toBeCallableWith({ foo: 'fizz' }, 42)
   })
 
   test('array argument', () => {
@@ -299,9 +300,12 @@ describe('type tests', () => {
     )
 
     const ret = selector({ foo: 'fizz' }, { bar: 42 })
-    const foo1: string = ret.foo1
-    const foo2: string = ret.foo2
-    const bar: number = ret.bar
+
+    expectTypeOf(ret).toHaveProperty('foo1').toBeString()
+
+    expectTypeOf(ret).toHaveProperty('foo2').toBeString()
+
+    expectTypeOf(ret).toHaveProperty('bar').toBeNumber()
 
     // @ts-expect-error
     createSelector([(state: { foo: string }) => state.foo])
@@ -424,21 +428,29 @@ describe('type tests', () => {
 
     {
       const ret = selector2({ foo: 'fizz' })
-      const foo1: string = ret.foo1
-      const foo2: string = ret.foo2
-      const foo3: string = ret.foo3
-      const foo4: string = ret.foo4
-      const foo5: string = ret.foo5
-      const foo6: string = ret.foo6
-      const foo7: string = ret.foo7
-      const foo8: string = ret.foo8
-      const foo9: string = ret.foo9
-      // @ts-expect-error
-      ret.foo10
+
+      expectTypeOf(ret).toHaveProperty('foo1').toBeString()
+
+      expectTypeOf(ret).toHaveProperty('foo2').toBeString()
+
+      expectTypeOf(ret).toHaveProperty('foo3').toBeString()
+
+      expectTypeOf(ret).toHaveProperty('foo4').toBeString()
+
+      expectTypeOf(ret).toHaveProperty('foo5').toBeString()
+
+      expectTypeOf(ret).toHaveProperty('foo6').toBeString()
+
+      expectTypeOf(ret).toHaveProperty('foo7').toBeString()
+
+      expectTypeOf(ret).toHaveProperty('foo8').toBeString()
+
+      expectTypeOf(ret).toHaveProperty('foo9').toBeString()
+
+      expectTypeOf(ret).not.toHaveProperty('foo10')
     }
 
-    // @ts-expect-error
-    selector2({ foo: 'fizz' }, { bar: 42 })
+    expectTypeOf(selector2).parameters.not.toHaveProperty('1')
 
     const parametric = createSelector(
       [
@@ -500,17 +512,26 @@ describe('type tests', () => {
 
     {
       const ret = parametric({ foo: 'fizz' }, { bar: 42 })
-      const foo1: string = ret.foo1
-      const foo2: string = ret.foo2
-      const foo3: string = ret.foo3
-      const foo4: string = ret.foo4
-      const foo5: string = ret.foo5
-      const foo6: string = ret.foo6
-      const foo7: string = ret.foo7
-      const foo8: string = ret.foo8
-      const bar: number = ret.bar
-      // @ts-expect-error
-      ret.foo9
+
+      expectTypeOf(ret).toHaveProperty('foo1').toBeString()
+
+      expectTypeOf(ret).toHaveProperty('foo2').toBeString()
+
+      expectTypeOf(ret).toHaveProperty('foo3').toBeString()
+
+      expectTypeOf(ret).toHaveProperty('foo4').toBeString()
+
+      expectTypeOf(ret).toHaveProperty('foo5').toBeString()
+
+      expectTypeOf(ret).toHaveProperty('foo6').toBeString()
+
+      expectTypeOf(ret).toHaveProperty('foo7').toBeString()
+
+      expectTypeOf(ret).toHaveProperty('foo8').toBeString()
+
+      expectTypeOf(ret).toHaveProperty('bar').toBeNumber()
+
+      expectTypeOf(ret).not.toHaveProperty('foo9')
     }
   })
 
@@ -526,9 +547,9 @@ describe('type tests', () => {
       (state: State, arg: string) => arg,
       (state: State, arg: number) => arg,
       baz => {
-        const baz1: boolean = baz
-        // @ts-expect-error
-        const baz2: number = baz
+        expectTypeOf(baz).toBeBoolean()
+
+        expectTypeOf(baz).not.toBeNumber()
       }
     )
 
@@ -571,7 +592,8 @@ describe('type tests', () => {
     selector4({} as State)
     // @ts-expect-error
     selector4({} as State, 'blach')
-    selector4({} as State, 'blach', 4)
+
+    expectTypeOf(selector4).toBeCallableWith({} as State, 'blach', 4)
 
     // as above but a unknown 2nd argument
     const selector5 = createSelector(
@@ -584,36 +606,19 @@ describe('type tests', () => {
     selector5({} as State)
     // @ts-expect-error
     selector5({} as State, 'blach')
-    selector5({} as State, 'blach', 4)
 
-    // This next section is now obsolete with the changes in TS 4.9
-    // // @ts-expect-error It would be great to delete this, it is not correct.
-    // // Due to what must be a TS bug? if the default parameter is used, we lose the type for prefix
-    // // and it is impossible to type the selector without typing prefix
-    // const selector6 = createSelector(
-    //   (state: State, prefix = '') => prefix + state.foo,
-    //   (str: string) => str
-    // )
-
-    // // because the suppressed error above, selector6 has broken typings and doesn't allow a passed parameter
-    // selector6({} as State)
-    // // @ts-expect-error would be great if we can delete this, it should not error
-    // selector6({} as State, 'blach')
-    // // @ts-expect-error wrong type
-    // selector6({} as State, 1)
+    expectTypeOf(selector5).toBeCallableWith({} as State, 'blach', 4)
 
     // this is an example fixing selector6. We have to add a un-necessary typing in and magically the types are correct
     const selector7 = createSelector(
-      (
-        state: State,
-        // eslint-disable-next-line @typescript-eslint/no-inferrable-types
-        prefix: string = 'a'
-      ) => prefix + state.foo,
+      (state: State, prefix: string = 'a') => prefix + state.foo,
       (str: string) => str
     )
 
-    selector7({} as State)
-    selector7({} as State, 'blach')
+    expectTypeOf(selector7).toBeCallableWith({} as State)
+
+    expectTypeOf(selector7).toBeCallableWith({} as State, 'blach')
+
     // @ts-expect-error wrong type
     selector7({} as State, 1)
 
@@ -624,9 +629,11 @@ describe('type tests', () => {
 
     // @ts-expect-error needs a argument
     selector8({} as State)
+
     // allowed to pass anything as the type is unknown
-    selector8({} as State, 'blach')
-    selector8({} as State, 2)
+    expectTypeOf(selector8).toBeCallableWith({} as State, 'blach')
+
+    expectTypeOf(selector8).toBeCallableWith({} as State, 2)
   })
 
   test('dynamic array argument', () => {
