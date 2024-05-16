@@ -31,17 +31,17 @@ describe('type tests', () => {
       foo => foo
     )
 
-    const res = selector.resultFunc('test')
-    selector.recomputations()
-    selector.resetRecomputations()
+    expectTypeOf(selector.resultFunc).toBeCallableWith('test')
 
-    const foo: string = selector({ foo: 'bar' })
+    expectTypeOf(selector.recomputations).toBeFunction()
 
-    // @ts-expect-error
-    selector({ foo: 'bar' }, { prop: 'value' })
+    expectTypeOf(selector.resetRecomputations).toBeFunction()
 
-    // @ts-expect-error
-    const num: number = selector({ foo: 'bar' })
+    expectTypeOf(selector({ foo: 'bar' })).toBeString()
+
+    expectTypeOf(selector).parameters.not.toHaveProperty('1')
+
+    expectTypeOf(selector({ foo: 'bar' })).not.toBeNumber()
 
     // allows heterogeneous parameter type input selectors
     createSelector(
@@ -73,13 +73,11 @@ describe('type tests', () => {
 
     const selector = createSelector((state: State) => state.bar, subSelector)
 
-    // @ts-expect-error
-    selector({ foo: '' })
+    expectTypeOf(selector).parameter(0).not.toMatchTypeOf({ foo: '' })
 
-    // @ts-expect-error
-    const n: number = selector({ bar: { foo: '' } })
+    expectTypeOf(selector({ bar: { foo: '' } })).not.toBeNumber()
 
-    const s: string = selector({ bar: { foo: '' } })
+    expectTypeOf(selector({ bar: { foo: '' } })).toBeString()
   })
 
   test('connect', () => {
@@ -89,10 +87,9 @@ describe('type tests', () => {
         foo => ({ foo })
       )
     )(props => {
-      // @ts-expect-error
-      props.bar
+      expectTypeOf(props).not.toHaveProperty('bar')
 
-      const foo: string = props.foo
+      expectTypeOf(props).toHaveProperty('foo').toBeString()
     })
 
     const selector2 = createSelector(
@@ -102,17 +99,20 @@ describe('type tests', () => {
     )
 
     const connected = connect(selector2)(props => {
-      const foo: string = props.foo
-      const bar: number = props.bar
-      const baz: number = props.baz
-      // @ts-expect-error
-      props.fizz
+      expectTypeOf(props).toHaveProperty('foo').toBeString()
+
+      expectTypeOf(props).toHaveProperty('bar').toBeNumber()
+
+      expectTypeOf(props).toHaveProperty('baz').toBeNumber()
+
+      expectTypeOf(props).not.toHaveProperty('fizz')
     })
 
-    connected({ bar: 42 })
+    expectTypeOf(connected).toBeCallableWith({ bar: 42 })
 
-    // @ts-expect-error
-    connected({ bar: 42, baz: 123 })
+    expectTypeOf(connected)
+      .parameter(0)
+      .not.toMatchTypeOf({ bar: 42, baz: 123 })
   })
 
   test('invalid type in combiner', () => {
@@ -224,7 +224,7 @@ describe('type tests', () => {
       }
     )
 
-    const res1 = selector1({
+    expectTypeOf(selector1).toBeCallableWith({
       testString: 'a',
       testNumber: 42,
       testBoolean: true,
