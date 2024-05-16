@@ -70,13 +70,13 @@ describe('type tests', () => {
       (state: { foo: string }) => state.foo,
       foo => foo
     )
-    const value: string = selector({ foo: 'fizz' })
 
-    // @ts-expect-error
-    selector({ foo: 'fizz' }, { bar: 42 })
+    expectTypeOf(selector({ foo: 'fizz' })).toBeString()
+
+    expectTypeOf(selector).parameter(1).not.toMatchTypeOf({ bar: 42 })
 
     // clearCache should exist because of lruMemoize
-    selector.clearCache()
+    expectTypeOf(selector.clearCache).toBeFunction()
 
     const parametric = defaultCreateSelector(
       (state: { foo: string }) => state.foo,
@@ -88,8 +88,10 @@ describe('type tests', () => {
     parametric({ foo: 'fizz' })
 
     const ret = parametric({ foo: 'fizz' }, { bar: 42 })
-    const foo: string = ret.foo
-    const bar: number = ret.bar
+
+    expectTypeOf(ret.foo).toBeString()
+
+    expectTypeOf(ret.bar).toBeNumber()
 
     // @ts-expect-error
     createSelectorCreator(lruMemoize, 1)
