@@ -156,16 +156,14 @@ const getSizeLimitConfig = async (): Promise<SizeLimitConfig> => {
     await Promise.all(allNodeEnvs.map(getAllImportsWithNodeEnv))
   ).flat()
 
-  if (
-    'dependencies' in packageJson &&
-    typeof packageJson.dependencies === 'object' &&
-    packageJson.dependencies !== null
-  ) {
+  if ('dependencies' in packageJson) {
+    const dependencies = Object.keys(packageJson.dependencies ?? {})
+
     const sizeLimitConfigWithoutDependencies = sizeLimitConfig.map<Check>(
       check => ({
         ...check,
         name: `${check.name} (excluding dependencies)`,
-        ignore: Object.keys(packageJson.dependencies ?? {})
+        ignore: dependencies
       })
     )
 
