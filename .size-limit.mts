@@ -175,7 +175,6 @@ const getSizeLimitConfig = async (): Promise<SizeLimitConfig> => {
   return sizeLimitConfig
 }
 
-const sizeLimitConfig: Promise<SizeLimitConfig> = (async () =>
-  await getSizeLimitConfig())()
+const sizeLimitConfig: Promise<SizeLimitConfig> = getSizeLimitConfig()
 
 export default sizeLimitConfig
