@@ -14,7 +14,7 @@ export const REDUX_PROXY_LABEL = /* @__PURE__ */ Symbol()
 
 let nextId = 0
 
-const proto = Object.getPrototypeOf({})
+const proto = /* @__PURE__ */ Object.getPrototypeOf({})
 
 class ObjectTreeNode<T extends Record<string, unknown>> implements Node<T> {
   proxy: T = new Proxy(this, objectProxyHandler) as unknown as T
