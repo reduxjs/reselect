@@ -5,6 +5,7 @@
   "main": "./dist/cjs/index.js",
   "module": "./dist/reselect.legacy-esm.js",
   "types": "./dist/reselect.d.mts",
+  "browser": "./dist/reselect.browser.mjs",
   "exports": {
     "./package.json": "./package.json",
     ".": {
