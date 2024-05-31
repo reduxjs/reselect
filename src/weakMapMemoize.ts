@@ -15,10 +15,12 @@ class StrongRef<T> {
   }
 }
 
-const Ref =
-  typeof WeakRef !== 'undefined'
-    ? WeakRef
-    : (StrongRef as unknown as typeof WeakRef)
+const getWeakRef = () =>
+  typeof WeakRef === 'undefined'
+    ? (StrongRef as unknown as typeof WeakRef)
+    : WeakRef
+
+const Ref =  /* @__PURE__ */ getWeakRef()
 
 const UNTERMINATED = 0
 const TERMINATED = 1
@@ -244,7 +246,7 @@ export function weakMapMemoize<Func extends AnyFunction>(
           (typeof result === 'object' && result !== null) ||
           typeof result === 'function'
 
-        lastResult = needsWeakRef ? new Ref(result) : result
+        lastResult = needsWeakRef ? /* @__PURE__ */ new Ref(result) : result
       }
     }
 
