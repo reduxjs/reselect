@@ -53,6 +53,7 @@ export default defineConfig((options): Options[] => {
       entry: {
         'reselect.browser': 'src/index.ts'
       },
+      platform: 'browser',
       define: {
         'process.env.NODE_ENV': JSON.stringify('production')
       },
