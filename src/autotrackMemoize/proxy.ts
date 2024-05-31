@@ -10,7 +10,7 @@ import {
   dirtyTag
 } from './tracking'
 
-export const REDUX_PROXY_LABEL = Symbol()
+export const REDUX_PROXY_LABEL = /* @__PURE__ */ Symbol()
 
 let nextId = 0
 
