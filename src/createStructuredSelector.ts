@@ -415,7 +415,7 @@ export interface StructuredSelectorCreator<StateType = any> {
  * @public
  */
 export const createStructuredSelector: StructuredSelectorCreator =
-  Object.assign(
+  /* @__PURE__ */ Object.assign(
     <
       InputSelectorsObject extends SelectorsObject,
       MemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize,
