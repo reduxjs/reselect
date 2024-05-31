@@ -22,7 +22,7 @@
     "url": "https://github.com/reduxjs/reselect/issues"
   },
   "scripts": {
-    "build": "tsup",
+    "build": "yarn clean && tsup",
     "clean": "rimraf dist",
     "format": "prettier --write \"{src,test}/**/*.{js,ts}\" \"docs/**/*.md\"",
     "lint": "eslint src test",
