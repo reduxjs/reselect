@@ -2,7 +2,7 @@
   "name": "reselect",
   "version": "5.1.0",
   "description": "Selectors for Redux.",
-  "main": "./dist/cjs/reselect.cjs",
+  "main": "./dist/cjs/index.js",
   "module": "./dist/reselect.legacy-esm.js",
   "types": "./dist/reselect.d.ts",
   "exports": {
@@ -10,7 +10,7 @@
     ".": {
       "types": "./dist/reselect.d.ts",
       "import": "./dist/reselect.mjs",
-      "default": "./dist/cjs/reselect.cjs"
+      "default": "./dist/cjs/index.js"
     }
   },
   "files": [
