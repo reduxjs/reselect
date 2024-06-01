@@ -421,6 +421,38 @@ describe(lruMemoize, () => {
     expect(selector.resultFunc.clearCache).toBeUndefined()
   })
 
+  test('cache miss identifier does not collide with state values', () => {
+    const state = ['NOT_FOUND', 'FOUND']
+
+    type State = typeof state
+
+    const createSelector = createSelectorCreator({
+      memoize: lruMemoize,
+      argsMemoize: lruMemoize
+    }).withTypes<State>()
+
+    const selector = createSelector(
+      [(state, id: number) => state[id]],
+      state => state,
+      {
+        argsMemoizeOptions: { maxSize: 10 },
+        memoizeOptions: { maxSize: 10 }
+      }
+    )
+
+    const firstResult = selector(state, 0)
+
+    expect(selector(state, 1)).toBe(selector(state, 1))
+
+    const secondResult = selector(state, 0)
+
+    expect(secondResult).toBe('NOT_FOUND')
+
+    expect(firstResult).toBe(secondResult)
+
+    expect(selector.recomputations()).toBe(2)
+  })
+
   localTest(
     'maxSize should default to 1 when set to a number that is less than 1',
     ({ state, store }) => {
