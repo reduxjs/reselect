@@ -9,7 +9,7 @@ import type {
   DevModeChecksExecutionInfo
 } from './types'
 
-export const NOT_FOUND = 'NOT_FOUND'
+export const NOT_FOUND = /* @__PURE__ */ Symbol('NOT_FOUND')
 export type NOT_FOUND_TYPE = typeof NOT_FOUND
 
 /**
