@@ -3,7 +3,7 @@ import { defineConfig } from 'tsup'
 
 const tsconfig = 'tsconfig.build.json' satisfies Options['tsconfig']
 
-export default defineConfig(options => {
+export default defineConfig((options): Options[] => {
   const commonOptions: Options = {
     entry: {
       reselect: 'src/index.ts'
@@ -53,5 +53,5 @@ export default defineConfig(options => {
       outDir: './dist/cjs/',
       outExtension: () => ({ js: '.cjs' })
     }
-  ] as Options[]
+  ]
 })
