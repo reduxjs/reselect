@@ -47,9 +47,11 @@ export default defineConfig((options): Options[] => {
       outExtension: () => ({ js: '.js' }),
       target: 'es2017'
     },
+
+    // Meant to be served up via CDNs like `unpkg`.
     {
       ...commonOptions,
-      name: 'Browser-ready ESM, production + minified',
+      name: 'Browser-ready ESM',
       entry: {
         'reselect.browser': 'src/index.ts'
       },
