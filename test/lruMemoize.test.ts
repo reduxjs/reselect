@@ -428,7 +428,7 @@ describe(lruMemoize, () => {
 
     const createSelector = createSelectorCreator({
       memoize: lruMemoize,
-      argsMemoize: lruMemoize
+      argsMemoize: lruMemoize,
     }).withTypes<State>()
 
     const selector = createSelector(
@@ -436,8 +436,8 @@ describe(lruMemoize, () => {
       state => state,
       {
         argsMemoizeOptions: { maxSize: 10 },
-        memoizeOptions: { maxSize: 10 }
-      }
+        memoizeOptions: { maxSize: 10 },
+      },
     )
 
     const firstResult = selector(state, 0)
