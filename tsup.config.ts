@@ -32,8 +32,7 @@ export default defineConfig((options): Options[] => {
       name: 'Modern ESM',
       target: ['esnext'],
       format: ['esm'],
-      outExtension: () => ({ js: '.mjs' }),
-      dts: true
+      outExtension: () => ({ js: '.mjs' })
     },
 
     // Support Webpack 4 by pointing `"module"` to a file with a `.js` extension
@@ -93,6 +92,12 @@ export default defineConfig((options): Options[] => {
       onSuccess: async () => {
         await writeCommonJSEntry()
       }
+    },
+    {
+      ...commonOptions,
+      name: 'Type definitions',
+      format: ['cjs'],
+      dts: { only: true }
     }
   ]
 })

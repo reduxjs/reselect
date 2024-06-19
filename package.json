@@ -4,11 +4,11 @@
   "description": "Selectors for Redux.",
   "main": "./dist/cjs/index.js",
   "module": "./dist/reselect.legacy-esm.js",
-  "types": "./dist/reselect.d.mts",
+  "types": "./dist/reselect.d.ts",
   "exports": {
     "./package.json": "./package.json",
     ".": {
-      "types": "./dist/reselect.d.mts",
+      "types": "./dist/reselect.d.ts",
       "import": "./dist/reselect.mjs",
       "default": "./dist/cjs/index.js"
     }
