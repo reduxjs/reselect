@@ -6,7 +6,6 @@ import {
   lruMemoize,
   weakMapMemoize
 } from 'reselect'
-import { vi } from 'vitest'
 
 describe('More perf comparisons', () => {
   const originalEnv = process.env.NODE_ENV

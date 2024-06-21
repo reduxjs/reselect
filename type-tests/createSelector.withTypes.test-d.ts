@@ -1,5 +1,4 @@
 import { createSelector } from 'reselect'
-import { describe, expectTypeOf, test } from 'vitest'
 
 interface Todo {
   id: number
@@ -27,7 +26,7 @@ const rootState: RootState = {
   ]
 }
 
-describe('createSelector.withTypes<RootState>()', () => {
+describe('type tests', () => {
   const createAppSelector = createSelector.withTypes<RootState>()
 
   describe('when input selectors are provided as a single array', () => {
@@ -41,13 +40,13 @@ describe('createSelector.withTypes<RootState>()', () => {
       createAppSelector(
         [
           state => {
-            expectTypeOf(state).toEqualTypeOf<RootState>(rootState)
+            expectTypeOf(state).toEqualTypeOf(rootState)
 
             return state.todos
           }
         ],
         todos => {
-          expectTypeOf(todos).toEqualTypeOf<Todo[]>(rootState.todos)
+          expectTypeOf(todos).toEqualTypeOf<Todo[]>()
 
           return todos.map(({ id }) => id)
         }
@@ -61,20 +60,19 @@ describe('createSelector.withTypes<RootState>()', () => {
       // result function are NOT correctly inferred when
       // input selectors are provided as separate inline arguments.
       createAppSelector(
-        state => {
-          expectTypeOf(state).toEqualTypeOf<RootState>(rootState)
+        [
+          state => {
+            expectTypeOf(state).toEqualTypeOf(rootState)
 
-          return state.todos
-        },
+            return state.todos
+          }
+        ],
         todos => {
           // Known limitation: Parameter types are not inferred in this scenario
-          expectTypeOf(todos).toBeAny()
+          expectTypeOf(todos).not.toBeAny()
 
-          expectTypeOf(todos).not.toEqualTypeOf<Todo[]>(rootState.todos)
+          expectTypeOf(todos).toEqualTypeOf<Todo[]>()
 
-          // @ts-expect-error A typed `createSelector` currently only infers
-          // the parameter types of the result function when
-          // input selectors are provided as a single array.
           return todos.map(({ id }) => id)
         }
       )
@@ -84,34 +82,32 @@ describe('createSelector.withTypes<RootState>()', () => {
       // Checking to see if the type of state is correct when multiple
       // input selectors are provided as separate inline arguments.
       createAppSelector(
-        state => {
-          expectTypeOf(state).toEqualTypeOf<RootState>(rootState)
+        [
+          state => {
+            expectTypeOf(state).toEqualTypeOf(rootState)
 
-          return state.todos
-        },
-        state => {
-          expectTypeOf(state).toEqualTypeOf<RootState>(rootState)
+            return state.todos
+          },
+          state => {
+            expectTypeOf(state).toEqualTypeOf(rootState)
 
-          return state.alerts
-        },
+            return state.alerts
+          }
+        ],
         (todos, alerts) => {
           // Known limitation: Parameter types are not inferred in this scenario
-          expectTypeOf(todos).toBeAny()
+          expectTypeOf(todos).not.toBeAny()
 
-          expectTypeOf(alerts).toBeAny()
+          expectTypeOf(alerts).not.toBeAny()
 
-          // @ts-expect-error A typed `createSelector` currently only infers
-          // the parameter types of the result function when
-          // input selectors are provided as a single array.
           return todos.map(({ id }) => id)
         }
       )
     })
 
     test('can annotate parameter types of the result function to workaround type inference issue', () => {
-      createAppSelector(
-        state => state.todos,
-        (todos: Todo[]) => todos.map(({ id }) => id)
+      createAppSelector([state => state.todos], todos =>
+        todos.map(({ id }) => id)
       )
     })
   })

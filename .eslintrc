@@ -59,7 +59,7 @@
       }
     },
     {
-      "files": ["**/test/**/*.ts", "**/typescript_test/**/*.ts"],
+      "files": ["**/test/**/*.ts", "**/type-test/**/*.ts"],
       "rules": {
         "consistent-return": "off",
         "max-lines": "off",
@@ -70,7 +70,11 @@
         "@typescript-eslint/no-floating-promises": "off",
         "@typescript-eslint/no-non-null-assertion": "off",
         "@typescript-eslint/no-unused-vars": "off",
-        "@typescript-eslint/no-shadow": "off"
+        "@typescript-eslint/no-shadow": "off",
+        "@typescript-eslint/no-namespace": [
+          2,
+          { "allowDeclarations": true, "allowDefinitionFiles": true }
+        ]
       }
     },
     {

@@ -4,8 +4,8 @@ import {
   createStructuredSelector,
   lruMemoize
 } from 'reselect'
-import type { LocalTestContext, RootState } from './testUtils'
-import { setupStore } from './testUtils'
+import type { RootState } from './testUtils'
+import { localTest } from './testUtils'
 
 interface StateAB {
   a: number
@@ -64,12 +64,7 @@ describe(createStructuredSelector, () => {
   })
 })
 
-describe<LocalTestContext>('structured selector created with createStructuredSelector', localTest => {
-  beforeEach<LocalTestContext>(context => {
-    const store = setupStore()
-    context.store = store
-    context.state = store.getState()
-  })
+describe('structured selector created with createStructuredSelector', () => {
   localTest(
     'structured selector created with createStructuredSelector and createSelector are the same',
     ({ state }) => {
