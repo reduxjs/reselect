@@ -1067,6 +1067,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:^20.14.7":
+  version: 20.14.7
+  resolution: "@types/node@npm:20.14.7"
+  dependencies:
+    undici-types: "npm:~5.26.4"
+  checksum: 10/f2cb458126a136719d9da6febdbc7afc9bb622047a30c5e6163db4206ff8c8002ec56b340d722fe1ad6280ebe7a505e0a5a10a39a3b5718837200201b94d5d07
+  languageName: node
+  linkType: hard
+
 "@typescript-eslint/parser@npm:^7.13.1":
   version: 7.13.1
   resolution: "@typescript-eslint/parser@npm:7.13.1"
@@ -3914,6 +3923,7 @@ __metadata:
   resolution: "reselect-codemods@workspace:."
   dependencies:
     "@types/jscodeshift": "npm:^0.11.11"
+    "@types/node": "npm:^20.14.7"
     "@typescript-eslint/parser": "npm:^7.13.1"
     eslint: "npm:^8.57.0"
     eslint-config-prettier: "npm:^9.1.0"
@@ -4575,6 +4585,13 @@ __metadata:
   version: 1.5.3
   resolution: "ufo@npm:1.5.3"
   checksum: 10/2b30dddd873c643efecdb58cfe457183cd4d95937ccdacca6942c697b87a2c578232c25a5149fda85436696bf0fdbc213bf2b220874712bc3e58c0fb00a2c950
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~5.26.4":
+  version: 5.26.5
+  resolution: "undici-types@npm:5.26.5"
+  checksum: 10/0097779d94bc0fd26f0418b3a05472410408877279141ded2bd449167be1aed7ea5b76f756562cb3586a07f251b90799bab22d9019ceba49c037c76445f7cddd
   languageName: node
   linkType: hard
 
