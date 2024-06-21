@@ -22,7 +22,7 @@
     "codemod"
   ],
   "dependencies": {
-    "execa": "^9.1.0",
+    "execa": "^9.2.0",
     "globby": "^14.0.1",
     "jscodeshift": "^0.15.2",
     "ts-node": "^10.9.2",
