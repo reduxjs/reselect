@@ -15,12 +15,18 @@ class StrongRef<T> {
   }
 }
 
+/**
+ * @returns The {@linkcode StrongRef} if {@linkcode WeakRef} is not available.
+ *
+ * @since 5.1.2
+ * @internal
+ */
 const getWeakRef = () =>
   typeof WeakRef === 'undefined'
     ? (StrongRef as unknown as typeof WeakRef)
     : WeakRef
 
-const Ref =  /* @__PURE__ */ getWeakRef()
+const Ref = /* @__PURE__ */ getWeakRef()
 
 const UNTERMINATED = 0
 const TERMINATED = 1
