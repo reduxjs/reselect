@@ -80,7 +80,7 @@
     "react-redux": "^9.0.4",
     "rimraf": "^3.0.2",
     "shelljs": "^0.8.5",
-    "tsup": "^8.1.2",
+    "tsup": "^8.2.0",
     "typescript": "^5.4.2",
     "vitest": "^1.6.0"
   },
