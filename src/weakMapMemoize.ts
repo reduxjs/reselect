@@ -97,6 +97,20 @@ export interface WeakMapMemoizeOptions<Result = any> {
 }
 
 /**
+ * Derefences the argument if it is a Ref. Else if it is a value already, return it.
+ *
+ * @param r - the object to maybe deref
+ * @returns The derefenced value if the argument is a Ref, else the argument value itself.
+ */
+function maybeDeref(r: any) {
+  if (r instanceof Ref) {
+    return r.deref()
+  }
+
+  return r
+}
+
+/**
  * Creates a tree of `WeakMap`-based cache nodes based on the identity of the
  * arguments it's been called with (in this case, the extracted values from your input selectors).
  * This allows `weakMapMemoize` to have an effectively infinite cache size.
@@ -229,7 +243,8 @@ export function weakMapMemoize<Func extends AnyFunction>(
       resultsCount++
 
       if (resultEqualityCheck) {
-        const lastResultValue = lastResult?.deref?.() ?? lastResult
+        // Deref lastResult if it is a Ref
+        const lastResultValue = maybeDeref(lastResult)
 
         if (
           lastResultValue != null &&
