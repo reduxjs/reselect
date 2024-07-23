@@ -4337,7 +4337,7 @@ __metadata:
     react-redux: "npm:^9.0.4"
     rimraf: "npm:^3.0.2"
     shelljs: "npm:^0.8.5"
-    tsup: "npm:^8.2.0"
+    tsup: "npm:^8.2.2"
     typescript: "npm:^5.4.2"
     vitest: "npm:^1.6.0"
   languageName: unknown
@@ -4434,7 +4434,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup@npm:^4.13.0, rollup@npm:^4.18.1":
+"rollup@npm:^4.13.0, rollup@npm:^4.19.0":
   version: 4.19.0
   resolution: "rollup@npm:4.19.0"
   dependencies:
@@ -5083,9 +5083,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tsup@npm:^8.2.0":
-  version: 8.2.0
-  resolution: "tsup@npm:8.2.0"
+"tsup@npm:^8.2.2":
+  version: 8.2.2
+  resolution: "tsup@npm:8.2.2"
   dependencies:
     bundle-require: "npm:^5.0.0"
     cac: "npm:^6.7.14"
@@ -5096,9 +5096,10 @@ __metadata:
     execa: "npm:^5.1.1"
     globby: "npm:^11.1.0"
     joycon: "npm:^3.1.1"
+    picocolors: "npm:^1.0.1"
     postcss-load-config: "npm:^6.0.1"
     resolve-from: "npm:^5.0.0"
-    rollup: "npm:^4.18.1"
+    rollup: "npm:^4.19.0"
     source-map: "npm:0.8.0-beta.0"
     sucrase: "npm:^3.35.0"
     tree-kill: "npm:^1.2.2"
@@ -5119,7 +5120,7 @@ __metadata:
   bin:
     tsup: dist/cli-default.js
     tsup-node: dist/cli-node.js
-  checksum: 10/34fe9459deb301a693e8dd9faea6db29ee900295db16de9bc650d7596eff0ef56a5381fbcf2e12b4cc487c37315b99b21ab79f1cfe4ab11bcf249a07035ba6fb
+  checksum: 10/f0d25756d4760d76f0d75118cd222791ad630ae2e89dfc3341d1e2d96b20614d37d1e8a0a541f3a342348cdfb0b24d3df2e2e3ba7590e462630be969803ee6c3
   languageName: node
   linkType: hard
 
