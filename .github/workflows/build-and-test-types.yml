@@ -149,26 +149,14 @@ jobs:
       - name: Check folder contents
         run: ls -l .
 
-        # Some weird install diffs with cloning this repo and installing.
-        # Just kill the lockfiles for this repo and RTK and reinstall
-
-      - name: Remove top lockfile
-        run: rm yarn.lock && rm package.json
-
-      - name: Remove RTK lockfile
-        working-directory: ./redux-toolkit
-        run: rm yarn.lock && rm package.json
-
-      - name: Install deps
+      - name: Install example deps
         working-directory: ./redux-toolkit/examples/publish-ci/${{ matrix.example }}
-        env:
-          YARN_ENABLE_IMMUTABLE_INSTALLS: false
-        run: rm yarn.lock && yarn install
+        run: yarn install
 
       - name: Install Playwright browser if necessary
         working-directory: ./redux-toolkit/examples/publish-ci/${{ matrix.example }}
         continue-on-error: true
-        run: yarn playwright install
+        run: yarn playwright install || true
 
       - uses: actions/download-artifact@v4
         with:
