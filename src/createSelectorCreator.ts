@@ -372,8 +372,7 @@ export function createSelectorCreator<
       memoize,
       memoizeOptions = [],
       argsMemoize = weakMapMemoize,
-      argsMemoizeOptions = [],
-      devModeChecks = {}
+      argsMemoizeOptions = []
     } = combinedOptions
 
     // Simplifying assumption: it's unlikely that the first options arg of the provided memoizer
@@ -412,6 +411,7 @@ export function createSelectorCreator<
       lastResult = memoizedResultFunc.apply(null, inputSelectorResults)
 
       if (process.env.NODE_ENV !== 'production') {
+        const { devModeChecks = {} } = combinedOptions
         const { identityFunctionCheck, inputStabilityCheck } =
           getDevModeChecksExecutionInfo(firstRun, devModeChecks)
         if (identityFunctionCheck.shouldRun) {

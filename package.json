@@ -2,7 +2,7 @@
   "name": "reselect",
   "version": "5.1.1",
   "description": "Selectors for Redux.",
-  "main": "./dist/cjs/reselect.cjs",
+  "main": "./dist/cjs/index.js",
   "module": "./dist/reselect.legacy-esm.js",
   "types": "./dist/reselect.d.ts",
   "exports": {
@@ -10,7 +10,7 @@
     ".": {
       "types": "./dist/reselect.d.ts",
       "import": "./dist/reselect.mjs",
-      "default": "./dist/cjs/reselect.cjs"
+      "default": "./dist/cjs/index.js"
     }
   },
   "files": [
@@ -22,7 +22,7 @@
     "url": "https://github.com/reduxjs/reselect/issues"
   },
   "scripts": {
-    "build": "tsup",
+    "build": "yarn clean && tsup",
     "clean": "rimraf dist",
     "format": "prettier --write \"{src,test}/**/*.{js,ts}\" \"docs/**/*.md\"",
     "lint": "eslint src test",
@@ -80,9 +80,12 @@
     "react-redux": "^9.0.4",
     "rimraf": "^3.0.2",
     "shelljs": "^0.8.5",
-    "tsup": "^6.7.0",
+    "tsup": "^8.2.4",
     "typescript": "^5.4.2",
     "vitest": "^1.6.0"
+  },
+  "resolutions": {
+    "esbuild": "0.23.0"
   },
   "packageManager": "yarn@4.1.0"
 }

@@ -1,56 +1,63 @@
-import { defineConfig, Options } from 'tsup'
-import fs from 'fs'
-import sh from 'shelljs'
-import type { ExecOptions } from 'shelljs'
+import fs from 'node:fs/promises'
+import path from 'node:path'
+import type { Options } from 'tsup'
+import { defineConfig } from 'tsup'
 
-function execAsync(cmd: string, opts: ExecOptions = {}) {
-  return new Promise(function (resolve, reject) {
-    // Execute the command, reject if we exit non-zero (i.e. error)
-    sh.exec(cmd, opts, function (code, stdout, stderr) {
-      if (code !== 0) return reject(new Error(stderr))
-      return resolve(stdout)
-    })
-  })
+async function writeCommonJSEntry() {
+  await fs.writeFile(
+    path.join('dist/cjs/', 'index.js'),
+    `'use strict'
+if (process.env.NODE_ENV === 'production') {
+  module.exports = require('./reselect.production.min.cjs')
+} else {
+  module.exports = require('./reselect.development.cjs')
+}`
+  )
 }
 
-export default defineConfig(options => {
-  const commonOptions: Partial<Options> = {
+export default defineConfig((options): Options[] => {
+  const commonOptions: Options = {
     entry: {
       reselect: 'src/index.ts'
     },
     sourcemap: true,
+    target: ['esnext'],
+    clean: true,
     ...options
   }
 
   return [
-    // Modern ESM
     {
       ...commonOptions,
+      name: 'Modern ESM',
+      target: ['esnext'],
       format: ['esm'],
-      outExtension: () => ({ js: '.mjs' }),
-      dts: true,
-      clean: true
+      outExtension: () => ({ js: '.mjs' })
     },
 
     // Support Webpack 4 by pointing `"module"` to a file with a `.js` extension
     // and optional chaining compiled away
     {
       ...commonOptions,
+      name: 'Legacy ESM, Webpack 4',
       entry: {
         'reselect.legacy-esm': 'src/index.ts'
       },
       format: ['esm'],
       outExtension: () => ({ js: '.js' }),
-      target: 'es2017'
+      target: ['es2017']
     },
-    // Browser-ready ESM, production + minified
+
+    // Meant to be served up via CDNs like `unpkg`.
     {
       ...commonOptions,
+      name: 'Browser-ready ESM',
       entry: {
         'reselect.browser': 'src/index.ts'
       },
-      define: {
-        'process.env.NODE_ENV': JSON.stringify('production')
+      platform: 'browser',
+      env: {
+        NODE_ENV: 'production'
       },
       format: ['esm'],
       outExtension: () => ({ js: '.mjs' }),
@@ -58,9 +65,39 @@ export default defineConfig(options => {
     },
     {
       ...commonOptions,
-      format: 'cjs',
+      name: 'CJS Development',
+      entry: {
+        'reselect.development': 'src/index.ts'
+      },
+      env: {
+        NODE_ENV: 'development'
+      },
+      format: ['cjs'],
       outDir: './dist/cjs/',
       outExtension: () => ({ js: '.cjs' })
+    },
+    {
+      ...commonOptions,
+      name: 'CJS production',
+      entry: {
+        'reselect.production.min': 'src/index.ts'
+      },
+      env: {
+        NODE_ENV: 'production'
+      },
+      format: ['cjs'],
+      outDir: './dist/cjs/',
+      outExtension: () => ({ js: '.cjs' }),
+      minify: true,
+      onSuccess: async () => {
+        await writeCommonJSEntry()
+      }
+    },
+    {
+      ...commonOptions,
+      name: 'CJS Type Definitions',
+      format: ['cjs'],
+      dts: { only: true }
     }
   ]
 })
