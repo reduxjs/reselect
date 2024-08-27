@@ -1,0 +1,57 @@
+{
+  "name": "reselect-codemods",
+  "version": "0.1.0",
+  "scripts": {
+    "format": "prettier -w . --config prettier.config.mjs",
+    "format-check": "prettier -c . --config prettier.config.mjs",
+    "lint": "eslint --flag unstable_ts_config -c eslint.config.mts",
+    "lint-fix": "eslint --fix --flag unstable_ts_config -c eslint.config.mts",
+    "test": "vitest --run"
+  },
+  "bin": "./bin/cli.mjs",
+  "files": [
+    "bin/*",
+    "transforms/**/index.ts",
+    "transforms/**/README.md",
+    "package.json",
+    "README.md"
+  ],
+  "keywords": [
+    "redux",
+    "redux-toolkit",
+    "reselect",
+    "codemod"
+  ],
+  "dependencies": {
+    "execa": "^9.3.1",
+    "globby": "^14.0.2",
+    "jscodeshift": "^17.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  },
+  "devDependencies": {
+    "@types/eslint": "^9.6.1",
+    "@types/eslint-config-prettier": "^6.11.3",
+    "@types/eslint__js": "^8.42.3",
+    "@types/jscodeshift": "^0.11.11",
+    "@types/node": "^22.5.3",
+    "eslint": "^9.9.1",
+    "eslint-config-prettier": "^9.1.0",
+    "jiti": "^2.0.0-beta.3",
+    "prettier": "^3.3.3",
+    "typescript-eslint": "^8.4.0",
+    "vitest": "^2.0.5"
+  },
+  "engines": {
+    "node": ">= 16"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "directory": "codemods",
+    "type": "git",
+    "url": "git+https://github.com/reduxjs/reselect.git"
+  },
+  "sideEffects": false
+}
