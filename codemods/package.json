@@ -1,6 +1,7 @@
 {
   "name": "reselect-codemods",
   "version": "0.1.0",
+  "description": "A collection of codemods for the reselect library",
   "scripts": {
     "format": "prettier -w . --config prettier.config.mjs",
     "format-check": "prettier -c . --config prettier.config.mjs",
