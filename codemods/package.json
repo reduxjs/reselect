@@ -2,6 +2,9 @@
   "name": "reselect-codemods",
   "version": "0.1.0",
   "description": "A collection of codemods for the reselect library",
+  "bugs": {
+    "url": "https://github.com/reduxjs/reselect/issues"
+  },
   "scripts": {
     "format": "prettier -w . --config prettier.config.mjs",
     "format-check": "prettier -c . --config prettier.config.mjs",
