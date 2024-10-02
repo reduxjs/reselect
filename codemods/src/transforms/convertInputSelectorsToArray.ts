@@ -10,17 +10,17 @@ import type {
 } from 'jscodeshift'
 import type { TestOptions } from 'jscodeshift/src/testUtils.js'
 
-interface NamedFunctionCallExpression extends CallExpression {
+type NamedFunctionCallExpression = {
   callee: Identifier
-}
+} & CallExpression
 
-interface NamedVariableDeclarator extends VariableDeclarator {
+type NamedVariableDeclarator = {
   id: Identifier
-}
+} & VariableDeclarator
 
-interface NamedVariableDeclaration extends VariableDeclaration {
+type NamedVariableDeclaration = {
   declarations: NamedVariableDeclarator[]
-}
+} & VariableDeclaration
 
 const CREATE_SELECTOR_CREATOR = 'createSelectorCreator'
 
@@ -119,9 +119,7 @@ const collectSelectorCreatorsNamesWithTypes = (
 const getIdentifierVariableDeclarator = (
   root: Collection,
   identifier: Identifier,
-) => {
-  return root.findVariableDeclarators(identifier.name).nodes()[0]
-}
+) => root.findVariableDeclarators(identifier.name).nodes()[0]
 
 const isLastArgumentObject = (
   j: JSCodeshift,
@@ -132,16 +130,18 @@ const isLastArgumentObject = (
   return j.ObjectExpression.check(lastArgument)
 }
 
-const transform: Transform = (fileInfo, api) => {
+export const convertInputSelectorsToArrayTransform: Transform = (
+  fileInfo,
+  api,
+) => {
   const { j } = api
 
   const root = j(fileInfo.source)
 
   const isNamedFunctionCallExpression = (
     path: ASTPath<CallExpression>,
-  ): path is ASTPath<NamedFunctionCallExpression> => {
-    return j.Identifier.check(path.value.callee)
-  }
+  ): path is ASTPath<NamedFunctionCallExpression> =>
+    j.Identifier.check(path.value.callee)
 
   const allNamedFunctionCallExpressions = root
     .find(j.CallExpression)
@@ -221,4 +221,4 @@ const transform: Transform = (fileInfo, api) => {
 
 export const parser = 'tsx' satisfies TestOptions['parser']
 
-export default transform
+export default convertInputSelectorsToArrayTransform
