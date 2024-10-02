@@ -1,3 +1,4 @@
+import { globby } from 'globby'
 import type { Transform } from 'jscodeshift'
 import type { TestOptions } from 'jscodeshift/src/testUtils.js'
 import { applyTransform } from 'jscodeshift/src/testUtils.js'
@@ -11,8 +12,6 @@ export const runTransformTest = (
   fixturePath: string,
 ) => {
   describe(transformName, async () => {
-    const { globby } = await import('globby')
-
     const entries = await globby('**/*.input.*', {
       cwd: fixturePath,
       absolute: true,
