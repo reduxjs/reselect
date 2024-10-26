@@ -61,6 +61,7 @@
     "@size-limit/webpack": "^11.2.0",
     "@testing-library/react": "^14.1.2",
     "@types/lodash": "^4.14.175",
+    "@types/node": "^22.15.2",
     "@types/react": "^18.2.38",
     "@types/react-dom": "^18.2.17",
     "@types/shelljs": "^0.8.11",
