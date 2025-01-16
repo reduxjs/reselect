@@ -9,7 +9,8 @@ import type {
   Expand,
   ObjValueTuple,
   Head,
-  Tail
+  Tail,
+  Immutable
 } from './types'
 
 export type {
@@ -171,11 +172,11 @@ export interface CreateSelectorFunction<
   <Selectors extends SelectorArray, Result>(
     ...items: [
       ...Selectors,
-      (...args: SelectorResultArray<Selectors>) => Result
+      (...args: SelectorResultArray<Selectors>) => Immutable<Result>
     ]
   ): OutputSelector<
     Selectors,
-    Result,
+    Immutable<Result>,
     (...args: SelectorResultArray<Selectors>) => Result,
     GetParamsFromSelectors<Selectors>,
     Keys
@@ -191,8 +192,8 @@ export interface CreateSelectorFunction<
     ]
   ): OutputSelector<
     Selectors,
-    Result,
-    ((...args: SelectorResultArray<Selectors>) => Result),
+    Immutable<Result>,
+    (...args: SelectorResultArray<Selectors>) => Result,
     GetParamsFromSelectors<Selectors>,
     Keys
   > &
@@ -201,11 +202,11 @@ export interface CreateSelectorFunction<
   /** Input selectors as a separate array */
   <Selectors extends SelectorArray, Result>(
     selectors: [...Selectors],
-    combiner: (...args: SelectorResultArray<Selectors>) => Result,
+    combiner: (...args: SelectorResultArray<Selectors>) => Immutable<Result>,
     options?: CreateSelectorOptions<MemoizeOptions>
   ): OutputSelector<
     Selectors,
-    Result,
+    Immutable<Result>,
     (...args: SelectorResultArray<Selectors>) => Result,
     GetParamsFromSelectors<Selectors>,
     Keys

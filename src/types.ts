@@ -1,5 +1,6 @@
 import type { MergeParameters } from './versionedTypes'
 export type { MergeParameters } from './versionedTypes'
+export type { Immutable } from './immutable'
 
 /*
  *
