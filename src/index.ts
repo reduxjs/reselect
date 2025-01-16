@@ -171,11 +171,11 @@ export interface CreateSelectorFunction<
   <Selectors extends SelectorArray, Result>(
     ...items: [
       ...Selectors,
-      (...args: SelectorResultArray<Selectors>) => Result
+      (...args: SelectorResultArray<Selectors>) => Readonly<Result>
     ]
   ): OutputSelector<
     Selectors,
-    Result,
+    Readonly<Result>,
     (...args: SelectorResultArray<Selectors>) => Result,
     GetParamsFromSelectors<Selectors>,
     Keys
@@ -191,8 +191,8 @@ export interface CreateSelectorFunction<
     ]
   ): OutputSelector<
     Selectors,
-    Result,
-    ((...args: SelectorResultArray<Selectors>) => Result),
+    Readonly<Result>,
+    ((...args: SelectorResultArray<Selectors>) => Readonly<Result>),
     GetParamsFromSelectors<Selectors>,
     Keys
   > &
@@ -201,12 +201,12 @@ export interface CreateSelectorFunction<
   /** Input selectors as a separate array */
   <Selectors extends SelectorArray, Result>(
     selectors: [...Selectors],
-    combiner: (...args: SelectorResultArray<Selectors>) => Result,
+    combiner: (...args: SelectorResultArray<Selectors>) => Readonly<Result>,
     options?: CreateSelectorOptions<MemoizeOptions>
   ): OutputSelector<
     Selectors,
-    Result,
-    (...args: SelectorResultArray<Selectors>) => Result,
+    Readonly<Result>,
+    (...args: SelectorResultArray<Selectors>) => Readonly<Result>,
     GetParamsFromSelectors<Selectors>,
     Keys
   > &
