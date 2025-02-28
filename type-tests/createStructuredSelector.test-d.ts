@@ -194,7 +194,7 @@ describe('type tests', () => {
 
     expectTypeOf(structuredSelector.clearCache).parameters.toEqualTypeOf<[]>()
 
-    expectTypeOf(structuredSelector.dependencies).items.toMatchTypeOf<
+    expectTypeOf(structuredSelector.dependencies).items.toExtend<
       Selector<RootState>
     >()
 
