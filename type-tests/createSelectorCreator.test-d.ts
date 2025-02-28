@@ -3,9 +3,9 @@ import lodashMemoize from 'lodash/memoize'
 import memoizeOne from 'memoize-one'
 import microMemoize from 'micro-memoize'
 import {
+  unstable_autotrackMemoize as autotrackMemoize,
   createSelectorCreator,
   lruMemoize,
-  unstable_autotrackMemoize as autotrackMemoize,
   weakMapMemoize
 } from 'reselect'
 import { describe, test } from 'vitest'
@@ -73,7 +73,7 @@ describe('type tests', () => {
 
     expectTypeOf(selector({ foo: 'fizz' })).toBeString()
 
-    expectTypeOf(selector).parameter(1).not.toMatchTypeOf({ bar: 42 })
+    expectTypeOf(selector).parameter(1).not.toMatchObjectType<{ bar: 42 }>()
 
     // clearCache should exist because of lruMemoize
     expectTypeOf(selector.clearCache).toBeFunction()
