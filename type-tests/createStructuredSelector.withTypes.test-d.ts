@@ -218,7 +218,7 @@ describe('type tests', () => {
       []
     >()
 
-    expectTypeOf(structuredAppSelector.dependencies).items.toMatchTypeOf<
+    expectTypeOf(structuredAppSelector.dependencies).items.toExtend<
       Selector<RootState>
     >()
 

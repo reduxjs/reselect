@@ -73,7 +73,7 @@ describe('type tests', () => {
 
     const selector = createSelector((state: State) => state.bar, subSelector)
 
-    expectTypeOf(selector).parameter(0).not.toMatchTypeOf({ foo: '' })
+    expectTypeOf(selector).parameter(0).not.toMatchObjectType<{ foo: '' }>()
 
     expectTypeOf(selector({ bar: { foo: '' } })).not.toBeNumber()
 
@@ -112,7 +112,7 @@ describe('type tests', () => {
 
     expectTypeOf(connected)
       .parameter(0)
-      .not.toMatchTypeOf({ bar: 42, baz: 123 })
+      .not.toMatchObjectType<{ bar: 42; baz: 123 }>()
   })
 
   test('invalid type in combiner', () => {

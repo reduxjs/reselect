@@ -992,19 +992,19 @@ describe('type tests', () => {
       }[]
     >()
 
-    expectTypeOf(selectorDefaultParametric).parameters.not.toMatchTypeOf<
+    expectTypeOf(selectorDefaultParametric).parameters.not.toMatchObjectType<
       [RootState]
     >()
 
-    expectTypeOf(selectorDefaultParametric).parameters.not.toMatchTypeOf<
+    expectTypeOf(selectorDefaultParametric).parameters.not.toMatchObjectType<
       [number]
     >()
 
-    expectTypeOf(selectorDefaultParametric).parameters.not.toMatchTypeOf<
+    expectTypeOf(selectorDefaultParametric).parameters.not.toMatchObjectType<
       [RootState, string]
     >()
 
-    expectTypeOf(selectorDefaultParametric).parameters.not.toMatchTypeOf<
+    expectTypeOf(selectorDefaultParametric).parameters.not.toMatchObjectType<
       [RootState, number, number]
     >()
 
