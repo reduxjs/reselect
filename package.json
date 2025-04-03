@@ -88,8 +88,5 @@
     "typescript": "^5.8.2",
     "vitest": "^1.6.0"
   },
-  "resolutions": {
-    "esbuild": "0.23.0"
-  },
   "packageManager": "yarn@4.4.1"
 }
