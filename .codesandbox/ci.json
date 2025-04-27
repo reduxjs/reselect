@@ -1,4 +1,5 @@
 {
   "sandboxes": ["vanilla", "vanilla-ts"],
-  "node": "20"
+  "node": "20",
+  "packages": [".", "/codemods"]
 }
