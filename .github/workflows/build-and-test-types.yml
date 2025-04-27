@@ -137,7 +137,7 @@ jobs:
             'node-standard',
             'node-esm',
             'react-native',
-            'expo'
+            'expo',
           ]
     steps:
       - name: Checkout repo
