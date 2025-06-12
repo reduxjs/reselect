@@ -25,6 +25,7 @@ interface Cache {
 
 function createSingletonCache(equals: EqualityFn): Cache {
   let entry: Entry | undefined
+  let entries: Entry[] = []
   return {
     get(key: unknown) {
       if (entry && equals(entry.key, key)) {
@@ -36,10 +37,11 @@ function createSingletonCache(equals: EqualityFn): Cache {
 
     put(key: unknown, value: unknown) {
       entry = { key, value }
+      entries = [entry]
     },
 
     getEntries() {
-      return entry ? [entry] : []
+      return entries
     },
 
     clear() {
