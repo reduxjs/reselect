@@ -49,7 +49,8 @@ describe('inputStabilityCheck', () => {
         secondInputs: expect.arrayContaining([
           expect.objectContaining({ a: 1, b: 2 })
         ]),
-        stack: expect.any(String)
+        stack: expect.any(String),
+        creationStack: expect.any(String)
       })
     )
   })
