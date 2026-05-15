@@ -2,6 +2,9 @@ name: CI
 
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Build and Test on Node ${{ matrix.node }}
@@ -12,16 +15,18 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
         with:
           node-version: ${{ matrix.node }}
           cache: 'yarn'
 
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --frozen-lockfile
 
       # Read existing version, reuse that, add a Git short hash
       - name: Set build version to Git commit
@@ -39,7 +44,7 @@ jobs:
       - name: Pack
         run: yarn pack
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: package
           path: ./package.tgz
@@ -57,16 +62,18 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
 
       - name: Use node ${{ matrix.node }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
         with:
           node-version: ${{ matrix.node }}
           cache: 'yarn'
 
       - name: Install deps
-        run: yarn install
+        run: yarn install --frozen-lockfile
 
       # Build with the actual TS version in the repo
       - name: Pack
@@ -102,22 +109,24 @@ jobs:
         node: ['22.x']
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
 
       - name: Use node ${{ matrix.node }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
         with:
           node-version: ${{ matrix.node }}
           cache: 'yarn'
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: package
           path: .
 
       # Note: We currently expect "FalseCJS" failures for Node16 + `moduleResolution: "node16",
       - name: Run are-the-types-wrong
-        run: npx @arethetypeswrong/cli@latest ./package.tgz --format table --ignore-rules false-cjs
+        run: npx @arethetypeswrong/cli@0.18.2 ./package.tgz --format table --ignore-rules false-cjs
 
   test-published-artifact:
     name: Test Published Artifact ${{ matrix.example }}
@@ -141,22 +150,29 @@ jobs:
           ]
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
 
       - name: Use node ${{ matrix.node }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
         with:
           node-version: ${{ matrix.node }}
           cache: 'yarn'
 
-      - name: Clone RTK repo
-        run: git clone https://github.com/reduxjs/redux-toolkit.git ./redux-toolkit
+      - name: Clone RTK repo (pinned to known-good commit)
+        run: |
+          git init ./redux-toolkit
+          git -C ./redux-toolkit fetch --depth 1 https://github.com/reduxjs/redux-toolkit.git 576a02f8056fbee2dcaddb4d2e4d2da3b7937c58
+          git -C ./redux-toolkit checkout FETCH_HEAD
 
       - name: Check folder contents
         run: ls -l .
 
       - name: Install example deps
         working-directory: ./redux-toolkit/examples/publish-ci/${{ matrix.example }}
+        env:
+          YARN_ENABLE_SCRIPTS: false
         run: yarn install
 
       - name: Install Playwright browser if necessary
@@ -164,7 +180,7 @@ jobs:
         continue-on-error: true
         run: yarn playwright install || true
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: package
           path: ./redux-toolkit/examples/publish-ci/${{ matrix.example }}
@@ -183,7 +199,7 @@ jobs:
 
       - name: Set up JDK 17 for React Native build
         if: matrix.example == 'react-native'
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4.8.0
         with:
           java-version: '17.x'
           distribution: 'temurin'
