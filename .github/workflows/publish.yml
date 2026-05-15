@@ -4,6 +4,9 @@ on:
   #release:
   #  types: [published]
   workflow_dispatch:
+
+permissions: {}
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -12,13 +15,13 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
-          node-version: '22.x'
+          node-version: '24.x'
           registry-url: 'https://registry.npmjs.org'
           cache: 'yarn'
       - run: yarn install --frozen-lockfile
       - run: yarn test
       - run: npm publish --access public --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
