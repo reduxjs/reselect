@@ -1,6 +1,6 @@
 {
   "name": "reselect",
-  "version": "5.1.1",
+  "version": "5.2.0",
   "description": "Selectors for Redux.",
   "main": "./dist/cjs/index.js",
   "module": "./dist/reselect.legacy-esm.js",
