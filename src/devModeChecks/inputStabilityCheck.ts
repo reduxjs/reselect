@@ -30,7 +30,29 @@ export const runInputStabilityCheck = (
   const { memoize, memoizeOptions } = options
   const { inputSelectorResults, inputSelectorResultsCopy } =
     inputSelectorResultsObject
-  const createAnEmptyObject = memoize(() => ({}), ...memoizeOptions)
+  // The probe function below intentionally returns a new object reference on
+  // every call so we can detect whether `memoize` considers the two sets of
+  // input selector results to be equal. A user-provided `resultEqualityCheck`
+  // is irrelevant to that comparison (it compares *results*, not arguments) and
+  // must not run here, otherwise it would be invoked with these empty probe
+  // objects rather than the actual selector results. See #693.
+  const memoizeOptionsWithoutResultEqualityCheck = (
+    memoizeOptions as unknown[]
+  ).map(option => {
+    if (
+      option != null &&
+      typeof option === 'object' &&
+      'resultEqualityCheck' in option
+    ) {
+      const { resultEqualityCheck, ...rest } = option as Record<string, unknown>
+      return rest
+    }
+    return option
+  })
+  const createAnEmptyObject = memoize(
+    () => ({}),
+    ...memoizeOptionsWithoutResultEqualityCheck
+  )
   // if the memoize method thinks the parameters are equal, these *should* be the same reference
   const areInputSelectorResultsEqual =
     createAnEmptyObject.apply(null, inputSelectorResults) ===

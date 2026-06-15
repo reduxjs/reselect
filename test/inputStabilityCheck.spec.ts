@@ -272,4 +272,72 @@ describe('the effects of inputStabilityCheck with resultEqualityCheck', () => {
       expect(resultEqualityCheck).not.toHaveBeenCalled()
     }
   )
+
+  localTest(
+    'resultEqualityCheck should not be called with empty objects when inputStabilityCheck is set to once and input selectors are unstable',
+    ({ store }) => {
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      const selectTodoIds = createAppSelector(
+        [state => [...state.todos]],
+        todos => todos.map(({ id }) => id),
+        {
+          memoizeOptions: { resultEqualityCheck },
+          devModeChecks: { inputStabilityCheck: 'once' }
+        }
+      )
+
+      // The first call runs `inputStabilityCheck`, which internally memoizes a
+      // probe function returning empty objects. Because the input selector is
+      // unstable, the probe runs twice with differing arguments. The user's
+      // `resultEqualityCheck` must not be invoked with those empty probe objects.
+      const firstResult = selectTodoIds(store.getState())
+
+      for (const call of resultEqualityCheck.mock.calls) {
+        expect(call[0]).toBeInstanceOf(Array)
+        expect(call[1]).toBeInstanceOf(Array)
+      }
+
+      const secondResult = selectTodoIds(store.getState())
+
+      for (const call of resultEqualityCheck.mock.calls) {
+        expect(call[0]).toBeInstanceOf(Array)
+        expect(call[1]).toBeInstanceOf(Array)
+      }
+
+      // Sanity check: the unstable input still triggers the stability warning.
+      expect(consoleSpy).toHaveBeenCalledTimes(1)
+
+      expect(firstResult).toBe(secondResult)
+
+      consoleSpy.mockRestore()
+    }
+  )
+
+  localTest(
+    'resultEqualityCheck should not be called with empty objects when inputStabilityCheck is set to always and input selectors are unstable',
+    ({ store }) => {
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      const selectTodoIds = createAppSelector(
+        [state => [...state.todos]],
+        todos => todos.map(({ id }) => id),
+        {
+          memoizeOptions: { resultEqualityCheck },
+          devModeChecks: { inputStabilityCheck: 'always' }
+        }
+      )
+
+      selectTodoIds(store.getState())
+      selectTodoIds(store.getState())
+      selectTodoIds(store.getState())
+
+      for (const call of resultEqualityCheck.mock.calls) {
+        expect(call[0]).toBeInstanceOf(Array)
+        expect(call[1]).toBeInstanceOf(Array)
+      }
+
+      consoleSpy.mockRestore()
+    }
+  )
 })
