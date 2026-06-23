@@ -52,7 +52,7 @@ function createLruCache(maxSize: number, equals: EqualityFn): Cache {
   let entries: Entry[] = []
 
   function get(key: unknown) {
-    const cacheIndex = entries.findIndex(entry => equals(key, entry.key))
+    const cacheIndex = entries.findIndex(entry => equals(entry.key, key))
 
     // We found a cached entry
     if (cacheIndex > -1) {

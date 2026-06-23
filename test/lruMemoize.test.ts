@@ -752,3 +752,36 @@ describe('lruMemoize integration with resultEqualityCheck', () => {
     }
   )
 })
+test('equalityCheck argument order is (cached, new) for both singleton and LRU caches', () => {
+  // `createCacheKeyComparator` passes `(prev, next)` to `equalityCheck`
+  // where `prev` is the cached (old) argument and `next` is the new argument.
+  // Both singleton (maxSize=1) and LRU (maxSize>1) caches must honour this ordering
+  // so that asymmetric custom equality functions behave consistently across cache sizes.
+
+  for (const maxSize of [1, 2] as const) {
+    const recorded: Array<[unknown, unknown]> = []
+    const recordingEq = (a: unknown, b: unknown) => {
+      recorded.push([a, b])
+      return a === b
+    }
+
+    const memoized = lruMemoize((x: string) => x, {
+      equalityCheck: recordingEq,
+      maxSize
+    })
+
+    // Prime the cache with 'first' so the next call triggers an equality check.
+    memoized('first')
+    expect(recorded).toHaveLength(0)
+
+    // This call must compare the cached arg ('first') against the new arg ('second').
+    // Every invocation of equalityCheck must receive (cached='first', new='second'),
+    // never the reversed pair ('second', 'first').
+    memoized('second')
+    expect(recorded.length).toBeGreaterThan(0)
+    for (const [cachedArg, newArg] of recorded) {
+      expect(cachedArg).toBe('first') // cached / prev value must come first
+      expect(newArg).toBe('second') // new / next value must come second
+    }
+  }
+})
