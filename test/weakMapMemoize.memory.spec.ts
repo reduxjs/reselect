@@ -1,4 +1,5 @@
-import { weakMapMemoize } from 'reselect'
+import { shallowEqual } from 'react-redux'
+import { createSelector, weakMapMemoize } from 'reselect'
 
 /**
  * Confirmation tests for https://github.com/reduxjs/reselect/issues/635
@@ -132,5 +133,80 @@ describe('weakMapMemoize maxSize (fix for issue #635)', () => {
     await expect(evictedResult).toBeGarbageCollected()
     expect(state.length).toBe(10_000)
     expect(selector(state, 9999, 10_099)).toEqual(state.slice(9999, 10_099))
+  })
+
+  test('evicts object-keyed results as well (WeakMap branch)', () => {
+    const selector = weakMapMemoize(
+      (a: object, b: object) => ({ a, b }),
+      { maxSize: 1 }
+    )
+    const o1 = {}
+    const o2 = {}
+    const o3 = {}
+
+    const first = selector(o1, o2)
+    expect(selector(o1, o2)).toBe(first)
+
+    // Distinct second object exceeds maxSize and evicts (o1, o2).
+    selector(o1, o3)
+
+    expect(selector(o1, o2)).not.toBe(first)
+  })
+
+  test('clearCache resets the bounded cache', () => {
+    const selector = weakMapMemoize(
+      (array: number[], from: number) => array.slice(from),
+      { maxSize: 5 }
+    )
+    const state = [1, 2, 3]
+
+    const first = selector(state, 0)
+    expect(selector(state, 0)).toBe(first)
+
+    selector.clearCache()
+
+    expect(selector(state, 0)).not.toBe(first)
+  })
+
+  test('works together with resultEqualityCheck', () => {
+    const selector = weakMapMemoize(
+      (array: { id: number }[], from: number) =>
+        array.slice(from).map(({ id }) => id),
+      { maxSize: 5, resultEqualityCheck: shallowEqual }
+    )
+
+    const first = selector([{ id: 1 }, { id: 2 }], 0)
+    // New array arg, but shallowly-equal output -> same reference returned.
+    const second = selector([{ id: 1 }, { id: 2 }], 0)
+
+    expect(second).toBe(first)
+    expect(selector.resultsCount()).toBe(1)
+  })
+})
+
+describe('weakMapMemoize maxSize integration with createSelector (issue #635)', () => {
+  test('maxSize on both memoize and argsMemoize bounds the whole selector', () => {
+    // `createSelector` caches twice: `argsMemoize` on the raw selector args and
+    // `memoize` on the extracted input values. Both must be bounded, otherwise
+    // `argsMemoize` short-circuits and keeps every result keyed by the
+    // primitive args alive.
+    const selectSlice = createSelector(
+      [(array: number[]) => array, (_: number[], from: number) => from],
+      (array, from) => array.slice(from),
+      {
+        memoize: weakMapMemoize,
+        memoizeOptions: { maxSize: 2 },
+        argsMemoize: weakMapMemoize,
+        argsMemoizeOptions: { maxSize: 2 }
+      }
+    )
+    const state = [1, 2, 3, 4, 5]
+
+    const first = selectSlice(state, 0)
+    selectSlice(state, 1)
+    selectSlice(state, 2) // exceeds maxSize on both layers -> evicts (state, 0)
+
+    expect(selectSlice(state, 0)).not.toBe(first)
+    expect(selectSlice(state, 0)).toEqual(state.slice(0))
   })
 })
