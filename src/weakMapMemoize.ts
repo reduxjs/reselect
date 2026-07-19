@@ -31,34 +31,13 @@ const Ref = /* @__PURE__ */ getWeakRef()
 const UNTERMINATED = 0
 const TERMINATED = 1
 
-interface UnterminatedCacheNode<T> {
-  /**
-   * Status, represents whether the cached computation returned a value or threw an error.
-   */
-  s: 0
-  /**
-   * Value, either the cached result or an error, depending on status.
-   */
-  v: void
-  /**
-   * Object cache, a `WeakMap` where non-primitive arguments are stored.
-   */
-  o: null | WeakMap<Function | Object, CacheNode<T>>
-  /**
-   * Primitive cache, a regular Map where primitive arguments are stored.
-   */
-  p: null | Map<string | number | null | void | symbol | boolean, CacheNode<T>>
-}
-
-interface TerminatedCacheNode<T> {
-  /**
-   * Status, represents whether the cached computation returned a value or threw an error.
-   */
-  s: 1
-  /**
-   * Value, either the cached result or an error, depending on status.
-   */
-  v: T
+/**
+ * Fields shared by every cache node, regardless of termination status. The
+ * back-references (`parent`/`map`/`key`) and LRU links (`lru`/`mru`) are only
+ * used when a `maxSize` is configured, so that terminated nodes can be evicted
+ * and their now-empty ancestors pruned out of the strong primitive `Map`s.
+ */
+interface CacheNodeBase<T> {
   /**
    * Object cache, a `WeakMap` where non-primitive arguments are stored.
    */
@@ -67,6 +46,51 @@ interface TerminatedCacheNode<T> {
    * Primitive cache, a regular `Map` where primitive arguments are stored.
    */
   p: null | Map<string | number | null | void | symbol | boolean, CacheNode<T>>
+  /**
+   * The parent cache node, or `null` for the root node.
+   */
+  parent: CacheNode<T> | null
+  /**
+   * The `Map`/`WeakMap` in {@linkcode parent} that holds this node.
+   */
+  map:
+    | Map<any, CacheNode<T>>
+    | WeakMap<Function | Object, CacheNode<T>>
+    | null
+  /**
+   * The key under which this node is stored in {@linkcode map}.
+   */
+  key: any
+  /**
+   * Previous (less recently used) node in the LRU list, or `null`.
+   */
+  lru: CacheNode<T> | null
+  /**
+   * Next (more recently used) node in the LRU list, or `null`.
+   */
+  mru: CacheNode<T> | null
+}
+
+interface UnterminatedCacheNode<T> extends CacheNodeBase<T> {
+  /**
+   * Status, represents whether the cached computation returned a value or threw an error.
+   */
+  s: 0
+  /**
+   * Value, either the cached result or an error, depending on status.
+   */
+  v: void
+}
+
+interface TerminatedCacheNode<T> extends CacheNodeBase<T> {
+  /**
+   * Status, represents whether the cached computation returned a value or threw an error.
+   */
+  s: 1
+  /**
+   * Value, either the cached result or an error, depending on status.
+   */
+  v: T
 }
 
 type CacheNode<T> = TerminatedCacheNode<T> | UnterminatedCacheNode<T>
@@ -76,7 +100,12 @@ function createCacheNode<T>(): CacheNode<T> {
     s: UNTERMINATED,
     v: undefined,
     o: null,
-    p: null
+    p: null,
+    parent: null,
+    map: null,
+    key: undefined,
+    lru: null,
+    mru: null
   }
 }
 
@@ -102,6 +131,30 @@ export interface WeakMapMemoizeOptions<Result = any> {
    * @since 5.0.0
    */
   resultEqualityCheck?: EqualityFn<Result>
+
+  /**
+   * The maximum number of results to keep in the cache at once.
+   *
+   * By default `weakMapMemoize` has an effectively infinite cache size: results
+   * are kept alive for as long as the arguments used to compute them remain
+   * reachable. This is ideal when the arguments are objects that get garbage
+   * collected (such as the Redux state), but can behave like a memory leak when
+   * a long-lived object argument is combined with ever-changing primitive
+   * arguments — every result computed for every primitive combination is
+   * retained for the lifetime of that object.
+   *
+   * Providing a `maxSize` caps the number of cached results using a least-
+   * recently-used (LRU) policy. Once the limit is exceeded, the least recently
+   * used result is evicted and any now-empty `Map` branches holding primitive
+   * arguments are pruned, allowing those results to be garbage collected.
+   *
+   * Must be a positive integer. When omitted, the cache size is unbounded.
+   *
+   * @see {@link https://github.com/reduxjs/reselect/issues/635}
+   *
+   * @since 5.2.1
+   */
+  maxSize?: number
 }
 
 /**
@@ -196,7 +249,62 @@ export function weakMapMemoize<Func extends AnyFunction>(
   options: WeakMapMemoizeOptions<ReturnType<Func>> = {}
 ) {
   let fnNode = createCacheNode()
-  const { resultEqualityCheck } = options
+  const { resultEqualityCheck, maxSize } = options
+
+  const useLru = maxSize !== undefined
+  if (useLru && (!Number.isInteger(maxSize) || maxSize < 1)) {
+    throw new TypeError(
+      `the \`maxSize\` option for weakMapMemoize must be a positive integer, but received: ${maxSize}`
+    )
+  }
+
+  // Doubly linked LRU list of terminated cache nodes. `lruMost` is the most
+  // recently used node, `lruLeast` the least recently used (eviction target).
+  let lruMost: CacheNode<any> | null = null
+  let lruLeast: CacheNode<any> | null = null
+  let cacheSize = 0
+
+  const lruDetach = (node: CacheNode<any>) => {
+    const { lru, mru } = node
+    if (lru !== null) lru.mru = mru
+    else lruLeast = mru
+    if (mru !== null) mru.lru = lru
+    else lruMost = lru
+    node.lru = node.mru = null
+  }
+
+  const lruPromote = (node: CacheNode<any>) => {
+    if (node === lruMost) return
+    if (node.lru !== null || node.mru !== null || node === lruLeast) {
+      lruDetach(node)
+    }
+    node.lru = lruMost
+    node.mru = null
+    if (lruMost !== null) lruMost.mru = node
+    lruMost = node
+    if (lruLeast === null) lruLeast = node
+  }
+
+  /**
+   * Removes a terminated node from the cache tree and prunes any ancestors that
+   * are left holding nothing, so the strong primitive `Map`s can't grow forever.
+   */
+  const evict = (node: CacheNode<any>) => {
+    let current: CacheNode<any> | null = node
+    while (current !== null && current.map !== null) {
+      current.map.delete(current.key)
+      const parent: CacheNode<any> | null = current.parent
+      if (
+        parent === null ||
+        parent.s === TERMINATED || // still caches a value of its own
+        parent.o !== null || // still has object-keyed children (a `WeakMap`)
+        (parent.p !== null && parent.p.size > 0) // still has primitive children
+      ) {
+        break
+      }
+      current = parent
+    }
+  }
 
   let lastResult: WeakRef<object> | undefined
 
@@ -218,8 +326,14 @@ export function weakMapMemoize<Func extends AnyFunction>(
         }
         const objectNode = objectCache.get(arg)
         if (objectNode === undefined) {
+          const parentNode = cacheNode
           cacheNode = createCacheNode()
           objectCache.set(arg, cacheNode)
+          if (useLru) {
+            cacheNode.parent = parentNode
+            cacheNode.map = objectCache
+            cacheNode.key = arg
+          }
         } else {
           cacheNode = objectNode
         }
@@ -231,8 +345,14 @@ export function weakMapMemoize<Func extends AnyFunction>(
         }
         const primitiveNode = primitiveCache.get(arg)
         if (primitiveNode === undefined) {
+          const parentNode = cacheNode
           cacheNode = createCacheNode()
           primitiveCache.set(arg, cacheNode)
+          if (useLru) {
+            cacheNode.parent = parentNode
+            cacheNode.map = primitiveCache
+            cacheNode.key = arg
+          }
         } else {
           cacheNode = primitiveNode
         }
@@ -244,6 +364,8 @@ export function weakMapMemoize<Func extends AnyFunction>(
     // but `v` stores a pointer, so re-storing it costs a GC write barrier on a
     // call that had nothing to record.
     if (cacheNode.s === TERMINATED) {
+      // Mark this result as most recently used so it survives eviction longest.
+      if (useLru) lruPromote(cacheNode)
       return cacheNode.v
     }
 
@@ -275,11 +397,29 @@ export function weakMapMemoize<Func extends AnyFunction>(
 
     terminatedNode.s = TERMINATED
     terminatedNode.v = result
+
+    // Reaching here means the node was unterminated above, so this is always a
+    // brand new cache entry.
+    if (useLru) {
+      // A brand new result was cached: track it as most recently used and
+      // evict the least recently used result once we're over `maxSize`.
+      lruPromote(terminatedNode)
+      cacheSize++
+      if (cacheSize > (maxSize as number)) {
+        const toEvict = lruLeast!
+        lruDetach(toEvict)
+        cacheSize--
+        evict(toEvict)
+      }
+    }
+
     return result
   }
 
   memoized.clearCache = () => {
     fnNode = createCacheNode()
+    lruMost = lruLeast = null
+    cacheSize = 0
     memoized.resetResultsCount()
   }
 
