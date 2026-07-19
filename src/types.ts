@@ -188,6 +188,10 @@ export type OutputSelectorFields<
 
   /**
    * The memoized version of {@linkcode OutputSelectorFields.resultFunc resultFunc}.
+   *
+   * This holds its own cache, separate from the one attached to the output
+   * selector itself. To fully reset a selector, call `clearCache` on both
+   * (e.g. `selector.clearCache()` and `selector.memoizedResultFunc.clearCache()`).
    */
   memoizedResultFunc: Combiner<InputSelectors, Result> &
     ExtractMemoizerFields<MemoizeFunction>
@@ -454,6 +458,11 @@ export type DefaultMemoizeFields = {
    * This method is typically used to reset the state of the cache, allowing
    * for the garbage collection of previously memoized results and ensuring
    * that future calls to the function recompute the results.
+   *
+   * **Note:** An output selector keeps a separate cache for its arguments
+   * (`argsMemoize`) and for its result (`memoize`). Calling `clearCache` on the
+   * selector only clears the former; to fully reset it, also call
+   * `selector.memoizedResultFunc.clearCache()`.
    */
   clearCache: () => void
   resultsCount: () => number

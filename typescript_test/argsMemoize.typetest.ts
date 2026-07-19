@@ -1158,3 +1158,23 @@ function parameterLimit() {
     }
   )
 }
+
+function clearCacheExistsOnDefaultSelectorAndMemoizedResultFunc() {
+  // A selector created with default memoizers keeps two separate caches:
+  // `argsMemoize` on the selector and `memoize` on `memoizedResultFunc`.
+  // Both must expose the memoizer fields (e.g. `clearCache`). See #569.
+  const selectorDefault = createSelector(
+    (state: RootState) => state.todos,
+    todos => todos.map(t => t.id)
+  )
+
+  // Fields attached by `argsMemoize` (defaults to `weakMapMemoize`).
+  selectorDefault.clearCache()
+  expectExactType<number>(selectorDefault.resultsCount())
+  selectorDefault.resetResultsCount()
+
+  // Fields attached by `memoize` (defaults to `weakMapMemoize`).
+  selectorDefault.memoizedResultFunc.clearCache()
+  expectExactType<number>(selectorDefault.memoizedResultFunc.resultsCount())
+  selectorDefault.memoizedResultFunc.resetResultsCount()
+}
