@@ -125,8 +125,10 @@ jobs:
           path: .
 
       # Note: We currently expect "FalseCJS" failures for Node16 + `moduleResolution: "node16",
+      # Pinned to 0.18.5+: 0.18.2 crashes ("Cannot read properties of undefined (reading 'filename')")
+      # because it kept only the last (empty) gunzip chunk; fixed by concatenating all chunks.
       - name: Run are-the-types-wrong
-        run: npx @arethetypeswrong/cli@0.18.3 ./package.tgz --format table --ignore-rules false-cjs
+        run: npx @arethetypeswrong/cli@0.18.5 ./package.tgz --format table --ignore-rules false-cjs
 
   test-published-artifact:
     name: Test Published Artifact ${{ matrix.example }}
