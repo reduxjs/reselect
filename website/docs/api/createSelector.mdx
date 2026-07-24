@@ -33,6 +33,16 @@ const selectTodosByCategory = createSelector(
 )
 ```
 
+:::info Default Memoization
+
+Since v5.0.0, `createSelector` uses <InternalLinks.WeakMapMemoize /> as the default function for both `memoize` (the <InternalLinks.ResultFunction />) and `argsMemoize` (the selector's arguments). In v4.x the default was <InternalLinks.LruMemoize /> (previously named `defaultMemoize`) with a cache size of **1**, meaning a selector only remembered its most recent call.
+
+`weakMapMemoize` instead provides an effectively **infinite** cache size keyed on argument identity, which fixes the common "cache size of 1" problem when the same selector is called with many different arguments (e.g. `useSelector(state => selectItemById(state, id))` across a list). Cached values are held only as long as their arguments are still referenced, and are released as those arguments are garbage-collected. See <InternalLinks.WeakMapMemoize /> for the full behavior and tradeoffs.
+
+Because these are the defaults, you **do not** need to pass `memoize`/`argsMemoize` unless you want to override them (for example, to use <InternalLinks.LruMemoize /> with a custom `equalityCheck`).
+
+:::
+
 ## Parameters
 
 | Name                     | Description                                                                                      |
