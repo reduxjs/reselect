@@ -361,4 +361,53 @@ describe('weakMapMemoize integration with resultEqualityCheck', () => {
       resultEqualityCheck.mockClear()
     }
   )
+
+  // https://github.com/reduxjs/reselect/issues/750
+  // Once the previous result has been garbage-collected, its `WeakRef`
+  // derefs to `undefined`. `resultEqualityCheck` must never receive the
+  // raw `WeakRef` as its previous value.
+  test.skipIf(!global.gc)(
+    'resultEqualityCheck is not called with a cleared WeakRef',
+    async () => {
+      let collected = false
+      const registry = new FinalizationRegistry(() => {
+        collected = true
+      })
+
+      const resultEqualityCheck = vi
+        .fn((a: unknown, b: unknown) => a === b)
+        .mockName('resultEqualityCheck')
+
+      const selectSet = weakMapMemoize(
+        (input: { id: number }) => new Set([input.id]),
+        { resultEqualityCheck }
+      )
+
+      // Produce a result and register it for finalization, then drop every
+      // strong reference to it (and to the argument that keys its cache node)
+      // by keeping them scoped to this IIFE, so it becomes eligible for GC.
+      ;(() => {
+        registry.register(selectSet({ id: 1 }), 1)
+      })()
+
+      // Give the garbage collector several passes, yielding to the event loop
+      // between them so the finalization callback can fire. Once collected,
+      // `lastResult` is a cleared `WeakRef`.
+      for (let i = 0; i < 10 && !collected; i++) {
+        global.gc!()
+        await new Promise(resolve => setTimeout(resolve, 10))
+      }
+
+      expect(collected).toBe(true)
+
+      // Calling the selector again must not forward that cleared `WeakRef`
+      // to `resultEqualityCheck`.
+      selectSet({ id: 2 })
+
+      for (const [previous, next] of resultEqualityCheck.mock.calls) {
+        expect(previous).not.toBeInstanceOf(WeakRef)
+        expect(next).not.toBeInstanceOf(WeakRef)
+      }
+    }
+  )
 })
