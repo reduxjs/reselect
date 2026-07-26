@@ -3,7 +3,7 @@
     "strict": true,
     "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "allowJs": true,
@@ -17,10 +17,9 @@
     "rootDirs": ["./src"],
     "rootDir": ".",
     "types": ["vitest/globals", "vitest/importMeta"],
-    "baseUrl": ".",
     "paths": {
-      "reselect": ["src/index.ts"], // @remap-prod-remove-line
-      "@internal/*": ["src/*"]
+      "reselect": ["./src/index.ts"], // @remap-prod-remove-line
+      "@internal/*": ["./src/*"]
     }
   },
   "include": ["./src/**/*"],
