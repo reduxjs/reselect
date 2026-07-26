@@ -907,19 +907,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/eslint-plugin-tslint@npm:^6":
-  version: 6.21.0
-  resolution: "@typescript-eslint/eslint-plugin-tslint@npm:6.21.0"
-  dependencies:
-    "@typescript-eslint/utils": "npm:6.21.0"
-  peerDependencies:
-    eslint: ^7.0.0 || ^8.0.0
-    tslint: ^5.0.0 || ^6.0.0
-    typescript: "*"
-  checksum: 10/ee6c2af3be4edecf9b5b7460b5279cca4b99477de633a5fc7964ba4cd279b739281704f59a418170011c8e2c378093bd10032ef65df951087bb26b02c9610313
-  languageName: node
-  linkType: hard
-
 "@typescript-eslint/eslint-plugin@npm:^6":
   version: 6.21.0
   resolution: "@typescript-eslint/eslint-plugin@npm:6.21.0"
@@ -4459,7 +4446,6 @@ __metadata:
     "@types/react-dom": "npm:^18.2.17"
     "@types/shelljs": "npm:^0.8.11"
     "@typescript-eslint/eslint-plugin": "npm:^6"
-    "@typescript-eslint/eslint-plugin-tslint": "npm:^6"
     "@typescript-eslint/parser": "npm:^6"
     "@typescript/analyze-trace": "npm:^0.10.1"
     eslint: "npm:^8.0.1"
