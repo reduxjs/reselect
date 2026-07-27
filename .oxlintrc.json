@@ -1,0 +1,52 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript"],
+  "categories": {
+    "correctness": "error"
+  },
+  "ignorePatterns": [
+    "**/dist/**",
+    "**/lib/**",
+    "**/es/**",
+    "**/node_modules/**",
+    "website/**",
+    "vitest.config.mts",
+    "tsdown.config.ts"
+  ],
+  "rules": {
+    "no-unused-vars": "off",
+    "typescript/no-unused-vars": "off",
+    "typescript/consistent-type-imports": [
+      "error",
+      { "prefer": "type-imports", "fixStyle": "separate-type-imports" }
+    ]
+    // TODO(ts7): restore `typescript/consistent-type-exports` (was enabled under ESLint).
+    // It needs oxlint's type-aware linting, which requires TypeScript 7 (typescript-go):
+    //   1. add `oxlint-tsgolint` devDependency
+    //   2. add `"options": { "typeAware": true }` here
+    //   3. add `"typescript/consistent-type-exports": "error"` above
+    // Blocked until the tsconfigs are TS7-compatible: drop `moduleResolution: "Node"`
+    // (node10) and `baseUrl`, and make `paths` entries relative (leading `./`).
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/test/**/*.ts",
+        "**/type-tests/**/*.ts",
+        "**/typescript_test/**/*.ts"
+      ],
+      "rules": {
+        "no-empty-function": "off",
+        "typescript/no-empty-function": "off",
+        "typescript/no-namespace": "off"
+      }
+    },
+    {
+      "files": ["docs/examples/**/*.{js,ts,jsx,tsx}"],
+      "rules": {
+        "no-unused-vars": "off",
+        "typescript/no-unused-vars": "off"
+      }
+    }
+  ]
+}

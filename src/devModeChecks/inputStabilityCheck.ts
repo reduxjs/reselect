@@ -40,7 +40,7 @@ export const runInputStabilityCheck = (
     try {
       throw new Error()
     } catch (e) {
-      // eslint-disable-next-line @typescript-eslint/no-extra-semi, no-extra-semi
+      // oxlint-disable-next-line no-extra-semi
       ;({ stack } = e as Error)
     }
     console.warn(

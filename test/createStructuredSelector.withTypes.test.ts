@@ -22,6 +22,8 @@ describe(createStructuredSelector.withTypes, () => {
 
     expect(structuredSelector).toBeMemoizedSelector()
 
-    expect(structuredSelector(state)).to.be.an('object').that.is.not.empty
+    const structuredResult = structuredSelector(state)
+    expect(structuredResult).to.be.an('object')
+    expect(Object.keys(structuredResult)).to.have.lengthOf.above(0)
   })
 })

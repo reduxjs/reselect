@@ -41,7 +41,7 @@ interface CacheNodeBase<T> {
   /**
    * Object cache, a `WeakMap` where non-primitive arguments are stored.
    */
-  o: null | WeakMap<Function | Object, CacheNode<T>>
+  o: null | WeakMap<Function | object, CacheNode<T>>
   /**
    * Primitive cache, a regular `Map` where primitive arguments are stored.
    */
@@ -55,7 +55,7 @@ interface CacheNodeBase<T> {
    */
   map:
     | Map<any, CacheNode<T>>
-    | WeakMap<Function | Object, CacheNode<T>>
+    | WeakMap<Function | object, CacheNode<T>>
     | null
   /**
    * The key under which this node is stored in {@linkcode map}.
@@ -385,7 +385,7 @@ export function weakMapMemoize<Func extends AnyFunction>(
       ) {
         result = lastResultValue
 
-        resultsCount !== 0 && resultsCount--
+        if (resultsCount !== 0) resultsCount--
       }
 
       const needsWeakRef =

@@ -494,7 +494,7 @@ describe('argsMemoize and memoize', () => {
     expect(selectorDefault.resultFunc).to.be.a('function')
     expect(selectorDefault.memoizedResultFunc).to.be.a('function')
     expect(selectorDefault.lastResult).to.be.a('function')
-    expect(selectorDefault.dependencies).to.be.an('array').that.is.not.empty
+    expect(selectorDefault.dependencies).to.be.an('array').with.lengthOf.above(0)
     expect(selectorDefault.recomputations).to.be.a('function')
     expect(selectorDefault.dependencyRecomputations).to.be.a('function')
     expect(selectorDefault.resetRecomputations).to.be.a('function')
@@ -746,11 +746,11 @@ describe('argsMemoize and memoize', () => {
       (state: RootState) => state.todos,
       todos => todos.map(({ id }) => id)
     )
-    expect(selectorMicroMemoize(state)).to.be.an('array').that.is.not.empty
+    expect(selectorMicroMemoize(state)).to.be.an('array').with.lengthOf.above(0)
     // Checking existence of fields related to `argsMemoize`
     expect(selectorMicroMemoize.cache).to.be.an('object')
     expect(selectorMicroMemoize.fn).to.be.a('function')
-    expect(selectorMicroMemoize.isMemoized).to.be.true
+    expect(selectorMicroMemoize.isMemoized).to.equal(true)
     expect(selectorMicroMemoize.options).to.be.an('object')
     // @ts-expect-error
     expect(selectorMicroMemoize.clearCache).toBeUndefined()
@@ -758,15 +758,13 @@ describe('argsMemoize and memoize', () => {
     // Checking existence of fields related to `memoize`
     expect(selectorMicroMemoize.memoizedResultFunc.cache).to.be.an('object')
     expect(selectorMicroMemoize.memoizedResultFunc.fn).to.be.a('function')
-    expect(selectorMicroMemoize.memoizedResultFunc.isMemoized).to.be.true
+    expect(selectorMicroMemoize.memoizedResultFunc.isMemoized).to.equal(true)
     expect(selectorMicroMemoize.memoizedResultFunc.options).to.be.an('object')
     // @ts-expect-error
     expect(selectorMicroMemoize.memoizedResultFunc.clearCache).toBeUndefined()
     // Checking existence of fields related to the actual memoized selector
-    expect(selectorMicroMemoize.dependencies).to.be.an('array').that.is.not
-      .empty
-    expect(selectorMicroMemoize.lastResult()).to.be.an('array').that.is.not
-      .empty
+    expect(selectorMicroMemoize.dependencies).to.be.an('array').with.lengthOf.above(0)
+    expect(selectorMicroMemoize.lastResult()).to.be.an('array').with.lengthOf.above(0)
     expect(
       selectorMicroMemoize.memoizedResultFunc([
         {
@@ -776,7 +774,7 @@ describe('argsMemoize and memoize', () => {
           description: 'Just do it'
         }
       ])
-    ).to.be.an('array').that.is.not.empty
+    ).to.be.an('array').with.lengthOf.above(0)
     expect(selectorMicroMemoize.recomputations()).to.be.a('number')
     expect(selectorMicroMemoize.dependencyRecomputations()).to.be.a('number')
     expect(selectorMicroMemoize.resultFunc).to.be.a('function')
@@ -789,15 +787,14 @@ describe('argsMemoize and memoize', () => {
           description: 'Just do it'
         }
       ])
-    ).to.be.an('array').that.is.not.empty
+    ).to.be.an('array').with.lengthOf.above(0)
 
     const selectorMicroMemoizeOverridden = createSelectorMicroMemoize(
       [(state: RootState) => state.todos],
       todos => todos.map(({ id }) => id),
       { memoize: lruMemoize, argsMemoize: lruMemoize }
     )
-    expect(selectorMicroMemoizeOverridden(state)).to.be.an('array').that.is.not
-      .empty
+    expect(selectorMicroMemoizeOverridden(state)).to.be.an('array').with.lengthOf.above(0)
     // Checking existence of fields related to `argsMemoize`
     expect(selectorMicroMemoizeOverridden.clearCache).to.be.a('function')
     // @ts-expect-error
@@ -827,10 +824,8 @@ describe('argsMemoize and memoize', () => {
       selectorMicroMemoizeOverridden.memoizedResultFunc.options
     ).toBeUndefined()
     // Checking existence of fields related to the actual memoized selector
-    expect(selectorMicroMemoizeOverridden.dependencies).to.be.an('array').that
-      .is.not.empty
-    expect(selectorMicroMemoizeOverridden.lastResult()).to.be.an('array').that
-      .is.not.empty
+    expect(selectorMicroMemoizeOverridden.dependencies).to.be.an('array').with.lengthOf.above(0)
+    expect(selectorMicroMemoizeOverridden.lastResult()).to.be.an('array').with.lengthOf.above(0)
     expect(
       selectorMicroMemoizeOverridden.memoizedResultFunc([
         {
@@ -840,7 +835,7 @@ describe('argsMemoize and memoize', () => {
           description: 'Just do it'
         }
       ])
-    ).to.be.an('array').that.is.not.empty
+    ).to.be.an('array').with.lengthOf.above(0)
     expect(selectorMicroMemoizeOverridden.recomputations()).to.be.a('number')
     expect(selectorMicroMemoizeOverridden.dependencyRecomputations()).to.be.a(
       'number'
@@ -854,7 +849,7 @@ describe('argsMemoize and memoize', () => {
           description: 'Just do it'
         }
       ])
-    ).to.be.an('array').that.is.not.empty
+    ).to.be.an('array').with.lengthOf.above(0)
 
     const selectorMicroMemoizeOverrideArgsMemoizeOnly =
       createSelectorMicroMemoize(
@@ -866,7 +861,7 @@ describe('argsMemoize and memoize', () => {
         }
       )
     expect(selectorMicroMemoizeOverrideArgsMemoizeOnly(state)).to.be.an('array')
-      .that.is.not.empty
+      .with.lengthOf.above(0)
     // Checking existence of fields related to `argsMemoize`
     expect(selectorMicroMemoizeOverrideArgsMemoizeOnly.clearCache).to.be.a(
       'function'
@@ -895,17 +890,17 @@ describe('argsMemoize and memoize', () => {
     ).to.be.a('function')
     expect(
       selectorMicroMemoizeOverrideArgsMemoizeOnly.memoizedResultFunc.isMemoized
-    ).to.be.true
+    ).to.equal(true)
     expect(
       selectorMicroMemoizeOverrideArgsMemoizeOnly.memoizedResultFunc.options
     ).to.be.a('object')
     // Checking existence of fields related to the actual memoized selector
     expect(selectorMicroMemoizeOverrideArgsMemoizeOnly.dependencies).to.be.an(
       'array'
-    ).that.is.not.empty
+    ).with.lengthOf.above(0)
     expect(selectorMicroMemoizeOverrideArgsMemoizeOnly.lastResult()).to.be.an(
       'array'
-    ).that.is.not.empty
+    ).with.lengthOf.above(0)
     expect(
       selectorMicroMemoizeOverrideArgsMemoizeOnly.memoizedResultFunc([
         {
@@ -915,7 +910,7 @@ describe('argsMemoize and memoize', () => {
           description: 'Just do it'
         }
       ])
-    ).to.be.an('array').that.is.not.empty
+    ).to.be.an('array').with.lengthOf.above(0)
     expect(
       selectorMicroMemoizeOverrideArgsMemoizeOnly.recomputations()
     ).to.be.a('number')
@@ -931,7 +926,7 @@ describe('argsMemoize and memoize', () => {
           description: 'Just do it'
         }
       ])
-    ).to.be.an('array').that.is.not.empty
+    ).to.be.an('array').with.lengthOf.above(0)
 
     const selectorMicroMemoizeOverrideMemoizeOnly = createSelectorMicroMemoize(
       [(state: RootState) => state.todos],
@@ -939,7 +934,7 @@ describe('argsMemoize and memoize', () => {
       { memoize: lruMemoize }
     )
     expect(selectorMicroMemoizeOverrideMemoizeOnly(state)).to.be.an('array')
-      .that.is.not.empty
+      .with.lengthOf.above(0)
     // Checking existence of fields related to `argsMemoize`
     // @ts-expect-error Note that since we did not override `argsMemoize` in the options object,
     // selector.clearCache becomes an invalid field access, and we get `cache`, `fn`, `isMemoized` and `options` instead.
@@ -962,7 +957,7 @@ describe('argsMemoize and memoize', () => {
     ])
     expect(selectorMicroMemoizeOverrideMemoizeOnly.cache).to.be.an('object')
     expect(selectorMicroMemoizeOverrideMemoizeOnly.fn).to.be.a('function')
-    expect(selectorMicroMemoizeOverrideMemoizeOnly.isMemoized).to.be.true
+    expect(selectorMicroMemoizeOverrideMemoizeOnly.isMemoized).to.equal(true)
     expect(selectorMicroMemoizeOverrideMemoizeOnly.options).to.be.an('object')
     // Checking existence of fields related to `memoize`
     expect(selectorMicroMemoizeOverrideMemoizeOnly.memoizedResultFunc)
@@ -974,10 +969,10 @@ describe('argsMemoize and memoize', () => {
     // Checking existence of fields related to the actual memoized selector
     expect(selectorMicroMemoizeOverrideMemoizeOnly.dependencies).to.be.an(
       'array'
-    ).that.is.not.empty
+    ).with.lengthOf.above(0)
     expect(selectorMicroMemoizeOverrideMemoizeOnly.lastResult()).to.be.an(
       'array'
-    ).that.is.not.empty
+    ).with.lengthOf.above(0)
     expect(
       selectorMicroMemoizeOverrideMemoizeOnly.memoizedResultFunc([
         {
@@ -987,7 +982,7 @@ describe('argsMemoize and memoize', () => {
           description: 'Just do it'
         }
       ])
-    ).to.be.an('array').that.is.not.empty
+    ).to.be.an('array').with.lengthOf.above(0)
     expect(selectorMicroMemoizeOverrideMemoizeOnly.recomputations()).to.be.a(
       'number'
     )
@@ -1003,7 +998,7 @@ describe('argsMemoize and memoize', () => {
           description: 'Just do it'
         }
       ])
-    ).to.be.an('array').that.is.not.empty
+    ).to.be.an('array').with.lengthOf.above(0)
   })
 
   localTest(
