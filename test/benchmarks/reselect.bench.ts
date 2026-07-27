@@ -127,12 +127,13 @@ describe('Cached vs non-cached length in for loops', () => {
   const state = store.getState()
   const { todos } = state
   const { length } = todos
+  let sink: unknown
   bench(
     'length not cached',
     () => {
       for (let i = 0; i < todos.length; i++) {
-        todos[i].completed
-        todos[i].id
+        sink = todos[i].completed
+        sink = todos[i].id
       }
     },
     commonOptions
@@ -141,8 +142,8 @@ describe('Cached vs non-cached length in for loops', () => {
     'length cached',
     () => {
       for (let i = 0; i < length; i++) {
-        todos[i].completed
-        todos[i].id
+        sink = todos[i].completed
+        sink = todos[i].id
       }
     },
     commonOptions
@@ -152,8 +153,8 @@ describe('Cached vs non-cached length in for loops', () => {
     () => {
       for (let i = 0; i < length; i++) {
         const arg = todos[i]
-        arg.completed
-        arg.id
+        sink = arg.completed
+        sink = arg.id
       }
     },
     commonOptions

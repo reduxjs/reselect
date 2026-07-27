@@ -35,12 +35,8 @@ describe('createSelector exposed utils', () => {
   })
 
   test('export dependencies as dependencies', () => {
-    const dependency1 = (state: StateA) => {
-      state.a
-    }
-    const dependency2 = (state: StateA) => {
-      state.a
-    }
+    const dependency1 = (state: StateA) => state.a
+    const dependency2 = (state: StateA) => state.a
 
     const selector = createSelector(dependency1, dependency2, () => {})
     expect(selector.dependencies).toEqual([dependency1, dependency2])

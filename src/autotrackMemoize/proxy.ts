@@ -25,7 +25,6 @@ class ObjectTreeNode<T extends Record<string, unknown>> implements Node<T> {
   id = nextId++
 
   constructor(public value: T) {
-    this.value = value
     this.tag.value = value
   }
 }
@@ -100,7 +99,6 @@ class ArrayTreeNode<T extends Array<unknown>> implements Node<T> {
   id = nextId++
 
   constructor(public value: T) {
-    this.value = value
     this.tag.value = value
   }
 }

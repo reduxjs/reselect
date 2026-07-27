@@ -1,7 +1,7 @@
 import { runIdentityFunctionCheck } from './devModeChecks/identityFunctionCheck'
 import { runInputStabilityCheck } from './devModeChecks/inputStabilityCheck'
 import { globalDevModeChecks } from './devModeChecks/setGlobalDevModeChecks'
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+// oxlint-disable-next-line typescript/consistent-type-imports
 import type {
   DevModeChecks,
   Selector,

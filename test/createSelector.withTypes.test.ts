@@ -18,6 +18,6 @@ describe(createSelector.withTypes, () => {
 
     expect(selectTodoIds).toBeMemoizedSelector()
 
-    expect(selectTodoIds(state)).to.be.an('array').that.is.not.empty
+    expect(selectTodoIds(state)).to.be.an('array').with.lengthOf.above(0)
   })
 })
