@@ -384,63 +384,69 @@ export function createSelectorCreator<
     const finalArgsMemoizeOptions = ensureIsArray(argsMemoizeOptions)
     const dependencies = getDependencies(createSelectorArgs) as InputSelectors
 
-    const memoizedResultFunc = memoize(function recomputationWrapper() {
-      recomputations++
-      // apply arguments instead of spreading for performance.
-      // @ts-ignore
-      return (resultFunc as Combiner<InputSelectors, Result>).apply(
-        null,
-        arguments as unknown as Parameters<Combiner<InputSelectors, Result>>
-      )
-    }, ...finalMemoizeOptions) as Combiner<InputSelectors, Result> &
+    const memoizedResultFunc = memoize(
+      function recomputationWrapper() {
+        recomputations++
+        // apply arguments instead of spreading for performance.
+        // @ts-ignore
+        return (resultFunc as Combiner<InputSelectors, Result>).apply(
+          null,
+          arguments as unknown as Parameters<Combiner<InputSelectors, Result>>
+        )
+      },
+      ...finalMemoizeOptions
+    ) as Combiner<InputSelectors, Result> &
       ExtractMemoizerFields<OverrideMemoizeFunction>
 
     let firstRun = true
 
     // If a selector is called with the exact same arguments we don't need to traverse our dependencies again.
-    const selector = argsMemoize(function dependenciesChecker() {
-      dependencyRecomputations++
-      /** Return values of input selectors which the `resultFunc` takes as arguments. */
-      const inputSelectorResults = collectInputSelectorResults(
-        dependencies,
-        arguments
-      )
+    const selector = argsMemoize(
+      function dependenciesChecker() {
+        dependencyRecomputations++
+        /** Return values of input selectors which the `resultFunc` takes as arguments. */
+        const inputSelectorResults = collectInputSelectorResults(
+          dependencies,
+          arguments
+        )
 
-      // apply arguments instead of spreading for performance.
-      // @ts-ignore
-      lastResult = memoizedResultFunc.apply(null, inputSelectorResults)
+        // apply arguments instead of spreading for performance.
+        // @ts-ignore
+        lastResult = memoizedResultFunc.apply(null, inputSelectorResults)
 
-      if (process.env.NODE_ENV !== 'production') {
-        const { devModeChecks = {} } = combinedOptions
-        const { identityFunctionCheck, inputStabilityCheck } =
-          getDevModeChecksExecutionInfo(firstRun, devModeChecks)
-        if (identityFunctionCheck.shouldRun) {
-          identityFunctionCheck.run(
-            resultFunc as Combiner<InputSelectors, Result>,
-            inputSelectorResults,
-            lastResult
-          )
+        if (process.env.NODE_ENV !== 'production') {
+          const { devModeChecks = {} } = combinedOptions
+          const { identityFunctionCheck, inputStabilityCheck } =
+            getDevModeChecksExecutionInfo(firstRun, devModeChecks)
+          if (identityFunctionCheck.shouldRun) {
+            identityFunctionCheck.run(
+              resultFunc as Combiner<InputSelectors, Result>,
+              inputSelectorResults,
+              lastResult
+            )
+          }
+
+          if (inputStabilityCheck.shouldRun) {
+            // make a second copy of the params, to check if we got the same results
+            const inputSelectorResultsCopy = collectInputSelectorResults(
+              dependencies,
+              arguments
+            )
+
+            inputStabilityCheck.run(
+              { inputSelectorResults, inputSelectorResultsCopy },
+              { memoize, memoizeOptions: finalMemoizeOptions },
+              arguments
+            )
+          }
+
+          if (firstRun) firstRun = false
         }
 
-        if (inputStabilityCheck.shouldRun) {
-          // make a second copy of the params, to check if we got the same results
-          const inputSelectorResultsCopy = collectInputSelectorResults(
-            dependencies,
-            arguments
-          )
-
-          inputStabilityCheck.run(
-            { inputSelectorResults, inputSelectorResultsCopy },
-            { memoize, memoizeOptions: finalMemoizeOptions },
-            arguments
-          )
-        }
-
-        if (firstRun) firstRun = false
-      }
-
-      return lastResult
-    }, ...finalArgsMemoizeOptions) as unknown as Selector<
+        return lastResult
+      },
+      ...finalArgsMemoizeOptions
+    ) as unknown as Selector<
       GetStateFromSelectors<InputSelectors>,
       Result,
       GetParamsFromSelectors<InputSelectors>
