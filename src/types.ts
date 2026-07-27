@@ -659,9 +659,11 @@ export type UnionToIntersection<Union> =
         (distributedUnion: Union) => void
       : // This won't happen.
         never
-  ) extends // Infer the `Intersection` type since TypeScript represents the positional
-  // arguments of unions of functions as an intersection of the union.
-  (mergedIntersection: infer Intersection) => void
+  ) extends (
+    // Infer the `Intersection` type since TypeScript represents the positional
+    // arguments of unions of functions as an intersection of the union.
+    mergedIntersection: infer Intersection
+  ) => void
     ? // The `& Union` is to allow indexing by the resulting type
       Intersection & Union
     : never
@@ -679,11 +681,10 @@ type Push<T extends any[], V> = [...T, V]
  *
  * @internal
  */
-type LastOf<T> = UnionToIntersection<
-  T extends any ? () => T : never
-> extends () => infer R
-  ? R
-  : never
+type LastOf<T> =
+  UnionToIntersection<T extends any ? () => T : never> extends () => infer R
+    ? R
+    : never
 
 /**
  * TS4.1+
@@ -799,8 +800,8 @@ export type BuiltIn =
 export type Expand<T> = T extends (...args: infer A) => infer R
   ? (...args: Expand<A>) => Expand<R>
   : T extends infer O
-  ? { [K in keyof O]: O[K] }
-  : never
+    ? { [K in keyof O]: O[K] }
+    : never
 
 /**
  * Expand an item recursively.
@@ -811,10 +812,10 @@ export type Expand<T> = T extends (...args: infer A) => infer R
 export type ExpandRecursively<T> = T extends (...args: infer A) => infer R
   ? (...args: ExpandRecursively<A>) => ExpandRecursively<R>
   : T extends object
-  ? T extends infer O
-    ? { [K in keyof O]: ExpandRecursively<O[K]> }
-    : never
-  : T
+    ? T extends infer O
+      ? { [K in keyof O]: ExpandRecursively<O[K]> }
+      : never
+    : T
 
 /**
  * @internal
@@ -876,10 +877,10 @@ export type ComputeDeep<A, Seen = never> = A extends BuiltIn
             } & unknown)[]
           : A
         : A extends readonly any[]
-        ? A extends readonly Record<PropertyKey, any>[]
-          ? readonly ({
-              [K in keyof A[number]]: ComputeDeep<A[number][K], A | Seen>
-            } & unknown)[]
-          : A
-        : { [K in keyof A]: ComputeDeep<A[K], A | Seen> } & unknown
+          ? A extends readonly Record<PropertyKey, any>[]
+            ? readonly ({
+                [K in keyof A[number]]: ComputeDeep<A[number][K], A | Seen>
+              } & unknown)[]
+            : A
+          : { [K in keyof A]: ComputeDeep<A[K], A | Seen> } & unknown
     >

@@ -14,11 +14,11 @@ type LongestTuple<ArrayOfTuples extends readonly unknown[][]> =
   ArrayOfTuples extends [infer FirstArray extends unknown[]]
     ? FirstArray
     : ArrayOfTuples extends [
-        infer FirstArray,
-        ...infer RestArrays extends unknown[][]
-      ]
-    ? LongerOfTwo<FirstArray, LongestTuple<RestArrays>>
-    : never
+          infer FirstArray,
+          ...infer RestArrays extends unknown[][]
+        ]
+      ? LongerOfTwo<FirstArray, LongestTuple<RestArrays>>
+      : never
 
 /**
  * Determines the longer of two array types.
@@ -73,8 +73,8 @@ type ElementsAtGivenIndex<
 type Intersect<Tuple extends readonly unknown[]> = Tuple extends []
   ? unknown
   : Tuple extends [infer Head, ...infer Tail]
-  ? Head & Intersect<Tail>
-  : Tuple[number]
+    ? Head & Intersect<Tail>
+    : Tuple[number]
 
 /**
  * Merges a tuple of arrays into a single tuple, intersecting types at each index.
