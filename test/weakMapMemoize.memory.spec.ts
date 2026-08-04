@@ -2,13 +2,13 @@ import { shallowEqual } from 'react-redux'
 import { createSelector, weakMapMemoize } from 'reselect'
 
 /**
- * Confirmation tests for https://github.com/reduxjs/reselect/issues/635
+ * Characterization tests for https://github.com/reduxjs/reselect/issues/635
  *
  * `weakMapMemoize` stores primitive arguments in strong `Map`s that live inside
  * the cache tree. When the *first* argument is a long-lived object (e.g. the
  * Redux state, or a stable derived value) but later primitive arguments keep
  * changing, every result that was ever computed is retained for as long as that
- * first object stays reachable — an unbounded cache that behaves like a leak.
+ * first object stays reachable, and nothing is evicted.
  *
  * These tests require `node --expose-gc` (already used by the `test` script).
  */
@@ -20,7 +20,7 @@ const makeSliceSelector = (options?: Parameters<typeof weakMapMemoize>[1]) =>
   )
 
 describe('weakMapMemoize unbounded cache (issue #635)', () => {
-  test('retains every result forever while the object arg stays alive (leak)', () => {
+  test('retains every result while the object argument stays alive', () => {
     const selector = makeSliceSelector()
 
     // Long-lived object argument (imagine this is the Redux state).
@@ -33,12 +33,12 @@ describe('weakMapMemoize unbounded cache (issue #635)', () => {
       selector(state, i, i + 100)
     }
 
-    // The very first result is STILL memoized after 10k different calls.
-    // This is the leak: nothing is ever evicted.
+    // The first result is still memoized after 10k different calls, because
+    // nothing is evicted.
     expect(selector(state, 2000, 2500)).toBe(initialResult)
   })
 
-  test('old results are not garbage collected while the object arg is alive (leak)', async () => {
+  test('old results are not garbage collected while the object argument is alive', async () => {
     const selector = makeSliceSelector()
     const state = Array.from({ length: 10_000 }, (_, i) => i)
 
@@ -63,7 +63,9 @@ describe('weakMapMemoize maxSize (fix for issue #635)', () => {
   test('rejects a non-positive-integer maxSize', () => {
     expect(() => makeSliceSelector({ maxSize: 0 })).toThrow(/positive integer/)
     expect(() => makeSliceSelector({ maxSize: -1 })).toThrow(/positive integer/)
-    expect(() => makeSliceSelector({ maxSize: 1.5 })).toThrow(/positive integer/)
+    expect(() => makeSliceSelector({ maxSize: 1.5 })).toThrow(
+      /positive integer/
+    )
   })
 
   test('still caches within the configured size', () => {
@@ -136,10 +138,9 @@ describe('weakMapMemoize maxSize (fix for issue #635)', () => {
   })
 
   test('evicts object-keyed results as well (WeakMap branch)', () => {
-    const selector = weakMapMemoize(
-      (a: object, b: object) => ({ a, b }),
-      { maxSize: 1 }
-    )
+    const selector = weakMapMemoize((a: object, b: object) => ({ a, b }), {
+      maxSize: 1
+    })
     const o1 = {}
     const o2 = {}
     const o3 = {}
@@ -181,6 +182,47 @@ describe('weakMapMemoize maxSize (fix for issue #635)', () => {
 
     expect(second).toBe(first)
     expect(selector.resultsCount()).toBe(1)
+  })
+})
+
+describe('weakMapMemoize treats object and primitive arguments differently', () => {
+  test('results keyed by an object are collected once that object is dropped', async () => {
+    const memoized = weakMapMemoize((source: { id: number }) => ({
+      id: source.id
+    }))
+
+    let key: { id: number } | null = { id: 0 }
+    const result = new WeakRef(memoized(key))
+
+    // The only reference to the `WeakMap` key goes away.
+    key = null
+
+    for (let i = 1; i < 1_000; i++) {
+      memoized({ id: i })
+    }
+
+    await expect(result).toBeGarbageCollected()
+  })
+
+  test('results keyed by a primitive stay reachable until the cache is cleared', async () => {
+    const memoized = weakMapMemoize((id: string) => ({ id }))
+
+    const firstResult = new WeakRef(memoized('item-0'))
+
+    for (let i = 1; i < 1_000; i++) {
+      memoized(`item-${i}`)
+    }
+
+    // The caller kept no reference to either the key or the result, but the
+    // key is a string held by a strong `Map`, so there is nothing for the
+    // garbage collector to observe becoming unreachable. Without a `maxSize`
+    // the entry lives as long as the memoized function does.
+    await expect(firstResult).not.toBeGarbageCollected()
+
+    // Without a bounded cache, the entry is released by clearing the cache.
+    memoized.clearCache()
+
+    await expect(firstResult).toBeGarbageCollected()
   })
 })
 
