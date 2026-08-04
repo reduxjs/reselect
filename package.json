@@ -27,7 +27,7 @@
     "format": "prettier --write \"{src,test}/**/*.{js,ts}\" \"docs/**/*.md\"",
     "lint": "eslint src test",
     "prepack": "yarn build",
-    "bench": "vitest --run bench --mode production",
+    "bench": "node --expose-gc ./node_modules/vitest/dist/cli-wrapper.js --run bench --mode production",
     "test": "node --expose-gc ./node_modules/vitest/dist/cli-wrapper.js --run && vitest --run --typecheck.only",
     "test:watch": "node --expose-gc ./node_modules/vitest/dist/cli-wrapper.js --watch",
     "test:cov": "vitest run --coverage",
