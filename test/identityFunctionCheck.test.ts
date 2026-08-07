@@ -166,6 +166,26 @@ describe('identityFunctionCheck', () => {
     expect(consoleSpy).toHaveBeenCalledOnce()
   })
 
+  localTest(
+    'never runs when the check is explicitly set to undefined',
+    ({ state }) => {
+      // An explicit `undefined` silences the check rather than falling back to
+      // the global setting, because it is a present key that overrides the
+      // default with a frequency that is neither 'once' nor 'always'.
+      const badSelector = createSelector(
+        [(state: RootState) => state],
+        identityFunction,
+        { devModeChecks: { identityFunctionCheck: undefined } }
+      )
+
+      expect(badSelector(state)).toBe(state)
+
+      expect(identityFunction).toHaveBeenCalledOnce()
+
+      expect(consoleSpy).not.toHaveBeenCalled()
+    }
+  )
+
   localTest('uses the memoize provided', ({ state }) => {
     const badSelector = createSelector(
       [(state: RootState) => state.todos],
