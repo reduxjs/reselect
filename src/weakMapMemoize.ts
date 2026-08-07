@@ -239,40 +239,41 @@ export function weakMapMemoize<Func extends AnyFunction>(
       }
     }
 
+    // Return here rather than falling through to the writes below. Both would be
+    // no-ops — `s` is already `TERMINATED` and `v` already holds this result —
+    // but `v` stores a pointer, so re-storing it costs a GC write barrier on a
+    // call that had nothing to record.
+    if (cacheNode.s === TERMINATED) {
+      return cacheNode.v
+    }
+
     const terminatedNode = cacheNode as unknown as TerminatedCacheNode<any>
 
-    let result
+    // Allow errors to propagate
+    let result = func.apply(null, arguments as unknown as any[])
+    resultsCount++
 
-    if (cacheNode.s === TERMINATED) {
-      result = cacheNode.v
-    } else {
-      // Allow errors to propagate
-      result = func.apply(null, arguments as unknown as any[])
-      resultsCount++
+    if (resultEqualityCheck) {
+      // Deref lastResult if it is a Ref
+      const lastResultValue = maybeDeref(lastResult)
 
-      if (resultEqualityCheck) {
-        // Deref lastResult if it is a Ref
-        const lastResultValue = maybeDeref(lastResult)
+      if (
+        lastResultValue != null &&
+        resultEqualityCheck(lastResultValue as ReturnType<Func>, result)
+      ) {
+        result = lastResultValue
 
-        if (
-          lastResultValue != null &&
-          resultEqualityCheck(lastResultValue as ReturnType<Func>, result)
-        ) {
-          result = lastResultValue
-
-          resultsCount !== 0 && resultsCount--
-        }
-
-        const needsWeakRef =
-          (typeof result === 'object' && result !== null) ||
-          typeof result === 'function'
-
-        lastResult = needsWeakRef ? /* @__PURE__ */ new Ref(result) : result
+        resultsCount !== 0 && resultsCount--
       }
+
+      const needsWeakRef =
+        (typeof result === 'object' && result !== null) ||
+        typeof result === 'function'
+
+      lastResult = needsWeakRef ? /* @__PURE__ */ new Ref(result) : result
     }
 
     terminatedNode.s = TERMINATED
-
     terminatedNode.v = result
     return result
   }
