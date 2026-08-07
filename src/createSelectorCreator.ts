@@ -16,12 +16,14 @@ import type {
   UnknownMemoizer
 } from './types'
 
+import { runIdentityFunctionCheck } from './devModeChecks/identityFunctionCheck'
+import { runInputStabilityCheck } from './devModeChecks/inputStabilityCheck'
+import { globalDevModeChecks } from './devModeChecks/setGlobalDevModeChecks'
 import {
   assertIsFunction,
   collectInputSelectorResults,
   ensureIsArray,
-  getDependencies,
-  getDevModeChecksExecutionInfo
+  getDependencies
 } from './utils'
 
 /**
@@ -422,25 +424,55 @@ export function createSelectorCreator<
       lastResult = memoizedResultFunc.apply(null, inputSelectorResults)
 
       if (process.env.NODE_ENV !== 'production') {
-        const { devModeChecks = {} } = combinedOptions
-        const { identityFunctionCheck, inputStabilityCheck } =
-          getDevModeChecksExecutionInfo(firstRun, devModeChecks)
-        if (identityFunctionCheck.shouldRun) {
-          identityFunctionCheck.run(
+        // Resolved without building the four objects `getDevModeChecksExecutionInfo`
+        // returns. This runs on every dependency recomputation, and by default both
+        // checks are `'once'` — so from the second one onwards those objects were
+        // allocated only to be read for two booleans and discarded.
+        //
+        // `hasOwnProperty` rather than `??`, to keep the semantics of the spread
+        // this replaces: an override that explicitly sets a check to `undefined`
+        // silences it, where `??` would fall back to the global setting. The
+        // common case has no overrides at all and reads the global directly.
+        const { devModeChecks } = combinedOptions
+        const identityFunctionCheck =
+          devModeChecks !== undefined &&
+          Object.prototype.hasOwnProperty.call(
+            devModeChecks,
+            'identityFunctionCheck'
+          )
+            ? devModeChecks.identityFunctionCheck
+            : globalDevModeChecks.identityFunctionCheck
+        const inputStabilityCheck =
+          devModeChecks !== undefined &&
+          Object.prototype.hasOwnProperty.call(
+            devModeChecks,
+            'inputStabilityCheck'
+          )
+            ? devModeChecks.inputStabilityCheck
+            : globalDevModeChecks.inputStabilityCheck
+
+        if (
+          identityFunctionCheck === 'always' ||
+          (identityFunctionCheck === 'once' && firstRun)
+        ) {
+          runIdentityFunctionCheck(
             resultFunc as Combiner<InputSelectors, Result>,
             inputSelectorResults,
             lastResult
           )
         }
 
-        if (inputStabilityCheck.shouldRun) {
+        if (
+          inputStabilityCheck === 'always' ||
+          (inputStabilityCheck === 'once' && firstRun)
+        ) {
           // make a second copy of the params, to check if we got the same results
           const inputSelectorResultsCopy = collectInputSelectorResults(
             dependencies,
             arguments
           )
 
-          inputStabilityCheck.run(
+          runInputStabilityCheck(
             { inputSelectorResults, inputSelectorResultsCopy },
             { memoize, memoizeOptions: finalMemoizeOptions },
             arguments

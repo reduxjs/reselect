@@ -1,13 +1,4 @@
-import { runIdentityFunctionCheck } from './devModeChecks/identityFunctionCheck'
-import { runInputStabilityCheck } from './devModeChecks/inputStabilityCheck'
-import { globalDevModeChecks } from './devModeChecks/setGlobalDevModeChecks'
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
-import type {
-  DevModeChecks,
-  Selector,
-  SelectorArray,
-  DevModeChecksExecutionInfo
-} from './types'
+import type { Selector, SelectorArray } from './types'
 
 export const NOT_FOUND = /* @__PURE__ */ Symbol('NOT_FOUND')
 export type NOT_FOUND_TYPE = typeof NOT_FOUND
@@ -122,35 +113,4 @@ export function collectInputSelectorResults(
     inputSelectorResults.push(dependencies[i].apply(null, inputSelectorArgs))
   }
   return inputSelectorResults
-}
-
-/**
- * Retrieves execution information for development mode checks.
- *
- * @param devModeChecks - Custom Settings for development mode checks. These settings will override the global defaults.
- * @param firstRun - Indicates whether it is the first time the selector has run.
- * @returns  An object containing the execution information for each development mode check.
- */
-export const getDevModeChecksExecutionInfo = (
-  firstRun: boolean,
-  devModeChecks: Partial<DevModeChecks>
-) => {
-  const { identityFunctionCheck, inputStabilityCheck } = {
-    ...globalDevModeChecks,
-    ...devModeChecks
-  }
-  return {
-    identityFunctionCheck: {
-      shouldRun:
-        identityFunctionCheck === 'always' ||
-        (identityFunctionCheck === 'once' && firstRun),
-      run: runIdentityFunctionCheck
-    },
-    inputStabilityCheck: {
-      shouldRun:
-        inputStabilityCheck === 'always' ||
-        (inputStabilityCheck === 'once' && firstRun),
-      run: runInputStabilityCheck
-    }
-  } satisfies DevModeChecksExecutionInfo
 }
