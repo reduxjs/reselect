@@ -534,7 +534,9 @@ describe('lruMemoize integration with resultEqualityCheck', () => {
         }
       )
 
-      expect(selectTodoIds(store.getState())).to.be.an('array').with.lengthOf.above(0)
+      expect(selectTodoIds(store.getState()))
+        .to.be.an('array')
+        .with.lengthOf.above(0)
 
       expect(resultEqualityCheck).not.toHaveBeenCalled()
 
@@ -664,7 +666,9 @@ describe('lruMemoize integration with resultEqualityCheck', () => {
         }
       )
 
-      expect(selectTodoIds(store.getState())).to.be.an('array').with.lengthOf.above(0)
+      expect(selectTodoIds(store.getState()))
+        .to.be.an('array')
+        .with.lengthOf.above(0)
 
       expect(resultEqualityCheck).not.toHaveBeenCalled()
 

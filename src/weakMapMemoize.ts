@@ -53,10 +53,7 @@ interface CacheNodeBase<T> {
   /**
    * The `Map`/`WeakMap` in {@linkcode parent} that holds this node.
    */
-  map:
-    | Map<any, CacheNode<T>>
-    | WeakMap<Function | object, CacheNode<T>>
-    | null
+  map: Map<any, CacheNode<T>> | WeakMap<Function | object, CacheNode<T>> | null
   /**
    * The key under which this node is stored in {@linkcode map}.
    */

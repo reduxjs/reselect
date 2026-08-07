@@ -386,104 +386,110 @@ export function createSelectorCreator<
     const finalArgsMemoizeOptions = ensureIsArray(argsMemoizeOptions)
     const dependencies = getDependencies(createSelectorArgs) as InputSelectors
 
-    const memoizedResultFunc = memoize(function recomputationWrapper() {
-      recomputations++
-      // apply arguments instead of spreading for performance.
-      // @ts-ignore
-      return (resultFunc as Combiner<InputSelectors, Result>).apply(
-        null,
-        arguments as unknown as Parameters<Combiner<InputSelectors, Result>>
-      )
-    }, ...finalMemoizeOptions) as Combiner<InputSelectors, Result> &
+    const memoizedResultFunc = memoize(
+      function recomputationWrapper() {
+        recomputations++
+        // apply arguments instead of spreading for performance.
+        // @ts-ignore
+        return (resultFunc as Combiner<InputSelectors, Result>).apply(
+          null,
+          arguments as unknown as Parameters<Combiner<InputSelectors, Result>>
+        )
+      },
+      ...finalMemoizeOptions
+    ) as Combiner<InputSelectors, Result> &
       ExtractMemoizerFields<OverrideMemoizeFunction>
 
     let firstRun = true
 
     // If a selector is called with the exact same arguments we don't need to traverse our dependencies again.
-    const selector = argsMemoize(function dependenciesChecker() {
-      dependencyRecomputations++
-      /** Return values of input selectors which the `resultFunc` takes as arguments. */
-      // Inlined instead of calling `collectInputSelectorResults`: handing
-      // `arguments` to another function makes it escape, which forces V8 to
-      // materialize it on the heap every call. As an operand of `.apply` it stays
-      // in the frame. (The dev block below still passes it, but that is compiled
-      // out of production builds.)
-      //
-      // Sizing the array up front instead of growing it from `[]` by `push` is
-      // the larger half of the win. Arity-specialized literals measured no better
-      // than this, so one path serves every dependency count.
-      const { length } = dependencies
-      const inputSelectorResults = new Array(length)
-      for (let i = 0; i < length; i++) {
-        // @ts-ignore
-        inputSelectorResults[i] = dependencies[i].apply(null, arguments)
-      }
-
-      // apply arguments instead of spreading for performance.
-      // @ts-ignore
-      lastResult = memoizedResultFunc.apply(null, inputSelectorResults)
-
-      if (process.env.NODE_ENV !== 'production') {
-        // Resolved without building the four objects `getDevModeChecksExecutionInfo`
-        // returns. This runs on every dependency recomputation, and by default both
-        // checks are `'once'` — so from the second one onwards those objects were
-        // allocated only to be read for two booleans and discarded.
+    const selector = argsMemoize(
+      function dependenciesChecker() {
+        dependencyRecomputations++
+        /** Return values of input selectors which the `resultFunc` takes as arguments. */
+        // Inlined instead of calling `collectInputSelectorResults`: handing
+        // `arguments` to another function makes it escape, which forces V8 to
+        // materialize it on the heap every call. As an operand of `.apply` it stays
+        // in the frame. (The dev block below still passes it, but that is compiled
+        // out of production builds.)
         //
-        // `hasOwnProperty` rather than `??`, to keep the semantics of the spread
-        // this replaces: an override that explicitly sets a check to `undefined`
-        // silences it, where `??` would fall back to the global setting. The
-        // common case has no overrides at all and reads the global directly.
-        const { devModeChecks } = combinedOptions
-        const identityFunctionCheck =
-          devModeChecks !== undefined &&
-          Object.prototype.hasOwnProperty.call(
-            devModeChecks,
-            'identityFunctionCheck'
-          )
-            ? devModeChecks.identityFunctionCheck
-            : globalDevModeChecks.identityFunctionCheck
-        const inputStabilityCheck =
-          devModeChecks !== undefined &&
-          Object.prototype.hasOwnProperty.call(
-            devModeChecks,
-            'inputStabilityCheck'
-          )
-            ? devModeChecks.inputStabilityCheck
-            : globalDevModeChecks.inputStabilityCheck
-
-        if (
-          identityFunctionCheck === 'always' ||
-          (identityFunctionCheck === 'once' && firstRun)
-        ) {
-          runIdentityFunctionCheck(
-            resultFunc as Combiner<InputSelectors, Result>,
-            inputSelectorResults,
-            lastResult
-          )
+        // Sizing the array up front instead of growing it from `[]` by `push` is
+        // the larger half of the win. Arity-specialized literals measured no better
+        // than this, so one path serves every dependency count.
+        const { length } = dependencies
+        const inputSelectorResults = new Array(length)
+        for (let i = 0; i < length; i++) {
+          // @ts-ignore
+          inputSelectorResults[i] = dependencies[i].apply(null, arguments)
         }
 
-        if (
-          inputStabilityCheck === 'always' ||
-          (inputStabilityCheck === 'once' && firstRun)
-        ) {
-          // make a second copy of the params, to check if we got the same results
-          const inputSelectorResultsCopy = collectInputSelectorResults(
-            dependencies,
-            arguments
-          )
+        // apply arguments instead of spreading for performance.
+        // @ts-ignore
+        lastResult = memoizedResultFunc.apply(null, inputSelectorResults)
 
-          runInputStabilityCheck(
-            { inputSelectorResults, inputSelectorResultsCopy },
-            { memoize, memoizeOptions: finalMemoizeOptions },
-            arguments
-          )
+        if (process.env.NODE_ENV !== 'production') {
+          // Resolved without building the four objects `getDevModeChecksExecutionInfo`
+          // returns. This runs on every dependency recomputation, and by default both
+          // checks are `'once'` — so from the second one onwards those objects were
+          // allocated only to be read for two booleans and discarded.
+          //
+          // `hasOwnProperty` rather than `??`, to keep the semantics of the spread
+          // this replaces: an override that explicitly sets a check to `undefined`
+          // silences it, where `??` would fall back to the global setting. The
+          // common case has no overrides at all and reads the global directly.
+          const { devModeChecks } = combinedOptions
+          const identityFunctionCheck =
+            devModeChecks !== undefined &&
+            Object.prototype.hasOwnProperty.call(
+              devModeChecks,
+              'identityFunctionCheck'
+            )
+              ? devModeChecks.identityFunctionCheck
+              : globalDevModeChecks.identityFunctionCheck
+          const inputStabilityCheck =
+            devModeChecks !== undefined &&
+            Object.prototype.hasOwnProperty.call(
+              devModeChecks,
+              'inputStabilityCheck'
+            )
+              ? devModeChecks.inputStabilityCheck
+              : globalDevModeChecks.inputStabilityCheck
+
+          if (
+            identityFunctionCheck === 'always' ||
+            (identityFunctionCheck === 'once' && firstRun)
+          ) {
+            runIdentityFunctionCheck(
+              resultFunc as Combiner<InputSelectors, Result>,
+              inputSelectorResults,
+              lastResult
+            )
+          }
+
+          if (
+            inputStabilityCheck === 'always' ||
+            (inputStabilityCheck === 'once' && firstRun)
+          ) {
+            // make a second copy of the params, to check if we got the same results
+            const inputSelectorResultsCopy = collectInputSelectorResults(
+              dependencies,
+              arguments
+            )
+
+            runInputStabilityCheck(
+              { inputSelectorResults, inputSelectorResultsCopy },
+              { memoize, memoizeOptions: finalMemoizeOptions },
+              arguments
+            )
+          }
+
+          if (firstRun) firstRun = false
         }
 
-        if (firstRun) firstRun = false
-      }
-
-      return lastResult
-    }, ...finalArgsMemoizeOptions) as unknown as Selector<
+        return lastResult
+      },
+      ...finalArgsMemoizeOptions
+    ) as unknown as Selector<
       GetStateFromSelectors<InputSelectors>,
       Result,
       GetParamsFromSelectors<InputSelectors>
