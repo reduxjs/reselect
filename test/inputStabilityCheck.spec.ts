@@ -1,9 +1,11 @@
 import { shallowEqual } from 'react-redux'
+import type { MockInstance } from 'vitest'
 import {
   createSelector,
   lruMemoize,
   referenceEqualityCheck,
-  setGlobalDevModeChecks
+  setGlobalDevModeChecks,
+  weakMapMemoize
 } from 'reselect'
 import type { RootState } from './testUtils'
 import { localTest } from './testUtils'
@@ -272,4 +274,70 @@ describe('the effects of inputStabilityCheck with resultEqualityCheck', () => {
       expect(resultEqualityCheck).not.toHaveBeenCalled()
     }
   )
+
+  const expectStabilityWarning = (consoleSpy: MockInstance) => {
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining('An input selector returned a different result'),
+      expect.anything()
+    )
+  }
+
+  for (const inputStabilityCheck of ['once', 'always'] as const) {
+    localTest(
+      `resultEqualityCheck should not be called with empty objects when inputStabilityCheck is set to ${inputStabilityCheck} and input selectors are unstable`,
+      ({ store }) => {
+        const consoleSpy = vi
+          .spyOn(console, 'warn')
+          .mockImplementation(() => {})
+
+        const selectTodoIds = createAppSelector(
+          [state => [...state.todos]],
+          todos => todos.map(({ id }) => id),
+          {
+            memoizeOptions: { resultEqualityCheck },
+            devModeChecks: { inputStabilityCheck }
+          }
+        )
+
+        selectTodoIds(store.getState())
+        selectTodoIds(store.getState())
+
+        for (const [a, b] of resultEqualityCheck.mock.calls) {
+          expect(a).toBeInstanceOf(Array)
+          expect(b).toBeInstanceOf(Array)
+        }
+
+        expectStabilityWarning(consoleSpy)
+
+        consoleSpy.mockRestore()
+      }
+    )
+  }
+
+  for (const memoize of [weakMapMemoize, lruMemoize]) {
+    localTest(
+      `inputStabilityCheck still warns when ${memoize.name} is given a resultEqualityCheck that treats the probe objects as equal`,
+      ({ store }) => {
+        const consoleSpy = vi
+          .spyOn(console, 'warn')
+          .mockImplementation(() => {})
+
+        const selectTodoIds = createAppSelector(
+          [state => [...state.todos]],
+          todos => todos.map(({ id }) => id),
+          {
+            memoize,
+            memoizeOptions: { resultEqualityCheck: shallowEqual },
+            devModeChecks: { inputStabilityCheck: 'always' }
+          }
+        )
+
+        selectTodoIds(store.getState())
+
+        expectStabilityWarning(consoleSpy)
+
+        consoleSpy.mockRestore()
+      }
+    )
+  }
 })

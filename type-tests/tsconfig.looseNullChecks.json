@@ -1,0 +1,17 @@
+// The helpers that decide whether a dependency's result is `unknown` read
+// differently once `undefined` inhabits every type, so they need checking with
+// `strictNullChecks` off as well. Consumers do compile that way — it is what
+// `tsc --init` produced for years, and large codebases still carry it.
+//
+// `noImplicitAny` is off to match those same consumers, and because `src` is
+// not written to be compiled without `strictNullChecks`: `collectionTag = null`
+// in `autotrackMemoize/proxy.ts` widens to `any` in that mode, which is
+// unrelated to what this project checks.
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "strictNullChecks": false,
+    "noImplicitAny": false
+  },
+  "include": ["ifUnknown.test-d.ts"]
+}
