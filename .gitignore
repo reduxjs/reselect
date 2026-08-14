@@ -35,3 +35,5 @@ website/.yarn/
 
 docs/examples/**/*.js
 docs/examples/**/*.jsx
+
+bench/.build/
