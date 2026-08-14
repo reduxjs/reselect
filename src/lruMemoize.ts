@@ -52,7 +52,7 @@ function createLruCache(maxSize: number, equals: EqualityFn): Cache {
   let entries: Entry[] = []
 
   function get(key: unknown) {
-    const cacheIndex = entries.findIndex(entry => equals(key, entry.key))
+    const cacheIndex = entries.findIndex(entry => equals(entry.key, key))
 
     // We found a cached entry
     if (cacheIndex > -1) {
@@ -71,13 +71,13 @@ function createLruCache(maxSize: number, equals: EqualityFn): Cache {
     return NOT_FOUND
   }
 
+  // Only ever called after `get` has returned `NOT_FOUND` for the same key,
+  // so there is no need to search the entries again here.
   function put(key: unknown, value: unknown) {
-    if (get(key) === NOT_FOUND) {
-      // TODO Is unshift slow?
-      entries.unshift({ key, value })
-      if (entries.length > maxSize) {
-        entries.pop()
-      }
+    // TODO Is unshift slow?
+    entries.unshift({ key, value })
+    if (entries.length > maxSize) {
+      entries.pop()
     }
   }
 

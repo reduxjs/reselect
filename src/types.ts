@@ -717,16 +717,41 @@ export type SetRequired<BaseType, Keys extends keyof BaseType> = Omit<
   Required<Pick<BaseType, Keys>>
 
 /**
- * An if-else-like type that resolves depending on whether the given type is `unknown`.
- * @see {@link https://github.com/sindresorhus/type-fest/blob/main/source/if-unknown.d.ts Source}
+ * Whether the given type is `any`.
+ *
+ * `1 & T` collapses to `any` only when `T` is `any`, and `0 extends any` holds
+ * while `0 extends 1` does not. The check reads the same under every
+ * `strictNullChecks` setting, unlike an assignability test against `null`.
  *
  * @internal
  */
-export type IfUnknown<T, TypeIfUnknown, TypeIfNotUnknown> = unknown extends T // `T` can be `unknown` or `any`
-  ? [T] extends [null] // `any` can be `null`, but `unknown` can't be
+export type IsAny<T> = 0 extends 1 & T ? true : false
+
+/**
+ * An if-else-like type that resolves depending on whether the given type is `unknown`.
+ * @see {@link https://github.com/sindresorhus/type-fest/blob/main/source/if-unknown.d.ts Source}
+ *
+ * `unknown extends T` alone does not identify `unknown`: with
+ * `strictNullChecks: false` it also holds for any type whose properties are all
+ * optional, because `undefined` then inhabits every type and such a type
+ * demands nothing. `keyof` separates the two — `keyof unknown` is `never`,
+ * while a weak type still reports its own keys — and it reads the same under
+ * both settings. `any` is excluded up front, since it satisfies every
+ * assignability test here.
+ *
+ * `{}` and `unknown` stay mutually assignable with `strictNullChecks: false`
+ * and both have no keys, so a `{}` is reported as `unknown` in that mode.
+ *
+ * @internal
+ */
+export type IfUnknown<T, TypeIfUnknown, TypeIfNotUnknown> =
+  IsAny<T> extends true
     ? TypeIfNotUnknown
-    : TypeIfUnknown
-  : TypeIfNotUnknown
+    : unknown extends T
+    ? [keyof T] extends [never]
+      ? TypeIfUnknown
+      : TypeIfNotUnknown
+    : TypeIfNotUnknown
 
 /**
  * When a type is resolves to `unknown`, fallback to a different type.
