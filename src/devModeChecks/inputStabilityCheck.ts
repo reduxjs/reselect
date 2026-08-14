@@ -1,6 +1,30 @@
 import type { CreateSelectorOptions, UnknownMemoizer } from '../types'
 
 /**
+ * Removes `resultEqualityCheck` from a memoize options object, if present.
+ *
+ * The stability check memoizes a probe function that returns a new empty object
+ * on every call. A `resultEqualityCheck` has no bearing on whether the memoizer
+ * considers the *arguments* equal, but leaving it in place means the user's
+ * function is called with those empty probe objects, and a value-based check
+ * such as `shallowEqual` would report them as equal and suppress the warning.
+ *
+ * @internal
+ */
+const withoutResultEqualityCheck = (option: unknown) => {
+  if (
+    option === null ||
+    typeof option !== 'object' ||
+    !('resultEqualityCheck' in option)
+  ) {
+    return option
+  }
+  const optionCopy: { resultEqualityCheck?: unknown } = { ...option }
+  delete optionCopy.resultEqualityCheck
+  return optionCopy
+}
+
+/**
  * Runs a stability check to ensure the input selector results remain stable
  * when provided with the same arguments. This function is designed to detect
  * changes in the output of input selectors, which can impact the performance of memoized selectors.
@@ -30,7 +54,12 @@ export const runInputStabilityCheck = (
   const { memoize, memoizeOptions } = options
   const { inputSelectorResults, inputSelectorResultsCopy } =
     inputSelectorResultsObject
-  const createAnEmptyObject = memoize(() => ({}), ...memoizeOptions)
+  const probeMemoizeOptions: unknown[] = []
+  const { length } = memoizeOptions
+  for (let i = 0; i < length; i++) {
+    probeMemoizeOptions.push(withoutResultEqualityCheck(memoizeOptions[i]))
+  }
+  const createAnEmptyObject = memoize(() => ({}), ...probeMemoizeOptions)
   // if the memoize method thinks the parameters are equal, these *should* be the same reference
   const areInputSelectorResultsEqual =
     createAnEmptyObject.apply(null, inputSelectorResults) ===
