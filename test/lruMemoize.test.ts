@@ -752,3 +752,53 @@ describe('lruMemoize integration with resultEqualityCheck', () => {
     }
   )
 })
+
+describe('lruMemoize equalityCheck argument order', () => {
+  for (const maxSize of [1, 2]) {
+    test(`passes (cachedArg, newArg) to equalityCheck with maxSize ${maxSize}`, () => {
+      const recordedCalls: [unknown, unknown][] = []
+
+      const equalityCheck = (a: unknown, b: unknown) => {
+        recordedCalls.push([a, b])
+        return a === b
+      }
+
+      const memoized = lruMemoize((value: string) => value, {
+        equalityCheck,
+        maxSize
+      })
+
+      expect(memoized('first')).toBe('first')
+
+      expect(recordedCalls).toHaveLength(0)
+
+      expect(memoized('second')).toBe('second')
+
+      expect(recordedCalls.length).toBeGreaterThan(0)
+
+      for (const recordedCall of recordedCalls) {
+        expect(recordedCall).toStrictEqual(['first', 'second'])
+      }
+    })
+  }
+})
+
+describe('lruMemoize cache miss comparison count', () => {
+  test('compares a new argument against each cached entry only once', () => {
+    const equalityCheck = vi.fn(referenceEqualityCheck)
+
+    const memoized = lruMemoize((value: string) => value, {
+      equalityCheck,
+      maxSize: 3
+    })
+
+    memoized('a')
+    memoized('b')
+
+    equalityCheck.mockClear()
+
+    expect(memoized('c')).toBe('c')
+
+    expect(equalityCheck).toHaveBeenCalledTimes(2)
+  })
+})
