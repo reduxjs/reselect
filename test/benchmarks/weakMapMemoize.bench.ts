@@ -21,8 +21,7 @@ describe('Parametric selectors: weakMapMemoize vs others', () => {
   const state = store.getState()
   const arrayOfNumbers = Array.from({ length: 30 }, (num, index) => index)
   const commonOptions: Options = {
-    iterations: 10,
-    time: 0
+    time: 500
   }
   const runSelector = <S extends Selector>(selector: S) => {
     arrayOfNumbers.forEach(num => {
@@ -400,97 +399,5 @@ describe('Simple selectors: weakMapMemoize vs others', () => {
       selectTodoIdsAutotrack(store.getState())
     },
     createOptions(selectTodoIdsAutotrack)
-  )
-})
-
-describe.skip('weakMapMemoize memory leak', () => {
-  const store = setupStore()
-  const state = store.getState()
-  const arrayOfNumbers = Array.from(
-    { length: 2_000_000 },
-    (num, index) => index
-  )
-  const commonOptions: Options = {
-    warmupIterations: 0,
-    warmupTime: 0,
-    iterations: 1,
-    time: 0
-  }
-  const runSelector = <S extends Selector>(selector: S) => {
-    arrayOfNumbers.forEach(num => {
-      selector(state, num)
-    })
-    arrayOfNumbers.forEach(num => {
-      selector(state, num)
-    })
-  }
-  const selectorDefault = createSelector(
-    [(state: RootState) => state.todos, (state: RootState, id: number) => id],
-    todos => todos.map(({ id }) => id)
-  )
-  const selectorWeakMap = createSelector(
-    [(state: RootState) => state.todos, (state: RootState, id: number) => id],
-    todos => todos.map(({ id }) => id),
-    { memoize: weakMapMemoize }
-  )
-  const selectorArgsWeakMap = createSelector(
-    [(state: RootState) => state.todos, (state: RootState, id: number) => id],
-    todos => todos.map(({ id }) => id),
-    { argsMemoize: weakMapMemoize }
-  )
-  const selectorBothWeakMap = createSelector(
-    [(state: RootState) => state.todos, (state: RootState, id: number) => id],
-    todos => todos.map(({ id }) => id),
-    { argsMemoize: weakMapMemoize, memoize: weakMapMemoize }
-  )
-  setFunctionNames({
-    selectorDefault,
-    selectorWeakMap,
-    selectorArgsWeakMap,
-    selectorBothWeakMap
-  })
-  const createOptions = <S extends OutputSelector>(
-    selector: S,
-    commonOptions: Options = {}
-  ) => {
-    const options: Options = {
-      setup: (task, mode) => {
-        if (mode === 'warmup') return
-        task.opts = {
-          afterAll: () => {
-            logSelectorRecomputations(selector)
-          }
-        }
-      }
-    }
-    return { ...commonOptions, ...options }
-  }
-  bench(
-    selectorDefault,
-    () => {
-      runSelector(selectorDefault)
-    },
-    createOptions(selectorDefault, commonOptions)
-  )
-  bench(
-    selectorWeakMap,
-    () => {
-      runSelector(selectorWeakMap)
-    },
-    createOptions(selectorWeakMap, commonOptions)
-  )
-  bench.skip(
-    selectorArgsWeakMap,
-    () => {
-      runSelector(selectorArgsWeakMap)
-    },
-    createOptions(selectorArgsWeakMap, commonOptions)
-  )
-  bench.skip(
-    selectorBothWeakMap,
-    () => {
-      runSelector(selectorBothWeakMap)
-    },
-    createOptions(selectorBothWeakMap, commonOptions)
   )
 })

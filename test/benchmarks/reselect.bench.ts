@@ -9,9 +9,11 @@ import type { RootState } from '../testUtils'
 import { setFunctionNames, setupStore } from '../testUtils'
 
 describe('Memoize methods comparison', () => {
+  // Sample for half a second rather than taking a fixed ten iterations. Ten
+  // iterations of a call this cheap reported +-60% error and ranked cases in
+  // impossible orders; see the note in 'Cached vs non-cached length in for loops'.
   const commonOptions: Options = {
-    iterations: 10,
-    time: 0
+    time: 500
   }
   const store = setupStore()
   const state = store.getState()
@@ -119,9 +121,12 @@ describe('Memoize methods comparison', () => {
 })
 
 describe('Cached vs non-cached length in for loops', () => {
+  // This block is why the fixed ten-iteration options went away. At `iterations:
+  // 10, time: 0` it reported 'length cached' as slower than 'length not cached',
+  // across every run, which cannot happen. Ten samples of a sub-microsecond loop
+  // measure the sampler.
   const commonOptions: Options = {
-    iterations: 10,
-    time: 0
+    time: 500
   }
   const store = setupStore()
   const state = store.getState()
@@ -157,148 +162,5 @@ describe('Cached vs non-cached length in for loops', () => {
       }
     },
     commonOptions
-  )
-})
-
-describe.todo('nested field access', () => {
-  const commonOptions: Options = {
-    iterations: 10,
-    time: 0
-  }
-  const store = setupStore()
-  const state = store.getState()
-  const selectorDefault = createSelector(
-    (state: RootState) => state.users,
-    users => users.user.details.preferences.notifications.push.frequency
-  )
-  const selectorDefault1 = createSelector(
-    (state: RootState) => state.users.user,
-    user => user.details.preferences.notifications.push.frequency
-  )
-  const nonMemoizedSelector = (state: RootState) =>
-    state.users.user.details.preferences.notifications.push.frequency
-  bench(
-    'selectorDefault',
-    () => {
-      selectorDefault(state)
-    },
-    commonOptions
-  )
-  bench(
-    'nonMemoizedSelector',
-    () => {
-      nonMemoizedSelector(state)
-    },
-    commonOptions
-  )
-  bench(
-    'selectorDefault1',
-    () => {
-      selectorDefault1(state)
-    },
-    commonOptions
-  )
-})
-
-describe.todo('simple field access', () => {
-  const commonOptions: Options = {
-    iterations: 10,
-    time: 0
-  }
-  const store = setupStore()
-  const state = store.getState()
-  const selectorDefault = createSelector(
-    (state: RootState) => state.users,
-    users => users.user.details.preferences.notifications.push.frequency
-  )
-  const selectorDefault1 = createSelector(
-    (state: RootState) => state.users.user,
-    user => user.details.preferences.notifications.push.frequency
-  )
-  const selectorDefault2 = createSelector(
-    (state: RootState) => state.users,
-    (state: RootState) => state.users,
-    (state: RootState) => state.users,
-    (state: RootState) => state.users,
-    (state: RootState) => state.users,
-    (state: RootState) => state.users,
-    (state: RootState) => state.users,
-    (state: RootState) => state.users,
-    (state: RootState) => state.users,
-    (state: RootState) => state.users,
-    (state: RootState) => state.users,
-    (state: RootState) => state.users,
-    (state: RootState) => state.users,
-    (state: RootState) => state.users,
-    (state: RootState) => state.users,
-    (state: RootState) => state.users,
-    (state: RootState) => state.users,
-    (state: RootState) => state.users,
-    (state: RootState) => state.users,
-    (state: RootState) => state.users,
-    (state: RootState) => state.users,
-    (state: RootState) => state.users,
-    (state: RootState) => state.users,
-    (state: RootState) => state.users,
-    (state: RootState) => state.users,
-    users => users.user.details.preferences.notifications.push.frequency
-  )
-  const nonMemoizedSelector = (state: RootState) =>
-    state.users.user.details.preferences.notifications.push.frequency
-  bench(
-    'selectorDefault',
-    () => {
-      selectorDefault(state)
-    },
-    commonOptions
-  )
-  bench(
-    'nonMemoizedSelector',
-    () => {
-      nonMemoizedSelector(state)
-    },
-    commonOptions
-  )
-  bench(
-    'selectorDefault1',
-    () => {
-      selectorDefault1(state)
-    },
-    commonOptions
-  )
-  bench(
-    'selectorDefault2',
-    () => {
-      selectorDefault2(state)
-    },
-    commonOptions
-  )
-})
-
-describe.todo('field accessors', () => {
-  const commonOptions: Options = {
-    iterations: 10,
-    time: 0
-  }
-  const store = setupStore()
-  const selectorDefault = createSelector(
-    [(state: RootState) => state.users],
-    users => users.appSettings
-  )
-  const nonMemoizedSelector = (state: RootState) => state.users.appSettings
-  setFunctionNames({ selectorDefault, nonMemoizedSelector })
-  bench(
-    selectorDefault,
-    () => {
-      selectorDefault(store.getState())
-    },
-    { ...commonOptions }
-  )
-  bench(
-    nonMemoizedSelector,
-    () => {
-      nonMemoizedSelector(store.getState())
-    },
-    { ...commonOptions }
   )
 })

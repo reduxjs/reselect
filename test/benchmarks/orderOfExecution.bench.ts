@@ -43,8 +43,7 @@ describe('Less vs more computation in input selectors', () => {
     return state.todos.filter(todo => todo.completed)
   })
   const commonOptions: Options = {
-    iterations: 10,
-    time: 0
+    time: 500
   }
   setFunctionNames({ selectorLessInInput, selectorMoreInInput, nonMemoized })
   const createOptions = <S extends OutputSelector>(
