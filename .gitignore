@@ -13,6 +13,7 @@ flow_test/should_fail/flow-typed/index.js.flow
 flow_test/should_pass/flow-typed/index.js.flow
 reselect-builds/
 trace
+*.heapsnapshot
 
 typesversions
 .cache
