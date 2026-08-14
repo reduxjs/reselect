@@ -782,3 +782,23 @@ describe('lruMemoize equalityCheck argument order', () => {
     })
   }
 })
+
+describe('lruMemoize cache miss comparison count', () => {
+  test('compares a new argument against each cached entry only once', () => {
+    const equalityCheck = vi.fn(referenceEqualityCheck)
+
+    const memoized = lruMemoize((value: string) => value, {
+      equalityCheck,
+      maxSize: 3
+    })
+
+    memoized('a')
+    memoized('b')
+
+    equalityCheck.mockClear()
+
+    expect(memoized('c')).toBe('c')
+
+    expect(equalityCheck).toHaveBeenCalledTimes(2)
+  })
+})
