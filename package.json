@@ -83,6 +83,7 @@
     "react-dom": "^18.2.0",
     "react-redux": "^9.0.4",
     "rimraf": "^3.0.2",
+    "rolldown": "1.2.4",
     "shelljs": "^0.8.5",
     "tsup": "^8.2.4",
     "typescript": "^5.8.2",
