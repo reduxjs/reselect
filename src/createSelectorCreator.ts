@@ -401,10 +401,21 @@ export function createSelectorCreator<
     const selector = argsMemoize(function dependenciesChecker() {
       dependencyRecomputations++
       /** Return values of input selectors which the `resultFunc` takes as arguments. */
-      const inputSelectorResults = collectInputSelectorResults(
-        dependencies,
-        arguments
-      )
+      // Inlined instead of calling `collectInputSelectorResults`: handing
+      // `arguments` to another function makes it escape, which forces V8 to
+      // materialize it on the heap every call. As an operand of `.apply` it stays
+      // in the frame. (The dev block below still passes it, but that is compiled
+      // out of production builds.)
+      //
+      // Sizing the array up front instead of growing it from `[]` by `push` is
+      // the larger half of the win. Arity-specialized literals measured no better
+      // than this, so one path serves every dependency count.
+      const { length } = dependencies
+      const inputSelectorResults = new Array(length)
+      for (let i = 0; i < length; i++) {
+        // @ts-ignore
+        inputSelectorResults[i] = dependencies[i].apply(null, arguments)
+      }
 
       // apply arguments instead of spreading for performance.
       // @ts-ignore
