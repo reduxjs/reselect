@@ -139,12 +139,9 @@ jobs:
         node: ['22.x']
         example:
           [
-            'cra4',
-            'cra5',
             'next',
             'vite',
-            'node-standard',
-            'node-esm',
+            'node',
             'react-native',
             'expo'
           ]
@@ -163,7 +160,7 @@ jobs:
       - name: Clone RTK repo (pinned to known-good commit)
         run: |
           git init ./redux-toolkit
-          git -C ./redux-toolkit fetch --depth 1 https://github.com/reduxjs/redux-toolkit.git 576a02f8056fbee2dcaddb4d2e4d2da3b7937c58
+          git -C ./redux-toolkit fetch --depth 1 https://github.com/reduxjs/redux-toolkit.git 74200d87c27ca2b1c0915b2fbb4c44dd7494c2aa
           git -C ./redux-toolkit checkout FETCH_HEAD
 
       - name: Check folder contents
