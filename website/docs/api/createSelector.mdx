@@ -33,19 +33,21 @@ const selectTodosByCategory = createSelector(
 )
 ```
 
-## Parameters
+## API Reference
+
+### Parameters
 
 | Name                     | Description                                                                                      |
 | :----------------------- | :----------------------------------------------------------------------------------------------- |
 | `inputSelectors`         | An array of <InternalLinks.InputSelectors />, can also be passed as separate arguments.          |
 | `resultFunc`             | A function that takes the results of the <InternalLinks.InputSelectors /> as separate arguments. |
-| `createSelectorOptions?` | An optional options object that allows for further customization per selector.                   |
+| `createSelectorOptions?` | An optional options object that allows for further customization per selector. See [Customizing Selector Options](#customizing-selector-options) below. |
 
-## Returns
+### Returns
 
 A memoized <InternalLinks.OutputSelector />.
 
-### Output Selector Fields
+#### Output Selector Fields
 
 The output selectors created by `createSelector` have several additional properties attached to them:
 
@@ -62,7 +64,7 @@ The output selectors created by `createSelector` have several additional propert
 | `memoize`                       | Function used to memoize the `resultFunc`.                                                                                                                                                                                                                                 |
 | `argsMemoize`                   | Function used to memoize the arguments passed into the <InternalLinks.OutputSelector />.                                                                                                                                                                                   |
 
-## Type Parameters
+### Type Parameters
 
 | Name                          | Description                                                                                                                                                                                                          |
 | :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

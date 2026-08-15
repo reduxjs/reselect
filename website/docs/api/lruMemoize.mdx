@@ -50,7 +50,9 @@ const referenceEqualityCheck = (previousValue, currentValue) => {
 
 {/* END: lruMemoize/referenceEqualityCheck.ts */}
 
-## Parameters
+## API Reference
+
+### Parameters
 
 | Name                     | Description                                               |
 | :----------------------- | :-------------------------------------------------------- |
@@ -81,19 +83,21 @@ If `resultEqualityCheck` is used inside `argsMemoizeOptions` it has no effect.
 
 :::
 
-## Returns
+### Returns
 
 A memoized function with a `.clearCache()` method attached.
 
-## Type Parameters
+### Type Parameters
 
 | Name   | Description                                |
 | :----- | :----------------------------------------- |
 | `Func` | The type of the function that is memoized. |
 
-## Examples
+## Usage Guide
 
-### Using `lruMemoize` with `createSelector`
+### Examples
+
+#### Using `lruMemoize` with `createSelector`
 
 {/* START: lruMemoize/usingWithCreateSelector.ts */}
 
@@ -172,7 +176,7 @@ const selectTodoIds = createSelector(
 
 {/* END: lruMemoize/usingWithCreateSelector.ts */}
 
-### Using `lruMemoize` with `createSelectorCreator`
+#### Using `lruMemoize` with `createSelectorCreator`
 
 {/* START: lruMemoize/usingWithCreateSelectorCreator.ts */}
 
