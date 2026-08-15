@@ -30,9 +30,11 @@ This means you generally **do not** need to pass `memoize: weakMapMemoize` or `a
 
 ### Parameters
 
-| Name   | Description                  |
-| :----- | :--------------------------- |
-| `func` | The function to be memoized. |
+| Name                          | Description                                                                                                                                                                                              |
+| :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `func`                        | The function to be memoized.                                                                                                                                                                             |
+| `options.resultEqualityCheck` | Optional. Compares a newly computed result against the previous one. If they compare equal, the previous result is returned instead, preserving reference equality for downstream consumers.             |
+| `options.maxSize`             | Optional. Bounds how many results keyed by primitive arguments are retained. Available since 5.3.0. See [Bounding cache size with `maxSize`](#bounding-cache-size-with-maxsize) below for the semantics. |
 
 ### Returns
 
@@ -55,7 +57,7 @@ A memoized function with a `.clearCache()` method attached.
 
 - Cons:
   - There's currently no way to alter the argument comparisons. They're based on <ExternalLinks.ReferenceEqualityCheck text='strict reference equality' />.
-  - Garbage collection only frees results keyed by **object or function** arguments. Results keyed by **primitive** arguments (strings, numbers, booleans) are held strongly, and are only released by calling `.clearCache()`. A selector that keeps seeing new primitive values in the same argument position — ids, offsets, timestamps — grows its cache without bound. In development mode, the [`cacheSizeCheck`](./development-only-checks#cachesizecheck) warns when a single argument position passes 1,000 distinct primitive values.
+  - Garbage collection only frees results keyed by **object or function** arguments. Results keyed by **primitive** arguments (strings, numbers, booleans) are held strongly, and are only released by calling `.clearCache()`. A selector that keeps seeing new primitive values in the same argument position — ids, offsets, timestamps — grows its cache without bound. In development mode, the [`cacheSizeCheck`](./development-only-checks#cachesizecheck) warns when a single argument position passes 1,000 distinct primitive values. As of 5.3.0, the [`maxSize` option](#bounding-cache-size-with-maxsize) bounds this growth.
 
 ### Use Cases
 
@@ -378,6 +380,61 @@ selectItemsByCategory(state, 'Electronics') // Still cached!
 {/* END: weakMapMemoize/cacheSizeSolution.ts */}
 
 This solves the problem of having to know and set the cache size prior to creating a memoized selector. Because `weakMapMemoize` essentially provides a dynamic cache size out of the box.
+
+### Bounding cache size with `maxSize`
+
+The infinite cache size eliminates earlier common pain points around reusing selector instances with varying arguments, which often required cumbersome workarounds like creating a unique selector instance per component instance. Each separate argument combination gets cached, and the code is simpler.
+
+The tradeoff is that an "infinite cache size" can easily become a memory leak depending on arguments and usage patterns. Results keyed by object arguments are freed by garbage collection, but results keyed by **primitive** arguments are held strongly until you call `.clearCache()` (see [Design Tradeoffs](#design-tradeoffs) above). A selector that keeps seeing new primitive values in the same argument position — ids, offsets, timestamps, page numbers — grows its cache without bound.
+
+As of 5.3.0, `weakMapMemoize` accepts a `maxSize` option that bounds this growth:
+
+```ts no-emit
+import { weakMapMemoize } from 'reselect'
+
+const getVisibleItems = weakMapMemoize(
+  (items: Item[], from: number, to: number) => items.slice(from, to),
+  { maxSize: 100 }
+)
+```
+
+This is implemented using a "generational" approach, rather than the LRU approach used by `lruMemoize`:
+
+- Only results keyed by primitive arguments count toward `maxSize`. Results keyed by objects or functions are already released by garbage collection.
+- After `maxSize` new results have been cached, the whole cache is demoted to a "previous generation", and later results build up a fresh cache. When the fresh cache fills up in turn, the previous generation is dropped in one step.
+- A call that finds its result in the previous generation promotes that result into the current one, so entries that keep getting used keep surviving the flips.
+- Total retention is therefore bounded at roughly `2 * maxSize` results, and eviction happens in batches rather than one entry at a time. This is by design: it keeps the per-call bookkeeping near zero, and there is **no cost at all when `maxSize` is not passed**.
+
+If you need an exact bound with per-entry LRU eviction order, use <InternalLinks.LruMemoize /> instead — the tradeoff is that its `maxSize` is exact but its bookkeeping runs on every call.
+
+:::warning Bounding a `createSelector` selector requires both options
+
+<InternalLinks.CreateSelector /> memoizes at two levels: `argsMemoize` caches by
+the selector's call arguments, and `memoize` caches by the input selector
+results. If you only set `memoizeOptions: {maxSize}`, the args cache still grows
+without bound — and because it sits in front, it returns cached results before
+the bounded cache is ever consulted. Pass `maxSize` in **both** options:
+
+```ts no-emit
+const selectVisibleItems = createSelector(
+  [
+    (state: RootState) => state.items,
+    (state: RootState, from: number) => from,
+    (state: RootState, from: number, to: number) => to
+  ],
+  (items, from, to) => items.slice(from, to),
+  {
+    memoizeOptions: { maxSize: 100 },
+    argsMemoizeOptions: { maxSize: 100 }
+  }
+)
+```
+
+Since `weakMapMemoize` is the default for both levels, no `memoize` or `argsMemoize` fields are needed — the options objects configure the defaults.
+
+:::
+
+In development mode, the [`cacheSizeCheck`](./development-only-checks#cachesizecheck) warns when a selector shows the unbounded-growth pattern, which is a good signal that a particular selector would benefit from `maxSize`.
 
 ### Examples
 

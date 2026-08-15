@@ -85,12 +85,24 @@ describe('memoize and argsMemoize', () => {
       [(state: RootState) => state.todos],
       // @ts-expect-error
       todos => todos.map(t => t.id),
-      { memoize: weakMapMemoize, memoizeOptions: { maxSize: 2 } }
+      {
+        memoize: weakMapMemoize,
+        memoizeOptions: { equalityCheck: (a: unknown, b: unknown) => a === b }
+      }
     )
     // @ts-expect-error When memoize is weakMapMemoize, type of memoizeOptions needs to be the same as options args in weakMapMemoize.
     const selectorWeakMapSeparateInlineArgsWithMemoizeOptions = createSelector(
       (state: RootState) => state.todos,
       // @ts-expect-error
+      todos => todos.map(t => t.id),
+      {
+        memoize: weakMapMemoize,
+        memoizeOptions: { equalityCheck: (a: unknown, b: unknown) => a === b }
+      }
+    )
+    // `maxSize` is a valid weakMapMemoize option as of 5.3.0.
+    const selectorWeakMapWithMaxSize = createSelector(
+      (state: RootState) => state.todos,
       todos => todos.map(t => t.id),
       { memoize: weakMapMemoize, memoizeOptions: { maxSize: 2 } }
     )
@@ -118,7 +130,10 @@ describe('memoize and argsMemoize', () => {
         (state: RootState) => state.todos,
         // @ts-expect-error
         todos => todos.map(t => t.id),
-        { memoize: weakMapMemoize, memoizeOptions: { maxSize: 2 } }
+        {
+          memoize: weakMapMemoize,
+          memoizeOptions: { equalityCheck: (a: unknown, b: unknown) => a === b }
+        }
       )
     const changeMemoizeMethodSelectorWeakMapWithMemoizeOptions =
       createSelectorWeakMap(
@@ -201,12 +216,28 @@ describe('memoize and argsMemoize', () => {
       [(state: RootState) => state.todos],
       // @ts-expect-error
       todos => todos.map(t => t.id),
-      { argsMemoize: weakMapMemoize, argsMemoizeOptions: { maxSize: 2 } }
+      {
+        argsMemoize: weakMapMemoize,
+        argsMemoizeOptions: {
+          equalityCheck: (a: unknown, b: unknown) => a === b
+        }
+      }
     )
     // @ts-expect-error When argsMemoize is weakMapMemoize, type of argsMemoizeOptions needs to be the same as options args in weakMapMemoize.
     const selectorWeakMapSeparateInlineArgsWithMemoizeOptions = createSelector(
       (state: RootState) => state.todos,
       // @ts-expect-error
+      todos => todos.map(t => t.id),
+      {
+        argsMemoize: weakMapMemoize,
+        argsMemoizeOptions: {
+          equalityCheck: (a: unknown, b: unknown) => a === b
+        }
+      }
+    )
+    // `maxSize` is a valid weakMapMemoize option as of 5.3.0.
+    const selectorWeakMapWithArgsMaxSize = createSelector(
+      (state: RootState) => state.todos,
       todos => todos.map(t => t.id),
       { argsMemoize: weakMapMemoize, argsMemoizeOptions: { maxSize: 2 } }
     )
@@ -219,7 +250,9 @@ describe('memoize and argsMemoize', () => {
       ],
       {
         argsMemoize: weakMapMemoize,
-        argsMemoizeOptions: { maxSize: 2 }
+        argsMemoizeOptions: {
+          equalityCheck: (a: unknown, b: unknown) => a === b
+        }
       }
     )
     // @ts-expect-error When argsMemoize is weakMapMemoize, type of argsMemoizeOptions needs to be the same as options args in weakMapMemoize.
@@ -236,7 +269,9 @@ describe('memoize and argsMemoize', () => {
             (a, b) => a === b,
           maxSize: 2
         },
-        argsMemoizeOptions: { maxSize: 2 }
+        argsMemoizeOptions: {
+          equalityCheck: (a: unknown, b: unknown) => a === b
+        }
       }
     )
 
@@ -261,7 +296,9 @@ describe('memoize and argsMemoize', () => {
               maxSize: 2
             }
           ],
-          argsMemoizeOptions: [{ maxSize: 2 }]
+          argsMemoizeOptions: [
+            { equalityCheck: (a: unknown, b: unknown) => a === b }
+          ]
         }
       )
     const selectorWeakMapSeparateInlineArgsWithMemoizeOptions4 =
@@ -326,7 +363,12 @@ describe('memoize and argsMemoize', () => {
         (state: RootState) => state.todos,
         // @ts-expect-error
         todos => todos.map(t => t.id),
-        { argsMemoize: weakMapMemoize, argsMemoizeOptions: { maxSize: 2 } }
+        {
+          argsMemoize: weakMapMemoize,
+          argsMemoizeOptions: {
+            equalityCheck: (a: unknown, b: unknown) => a === b
+          }
+        }
       )
     const changeMemoizeMethodSelectorWeakMapWithMemoizeOptions =
       createSelectorWeakMap(
