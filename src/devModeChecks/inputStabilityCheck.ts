@@ -33,7 +33,7 @@ const withoutResultEqualityCheck = (option: unknown) => {
  * @param options - Options object consisting of a `memoize` function and a `memoizeOptions` object.
  * @param inputSelectorArgs - List of arguments being passed to the input selectors.
  *
- * @see {@link https://reselect.js.org/api/development-only-stability-checks/#inputstabilitycheck `inputStabilityCheck`}
+ * @see {@link https://reselect.js.org/api/development-only-checks#inputstabilitycheck `inputStabilityCheck`}
  *
  * @since 5.0.0
  * @internal

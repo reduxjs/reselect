@@ -27,6 +27,7 @@ size larger than 1, and uses an LRU cache internally.
 
 - Cons:
   - There's currently no way to alter the argument comparisons. They're based on <ExternalLinks.ReferenceEqualityCheck text='strict reference equality' />.
+  - Garbage collection only frees results keyed by **object or function** arguments. Results keyed by **primitive** arguments (strings, numbers, booleans) are held strongly, and are only released by calling `.clearCache()`. A selector that keeps seeing new primitive values in the same argument position — ids, offsets, timestamps — grows its cache without bound. In development mode, the [`cacheSizeCheck`](./development-only-checks#cachesizecheck) warns when a single argument position passes 1,000 distinct primitive values.
 
 ## Use Cases
 
