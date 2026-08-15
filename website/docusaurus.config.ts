@@ -47,7 +47,7 @@ const config: Config = {
       } satisfies Options
     ]
   ],
-
+  themes: [require.resolve('@getcanary/docusaurus-theme-search-pagefind')],
   themeConfig: {
     // Replace with your project's social card
     // image: 'img/docusaurus-social-card.jpg',
