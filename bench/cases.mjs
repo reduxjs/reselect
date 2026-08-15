@@ -283,6 +283,172 @@ const microLruMissEvict = {
   }
 }
 
+/**
+ * Hit path, three arguments. `lruMemoize` compares the argument lists element by
+ * element, so per-argument work in the comparator shows up here at three times
+ * the size it does in the one-argument case. A change that moves this case but
+ * not `micro: lruMemoize hit (1 arg)` is per-argument; one that moves both by the
+ * same amount is per-call.
+ */
+const microLruHitThreeArgs = {
+  name: 'micro: lruMemoize hit (3 args)',
+  kind: 'micro',
+  expected: () => 1,
+  create: ({ lruMemoize }, count) => {
+    const first = { value: 1 }
+    const second = { value: 2 }
+    const third = { value: 3 }
+    const memoized = lruMemoize((a, b, c) => {
+      count()
+      return a.value + b.value + c.value
+    })
+
+    return () => memoized(first, second, third)
+  }
+}
+
+/**
+ * Miss path with `resultEqualityCheck`, at the default `maxSize` of 1.
+ *
+ * `resultEqualityCheck` is the only thing that reads the cache's entries, and it
+ * reads them once per miss. The result function is deliberately trivial so the
+ * measurement is the bookkeeping rather than the payload — the realistic version
+ * below covers the other half of the question.
+ *
+ * Every call passes a fresh argument, so the argument cache never hits, and the
+ * result is always the same primitive, so `resultEqualityCheck` always matches
+ * and the dedupe branch is always taken.
+ */
+const microLruResultEqualitySingleton = {
+  name: 'micro: lruMemoize miss + resultEqualityCheck',
+  kind: 'micro',
+  // The argument cache never hits, so `func` runs on every call, priming
+  // included. `resultsCount` is deduped back down but `count()` is not.
+  expected: (ticks, config) =>
+    config.callsPerTick + ticks * config.callsPerTick,
+  create: ({ lruMemoize }, count) => {
+    const args = Array.from({ length: 20 }, (_, value) => ({ value }))
+    const memoized = lruMemoize(
+      () => {
+        count()
+        return 1
+      },
+      { resultEqualityCheck: (previous, next) => previous === next }
+    )
+    let index = 0
+
+    return () => {
+      index = index === 19 ? 0 : index + 1
+      return memoized(args[index])
+    }
+  }
+}
+
+/**
+ * The same path at `maxSize: 10`, which uses the LRU cache rather than the
+ * singleton one. The two caches reach the entries differently, so a change to
+ * that code can help one and not the other.
+ */
+const microLruResultEqualityLru = {
+  name: '  same, maxSize 10',
+  kind: 'micro',
+  expected: (ticks, config) =>
+    config.callsPerTick + ticks * config.callsPerTick,
+  create: ({ lruMemoize }, count) => {
+    const args = Array.from({ length: 20 }, (_, value) => ({ value }))
+    const memoized = lruMemoize(
+      () => {
+        count()
+        return 1
+      },
+      {
+        maxSize: 10,
+        resultEqualityCheck: (previous, next) => previous === next
+      }
+    )
+    let index = 0
+
+    return () => {
+      index = index === 19 ? 0 : index + 1
+      return memoized(args[index])
+    }
+  }
+}
+
+/**
+ * The realistic shape `resultEqualityCheck` exists for: a result function that
+ * rebuilds an array of ids, and a shallow compare that recognises the rebuild as
+ * unchanged. The payload dominates here, which is the point — it is the control
+ * on the two cases above, which deliberately have no payload at all. A change
+ * that moves those but not this one is real and does not matter.
+ */
+const microLruResultEqualityRealistic = {
+  name: '  same, array payload',
+  kind: 'micro',
+  expected: (ticks, config) =>
+    config.callsPerTick + ticks * config.callsPerTick,
+  create: ({ lruMemoize }, count) => {
+    const args = Array.from({ length: 20 }, (_, value) => ({ value }))
+    const todos = Array.from({ length: 20 }, (_, id) => ({ id }))
+    const memoized = lruMemoize(
+      () => {
+        count()
+        return todos.map(todo => todo.id)
+      },
+      {
+        resultEqualityCheck: (previous, next) => {
+          if (previous.length !== next.length) return false
+          for (let i = 0; i < previous.length; i += 1) {
+            if (previous[i] !== next[i]) return false
+          }
+          return true
+        }
+      }
+    )
+    let index = 0
+
+    return () => {
+      index = index === 19 ? 0 : index + 1
+      return memoized(args[index])
+    }
+  }
+}
+
+/**
+ * `weakMapMemoize` filling its cache rather than reading it. Every call passes a
+ * freshly allocated argument, so every call walks the node tree, allocates a
+ * cache node and writes it into a `WeakMap`.
+ *
+ * The cache is cleared once every `callsPerTick` calls. Without that it would
+ * grow without bound across a round — `weakMapMemoize` evicts nothing by default
+ * — and a case whose retained set grows for the length of the round measures the
+ * collector more than it measures the fill. Clearing costs one assignment,
+ * amortised over a thousand calls, and both variants pay it identically.
+ */
+const microWeakMapFill = {
+  name: 'micro: weakMapMemoize miss+fill',
+  kind: 'micro',
+  expected: (ticks, config) =>
+    config.callsPerTick + ticks * config.callsPerTick,
+  create: ({ weakMapMemoize }, count) => {
+    const memoized = weakMapMemoize(input => {
+      count()
+      return input.value
+    })
+    let sinceClear = 0
+
+    return () => {
+      if (sinceClear === 1000) {
+        memoized.clearCache()
+        sinceClear = 0
+      }
+      sinceClear += 1
+
+      return memoized({ value: sinceClear })
+    }
+  }
+}
+
 const shapes = [
   oneInput,
   threeInputs,
@@ -293,8 +459,13 @@ const shapes = [
   nested,
   microWeakMapHitOneArg,
   microWeakMapHitTwoArgs,
+  microWeakMapFill,
   microLruHit,
-  microLruMissEvict
+  microLruHitThreeArgs,
+  microLruMissEvict,
+  microLruResultEqualitySingleton,
+  microLruResultEqualityLru,
+  microLruResultEqualityRealistic
 ]
 
 /* Floors. Not proposals — no introspection, no configurable memoization, no
