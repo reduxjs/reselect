@@ -18,7 +18,6 @@ const config: Config = {
   projectName: 'reselect', // Usually your repo name.
 
   onBrokenLinks: 'throw',
-  onBrokenMarkdownLinks: 'warn',
 
   // Even if you don't use internationalization, you can use this field to set
   // useful metadata like html lang. For example, if your site is Chinese, you
@@ -26,6 +25,11 @@ const config: Config = {
   i18n: {
     defaultLocale: 'en',
     locales: ['en']
+  },
+  markdown: {
+    hooks: {
+      onBrokenMarkdownLinks: 'warn'
+    }
   },
 
   presets: [
@@ -47,7 +51,7 @@ const config: Config = {
       } satisfies Options
     ]
   ],
-
+  themes: [require.resolve('@getcanary/docusaurus-theme-search-pagefind')],
   themeConfig: {
     // Replace with your project's social card
     // image: 'img/docusaurus-social-card.jpg',
@@ -105,7 +109,13 @@ const config: Config = {
     prism: {
       theme: require('./monokaiTheme.js')
     }
-  } satisfies ThemeConfig
+  } satisfies ThemeConfig,
+  future: {
+    v4: {
+      removeLegacyPostBuildHeadAttribute: true,
+      fasterByDefault: true
+    }
+  }
 }
 
 export default config
