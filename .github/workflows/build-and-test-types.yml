@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: ['22.x']
+        node: ['24.x']
 
     steps:
       - name: Checkout code
@@ -57,8 +57,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: ['22.x']
-        ts: ['5.0', '5.1', '5.2', '5.3', '5.4', '5.5', '5.6', '5.7', '5.8']
+        node: ['24.x']
+        ts: ['5.6', '5.7', '5.8', '5.9', '6.0']
 
     steps:
       - name: Checkout repo
@@ -106,7 +106,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: ['22.x']
+        node: ['24.x']
     steps:
       - name: Checkout repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -136,15 +136,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: ['22.x']
+        node: ['24.x']
         example:
           [
-            'cra4',
-            'cra5',
             'next',
             'vite',
-            'node-standard',
-            'node-esm',
+            'node',
             'react-native',
             'expo'
           ]
@@ -163,7 +160,7 @@ jobs:
       - name: Clone RTK repo (pinned to known-good commit)
         run: |
           git init ./redux-toolkit
-          git -C ./redux-toolkit fetch --depth 1 https://github.com/reduxjs/redux-toolkit.git 576a02f8056fbee2dcaddb4d2e4d2da3b7937c58
+          git -C ./redux-toolkit fetch --depth 1 https://github.com/reduxjs/redux-toolkit.git 74200d87c27ca2b1c0915b2fbb4c44dd7494c2aa
           git -C ./redux-toolkit checkout FETCH_HEAD
 
       - name: Check folder contents
