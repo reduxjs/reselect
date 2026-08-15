@@ -335,7 +335,7 @@ test('selector unit test', () => {
 Yes, although if they pass in different arguments, you will need to handle that in order for memoization to work consistently:
 
 - Pass a larger `maxSize` if using `lruMemoize` ( as of 4.1.0+)
-- Use <InternalLinks.WeakMapMemoize /> (as of 5.0.0+)
+- Use <InternalLinks.WeakMapMemoize /> (as of 5.0.0+). If the arguments are ever-changing primitives, pass its [`maxSize` option](/api/weakMapMemoize#bounding-cache-size-with-maxsize) to bound the cache growth (as of 5.3.0+)
 
 ## Are there TypeScript Typings?
 

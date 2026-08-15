@@ -38,7 +38,7 @@ export const runCacheSizeCheck = (cacheSize: number, funcName: string) => {
       funcName ? ` (\`${funcName}\`)` : ''
     } has seen over ${cacheSize} distinct values for the same primitive argument position.` +
       '\nResults keyed by primitive arguments are held strongly and are only released by `clearCache()`, so this cache will keep growing for as long as the function keeps seeing new values.' +
-      '\nIf it is called with ever-changing primitives (ids, offsets, timestamps), consider `lruMemoize` for this selector, or call `.clearCache()` at a suitable point.' +
+      '\nIf it is called with ever-changing primitives (ids, offsets, timestamps), pass the `maxSize` option to bound the cache, switch to `lruMemoize`, or call `.clearCache()` at a suitable point.' +
       '\nSee https://reselect.js.org/api/development-only-checks#cachesizecheck for details.',
     { stack }
   )

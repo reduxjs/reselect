@@ -264,7 +264,8 @@ This check counts the distinct primitive values cached for each argument positio
 
 If you see this warning, the usual fixes are:
 
-- Switch that selector to <InternalLinks.LruMemoize />, which holds a fixed number of results.
+- Pass the [`maxSize` option](./weakMapMemoize#bounding-cache-size-with-maxsize) to bound the cache (as of 5.3.0). Note that bounding a selector created by <InternalLinks.CreateSelector /> requires `maxSize` in both `memoizeOptions` and `argsMemoizeOptions`.
+- Switch that selector to <InternalLinks.LruMemoize />, which holds a fixed number of results with exact LRU eviction.
 - Call `.clearCache()` at a suitable point, such as when the data it derives from is replaced. Clearing the cache also re-arms the warning, so you will hear about it again if the cache regrows.
 
 Unlike the other checks, `cacheSizeCheck` is configured globally only (see the caution [above](#per-selector-with-the-devmodechecks-option)):
