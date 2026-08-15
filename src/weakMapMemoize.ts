@@ -107,6 +107,36 @@ export interface WeakMapMemoizeOptions<Result = any> {
    * @since 5.0.0
    */
   resultEqualityCheck?: EqualityFn<Result>
+  /**
+   * Bounds how many results are retained for primitive arguments. By default
+   * the cache grows without limit: object arguments are held in `WeakMap`s
+   * and released by garbage collection, but primitive arguments are held in
+   * regular `Map`s and are retained until {@linkcode DefaultMemoizeFields.clearCache clearCache}
+   * is called. A selector that keeps seeing new primitive values (IDs,
+   * pagination offsets, timestamps) therefore grows without bound.
+   *
+   * The bound is generational, not an LRU: after `maxSize` results have been
+   * cached, the entire cache becomes the "previous generation" and a fresh
+   * cache becomes current. Lookups that miss the current cache probe the
+   * previous one, and a hit there is copied forward so it survives the next
+   * generation change. When the generation changes again, the previous cache
+   * is dropped wholesale. In practice this means:
+   * - total retention is bounded at roughly `2 * maxSize` results
+   * - a result that keeps getting used stays cached indefinitely
+   * - a result that goes unused for a full generation is dropped with it,
+   *   in one batch, rather than entry by entry
+   *
+   * Must be a positive integer. There is no cost to the memoized function
+   * when this option is not passed.
+   *
+   * Note that to bound a selector created by `createSelector`, `maxSize`
+   * needs to be passed in both `memoizeOptions` and `argsMemoizeOptions` —
+   * the arguments cache and the results cache are separate `weakMapMemoize`
+   * instances.
+   *
+   * @since 5.3.0
+   */
+  maxSize?: number
 }
 
 /**
@@ -132,8 +162,10 @@ function maybeDeref(r: any) {
  *
  * __Design Tradeoffs for `weakMapMemoize`:__
  * - Pros:
- *   - It has an effectively infinite cache size, but you have no control over
+ *   - It has an effectively infinite cache size by default, but you have no control over
  *   how long values are kept in cache as it's based on garbage collection and `WeakMap`s.
+ *   Results cached for primitive arguments are retained until `clearCache` is called;
+ *   the {@linkcode WeakMapMemoizeOptions.maxSize maxSize} option bounds that growth.
  * - Cons:
  *   - There's currently no way to alter the argument comparisons.
  *   They're based on strict reference equality.
@@ -201,13 +233,36 @@ export function weakMapMemoize<Func extends AnyFunction>(
   options: WeakMapMemoizeOptions<ReturnType<Func>> = {}
 ) {
   let fnNode = createCacheNode()
-  const { resultEqualityCheck } = options
+  const { resultEqualityCheck, maxSize } = options
+
+  // Generational bounding for `maxSize`: `prevNode` holds the demoted cache
+  // tree, `insertionCount` counts primitive-Map insertions into the current
+  // tree. Reaching `maxSize` flips generations at the end of that call.
+  const useGenerations = maxSize !== undefined
+  if (useGenerations && (!Number.isInteger(maxSize) || maxSize < 1)) {
+    throw new TypeError(
+      `maxSize must be a positive integer, received: ${maxSize}`
+    )
+  }
+  let prevNode: CacheNode<any> | null = null
+  let insertionCount = 0
 
   let lastResult: WeakRef<object> | undefined
 
   let resultsCount = 0
 
   let hasWarnedAboutCacheSize = false
+
+  // Flip generations at the end of a call that cached something, never during
+  // a walk, so a flip can never happen while pointers into the tree being
+  // demoted are still live. The hit path never reaches this.
+  function maybeFlipGenerations() {
+    if (insertionCount >= (maxSize as number)) {
+      prevNode = fnNode
+      fnNode = createCacheNode()
+      insertionCount = 0
+    }
+  }
 
   function memoized() {
     let cacheNode = fnNode
@@ -240,6 +295,7 @@ export function weakMapMemoize<Func extends AnyFunction>(
         if (primitiveNode === undefined) {
           cacheNode = createCacheNode()
           primitiveCache.set(arg, cacheNode)
+          insertionCount++
 
           if (process.env.NODE_ENV !== 'production') {
             // A single primitive `Map` growing past the threshold means this
@@ -275,6 +331,43 @@ export function weakMapMemoize<Func extends AnyFunction>(
       return cacheNode.v
     }
 
+    // The current tree has no result, but the previous generation might.
+    // This probe only runs on a miss, so the hit path above is untouched.
+    // A hit here is copied forward into the current node so it survives the
+    // next flip, and returned without recomputing.
+    if (prevNode !== null) {
+      let prevCacheNode: CacheNode<any> | null = prevNode
+      for (let i = 0, l = length; i < l; i++) {
+        const arg = arguments[i]
+        let next: CacheNode<any> | undefined
+        if (
+          typeof arg === 'function' ||
+          (typeof arg === 'object' && arg !== null)
+        ) {
+          const prevObjectCache: CacheNode<any>['o'] = prevCacheNode.o
+          next = prevObjectCache !== null ? prevObjectCache.get(arg) : undefined
+        } else {
+          const prevPrimitiveCache: CacheNode<any>['p'] = prevCacheNode.p
+          next =
+            prevPrimitiveCache !== null
+              ? prevPrimitiveCache.get(arg)
+              : undefined
+        }
+        if (next === undefined) {
+          prevCacheNode = null
+          break
+        }
+        prevCacheNode = next
+      }
+      if (prevCacheNode !== null && prevCacheNode.s === TERMINATED) {
+        const promotedNode = cacheNode as unknown as TerminatedCacheNode<any>
+        promotedNode.s = TERMINATED
+        promotedNode.v = prevCacheNode.v
+        maybeFlipGenerations()
+        return prevCacheNode.v
+      }
+    }
+
     const terminatedNode = cacheNode as unknown as TerminatedCacheNode<any>
 
     // Allow errors to propagate
@@ -303,11 +396,16 @@ export function weakMapMemoize<Func extends AnyFunction>(
 
     terminatedNode.s = TERMINATED
     terminatedNode.v = result
+    if (useGenerations) {
+      maybeFlipGenerations()
+    }
     return result
   }
 
   memoized.clearCache = () => {
     fnNode = createCacheNode()
+    prevNode = null
+    insertionCount = 0
     memoized.resetResultsCount()
     if (process.env.NODE_ENV !== 'production') {
       hasWarnedAboutCacheSize = false
