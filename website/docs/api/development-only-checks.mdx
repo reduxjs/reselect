@@ -1,0 +1,283 @@
+---
+id: development-only-checks
+title: Development-Only Checks
+sidebar_label: Development-Only Checks
+sidebar_position: 1
+hide_title: true
+description: Development-Only Checks
+---
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+import { InternalLinks } from '@site/src/components/InternalLinks'
+
+# Development-Only Checks
+
+In development mode, Reselect runs extra checks on your selectors and warns about common mistakes:
+
+| Check                                             | What it catches                                                                                        |
+| :------------------------------------------------ | :----------------------------------------------------------------------------------------------------- |
+| [`inputStabilityCheck`](#inputstabilitycheck)     | <InternalLinks.InputSelectors /> that return a new reference on every run, which breaks memoization    |
+| [`identityFunctionCheck`](#identityfunctioncheck) | Result functions that return their argument unchanged, which memoize nothing useful                    |
+| [`cacheSizeCheck`](#cachesizecheck)               | <InternalLinks.WeakMapMemoize /> caches that grow without bound from ever-changing primitive arguments |
+
+:::info
+
+All development-only checks are automatically disabled in production environments.
+
+:::
+
+## Configuring the checks
+
+Every check runs with one of three frequencies:
+
+```ts
+type DevModeCheckFrequency = 'always' | 'once' | 'never'
+```
+
+| Possible Values | Description                                                                                                                                   |
+| :-------------- | :-------------------------------------------------------------------------------------------------------------------------------------------- |
+| `once`          | Run the check once per selector: on the first call for the stability checks, or the first time the threshold is crossed for `cacheSizeCheck`. |
+| `always`        | Run the check on every call.                                                                                                                  |
+| `never`         | Never run the check.                                                                                                                          |
+
+The default for every check is `once`: catching a mistake does not require checking on every call, so the checks stay cheap.
+
+### Globally with `setGlobalDevModeChecks`
+
+The `setGlobalDevModeChecks` function changes the frequency for all selectors. It takes a partial object, so set only the checks you want to change:
+
+```ts
+import { setGlobalDevModeChecks } from 'reselect'
+
+// Run the input stability check every time any selector is called.
+setGlobalDevModeChecks({ inputStabilityCheck: 'always' })
+
+// Turn off the identity function check entirely.
+setGlobalDevModeChecks({ identityFunctionCheck: 'never' })
+```
+
+### Per selector with the `devModeChecks` option
+
+Individual selectors can override the global setting by passing a `devModeChecks` option to <InternalLinks.CreateSelector>`createSelector`</InternalLinks.CreateSelector>:
+
+```ts
+const selectTodoIds = createSelector(
+  [(state: RootState) => state.todos],
+  todos => todos.map(todo => todo.id),
+  {
+    devModeChecks: {
+      inputStabilityCheck: 'always',
+      identityFunctionCheck: 'never'
+    }
+  }
+)
+```
+
+:::warning
+
+A `devModeChecks` option always overrides the global setting for that selector, in both directions: it can turn a check on for one selector after globally disabling it, or turn it off for one selector that is a known false positive.
+
+:::
+
+:::caution
+
+`cacheSizeCheck` can only be configured globally. It runs inside <InternalLinks.WeakMapMemoize /> itself, which never sees `createSelector`'s options, so passing `devModeChecks: { cacheSizeCheck: ... }` to a selector has no effect.
+
+:::
+
+## `inputStabilityCheck`
+
+Due to how <InternalLinks.CascadingMemoization /> works in Reselect, it is crucial that your <InternalLinks.InputSelectors /> do not return a new reference on each run. If an <InternalLinks.InputSelectors text='input selector' /> always returns a new reference, like
+
+```ts
+state => ({ a: state.a, b: state.b })
+```
+
+or
+
+```ts
+state => state.todos.map(todo => todo.id)
+```
+
+the selector will never memoize properly.
+
+Since this is a common mistake, <InternalLinks.CreateSelector /> runs the <InternalLinks.InputSelectors /> twice during the first call to the selector. If the results appear to be different for the same call, it logs a warning with the arguments and the two different sets of extracted input values.
+
+Turning the check up to `always` is useful while debugging a selector that recomputes more than expected:
+
+{/* START: development-only-checks/inputStabilityCheck.ts */}
+
+<Tabs
+  groupId='language'
+  defaultValue='ts'
+  values={[
+    {label: 'TypeScript', value: 'ts'},
+    {label: 'JavaScript', value: 'js'},
+  ]}>
+  <TabItem value='ts'>
+
+```ts title="development-only-checks/inputStabilityCheck.ts"
+import { createSelector } from 'reselect'
+
+interface RootState {
+  todos: { id: number; completed: boolean }[]
+  alerts: { id: number; read: boolean }[]
+}
+
+// Create a selector that double-checks the results of input selectors every time it runs.
+const selectCompletedTodosLength = createSelector(
+  [
+    // ❌ Incorrect Use Case: This input selector will not be
+    // memoized properly since it always returns a new reference.
+    (state: RootState) =>
+      state.todos.filter(({ completed }) => completed === true)
+  ],
+  completedTodos => completedTodos.length,
+  // Will override the global setting.
+  { devModeChecks: { inputStabilityCheck: 'always' } }
+)
+```
+
+  </TabItem>
+  <TabItem value='js'>
+
+```js title="development-only-checks/inputStabilityCheck.js"
+import { createSelector } from 'reselect'
+
+// Create a selector that double-checks the results of input selectors every time it runs.
+const selectCompletedTodosLength = createSelector(
+  [
+    // ❌ Incorrect Use Case: This input selector will not be
+    // memoized properly since it always returns a new reference.
+    state => state.todos.filter(({ completed }) => completed === true)
+  ],
+  completedTodos => completedTodos.length,
+  // Will override the global setting.
+  { devModeChecks: { inputStabilityCheck: 'always' } }
+)
+```
+
+  </TabItem>
+</Tabs>
+
+{/* END: development-only-checks/inputStabilityCheck.ts */}
+
+## `identityFunctionCheck`
+
+Reselect relies on a separation of concerns between extraction and transformation logic:
+
+- **Extraction logic** retrieves data from a broader state, like `state => state.todos`. It belongs in <InternalLinks.InputSelectors />.
+- **Transformation logic** manipulates or formats that data, like `todos => todos.map(({ id }) => id)`. It belongs in the <InternalLinks.ResultFunction />.
+
+Memoization only works when the two are properly separated: the input selector results are what get compared between calls, and the result function is what gets skipped on a cache hit. A result function that returns its argument unchanged means the selector does nothing useful:
+
+```ts
+// ❌ Incorrect Use Case: This will not memoize correctly, and does nothing useful!
+const brokenSelector = createSelector(
+  // ✔️ GOOD: Contains extraction logic.
+  [(state: RootState) => state.todos],
+  // ❌ BAD: Does not contain transformation logic.
+  todos => todos
+)
+```
+
+This check detects that pattern and logs a warning the first time the selector runs:
+
+{/* START: development-only-checks/identityFunctionCheck.ts */}
+
+<Tabs
+  groupId='language'
+  defaultValue='ts'
+  values={[
+    {label: 'TypeScript', value: 'ts'},
+    {label: 'JavaScript', value: 'js'},
+  ]}>
+  <TabItem value='ts'>
+
+```ts title="development-only-checks/identityFunctionCheck.ts"
+import { createSelector } from 'reselect'
+
+interface RootState {
+  todos: { id: number; completed: boolean }[]
+  alerts: { id: number; read: boolean }[]
+}
+
+// Create a selector that checks to see if the result function is an identity function.
+const selectTodos = createSelector(
+  // ✔️ GOOD: Contains extraction logic.
+  [(state: RootState) => state.todos],
+  // ❌ BAD: Does not contain transformation logic.
+  todos => todos,
+  // Will override the global setting.
+  { devModeChecks: { identityFunctionCheck: 'always' } }
+)
+```
+
+  </TabItem>
+  <TabItem value='js'>
+
+```js title="development-only-checks/identityFunctionCheck.js"
+import { createSelector } from 'reselect'
+
+// Create a selector that checks to see if the result function is an identity function.
+const selectTodos = createSelector(
+  // ✔️ GOOD: Contains extraction logic.
+  [state => state.todos],
+  // ❌ BAD: Does not contain transformation logic.
+  todos => todos,
+  // Will override the global setting.
+  { devModeChecks: { identityFunctionCheck: 'always' } }
+)
+```
+
+  </TabItem>
+</Tabs>
+
+{/* END: development-only-checks/identityFunctionCheck.ts */}
+
+## `cacheSizeCheck`
+
+<InternalLinks.WeakMapMemoize /> (the default memoizer since 5.0) keys its cache
+tree by argument identity, and the two kinds of arguments age out of the cache
+very differently:
+
+- Results keyed by an **object or function** argument live in a `WeakMap`. Once that argument is garbage-collected, the cached result goes with it.
+- Results keyed by a **primitive** argument (a string, number, or boolean) live in a regular `Map`. They are held strongly and are only released by calling `.clearCache()` on the memoized function.
+
+A selector that keeps seeing new primitive values in the same argument position — ids, offsets, timestamps, page numbers — therefore grows its cache without bound. A paginated selector is the canonical case:
+
+```ts
+const selectVisibleItems = createSelector(
+  [
+    (state: RootState) => state.items,
+    (state: RootState, from: number) => from,
+    (state: RootState, to: number) => to
+  ],
+  (items, from, to) => items.slice(from, to)
+)
+```
+
+As the user scrolls, every `(from, to)` pair ever passed stays cached: the sliced arrays for `(0, 10)`, `(1, 11)`, `(2, 12)`, and so on are all retained for as long as `state.items` is alive, long after those windows scrolled out of view.
+
+This check counts the distinct primitive values cached for each argument position. When a single position exceeds **1,000** distinct values, it logs a warning naming the memoized function. The count is per argument position, so a per-item selector called with a bounded set of ids will not trip it — the warning fires on the _unbounded_ pattern, not on legitimate wide caches.
+
+If you see this warning, the usual fixes are:
+
+- Switch that selector to <InternalLinks.LruMemoize />, which holds a fixed number of results.
+- Call `.clearCache()` at a suitable point, such as when the data it derives from is replaced. Clearing the cache also re-arms the warning, so you will hear about it again if the cache regrows.
+
+Unlike the other checks, `cacheSizeCheck` is configured globally only (see the caution [above](#per-selector-with-the-devmodechecks-option)):
+
+```ts
+import { setGlobalDevModeChecks } from 'reselect'
+
+// Warn once per memoized function. (default)
+setGlobalDevModeChecks({ cacheSizeCheck: 'once' })
+
+// Warn on every cache insertion past the threshold.
+setGlobalDevModeChecks({ cacheSizeCheck: 'always' })
+
+// Never check cache sizes.
+setGlobalDevModeChecks({ cacheSizeCheck: 'never' })
+```

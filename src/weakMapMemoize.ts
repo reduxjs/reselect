@@ -1,6 +1,11 @@
 // Original source:
 // - https://github.com/facebook/react/blob/0b974418c9a56f6c560298560265dcf4b65784bc/packages/react/src/ReactCache.js
 
+import {
+  CACHE_SIZE_CHECK_THRESHOLD,
+  runCacheSizeCheck
+} from './devModeChecks/cacheSizeCheck'
+import { globalDevModeChecks } from './devModeChecks/setGlobalDevModeChecks'
 import type {
   AnyFunction,
   DefaultMemoizeFields,
@@ -202,6 +207,8 @@ export function weakMapMemoize<Func extends AnyFunction>(
 
   let resultsCount = 0
 
+  let hasWarnedAboutCacheSize = false
+
   function memoized() {
     let cacheNode = fnNode
     const { length } = arguments
@@ -233,6 +240,27 @@ export function weakMapMemoize<Func extends AnyFunction>(
         if (primitiveNode === undefined) {
           cacheNode = createCacheNode()
           primitiveCache.set(arg, cacheNode)
+
+          if (process.env.NODE_ENV !== 'production') {
+            // A single primitive `Map` growing past the threshold means this
+            // function keeps seeing new primitive values in the same argument
+            // position, which is the unbounded-growth pattern from #635. The
+            // size of one `Map` is checked rather than a total across the
+            // tree: `Map`s nested under an object argument's `WeakMap` node
+            // are released when that object is collected, so a total would
+            // keep phantom counts for entries that are already gone and warn
+            // about usage that is actually healthy.
+            if (primitiveCache.size > CACHE_SIZE_CHECK_THRESHOLD) {
+              const { cacheSizeCheck } = globalDevModeChecks
+              if (
+                cacheSizeCheck === 'always' ||
+                (cacheSizeCheck === 'once' && !hasWarnedAboutCacheSize)
+              ) {
+                hasWarnedAboutCacheSize = true
+                runCacheSizeCheck(primitiveCache.size, func.name)
+              }
+            }
+          }
         } else {
           cacheNode = primitiveNode
         }
@@ -281,6 +309,9 @@ export function weakMapMemoize<Func extends AnyFunction>(
   memoized.clearCache = () => {
     fnNode = createCacheNode()
     memoized.resetResultsCount()
+    if (process.env.NODE_ENV !== 'production') {
+      hasWarnedAboutCacheSize = false
+    }
   }
 
   memoized.resultsCount = () => resultsCount

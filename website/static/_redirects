@@ -1,0 +1,2 @@
+# Renamed 2026-08: the page gained checks that are not about selector stability.
+/api/development-only-stability-checks /api/development-only-checks 301

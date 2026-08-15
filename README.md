@@ -38,16 +38,16 @@ yarn add reselect
 
 The Reselect docs are available at **https://reselect.js.org**, and include usage guides and API references:
 
-- [**Introduction**](#https://reselect.js.org/introduction/getting-started)
-- [**How Does Reselect Work?**](#https://reselect.js.org/introduction/how-does-reselect-work)
+- [**Introduction**](https://reselect.js.org/introduction/getting-started)
+- [**How Does Reselect Work?**](https://reselect.js.org/introduction/how-does-reselect-work)
 - **API Reference**:
   - **[`createSelector`]**
   - **[`createSelectorCreator`]**
   - **[`createStructuredSelector`]**
-  - [**Development-Only Stability Checks**](#https://reselect.js.org/api/development-only-stability-checks)
+  - [**Development-Only Checks**](https://reselect.js.org/api/development-only-checks)
   - **[`lruMemoize`]**
   - **[`weakMapMemoize`]**
-- [**FAQ**](#https://reselect.js.org/FAQ)
+- [**FAQ**](https://reselect.js.org/FAQ)
 
 ## Basic Usage
 

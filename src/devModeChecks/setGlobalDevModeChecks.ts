@@ -9,7 +9,8 @@ import type { DevModeChecks } from '../types'
  */
 export const globalDevModeChecks: DevModeChecks = {
   inputStabilityCheck: 'once',
-  identityFunctionCheck: 'once'
+  identityFunctionCheck: 'once',
+  cacheSizeCheck: 'once'
 }
 
 /**
@@ -20,7 +21,7 @@ export const globalDevModeChecks: DevModeChecks = {
  * customize the behavior of these checks across all selectors in your application.
  *
  * **Note**: This setting can still be overridden per selector inside `createSelector`'s `options` object.
- * See {@link https://github.com/reduxjs/reselect#2-per-selector-by-passing-an-identityfunctioncheck-option-directly-to-createselector per-selector-configuration}
+ * See {@link https://reselect.js.org/api/development-only-checks#per-selector-with-the-devmodechecks-option per-selector-configuration}
  * and {@linkcode CreateSelectorOptions.identityFunctionCheck identityFunctionCheck} for more details.
  *
  * _The development mode checks do not run in production builds._
@@ -49,9 +50,18 @@ export const globalDevModeChecks: DevModeChecks = {
  *
  * // Never run the identity function check.
  * setGlobalDevModeChecks({ identityFunctionCheck: 'never' })
+ *
+ * // Warn only the first time a `weakMapMemoize` cache passes the size threshold. (default)
+ * setGlobalDevModeChecks({ cacheSizeCheck: 'once' })
+ *
+ * // Warn on every cache insertion past the size threshold.
+ * setGlobalDevModeChecks({ cacheSizeCheck: 'always' })
+ *
+ * // Never run the cache size check.
+ * setGlobalDevModeChecks({ cacheSizeCheck: 'never' })
  * ```
- * @see {@link https://reselect.js.org/api/development-only-stability-checks Development-Only Stability Checks}
- * @see {@link https://reselect.js.org/api/development-only-stability-checks#1-globally-through-setglobaldevmodechecks global-configuration}
+ * @see {@link https://reselect.js.org/api/development-only-checks Development-Only Checks}
+ * @see {@link https://reselect.js.org/api/development-only-checks#globally-with-setglobaldevmodechecks global-configuration}
  *
  * @since 5.0.0
  * @public

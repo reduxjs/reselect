@@ -14,28 +14,32 @@ import { InternalLinks } from '@site/src/components/InternalLinks'
 
 A convenience function that simplifies returning an object made up of selector results.
 
-## Parameters
+## API Reference
+
+### Parameters
 
 | Name                   | Description                                                                          |
 | :--------------------- | :----------------------------------------------------------------------------------- |
 | `inputSelectorsObject` | A key value pair consisting of input selectors.                                      |
 | `selectorCreator?`     | A custom selector creator function. It defaults to <InternalLinks.CreateSelector />. |
 
-## Returns
+### Returns
 
 A memoized structured selector.
 
-## Type Parameters
+### Type Parameters
 
-| Name                   | Description                                                                                                                                               |
-| :--------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `InputSelectorsObject` | The shape of the <InternalLinks.InputSelectors /> object.                                                                                                 |
-| `MemoizeFunction`      | The type of the memoize function that is used to create the structured selector. It defaults to `lruMemoize`.                                             |
-| `ArgsMemoizeFunction`  | The type of the of the memoize function that is used to memoize the arguments passed into the generated structured selector. It defaults to `lruMemoize`. |
+| Name                   | Description                                                                                                                                            |
+| :--------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `InputSelectorsObject` | The shape of the <InternalLinks.InputSelectors /> object.                                                                                              |
+| `MemoizeFunction`      | The type of the memoize function that is used to create the structured selector. It defaults to `weakMapMemoize`.                                      |
+| `ArgsMemoizeFunction`  | The type of the memoize function that is used to memoize the arguments passed into the generated structured selector. It defaults to `weakMapMemoize`. |
 
-## Examples
+## Usage Guide
 
-### Modern Use Case
+### Examples
+
+#### Modern Use Case
 
 {/* START: createStructuredSelector/modernUseCase.ts */}
 
@@ -199,7 +203,7 @@ const MyComponent = ({ id }) => {
 
 {/* END: createStructuredSelector/MyComponent.tsx */}
 
-### Simple Use Case
+#### Simple Use Case
 
 ```ts
 const selectA = state => state.a

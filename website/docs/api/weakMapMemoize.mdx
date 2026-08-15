@@ -18,7 +18,35 @@ size larger than 1, and uses an LRU cache internally.
 
 `weakMapMemoize` creates a tree of <ExternalLinks.WeakMap />-based cache nodes based on the identity of the arguments it's been called with (in this case, the extracted values from your input selectors). **This allows `weakMapMemoize` to have an effectively infinite cache size**. Cache results will be kept in memory as long as references to the arguments still exist, and then cleared out as the arguments are garbage-collected.
 
-## Design Tradeoffs
+:::info Default since v5.0.0
+
+Since v5.0.0, `weakMapMemoize` is the **default** memoization function used by <InternalLinks.CreateSelector /> for both `memoize` and `argsMemoize`. In v4.x the default was <InternalLinks.LruMemoize /> (previously named `defaultMemoize`) with a cache size of **1**.
+
+This means you generally **do not** need to pass `memoize: weakMapMemoize` or `argsMemoize: weakMapMemoize` yourself. The examples on this page pass them explicitly only to illustrate the behavior — a plain `createSelector(...)` call already uses `weakMapMemoize`.
+
+:::
+
+## API Reference
+
+### Parameters
+
+| Name   | Description                  |
+| :----- | :--------------------------- |
+| `func` | The function to be memoized. |
+
+### Returns
+
+A memoized function with a `.clearCache()` method attached.
+
+### Type Parameters
+
+| Name   | Description                                |
+| :----- | :----------------------------------------- |
+| `Func` | The type of the function that is memoized. |
+
+## Usage Guide
+
+### Design Tradeoffs
 
 - Pros:
 
@@ -27,8 +55,9 @@ size larger than 1, and uses an LRU cache internally.
 
 - Cons:
   - There's currently no way to alter the argument comparisons. They're based on <ExternalLinks.ReferenceEqualityCheck text='strict reference equality' />.
+  - Garbage collection only frees results keyed by **object or function** arguments. Results keyed by **primitive** arguments (strings, numbers, booleans) are held strongly, and are only released by calling `.clearCache()`. A selector that keeps seeing new primitive values in the same argument position — ids, offsets, timestamps — grows its cache without bound. In development mode, the [`cacheSizeCheck`](./development-only-checks#cachesizecheck) warns when a single argument position passes 1,000 distinct primitive values.
 
-## Use Cases
+### Use Cases
 
 - This memoizer is likely best used for cases where you need to call the
   same selector instance with many different arguments, such as a single
@@ -350,25 +379,9 @@ selectItemsByCategory(state, 'Electronics') // Still cached!
 
 This solves the problem of having to know and set the cache size prior to creating a memoized selector. Because `weakMapMemoize` essentially provides a dynamic cache size out of the box.
 
-## Parameters
+### Examples
 
-| Name   | Description                  |
-| :----- | :--------------------------- |
-| `func` | The function to be memoized. |
-
-## Returns
-
-A memoized function with a `.clearCache()` method attached.
-
-## Type Parameters
-
-| Name   | Description                                |
-| :----- | :----------------------------------------- |
-| `Func` | The type of the function that is memoized. |
-
-## Examples
-
-### Using `weakMapMemoize` with `createSelector`
+#### Using `weakMapMemoize` with `createSelector`
 
 {/* START: weakMapMemoize/usingWithCreateSelector.ts */}
 
@@ -447,7 +460,7 @@ selectItemsByCategory(state, 'Electronics')
 
 {/* END: weakMapMemoize/usingWithCreateSelector.ts */}
 
-### Using `weakMapMemoize` with `createSelectorCreator`
+#### Using `weakMapMemoize` with `createSelectorCreator`
 
 {/* START: weakMapMemoize/usingWithCreateSelectorCreator.ts */}
 

@@ -1,4 +1,4 @@
-import { weakMapMemoize } from 'reselect'
+import { setGlobalDevModeChecks, weakMapMemoize } from 'reselect'
 
 /**
  * Characterization tests for https://github.com/reduxjs/reselect/issues/635
@@ -18,6 +18,16 @@ import { weakMapMemoize } from 'reselect'
  */
 
 const gcAvailable = typeof globalThis.gc === 'function'
+
+// These tests deliberately overfill caches with distinct primitives, which is
+// exactly what the cache size check warns about.
+beforeAll(() => {
+  setGlobalDevModeChecks({ cacheSizeCheck: 'never' })
+})
+
+afterAll(() => {
+  setGlobalDevModeChecks({ cacheSizeCheck: 'once' })
+})
 
 const makeSliceSelector = () =>
   weakMapMemoize((array: number[], from: number, to: number) =>

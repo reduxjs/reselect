@@ -33,19 +33,21 @@ const selectTodosByCategory = createSelector(
 )
 ```
 
-## Parameters
+## API Reference
 
-| Name                     | Description                                                                                      |
-| :----------------------- | :----------------------------------------------------------------------------------------------- |
-| `inputSelectors`         | An array of <InternalLinks.InputSelectors />, can also be passed as separate arguments.          |
-| `resultFunc`             | A function that takes the results of the <InternalLinks.InputSelectors /> as separate arguments. |
-| `createSelectorOptions?` | An optional options object that allows for further customization per selector.                   |
+### Parameters
 
-## Returns
+| Name                     | Description                                                                                                                                             |
+| :----------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `inputSelectors`         | An array of <InternalLinks.InputSelectors />, can also be passed as separate arguments.                                                                 |
+| `resultFunc`             | A function that takes the results of the <InternalLinks.InputSelectors /> as separate arguments.                                                        |
+| `createSelectorOptions?` | An optional options object that allows for further customization per selector. See [Customizing Selector Options](#customizing-selector-options) below. |
+
+### Returns
 
 A memoized <InternalLinks.OutputSelector />.
 
-### Output Selector Fields
+#### Output Selector Fields
 
 The output selectors created by `createSelector` have several additional properties attached to them:
 
@@ -62,7 +64,7 @@ The output selectors created by `createSelector` have several additional propert
 | `memoize`                       | Function used to memoize the `resultFunc`.                                                                                                                                                                                                                                 |
 | `argsMemoize`                   | Function used to memoize the arguments passed into the <InternalLinks.OutputSelector />.                                                                                                                                                                                   |
 
-## Type Parameters
+### Type Parameters
 
 | Name                          | Description                                                                                                                                                                                                          |
 | :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -310,3 +312,70 @@ const selectReadAlerts = createAppSelector(
 {/* END: createSelector/createAppSelector.ts */}
 
 :::
+
+## Usage Guide
+
+### Memoization Functions
+
+`createSelector` does not implement memoization itself — it delegates to a **memoize function**: a higher-order function that wraps another function and returns a caching version of it, so that repeated calls with known arguments return the cached result instead of recomputing.
+
+Each selector uses a memoize function at two levels, following the <InternalLinks.CascadingMemoization /> pattern:
+
+- `argsMemoize` memoizes the generated selector itself, based on the arguments it was called with (such as `state`). If the arguments match a previous call, nothing else runs.
+- `memoize` memoizes the <InternalLinks.ResultFunction />, based on the values returned by the <InternalLinks.InputSelectors />. If those values match, the cached result is returned without recalculating.
+
+Reselect ships two memoize functions: <InternalLinks.WeakMapMemoize /> (the default) and <InternalLinks.LruMemoize />.
+
+Both levels can be overridden independently, per selector via the `memoize`/`argsMemoize` options, or for a whole family of selectors via <InternalLinks.CreateSelectorCreator />. Third-party memoizers such as `micro-memoize` work as well.
+
+:::info Default Memoization
+
+Since v5.0.0, `createSelector` uses <InternalLinks.WeakMapMemoize /> as the default for both `memoize` and `argsMemoize`. In v4.x the default was <InternalLinks.LruMemoize /> (previously named `defaultMemoize`) with a cache size of **1**, meaning a selector only remembered its most recent call.
+
+`weakMapMemoize` instead provides an effectively **unlimited** cache size keyed on argument identity, which fixes the common "cache size of 1" problem when the same selector is called with many different arguments (e.g. `useSelector(state => selectItemById(state, id))` across a list). Results keyed by object arguments are released as those arguments are garbage-collected; results keyed by primitive arguments stay cached until cleared. See <InternalLinks.WeakMapMemoize /> for the full behavior and tradeoffs.
+
+Because these are the defaults, you **do not** need to pass `memoize`/`argsMemoize` unless you want to override them (for example, to use <InternalLinks.LruMemoize /> with a custom `equalityCheck`).
+
+:::
+
+### Customizing Selector Options
+
+There are two places to apply these options, depending on how widely you want them to apply.
+
+#### Per instance, with the options object
+
+`createSelector` accepts an options object as its final argument. Options passed there apply to **that one selector instance**: `memoize` and `argsMemoize` choose the memoize function for each level, while `memoizeOptions` and `argsMemoizeOptions` are forwarded to those functions as their configuration.
+
+```ts no-emit
+const selectTodoIds = createSelector(
+  [(state: RootState) => state.todos],
+  todos => todos.map(todo => todo.id),
+  {
+    memoize: lruMemoize,
+    memoizeOptions: { resultEqualityCheck: shallowEqual }
+  }
+)
+```
+
+This is the right place for a one-off: a single selector that needs a custom equality check or a different memoizer than the rest of the app.
+
+#### Baked in, with `createSelectorCreator`
+
+If several selectors need the same configuration, repeating the options object at every call site gets noisy and easy to forget. <InternalLinks.CreateSelectorCreator /> accepts the same options once and returns a customized `createSelector` with those options baked in:
+
+```ts no-emit
+const createShallowEqualSelector = createSelectorCreator({
+  memoize: lruMemoize,
+  memoizeOptions: { resultEqualityCheck: shallowEqual }
+})
+
+// Every selector made with this creator shares the configuration
+const selectTodoIds = createShallowEqualSelector(
+  [(state: RootState) => state.todos],
+  todos => todos.map(todo => todo.id)
+)
+```
+
+In fact, the default `createSelector` is itself the result of calling `createSelectorCreator` with <InternalLinks.WeakMapMemoize />.
+
+The two compose: a selector made with a custom creator can still pass its own options object, and those per-instance options override the baked-in ones for that selector only.

@@ -12,7 +12,7 @@ import type { AnyFunction } from '../types'
  * @param inputSelectorsResults - The results of the input selectors.
  * @param outputSelectorResult - The result of the output selector.
  *
- * @see {@link https://reselect.js.org/api/development-only-stability-checks#identityfunctioncheck `identityFunctionCheck`}
+ * @see {@link https://reselect.js.org/api/development-only-checks#identityfunctioncheck `identityFunctionCheck`}
  *
  * @since 5.0.0
  * @internal

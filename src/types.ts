@@ -72,7 +72,7 @@ export interface CreateSelectorOptions<
    * and warn about potential issues in selector behavior. This option
    * allows you to customize the behavior of these checks per selector.
    *
-   * @see {@link https://reselect.js.org/api/development-only-stability-checks Development-Only Stability Checks}
+   * @see {@link https://reselect.js.org/api/development-only-checks Development-Only Checks}
    *
    * @since 5.0.0
    */
@@ -315,9 +315,9 @@ export interface DevModeChecks {
    *
    * @default 'once'
    *
-   * @see {@link https://reselect.js.org/api/development-only-stability-checks Development-Only Stability Checks}
-   * @see {@link https://reselect.js.org/api/development-only-stability-checks#inputstabilitycheck `inputStabilityCheck`}
-   * @see {@link https://reselect.js.org/api/development-only-stability-checks#2-per-selector-by-passing-an-inputstabilitycheck-option-directly-to- per-selector-configuration}
+   * @see {@link https://reselect.js.org/api/development-only-checks Development-Only Checks}
+   * @see {@link https://reselect.js.org/api/development-only-checks#inputstabilitycheck `inputStabilityCheck`}
+   * @see {@link https://reselect.js.org/api/development-only-checks#per-selector-with-the-devmodechecks-option per-selector-configuration}
    *
    * @since 5.0.0
    */
@@ -331,13 +331,38 @@ export interface DevModeChecks {
    *
    * @default 'once'
    *
-   * @see {@link https://reselect.js.org/api/development-only-stability-checks Development-Only Stability Checks}
-   * @see {@link https://reselect.js.org/api/development-only-stability-checks#identityfunctioncheck `identityFunctionCheck`}
-   * @see {@link https://reselect.js.org/api/development-only-stability-checks#2-per-selector-by-passing-an-identityfunctioncheck-option-directly-to- per-selector-configuration}
+   * @see {@link https://reselect.js.org/api/development-only-checks Development-Only Checks}
+   * @see {@link https://reselect.js.org/api/development-only-checks#identityfunctioncheck `identityFunctionCheck`}
+   * @see {@link https://reselect.js.org/api/development-only-checks#per-selector-with-the-devmodechecks-option per-selector-configuration}
    *
    * @since 5.0.0
    */
   identityFunctionCheck: DevModeCheckFrequency
+
+  /**
+   * Overrides the global cache size check for functions memoized with
+   * `weakMapMemoize`.
+   * - `once` - Warn only the first time a memoized function's cache passes the size threshold. (default)
+   * - `always` - Warn on every cache insertion past the size threshold.
+   * - `never` - Never run the cache size check.
+   *
+   * The check warns when a single memoized function has cached results for a
+   * large number of distinct primitive arguments. Those results are held
+   * strongly and are never released while the memoized function is alive, so
+   * a steadily growing cache usually indicates a memory leak.
+   *
+   * Unlike the other checks, this one runs inside `weakMapMemoize` itself, so
+   * it is configured globally through `setGlobalDevModeChecks` and does not
+   * support the per-selector `devModeChecks` override.
+   *
+   * @default 'once'
+   *
+   * @see {@link https://reselect.js.org/api/development-only-checks#cachesizecheck `cacheSizeCheck`}
+   * @see {@link https://github.com/reduxjs/reselect/issues/635 `weakMapMemoize` memory usage discussion}
+   *
+   * @since 5.3.0
+   */
+  cacheSizeCheck: DevModeCheckFrequency
 }
 
 /**

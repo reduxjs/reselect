@@ -32,7 +32,7 @@ const sidebars: SidebarsConfig = {
         'api/createSelector',
         'api/createSelectorCreator',
         'api/createStructuredSelector',
-        'api/development-only-stability-checks',
+        'api/development-only-checks',
         {
           type: 'category',
           collapsed: false,
