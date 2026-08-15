@@ -102,18 +102,22 @@ describe('what a weakMapMemoize cache miss allocates', () => {
 
   // The development-only checks call the input selectors and the result
   // function some extra times on a selector's first call, which shows up as a
-  // couple of extra nodes. Turning them off keeps these counts exact.
+  // couple of extra nodes. Turning them off keeps these counts exact. The
+  // cache size check is turned off because these tests deliberately overfill
+  // the cache with distinct primitives, which is exactly what it warns about.
   beforeAll(() => {
     setGlobalDevModeChecks({
       inputStabilityCheck: 'never',
-      identityFunctionCheck: 'never'
+      identityFunctionCheck: 'never',
+      cacheSizeCheck: 'never'
     })
   })
 
   afterAll(() => {
     setGlobalDevModeChecks({
       inputStabilityCheck: 'once',
-      identityFunctionCheck: 'once'
+      identityFunctionCheck: 'once',
+      cacheSizeCheck: 'once'
     })
   })
 

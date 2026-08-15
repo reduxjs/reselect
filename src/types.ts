@@ -338,6 +338,30 @@ export interface DevModeChecks {
    * @since 5.0.0
    */
   identityFunctionCheck: DevModeCheckFrequency
+
+  /**
+   * Overrides the global cache size check for functions memoized with
+   * `weakMapMemoize`.
+   * - `once` - Warn only the first time a memoized function's cache passes the size threshold. (default)
+   * - `always` - Warn on every cache insertion past the size threshold.
+   * - `never` - Never run the cache size check.
+   *
+   * The check warns when a single memoized function has cached results for a
+   * large number of distinct primitive arguments. Those results are held
+   * strongly and are never released while the memoized function is alive, so
+   * a steadily growing cache usually indicates a memory leak.
+   *
+   * Unlike the other checks, this one runs inside `weakMapMemoize` itself, so
+   * it is configured globally through `setGlobalDevModeChecks` and does not
+   * support the per-selector `devModeChecks` override.
+   *
+   * @default 'once'
+   *
+   * @see {@link https://github.com/reduxjs/reselect/issues/635 `weakMapMemoize` memory usage discussion}
+   *
+   * @since 5.3.0
+   */
+  cacheSizeCheck: DevModeCheckFrequency
 }
 
 /**

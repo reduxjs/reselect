@@ -9,7 +9,8 @@ import type { DevModeChecks } from '../types'
  */
 export const globalDevModeChecks: DevModeChecks = {
   inputStabilityCheck: 'once',
-  identityFunctionCheck: 'once'
+  identityFunctionCheck: 'once',
+  cacheSizeCheck: 'once'
 }
 
 /**
@@ -49,6 +50,15 @@ export const globalDevModeChecks: DevModeChecks = {
  *
  * // Never run the identity function check.
  * setGlobalDevModeChecks({ identityFunctionCheck: 'never' })
+ *
+ * // Warn only the first time a `weakMapMemoize` cache passes the size threshold. (default)
+ * setGlobalDevModeChecks({ cacheSizeCheck: 'once' })
+ *
+ * // Warn on every cache insertion past the size threshold.
+ * setGlobalDevModeChecks({ cacheSizeCheck: 'always' })
+ *
+ * // Never run the cache size check.
+ * setGlobalDevModeChecks({ cacheSizeCheck: 'never' })
  * ```
  * @see {@link https://reselect.js.org/api/development-only-stability-checks Development-Only Stability Checks}
  * @see {@link https://reselect.js.org/api/development-only-stability-checks#1-globally-through-setglobaldevmodechecks global-configuration}
