@@ -15,10 +15,10 @@ import { InternalLinks } from '@site/src/components/InternalLinks'
 
 In development mode, Reselect runs extra checks on your selectors and warns about common mistakes:
 
-| Check                                             | What it catches                                                                                    |
-| :------------------------------------------------ | :------------------------------------------------------------------------------------------------- |
-| [`inputStabilityCheck`](#inputstabilitycheck)     | <InternalLinks.InputSelectors /> that return a new reference on every run, which breaks memoization |
-| [`identityFunctionCheck`](#identityfunctioncheck) | Result functions that return their argument unchanged, which memoize nothing useful                 |
+| Check                                             | What it catches                                                                                        |
+| :------------------------------------------------ | :----------------------------------------------------------------------------------------------------- |
+| [`inputStabilityCheck`](#inputstabilitycheck)     | <InternalLinks.InputSelectors /> that return a new reference on every run, which breaks memoization    |
+| [`identityFunctionCheck`](#identityfunctioncheck) | Result functions that return their argument unchanged, which memoize nothing useful                    |
 | [`cacheSizeCheck`](#cachesizecheck)               | <InternalLinks.WeakMapMemoize /> caches that grow without bound from ever-changing primitive arguments |
 
 :::info
@@ -35,8 +35,8 @@ Every check runs with one of three frequencies:
 type DevModeCheckFrequency = 'always' | 'once' | 'never'
 ```
 
-| Possible Values | Description                                                                                                                                    |
-| :-------------- | :---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Possible Values | Description                                                                                                                                   |
+| :-------------- | :-------------------------------------------------------------------------------------------------------------------------------------------- |
 | `once`          | Run the check once per selector: on the first call for the stability checks, or the first time the threshold is crossed for `cacheSizeCheck`. |
 | `always`        | Run the check on every call.                                                                                                                  |
 | `never`         | Never run the check.                                                                                                                          |
@@ -234,11 +234,13 @@ const selectTodos = createSelector(
   </TabItem>
 </Tabs>
 
-{/* END: development-only-stability-checks/identityFunctionCheck.ts */}
+{/* END: development-only-checks/identityFunctionCheck.ts */}
 
 ## `cacheSizeCheck`
 
-<InternalLinks.WeakMapMemoize /> (the default memoizer since 5.0) keys its cache tree by argument identity, and the two kinds of arguments age out of the cache very differently:
+<InternalLinks.WeakMapMemoize /> (the default memoizer since 5.0) keys its cache
+tree by argument identity, and the two kinds of arguments age out of the cache
+very differently:
 
 - Results keyed by an **object or function** argument live in a `WeakMap`. Once that argument is garbage-collected, the cached result goes with it.
 - Results keyed by a **primitive** argument (a string, number, or boolean) live in a regular `Map`. They are held strongly and are only released by calling `.clearCache()` on the memoized function.
@@ -258,7 +260,7 @@ const selectVisibleItems = createSelector(
 
 As the user scrolls, every `(from, to)` pair ever passed stays cached: the sliced arrays for `(0, 10)`, `(1, 11)`, `(2, 12)`, and so on are all retained for as long as `state.items` is alive, long after those windows scrolled out of view.
 
-This check counts the distinct primitive values cached for each argument position. When a single position exceeds **1,000** distinct values, it logs a warning naming the memoized function. The count is per argument position, so a per-item selector called with a bounded set of ids will not trip it — the warning fires on the *unbounded* pattern, not on legitimate wide caches.
+This check counts the distinct primitive values cached for each argument position. When a single position exceeds **1,000** distinct values, it logs a warning naming the memoized function. The count is per argument position, so a per-item selector called with a bounded set of ids will not trip it — the warning fires on the _unbounded_ pattern, not on legitimate wide caches.
 
 If you see this warning, the usual fixes are:
 
