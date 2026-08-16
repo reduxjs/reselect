@@ -330,6 +330,26 @@ test('selector unit test', () => {
 
 {/* END: FAQ/howToTest.test.ts */}
 
+:::note Resetting a selector's cache between tests
+
+Because Reselect uses a <Link to='/introduction/how-does-reselect-work#cascading-memoization'>two-stage "cascading" memoization</Link>, a memoized selector holds _two_ separate caches:
+
+- the `argsMemoize` cache for the arguments passed to the output selector, attached to the selector itself.
+- the `memoize` cache for the results of the <InternalLinks.InputSelectors />, attached to `memoizedResultFunc`.
+
+Calling `clearCache` on the selector only clears the first one. To fully reset a selector between tests, clear both:
+
+```ts
+selector.clearCache() // clears the `argsMemoize` cache
+selector.memoizedResultFunc.clearCache() // clears the `memoize` cache
+selector.resetRecomputations()
+selector.resetDependencyRecomputations()
+```
+
+Alternatively, create the selector inside each test (or in a `beforeEach` block) so that every test starts with a fresh cache.
+
+:::
+
 ## Can I share a selector across multiple component instances?
 
 Yes, although if they pass in different arguments, you will need to handle that in order for memoization to work consistently:

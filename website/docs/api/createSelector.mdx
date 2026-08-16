@@ -10,6 +10,7 @@ import Tabs from '@theme/Tabs'
 import TabItem from '@theme/TabItem'
 
 import { InternalLinks } from '@site/src/components/InternalLinks'
+import Link from '@docusaurus/Link'
 
 # `createSelector`
 
@@ -63,6 +64,19 @@ The output selectors created by `createSelector` have several additional propert
 | `resetDependencyRecomputations` | Resets the `dependencyRecomputations` count to 0.                                                                                                                                                                                                                          |
 | `memoize`                       | Function used to memoize the `resultFunc`.                                                                                                                                                                                                                                 |
 | `argsMemoize`                   | Function used to memoize the arguments passed into the <InternalLinks.OutputSelector />.                                                                                                                                                                                   |
+
+:::note Clearing the cache
+
+Both the output selector and its `memoizedResultFunc` expose the fields attached by their memoize function — for the built-in memoizers that means `clearCache`, `resultsCount` and `resetResultsCount`.
+
+Because a selector keeps a <Link to='/introduction/how-does-reselect-work#cascading-memoization'>separate cache for its arguments (`argsMemoize`) and for its result (`memoize`)</Link>, fully clearing it requires calling `clearCache` on **both**:
+
+```ts
+mySelector.clearCache() // clears the `argsMemoize` cache
+mySelector.memoizedResultFunc.clearCache() // clears the `memoize` cache
+```
+
+:::
 
 ### Type Parameters
 
