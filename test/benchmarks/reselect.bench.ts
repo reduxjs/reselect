@@ -1,8 +1,4 @@
-import {
-  createSelector,
-  unstable_autotrackMemoize as autotrackMemoize,
-  weakMapMemoize
-} from 'reselect'
+import { createSelector, weakMapMemoize } from 'reselect'
 import type { Options } from 'tinybench'
 import { bench, describe } from 'vitest'
 import type { RootState } from '../testUtils'
@@ -26,39 +22,22 @@ describe('Memoize methods comparison', () => {
     todos => todos.map(({ id }) => id),
     { memoize: weakMapMemoize }
   )
-  const selectorAutotrack = createSelector(
-    [(state: RootState) => state.todos],
-    todos => todos.map(({ id }) => id),
-    { memoize: autotrackMemoize }
-  )
   const selectorArgsWeakMap = createSelector(
     [(state: RootState) => state.todos],
     todos => todos.map(({ id }) => id),
     { argsMemoize: weakMapMemoize }
-  )
-  const selectorArgsAutotrack = createSelector(
-    [(state: RootState) => state.todos],
-    todos => todos.map(({ id }) => id),
-    { argsMemoize: autotrackMemoize }
   )
   const selectorBothWeakMap = createSelector(
     [(state: RootState) => state.todos],
     todos => todos.map(({ id }) => id),
     { argsMemoize: weakMapMemoize, memoize: weakMapMemoize }
   )
-  const selectorBothAutotrack = createSelector(
-    [(state: RootState) => state.todos],
-    todos => todos.map(({ id }) => id),
-    { argsMemoize: autotrackMemoize, memoize: autotrackMemoize }
-  )
   const nonMemoizedSelector = (state: RootState) => {
     return state.todos.map(({ id }) => id)
   }
   setFunctionNames({
     selectorDefault,
-    selectorAutotrack,
     selectorWeakMap,
-    selectorArgsAutotrack,
     nonMemoizedSelector,
     selectorArgsWeakMap
   })
@@ -70,23 +49,9 @@ describe('Memoize methods comparison', () => {
     commonOptions
   )
   bench(
-    selectorAutotrack,
-    () => {
-      selectorAutotrack(state)
-    },
-    commonOptions
-  )
-  bench(
     selectorWeakMap,
     () => {
       selectorWeakMap(state)
-    },
-    commonOptions
-  )
-  bench(
-    selectorArgsAutotrack,
-    () => {
-      selectorArgsAutotrack(state)
     },
     commonOptions
   )
@@ -101,13 +66,6 @@ describe('Memoize methods comparison', () => {
     selectorBothWeakMap,
     () => {
       selectorBothWeakMap(state)
-    },
-    commonOptions
-  )
-  bench(
-    selectorBothAutotrack,
-    () => {
-      selectorBothAutotrack(state)
     },
     commonOptions
   )

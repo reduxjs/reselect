@@ -1,11 +1,6 @@
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { configureStore, createSlice } from '@reduxjs/toolkit'
-import {
-  unstable_autotrackMemoize as autotrackMemoize,
-  createSelectorCreator,
-  lruMemoize,
-  weakMapMemoize
-} from 'reselect'
+import { createSelectorCreator, weakMapMemoize } from 'reselect'
 import { vi } from 'vitest'
 
 describe('More perf comparisons', () => {
@@ -17,9 +12,6 @@ describe('More perf comparisons', () => {
   afterAll(() => {
     process.env.NODE_NV = originalEnv
   })
-
-  const csDefault = createSelectorCreator(lruMemoize)
-  const csAutotrack = createSelectorCreator(autotrackMemoize)
 
   interface Todo {
     id: number
@@ -90,167 +82,6 @@ describe('More perf comparisons', () => {
   })
 
   type RootState = ReturnType<typeof store.getState>
-
-  const states: RootState[] = []
-
-  for (let i = 0; i < 10000; i++) {
-    states.push(store.getState())
-    store.dispatch(counterSlice.actions.increment1())
-    states.push(store.getState())
-    store.dispatch(counterSlice.actions.increment2())
-    states.push(store.getState())
-    store.dispatch(todosSlice.actions.toggleCompleted(1))
-    states.push(store.getState())
-    store.dispatch(todosSlice.actions.setName())
-    states.push(store.getState())
-  }
-
-  it('More detailed perf comparison', () => {
-    const cdCounters1 = csDefault(
-      (state: RootState) =>
-        state.counter.deeply.nested.really.deeply.nested.c1.value,
-      (state: RootState) => state.counter.c2.value,
-      (c1, c2) => {
-        return c1 + c2
-      }
-    )
-
-    const cdCounters2 = csDefault(
-      (state: RootState) => state.counter.deeply.nested.really.deeply.nested.c1,
-      (state: RootState) => state.counter.c2,
-      (c1, c2) => {
-        return c1.value + c2.value
-      }
-    )
-
-    const cdTodoIds = csDefault(
-      (state: RootState) => state.todos,
-      todos => {
-        return todos.map(todo => todo.id)
-      }
-    )
-
-    const cdTodoIdsAndNames = csDefault(
-      (state: RootState) => state.todos,
-      todos => {
-        return todos.map(todo => ({ id: todo.id, name: todo.name }))
-      }
-    )
-
-    const cdCompletedTodos = csDefault(
-      (state: RootState) => state.todos,
-      todos => {
-        const completed = todos.filter(todo => todo.completed)
-        return completed.length
-      }
-    )
-
-    const cdCompletedTodos2 = csDefault(
-      (state: RootState) => state.todos,
-      todos => {
-        const completed = todos.filter(todo => todo.completed)
-        return completed.length
-      }
-    )
-
-    const caCounters1 = csDefault(
-      (state: RootState) =>
-        state.counter.deeply.nested.really.deeply.nested.c1.value,
-      (state: RootState) => state.counter.c2.value,
-      (c1, c2) => {
-        return c1 + c2
-      }
-    )
-
-    const caCounters2 = csAutotrack(
-      (state: RootState) => state.counter.deeply.nested.really.deeply.nested.c1,
-      (state: RootState) => state.counter.c2,
-      (c1, c2) => {
-        // console.log('inside caCounters2: ', { c1, c2 })
-        return c1.value + c2.value
-      }
-    )
-
-    const caTodoIds = csAutotrack(
-      (state: RootState) => state.todos,
-      todos => {
-        return todos.map(todo => todo.id)
-      }
-    )
-
-    const caTodoIdsAndNames = csAutotrack(
-      (state: RootState) => state.todos,
-      todos => {
-        return todos.map(todo => ({ id: todo.id, name: todo.name }))
-      }
-    )
-
-    const caCompletedTodos = csAutotrack(
-      (state: RootState) => state.todos,
-      todos => {
-        const completed = todos.filter(todo => todo.completed)
-        return completed.length
-      }
-    )
-
-    const caCompletedTodos2 = csAutotrack(
-      (state: RootState) => state.todos,
-      todos => {
-        const completed = todos.filter(todo => todo.completed)
-        return completed.length
-      }
-    )
-
-    const defaultStart = performance.now()
-    for (const state of states) {
-      cdCounters1(state)
-      cdCounters2(state)
-      // console.log('csCounters2', cdCounters2(state))
-      cdTodoIds(state)
-      cdTodoIdsAndNames(state)
-      cdCompletedTodos(state)
-      cdCompletedTodos2(state)
-    }
-    const defaultEnd = performance.now()
-
-    const autotrackStart = performance.now()
-    for (const state of states) {
-      caCounters1(state)
-      caCounters2(state)
-      // console.log('State.counter: ', state.counter)
-      // console.log('caCounters2', caCounters2(state))
-      caTodoIds(state)
-      caTodoIdsAndNames(state)
-      caCompletedTodos(state)
-      caCompletedTodos2(state)
-    }
-    const autotrackEnd = performance.now()
-
-    const allSelectors = {
-      cdCounters1,
-      cdCounters2,
-      cdTodoIds,
-      cdTodoIdsAndNames,
-      cdCompletedTodos,
-      cdCompletedTodos2,
-      caCounters1,
-      caCounters2,
-      caTodoIds,
-      caTodoIdsAndNames,
-      caCompletedTodos,
-      caCompletedTodos2
-    }
-
-    // console.log('\nTotal recomputations:')
-    // Object.entries(allSelectors).forEach(([name, selector]) => {
-    //   console.log(name, selector.recomputations())
-    // })
-
-    // console.log('Total elapsed times: ', {
-    //   defaultElapsed: defaultEnd - defaultStart,
-    //   autotrackElapsed: autotrackEnd - autotrackStart
-    // })
-  })
 
   it.skip('weakMapMemoizer recalcs', () => {
     const state1 = store.getState()

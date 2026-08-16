@@ -1,10 +1,5 @@
 import type { OutputSelector, Selector } from 'reselect'
-import {
-  createSelector,
-  lruMemoize,
-  unstable_autotrackMemoize as autotrackMemoize,
-  weakMapMemoize
-} from 'reselect'
+import { createSelector, lruMemoize, weakMapMemoize } from 'reselect'
 import type { Options } from 'tinybench'
 import { bench } from 'vitest'
 import type { RootState } from '../testUtils'
@@ -71,17 +66,10 @@ describe(`Cold cache: filling a cache with ${UNIQUE_ARGUMENTS.toLocaleString(
       argsMemoizeOptions: { maxSize: UNIQUE_ARGUMENTS }
     }
   )
-  const selectorAutotrack = createSelector(
-    [(state: RootState) => state.todos, (state: RootState, id: number) => id],
-    (todos, id) => todos.length + id,
-    { memoize: autotrackMemoize }
-  )
-
   const selectors = {
     selectorWeakMap,
     selectorLru,
-    selectorLruWithCacheSize,
-    selectorAutotrack
+    selectorLruWithCacheSize
   }
 
   setFunctionNames(selectors)
@@ -140,17 +128,10 @@ describe(`Warm cache: re-reading ${UNIQUE_ARGUMENTS.toLocaleString(
       argsMemoizeOptions: { maxSize: UNIQUE_ARGUMENTS }
     }
   )
-  const selectorAutotrack = createSelector(
-    [(state: RootState) => state.todos, (state: RootState, id: number) => id],
-    (todos, id) => todos.length + id,
-    { memoize: autotrackMemoize }
-  )
-
   const selectors = {
     selectorWeakMap,
     selectorLru,
-    selectorLruWithCacheSize,
-    selectorAutotrack
+    selectorLruWithCacheSize
   }
 
   setFunctionNames(selectors)

@@ -37,11 +37,7 @@ const sidebars: SidebarsConfig = {
           type: 'category',
           collapsed: false,
           label: 'Memoization Functions',
-          items: [
-            'api/lruMemoize',
-            'api/weakMapMemoize',
-            'api/unstable_autotrackMemoize'
-          ]
+          items: ['api/lruMemoize', 'api/weakMapMemoize']
         }
       ]
     },
