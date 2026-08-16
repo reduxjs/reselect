@@ -471,7 +471,7 @@ export type ExtractMemoizerFields<MemoizeFunction extends UnknownMemoizer> =
 /**
  * Represents the additional properties attached to a function memoized by `reselect`.
  *
- * `lruMemoize`, `weakMapMemoize` and `autotrackMemoize` all return these properties.
+ * Both `lruMemoize` and `weakMapMemoize` return these properties.
  *
  * @see {@linkcode ExtractMemoizerFields ExtractMemoizerFields}
  *

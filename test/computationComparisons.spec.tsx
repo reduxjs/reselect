@@ -6,12 +6,7 @@ import * as rtl from '@testing-library/react'
 import React, { useLayoutEffect, useMemo } from 'react'
 import type { TypedUseSelectorHook } from 'react-redux'
 import { Provider, shallowEqual, useSelector } from 'react-redux'
-import {
-  createSelector,
-  lruMemoize,
-  unstable_autotrackMemoize,
-  weakMapMemoize
-} from 'reselect'
+import { createSelector, lruMemoize, weakMapMemoize } from 'reselect'
 
 import type { OutputSelector } from 'reselect'
 import type { RootState, Todo } from './testUtils'
@@ -258,11 +253,6 @@ describe('resultEqualityCheck in weakMapMemoize', () => {
         memoizeOptions: { resultEqualityCheck: shallowEqual }
       }
     )
-    const selectorAutotrack = createSelector(
-      [(state: RootState) => state.todos],
-      todos => todos.map(({ id }) => id),
-      { memoize: unstable_autotrackMemoize }
-    )
     const firstResult = selectorWeakMap(store.getState())
     store.dispatch(toggleCompleted(0))
     const secondResult = selectorWeakMap(store.getState())
@@ -272,10 +262,7 @@ describe('resultEqualityCheck in weakMapMemoize', () => {
     store.dispatch(toggleCompleted(0))
     const secondResultShallow = selectorWeakMapShallow(store.getState())
     expect(firstResultShallow).toBe(secondResultShallow)
-    const firstResultAutotrack = selectorAutotrack(store.getState())
     store.dispatch(toggleCompleted(0))
-    const secondResultAutotrack = selectorAutotrack(store.getState())
-    expect(firstResultAutotrack).toBe(secondResultAutotrack)
 
     const memoized = weakMapMemoize((state: RootState) =>
       state.todos.map(({ id }) => id)

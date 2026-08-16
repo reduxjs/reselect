@@ -80,11 +80,6 @@ export const InternalLinks = {
       <code>weakMapMemoize</code>
     </Link>
   )),
-  UnstableAutotrackMemoize: memo(() => (
-    <Link to="/api/unstable_autotrackMemoize" title="unstable_autotrackMemoize">
-      <code>unstable_autotrackMemoize</code>
-    </Link>
-  )),
   CreateStructuredSelector: memo(() => (
     <Link to="/api/createStructuredSelector" title="createStructuredSelector">
       <code>createStructuredSelector</code>

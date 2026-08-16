@@ -5,7 +5,6 @@ import type {
   UnknownMemoizer
 } from 'reselect'
 import {
-  unstable_autotrackMemoize as autotrackMemoize,
   createSelector,
   createSelectorCreator,
   lruMemoize,
@@ -81,7 +80,7 @@ test.todo('Find Fastest Selector', () => {
     selector: S,
     ...selectorArgs: Parameters<S>
   ) => {
-    const memoizeFuncs = [lruMemoize, weakMapMemoize, autotrackMemoize]
+    const memoizeFuncs = [lruMemoize, weakMapMemoize]
     const results = memoizeFuncs
       .map(memoize => {
         const alternateSelector = createSelector(

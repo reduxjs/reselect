@@ -138,7 +138,7 @@ Version 5.0.0 introduces several new features and improvements:
 
 - **Memoization Functions**:
 
-  - Introduced new experimental memoization functions: `weakMapMemoize` and `unstable_autotrackMemoize`.
+  - Introduced a new default memoization function: `weakMapMemoize`
   - Incorporated `memoize` and `argsMemoize` into the [output selector fields] for debugging purposes.
 
 - **TypeScript Support and Performance**:
