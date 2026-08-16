@@ -412,8 +412,8 @@ If you need an exact bound with per-entry LRU eviction order, use <InternalLinks
 <InternalLinks.CreateSelector /> memoizes at two levels: `argsMemoize` caches by
 the selector's call arguments, and `memoize` caches by the input selector
 results. If you only set `memoizeOptions: {maxSize}`, the args cache still grows
-without bound — and because it sits in front, it returns cached results before
-the bounded cache is ever consulted. Pass `maxSize` in **both** options:
+without bound — and because it sits in front, it returns cached results before the
+bounded cache is ever consulted. Pass `maxSize` in **both** options:
 
 ```ts no-emit
 const selectVisibleItems = createSelector(
@@ -435,6 +435,25 @@ Since `weakMapMemoize` is the default for both levels, no `memoize` or `argsMemo
 :::
 
 In development mode, the [`cacheSizeCheck`](./development-only-checks#cachesizecheck) warns when a selector shows the unbounded-growth pattern, which is a good signal that a particular selector would benefit from `maxSize`.
+
+### Keeping extra arguments away from unary input selectors
+
+When a <InternalLinks.CreateSelector /> selector is called, every input selector receives _all_ of the call's arguments — including input selectors that only use the first one. If such an input selector is itself a memoized selector, its cache is still keyed by the full argument list, so every distinct value of the extra argument creates a separate cache entry for it.
+
+The results stay correct, and result functions do not rerun. But each of those cache entries is checked independently: when the state updates, a selector called with `N` distinct ids re-runs its input selectors `N` times instead of once. In a list where every item calls `useSelector(state => selectSomeData(state, id))` and the state updates frequently, that per-update cost grows with the size of the list. The extra cache entries also hold `N` copies of the same result. A telltale sign is `dependencyRecomputations()` on the inner selector increasing by the number of list items on every state update, rather than by 1.
+
+If an expensive input selector only depends on the state, wrap it so the extra arguments never reach it:
+
+```ts no-emit
+const selectSomeData = createSelector(
+  [
+    // Not `selectHeavyComputation` directly: this keeps `id` out of its cache key
+    (state: RootState) => selectHeavyComputation(state),
+    (state: RootState, id: string) => id
+  ],
+  (heavyResult, id) => heavyResult[id]
+)
+```
 
 ### Examples
 
