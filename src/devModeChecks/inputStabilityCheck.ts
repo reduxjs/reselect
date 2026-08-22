@@ -49,7 +49,8 @@ export const runInputStabilityCheck = (
       'memoize' | 'memoizeOptions'
     >
   >,
-  inputSelectorArgs: unknown[] | IArguments
+  inputSelectorArgs: unknown[] | IArguments,
+  creationStack: string | undefined
 ) => {
   const { memoize, memoizeOptions } = options
   const { inputSelectorResults, inputSelectorResultsCopy } =
@@ -81,7 +82,8 @@ export const runInputStabilityCheck = (
         arguments: inputSelectorArgs,
         firstInputs: inputSelectorResults,
         secondInputs: inputSelectorResultsCopy,
-        stack
+        stack,
+        creationStack
       }
     )
   }

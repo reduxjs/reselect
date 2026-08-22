@@ -51,7 +51,8 @@ describe('identityFunctionCheck', () => {
         'The result function returned its own inputs without modification'
       ),
       {
-        stack: expect.any(String)
+        stack: expect.any(String),
+        creationStack: expect.any(String)
       }
     )
   })
