@@ -35,7 +35,6 @@
     "heap-snapshot": "pnpm build && node --expose-gc ./scripts/weakMapMemoizeHeapSnapshot.mjs",
     "test": "vitest --run && pnpm type-check",
     "test:watch": "vitest --watch",
-    "test:cov": "vitest --run --coverage",
     "type-check": "vitest --run --typecheck.only && pnpm type-check:loose-null-checks",
     "type-check:loose-null-checks": "tsc --noEmit -p type-tests/tsconfig.looseNullChecks.json",
     "type-check:trace": "vitest --run --typecheck.only && tsc --noEmit -p typescript_test/tsconfig.json --generateTrace trace && npx @typescript/analyze-trace trace && rimraf trace",
