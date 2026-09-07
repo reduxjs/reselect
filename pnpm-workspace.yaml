@@ -22,7 +22,3 @@ autoInstallPeers: false
 # `onlyBuiltDependencies` list is ignored.
 allowBuilds:
   esbuild: true
-
-# Translation of the Yarn `resolutions.esbuild` pin.
-overrides:
-  esbuild: 0.23.0
