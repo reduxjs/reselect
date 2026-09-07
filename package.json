@@ -24,7 +24,8 @@
   "scripts": {
     "build": "pnpm clean && tsup",
     "clean": "rimraf dist",
-    "format": "prettier --write \"{src,test}/**/*.{js,ts}\" \"bench/*.mjs\" \"docs/**/*.md\"",
+    "format": "oxfmt \"{src,test,type-tests,typescript_test,bench,scripts}/**\" \"*.mts\" \"*.json\"",
+    "format:check": "oxfmt --check \"{src,test,type-tests,typescript_test,bench,scripts}/**\" \"*.mts\" \"*.json\"",
     "lint": "oxlint src test type-tests typescript_test",
     "lint:fix": "oxlint --fix src test type-tests typescript_test",
     "prepack": "pnpm build",
