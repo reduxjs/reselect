@@ -4,8 +4,8 @@
 // Run it once per memoization function to compare the two.
 //
 // Usage:
-//   yarn heap-snapshot
-//   yarn heap-snapshot --memoize=lru --entries=50000
+//   pnpm heap-snapshot
+//   pnpm heap-snapshot --memoize=lru --entries=50000
 //
 // The printed sizes are shallow (`self_size`) sums per object type, which is
 // enough to compare two runs. Open the written `.heapsnapshot` file in Chrome
@@ -51,7 +51,7 @@ const loadReselect = async () => {
     return await import(pathToFileURL(buildOutput).href)
   } catch (error) {
     throw new Error(
-      `Could not load ${buildOutput}. Run \`yarn build\` first, or use \`yarn heap-snapshot\`.\n${error.message}`
+      `Could not load ${buildOutput}. Run \`pnpm build\` first, or use \`pnpm heap-snapshot\`.\n${error.message}`
     )
   }
 }
