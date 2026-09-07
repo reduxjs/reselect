@@ -677,6 +677,9 @@ export type UnionToIntersection<Union> =
   // `extends unknown` is always going to be the case and is used to convert the
   // `Union` into a [distributive conditional
   // type](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-8.html#distributive-conditional-types).
+  // The `Intersection` type is then inferred from the resulting function type,
+  // since TypeScript represents the positional arguments of unions of functions
+  // as an intersection of the union.
   (
     Union extends unknown
       ? // The union type is used as the only argument to a function since the union
@@ -684,9 +687,7 @@ export type UnionToIntersection<Union> =
         (distributedUnion: Union) => void
       : // This won't happen.
         never
-  ) extends // Infer the `Intersection` type since TypeScript represents the positional
-  // arguments of unions of functions as an intersection of the union.
-  (mergedIntersection: infer Intersection) => void
+  ) extends (mergedIntersection: infer Intersection) => void
     ? // The `& Union` is to allow indexing by the resulting type
       Intersection & Union
     : never
