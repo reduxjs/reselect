@@ -19,14 +19,21 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Install pnpm
+        uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2 # v2.0.2
+        with:
+          # Every job here runs its own install step, with the flags that job
+          # needs. pnpm/setup installs by default, which would install twice.
+          install: false
+
       - name: Set up Node
         uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
         with:
           node-version: ${{ matrix.node }}
-          cache: 'yarn'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       # Read existing version, reuse that, add a Git short hash
       - name: Set build version to Git commit
@@ -36,13 +43,15 @@ jobs:
         run: jq .version package.json
 
       - name: Run linter
-        run: yarn lint
+        run: pnpm lint
 
       - name: Run tests
-        run: yarn test
+        run: pnpm test
 
+      # `pnpm pack` names the tarball `<name>-<version>.tgz`; `yarn pack`
+      # defaulted to `package.tgz`, which every downstream job expects.
       - name: Pack
-        run: yarn pack
+        run: pnpm pack --out package.tgz
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
@@ -66,25 +75,32 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Install pnpm
+        uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2 # v2.0.2
+        with:
+          # Every job here runs its own install step, with the flags that job
+          # needs. pnpm/setup installs by default, which would install twice.
+          install: false
+
       - name: Use node ${{ matrix.node }}
         uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
         with:
           node-version: ${{ matrix.node }}
-          cache: 'yarn'
+          cache: 'pnpm'
 
       - name: Install deps
-        run: yarn install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       # Build with the actual TS version in the repo
       - name: Pack
-        run: yarn build && yarn pack
+        run: pnpm build && pnpm pack --out package.tgz
 
       - name: Install build artifact
-        run: yarn add ./package.tgz
+        run: pnpm add ./package.tgz
 
       # Then install the specific version to test against
       - name: Install TypeScript ${{ matrix.ts }}
-        run: yarn add --dev typescript@${{ matrix.ts }}
+        run: pnpm add -D typescript@${{ matrix.ts }}
 
       - name: 'Remove source to ensure packaged types are used'
         run: rm -rf src
@@ -95,8 +111,8 @@ jobs:
 
       - name: Test types
         run: |
-          ./node_modules/.bin/tsc --version
-          yarn test:typescript
+          pnpm exec tsc --version
+          pnpm test:typescript
 
   are-the-types-wrong:
     name: Check package config with are-the-types-wrong
@@ -113,20 +129,30 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Install pnpm
+        uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2 # v2.0.2
+        with:
+          # Every job here runs its own install step, with the flags that job
+          # needs. pnpm/setup installs by default, which would install twice.
+          install: false
+
       - name: Use node ${{ matrix.node }}
         uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
         with:
           node-version: ${{ matrix.node }}
-          cache: 'yarn'
+          cache: 'pnpm'
 
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: package
           path: .
 
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
       # Note: We currently expect "FalseCJS" failures for Node16 + `moduleResolution: "node16",
       - name: Run are-the-types-wrong
-        run: npx @arethetypeswrong/cli@0.18.3 ./package.tgz --format table --ignore-rules false-cjs
+        run: pnpm exec attw ./package.tgz --format table --ignore-rules false-cjs
 
   test-published-artifact:
     name: Test Published Artifact ${{ matrix.example }}
