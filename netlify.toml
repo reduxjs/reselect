@@ -1,14 +1,16 @@
 [build]
   base    = "website"
   publish = "build"
-  command = "yarn build"
+  command = "pnpm install --frozen-lockfile && pnpm build"
   ignore  = "git diff --quiet HEAD^ HEAD -- ./docs/ ."
 
 [build.environment]
-NODE_VERSION = "20"
+# pnpm 11 requires Node 22.13 or newer.
+NODE_VERSION = "22"
 NODE_OPTIONS = "--max_old_space_size=4096"
-NETLIFY_USE_YARN = "true"
-YARN_VERSION = "1.22.10"
+# Netlify detects pnpm from the lockfile; Corepack reads the version from
+# `packageManager` in website/package.json.
+NETLIFY_USE_PNPM = "true"
 
 [[plugins]]
   package = "netlify-plugin-cache"
@@ -16,6 +18,6 @@ YARN_VERSION = "1.22.10"
     paths = [
       "node_modules/.cache",
       "website/node_modules/.cache",
-      ".yarn/.cache"
+      ".pnpm-store",
+      "website/.pnpm-store"
     ]
-
