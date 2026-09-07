@@ -23,8 +23,8 @@ website/translated_docs
 website/build/
 website/node_modules
 website/i18n/*
-# `website/` is still a Yarn project.
-website/.yarn/
+# pnpm content-addressable store kept inside the repo so Netlify can cache it.
+website/.pnpm-store/
 
 docs/examples/**/*.js
 docs/examples/**/*.jsx
