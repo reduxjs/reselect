@@ -1,6 +1,0 @@
-lib
-es
-dist
-node_modules
-vitest.config.ts
-tsup.config.ts
