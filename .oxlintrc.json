@@ -1,0 +1,37 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "import", "unicorn", "oxc"],
+  "env": {
+    "builtin": true,
+    "node": true
+  },
+  "categories": {
+    "correctness": "error"
+  },
+  "ignorePatterns": [
+    "**/dist/**",
+    "**/coverage/**",
+    "**/node_modules/**",
+    "website/**",
+    "docs/**",
+    "bench/.build/**"
+  ],
+  "rules": {
+    "no-unused-vars": "off",
+    "no-unused-expressions": "off",
+    "typescript/consistent-type-imports": [
+      "error",
+      { "prefer": "type-imports", "fixStyle": "separate-type-imports" }
+    ],
+    "typescript/consistent-type-exports": "error"
+  },
+  "overrides": [
+    {
+      "files": ["test/**", "type-tests/**", "typescript_test/**"],
+      "rules": {
+        "no-unused-expressions": "off",
+        "typescript/no-namespace": "off"
+      }
+    }
+  ]
+}
