@@ -59,6 +59,7 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
     "@reduxjs/toolkit": "^2.0.1",
     "@testing-library/react": "^14.1.2",
     "@types/lodash": "^4.14.175",
