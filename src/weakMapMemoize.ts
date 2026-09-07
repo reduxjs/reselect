@@ -48,7 +48,7 @@ interface UnterminatedCacheNode<T> {
   /**
    * Object cache, a `WeakMap` where non-primitive arguments are stored.
    */
-  o: null | WeakMap<Function | Object, CacheNode<T>>
+  o: null | WeakMap<Function | object, CacheNode<T>>
   /**
    * Primitive cache, a regular Map where primitive arguments are stored.
    */
@@ -67,7 +67,7 @@ interface TerminatedCacheNode<T> {
   /**
    * Object cache, a `WeakMap` where non-primitive arguments are stored.
    */
-  o: null | WeakMap<Function | Object, CacheNode<T>>
+  o: null | WeakMap<Function | object, CacheNode<T>>
   /**
    * Primitive cache, a regular `Map` where primitive arguments are stored.
    */

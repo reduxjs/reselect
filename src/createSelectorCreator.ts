@@ -413,6 +413,7 @@ export function createSelectorCreator<
       // the larger half of the win. Arity-specialized literals measured no better
       // than this, so one path serves every dependency count.
       const { length } = dependencies
+      // oxlint-disable-next-line unicorn/no-new-array
       const inputSelectorResults = new Array(length)
       for (let i = 0; i < length; i++) {
         // @ts-ignore
