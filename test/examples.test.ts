@@ -58,9 +58,9 @@ test('identity', () => {
 
 test.todo('Top Level Selectors', () => {
   type TopLevelSelectors<State> = {
-    [K in keyof State as K extends string
-      ? `select${Capitalize<K>}`
-      : never]: Selector<State, State[K], never>
+    [
+      K in keyof State as K extends string ? `select${Capitalize<K>}` : never
+    ]: Selector<State, State[K], never>
   }
 
   const topLevelSelectors: TopLevelSelectors<RootState> = {

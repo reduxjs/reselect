@@ -554,7 +554,9 @@ export type FunctionType<T> = Extract<T, AnyFunction>
  * @internal
  */
 export type ExtractReturnType<FunctionsArray extends readonly AnyFunction[]> = {
-  [Index in keyof FunctionsArray]: FunctionsArray[Index] extends FunctionsArray[number]
+  [
+    Index in keyof FunctionsArray
+  ]: FunctionsArray[Index] extends FunctionsArray[number]
     ? FallbackIfUnknown<ReturnType<FunctionsArray[Index]>, any>
     : never
 }
@@ -661,9 +663,11 @@ export type IfNever<T, TypeIfNever, TypeIfNotNever> = [T] extends [never]
  * @internal
  */
 export type OmitIndexSignature<ObjectType> = {
-  [KeyType in keyof ObjectType as {} extends Record<KeyType, unknown>
-    ? never
-    : KeyType]: ObjectType[KeyType]
+  [
+    KeyType in keyof ObjectType as {} extends Record<KeyType, unknown>
+      ? never
+      : KeyType
+  ]: ObjectType[KeyType]
 }
 
 /**
@@ -705,11 +709,10 @@ type Push<T extends any[], V> = [...T, V]
  *
  * @internal
  */
-type LastOf<T> = UnionToIntersection<
-  T extends any ? () => T : never
-> extends () => infer R
-  ? R
-  : never
+type LastOf<T> =
+  UnionToIntersection<T extends any ? () => T : never> extends () => infer R
+    ? R
+    : never
 
 /**
  * TS4.1+
@@ -783,10 +786,10 @@ export type IfUnknown<T, TypeIfUnknown, TypeIfNotUnknown> =
   IsAny<T> extends true
     ? TypeIfNotUnknown
     : unknown extends T
-    ? [keyof T] extends [never]
-      ? TypeIfUnknown
+      ? [keyof T] extends [never]
+        ? TypeIfUnknown
+        : TypeIfNotUnknown
       : TypeIfNotUnknown
-    : TypeIfNotUnknown
 
 /**
  * When a type is resolves to `unknown`, fallback to a different type.
@@ -850,8 +853,8 @@ export type BuiltIn =
 export type Expand<T> = T extends (...args: infer A) => infer R
   ? (...args: Expand<A>) => Expand<R>
   : T extends infer O
-  ? { [K in keyof O]: O[K] }
-  : never
+    ? { [K in keyof O]: O[K] }
+    : never
 
 /**
  * Expand an item recursively.
@@ -862,10 +865,10 @@ export type Expand<T> = T extends (...args: infer A) => infer R
 export type ExpandRecursively<T> = T extends (...args: infer A) => infer R
   ? (...args: ExpandRecursively<A>) => ExpandRecursively<R>
   : T extends object
-  ? T extends infer O
-    ? { [K in keyof O]: ExpandRecursively<O[K]> }
-    : never
-  : T
+    ? T extends infer O
+      ? { [K in keyof O]: ExpandRecursively<O[K]> }
+      : never
+    : T
 
 /**
  * @internal
@@ -927,10 +930,10 @@ export type ComputeDeep<A, Seen = never> = A extends BuiltIn
             } & unknown)[]
           : A
         : A extends readonly any[]
-        ? A extends readonly Record<PropertyKey, any>[]
-          ? readonly ({
-              [K in keyof A[number]]: ComputeDeep<A[number][K], A | Seen>
-            } & unknown)[]
-          : A
-        : { [K in keyof A]: ComputeDeep<A[K], A | Seen> } & unknown
+          ? A extends readonly Record<PropertyKey, any>[]
+            ? readonly ({
+                [K in keyof A[number]]: ComputeDeep<A[number][K], A | Seen>
+              } & unknown)[]
+            : A
+          : { [K in keyof A]: ComputeDeep<A[K], A | Seen> } & unknown
     >

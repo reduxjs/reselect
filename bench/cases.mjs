@@ -594,8 +594,8 @@ export const cases = [
           shape.kind === 'micro'
             ? selector
             : shape.arity === 1
-            ? state => selector(state)
-            : (state, props) => selector(state, props)
+              ? state => selector(state)
+              : (state, props) => selector(state, props)
 
         return wrap(shape, run, () => recomputations, variant)
       }
