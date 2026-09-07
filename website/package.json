@@ -11,9 +11,10 @@
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
     "prestart": "pnpm examples:clean && pnpm examples:build && ts-node insertCodeExamples.ts && pnpm format",
-    "format": "prettier --write \"**/*.{ts,tsx}\" \"docs\"",
+    "format": "oxfmt \"**/*.{ts,tsx}\" \"docs/**\"",
+    "format:check": "oxfmt --check \"**/*.{ts,tsx}\" \"docs/**\"",
     "examples:clean": "rimraf ../docs/examples/dist",
-    "examples:format": "prettier --write ../docs/examples",
+    "examples:format": "cd ../docs/examples && oxfmt -c ../../website/.oxfmtrc.json .",
     "examples:build": "ts-node compileExamples.ts && pnpm examples:format",
     "typecheck": "tsc"
   },
