@@ -22,7 +22,7 @@
     "url": "https://github.com/reduxjs/reselect/issues"
   },
   "scripts": {
-    "build": "pnpm clean && tsup",
+    "build": "pnpm clean && tsdown && tsx scripts/stripSourcemapFileField.mts",
     "clean": "rimraf dist",
     "format": "oxfmt \"{src,test,type-tests,typescript_test,bench,scripts}/**\" \"*.mts\" \"*.json\"",
     "format:check": "oxfmt --check \"{src,test,type-tests,typescript_test,bench,scripts}/**\" \"*.mts\" \"*.json\"",
