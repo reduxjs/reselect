@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import type { Options } from 'tsup'
-import { defineConfig } from 'tsup'
+import type { UserConfig } from 'tsdown'
+import { defineConfig } from 'tsdown'
 
 async function writeCommonJSEntry() {
   await fs.writeFile(
@@ -15,24 +15,35 @@ if (process.env.NODE_ENV === 'production') {
   )
 }
 
-export default defineConfig((options): Options[] => {
-  const commonOptions: Options = {
+export default defineConfig((options): UserConfig[] => {
+  const commonOptions = {
     entry: {
       reselect: 'src/index.ts'
     },
     sourcemap: true,
+    // `pnpm clean` already removes `dist/`; letting each of the six builds
+    // clean would race them against each other.
+    clean: false,
+    hash: false,
+    report: false,
     target: ['esnext'],
-    clean: true,
+    dts: false,
+    // esbuild dropped JSDoc from the bundles; Rolldown keeps it by default,
+    // which inflates every output file several times over. Legal and
+    // annotation comments stay so `@__PURE__` survives for consumers.
+    outputOptions: {
+      comments: { jsdoc: false }
+    },
     ...options
-  }
+  } satisfies UserConfig
 
   return [
+    // Standard ESM, embedded `process.env.NODE_ENV` checks
     {
       ...commonOptions,
       name: 'Modern ESM',
-      target: ['esnext'],
       format: ['esm'],
-      outExtension: () => ({ js: '.mjs' })
+      outExtensions: () => ({ js: '.mjs' })
     },
 
     // Support Webpack 4 by pointing `"module"` to a file with a `.js` extension
@@ -44,8 +55,8 @@ export default defineConfig((options): Options[] => {
         'reselect.legacy-esm': 'src/index.ts'
       },
       format: ['esm'],
-      outExtension: () => ({ js: '.js' }),
-      target: ['es2017']
+      target: ['es2017'],
+      outExtensions: () => ({ js: '.js' })
     },
 
     // Meant to be served up via CDNs like `unpkg`.
@@ -60,7 +71,7 @@ export default defineConfig((options): Options[] => {
         NODE_ENV: 'production'
       },
       format: ['esm'],
-      outExtension: () => ({ js: '.mjs' }),
+      outExtensions: () => ({ js: '.mjs' }),
       minify: true
     },
     {
@@ -74,7 +85,7 @@ export default defineConfig((options): Options[] => {
       },
       format: ['cjs'],
       outDir: './dist/cjs/',
-      outExtension: () => ({ js: '.cjs' })
+      outExtensions: () => ({ js: '.cjs' })
     },
     {
       ...commonOptions,
@@ -87,7 +98,7 @@ export default defineConfig((options): Options[] => {
       },
       format: ['cjs'],
       outDir: './dist/cjs/',
-      outExtension: () => ({ js: '.cjs' }),
+      outExtensions: () => ({ js: '.cjs' }),
       minify: true,
       onSuccess: async () => {
         await writeCommonJSEntry()
@@ -95,9 +106,11 @@ export default defineConfig((options): Options[] => {
     },
     {
       ...commonOptions,
-      name: 'CJS Type Definitions',
-      format: ['cjs'],
-      dts: { only: true }
+      name: 'Type definitions',
+      format: ['esm'],
+      sourcemap: false,
+      dts: { emitDtsOnly: true, sourcemap: false },
+      outExtensions: () => ({ dts: '.d.ts' })
     }
   ]
 })
