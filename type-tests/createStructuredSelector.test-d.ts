@@ -35,7 +35,6 @@ const rootState: RootState = {
 }
 
 describe('createStructuredSelector', () => {
-
   // TODO: Remove this test block once `TypedStructuredSelectorCreator` is removed.
   test('TypedStructuredSelectorCreator should lock down state type', () => {
     const createStructuredAppSelector: TypedStructuredSelectorCreator<RootState> =

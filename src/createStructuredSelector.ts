@@ -154,7 +154,8 @@ export type TypedStructuredSelectorCreator<RootState = any> =
    * @see {@link https://reselect.js.org/api/createStructuredSelector `createStructuredSelector`}
    */
   <
-    InputSelectorsObject extends RootStateSelectors<RootState> = RootStateSelectors<RootState>,
+    InputSelectorsObject extends RootStateSelectors<RootState> =
+      RootStateSelectors<RootState>,
     MemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize,
     ArgsMemoizeFunction extends UnknownMemoizer = typeof weakMapMemoize
   >(

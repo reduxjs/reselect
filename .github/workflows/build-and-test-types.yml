@@ -35,15 +35,20 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Run linter
+        run: pnpm lint
+
+      # Runs before the version rewrite below, which re-serializes
+      # package.json in a shape the formatter would reject.
+      - name: Check formatting
+        run: pnpm format:check
+
       # Read existing version, reuse that, add a Git short hash
       - name: Set build version to Git commit
         run: node scripts/writeGitVersion.mjs $(git rev-parse --short HEAD)
 
       - name: Check updated version
         run: jq .version package.json
-
-      - name: Run linter
-        run: pnpm lint
 
       - name: Run tests
         run: pnpm test

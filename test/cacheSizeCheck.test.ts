@@ -1,4 +1,8 @@
-import { createSelector, setGlobalDevModeChecks, weakMapMemoize } from 'reselect'
+import {
+  createSelector,
+  setGlobalDevModeChecks,
+  weakMapMemoize
+} from 'reselect'
 import { CACHE_SIZE_CHECK_THRESHOLD } from '@internal/devModeChecks/cacheSizeCheck'
 
 describe('cacheSizeCheck', () => {
@@ -90,8 +94,8 @@ describe('cacheSizeCheck', () => {
     // Each new object argument starts a fresh subtree, so the primitive Map
     // under it starts empty. Object churn with a handful of primitive values
     // per object never approaches the threshold.
-    const memoized = weakMapMemoize((source: { id: number }, page: number) =>
-      source.id + page
+    const memoized = weakMapMemoize(
+      (source: { id: number }, page: number) => source.id + page
     )
 
     for (let i = 0; i <= CACHE_SIZE_CHECK_THRESHOLD; i++) {
@@ -141,7 +145,10 @@ describe('cacheSizeCheck', () => {
 
   test('fires for a parametric createSelector called with many distinct ids', () => {
     const selector = createSelector(
-      [(state: { ids: number[] }) => state.ids, (state: unknown, id: number) => id],
+      [
+        (state: { ids: number[] }) => state.ids,
+        (state: unknown, id: number) => id
+      ],
       (ids, id) => ids.includes(id)
     )
     const state = { ids: [1, 2, 3] }

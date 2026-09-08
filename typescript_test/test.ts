@@ -1,4 +1,3 @@
-
 import { configureStore, createSlice } from '@reduxjs/toolkit'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { groupBy, isEqual } from 'lodash'
@@ -21,15 +20,14 @@ import {
 } from 'reselect'
 import { expectExactType } from './typesTestUtils'
 
-type Exact<A, B> = (<T>() => T extends A ? 1 : 0) extends <T>() => T extends B
-  ? 1
-  : 0
-  ? A extends B
-    ? B extends A
-      ? unknown
+type Exact<A, B> =
+  (<T>() => T extends A ? 1 : 0) extends <T>() => T extends B ? 1 : 0
+    ? A extends B
+      ? B extends A
+        ? unknown
+        : never
       : never
     : never
-  : never
 
 interface StateA {
   a: number
@@ -646,10 +644,7 @@ function testOptionalArgumentsConflicting() {
 
   // this is an example fixing selector6. We have to add a un-necessary typing in and magically the types are correct
   const selector7 = createSelector(
-    (
-      state: State,
-      prefix: string = 'a'
-    ) => prefix + state.foo,
+    (state: State, prefix: string = 'a') => prefix + state.foo,
     (str: string) => str
   )
 
