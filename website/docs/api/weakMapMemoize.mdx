@@ -412,8 +412,8 @@ If you need an exact bound with per-entry LRU eviction order, use <InternalLinks
 <InternalLinks.CreateSelector /> memoizes at two levels: `argsMemoize` caches by
 the selector's call arguments, and `memoize` caches by the input selector
 results. If you only set `memoizeOptions: {maxSize}`, the args cache still grows
-without bound — and because it sits in front, it returns cached results before the
-bounded cache is ever consulted. Pass `maxSize` in **both** options:
+without bound — and because it sits in front, it returns cached results before
+the bounded cache is ever consulted. Pass `maxSize` in **both** options:
 
 ```ts no-emit
 const selectVisibleItems = createSelector(
