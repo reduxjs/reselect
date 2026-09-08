@@ -29,13 +29,12 @@
     "lint": "oxlint src test type-tests typescript_test",
     "lint:fix": "oxlint --fix src test type-tests typescript_test",
     "prepack": "pnpm build",
-    "bench": "node --expose-gc ./node_modules/vitest/dist/cli-wrapper.js --run bench --mode production",
+    "bench": "vitest bench --run --mode production",
     "bench:hot-path": "node ./bench/build.mjs && node --expose-gc ./bench/run.mjs",
     "bench:hot-path:dev": "node ./bench/build.mjs --dev && node --expose-gc ./bench/run.mjs",
     "heap-snapshot": "pnpm build && node --expose-gc ./scripts/weakMapMemoizeHeapSnapshot.mjs",
-    "test": "node --expose-gc ./node_modules/vitest/dist/cli-wrapper.js --run && pnpm type-check",
-    "test:watch": "node --expose-gc ./node_modules/vitest/dist/cli-wrapper.js --watch",
-    "test:cov": "vitest run --coverage",
+    "test": "vitest --run && pnpm type-check",
+    "test:watch": "vitest --watch",
     "type-check": "vitest --run --typecheck.only && pnpm type-check:loose-null-checks",
     "type-check:loose-null-checks": "tsc --noEmit -p type-tests/tsconfig.looseNullChecks.json",
     "type-check:trace": "vitest --run --typecheck.only && tsc --noEmit -p typescript_test/tsconfig.json --generateTrace trace && npx @typescript/analyze-trace trace && rimraf trace",
@@ -88,7 +87,7 @@
     "tsx": "^4.23.13",
     "typescript": "^6.0.3",
     "unrun": "^0.3.1",
-    "vitest": "^1.6.0"
+    "vitest": "^4.1.11"
   },
   "packageManager": "pnpm@11.23.0"
 }

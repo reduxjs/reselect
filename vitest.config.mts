@@ -11,6 +11,10 @@ export default defineConfig({
   test: {
     typecheck: { tsconfig: 'type-tests/tsconfig.json' },
     globals: true,
+    // The GC specs and the memory benchmarks need `globalThis.gc`, which
+    // only `--expose-gc` installs. Passing it here starts every test worker
+    // with the flag, so `vitest` can be invoked directly.
+    execArgv: ['--expose-gc'],
     include: ['./test/**/*.(spec|test).[jt]s?(x)'],
     setupFiles: ['test/setup.vitest.ts'],
     alias: {

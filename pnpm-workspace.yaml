@@ -7,9 +7,7 @@
 # ignored, with no error.
 
 # Translation of Yarn's `nodeLinker: node-modules`. Reproduces the flat
-# layout, which the `test` and `bench` scripts depend on: they run
-# `node --expose-gc ./node_modules/vitest/dist/cli-wrapper.js` directly.
-# Tightening to pnpm's default isolated layout is a separate change.
+# layout. Tightening to pnpm's default isolated layout is a separate change.
 nodeLinker: hoisted
 
 # pnpm installs unmet peer dependencies by default, including optional ones.

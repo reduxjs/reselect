@@ -236,7 +236,7 @@ describe('createStructuredSelector.withTypes<RootState>()', () => {
       []
     >()
 
-    expectTypeOf(structuredAppSelector.dependencies).items.toMatchTypeOf<
+    expectTypeOf(structuredAppSelector.dependencies).items.toExtend<
       Selector<RootState>
     >()
 
