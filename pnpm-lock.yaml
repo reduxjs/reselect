@@ -79,13 +79,13 @@ importers:
         version: 0.8.5
       tsdown:
         specifier: ^0.23.0
-        version: 0.23.0(@arethetypeswrong/core@0.18.5)(tsx@4.23.13)(typescript@5.8.2)(unrun@0.3.1)
+        version: 0.23.0(@arethetypeswrong/core@0.18.5)(tsx@4.23.13)(typescript@6.0.3)(unrun@0.3.1)
       tsx:
         specifier: ^4.23.13
         version: 4.23.13
       typescript:
-        specifier: ^5.8.2
-        version: 5.8.2
+        specifier: ^6.0.3
+        version: 6.0.3
       unrun:
         specifier: ^0.3.1
         version: 0.3.1
@@ -2319,8 +2319,8 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  typescript@5.8.2:
-    resolution: {integrity: sha512-aJn6wq13/afZp/jT9QZmwEjDqqvSGp1VT5GVg+f/t6/oVyrgXM6BY1h9BRh/O5p3PlUPAe+WuiEZOmb/49RqoQ==}
+  typescript@6.0.3:
+    resolution: {integrity: sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -4107,7 +4107,7 @@ snapshots:
     dependencies:
       glob: 7.2.3
 
-  rolldown-plugin-dts@0.28.5(rolldown@1.2.7)(typescript@5.8.2):
+  rolldown-plugin-dts@0.28.5(rolldown@1.2.7)(typescript@6.0.3):
     dependencies:
       dts-resolver: 3.0.0
       get-tsconfig: 5.0.0-beta.6
@@ -4117,7 +4117,7 @@ snapshots:
       yuku-codegen: 0.9.4
       yuku-parser: 0.9.4
     optionalDependencies:
-      typescript: 5.8.2
+      typescript: 6.0.3
     transitivePeerDependencies:
       - oxc-resolver
 
@@ -4365,7 +4365,7 @@ snapshots:
 
   treeify@1.1.0: {}
 
-  tsdown@0.23.0(@arethetypeswrong/core@0.18.5)(tsx@4.23.13)(typescript@5.8.2)(unrun@0.3.1):
+  tsdown@0.23.0(@arethetypeswrong/core@0.18.5)(tsx@4.23.13)(typescript@6.0.3)(unrun@0.3.1):
     dependencies:
       cac: 7.0.0
       defu: 6.1.7
@@ -4375,7 +4375,7 @@ snapshots:
       obug: 2.1.4
       picomatch: 4.0.7
       rolldown: 1.2.7
-      rolldown-plugin-dts: 0.28.5(rolldown@1.2.7)(typescript@5.8.2)
+      rolldown-plugin-dts: 0.28.5(rolldown@1.2.7)(typescript@6.0.3)
       tinyexec: 1.3.1
       tinyglobby: 0.2.17
       tree-kill: 1.2.2
@@ -4384,7 +4384,7 @@ snapshots:
     optionalDependencies:
       '@arethetypeswrong/core': 0.18.5
       tsx: 4.23.13
-      typescript: 5.8.2
+      typescript: 6.0.3
       unrun: 0.3.1
     transitivePeerDependencies:
       - '@typescript/native-preview'
@@ -4402,7 +4402,7 @@ snapshots:
 
   typescript@5.6.1-rc: {}
 
-  typescript@5.8.2: {}
+  typescript@6.0.3: {}
 
   ufo@1.5.4: {}
 

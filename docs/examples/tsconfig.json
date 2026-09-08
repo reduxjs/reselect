@@ -7,13 +7,11 @@
     "isolatedModules": true,
     "removeComments": false,
     "checkJs": true,
-    "alwaysStrict": false,
-    "baseUrl": ".",
     "outDir": "dist",
     "strict": true,
     "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "allowJs": true,
@@ -21,9 +19,11 @@
     "noErrorTruncation": true,
     "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true,
+    "rootDir": "../..",
     "paths": {
       "reselect": ["../../src/index"], // @remap-prod-remove-line
-      "@internal/*": ["../../src/*"]
+      "@internal/*": ["../../src/*"],
+      "createStructuredSelector/*": ["./createStructuredSelector/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx"]
