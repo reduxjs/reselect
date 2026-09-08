@@ -1,6 +1,6 @@
 /**
  * Per-call cost of `createSelector`, measured against a baseline git ref in the
- * same process. Run with `yarn bench:hot-path`.
+ * same process. Run with `pnpm bench:hot-path`.
  *
  * A regression harness, not a comparison suite — `test/benchmarks/*` already
  * compares memoizers through tinybench, which is the right tool for "which of

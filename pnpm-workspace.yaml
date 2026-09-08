@@ -1,0 +1,28 @@
+# pnpm settings file.
+#
+# This repo has no pnpm workspace packages. `website/` is an independent
+# project with its own lockfile. This file exists only because pnpm 11 reads
+# its settings from here: pnpm 11 no longer reads pnpm-specific settings from
+# `.npmrc`, and no longer reads the "pnpm" field in package.json. Both are
+# ignored, with no error.
+
+# Translation of Yarn's `nodeLinker: node-modules`. Reproduces the flat
+# layout, which the `test` and `bench` scripts depend on: they run
+# `node --expose-gc ./node_modules/vitest/dist/cli-wrapper.js` directly.
+# Tightening to pnpm's default isolated layout is a separate change.
+nodeLinker: hoisted
+
+# pnpm installs unmet peer dependencies by default, including optional ones.
+# Anything a tool needs as a peer is declared as a devDependency here instead,
+# so the tree only contains what package.json asks for.
+autoInstallPeers: false
+
+# pnpm blocks dependency build scripts by default and needs an explicit
+# allowlist. In pnpm 11 the setting is `allowBuilds` (a map); pnpm 10's
+# `onlyBuiltDependencies` list is ignored.
+allowBuilds:
+  esbuild: true
+
+# Translation of the Yarn `resolutions.esbuild` pin.
+overrides:
+  esbuild: 0.23.0

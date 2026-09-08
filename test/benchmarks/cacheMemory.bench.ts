@@ -12,7 +12,7 @@ import { setupStore } from '../testUtils'
 // The numbers below are logged rather than timed - the `hz`/`mean` columns
 // reported by vitest are not meaningful here.
 //
-// Requires `--expose-gc`, which the `yarn bench` script passes.
+// Requires `--expose-gc`, which the `pnpm bench` script passes.
 
 const store = setupStore()
 const state = store.getState()

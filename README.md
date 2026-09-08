@@ -30,6 +30,9 @@ npm install reselect
 
 # Yarn
 yarn add reselect
+
+# pnpm
+pnpm add reselect
 ```
 
 ---

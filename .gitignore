@@ -17,20 +17,13 @@ trace
 
 typesversions
 .cache
-.yarnrc
-.yarn/*
-!.yarn/patches
-!.yarn/releases
-!.yarn/plugins
-!.yarn/sdks
-!.yarn/versions
-.pnp.*
 *.tgz
 
 website/translated_docs
 website/build/
 website/node_modules
 website/i18n/*
+# `website/` is still a Yarn project.
 website/.yarn/
 
 docs/examples/**/*.js
