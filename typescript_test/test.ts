@@ -1,4 +1,3 @@
-/* eslint-disable no-use-before-define */
 
 import { configureStore, createSlice } from '@reduxjs/toolkit'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
@@ -649,7 +648,6 @@ function testOptionalArgumentsConflicting() {
   const selector7 = createSelector(
     (
       state: State,
-      // eslint-disable-next-line @typescript-eslint/no-inferrable-types
       prefix: string = 'a'
     ) => prefix + state.foo,
     (str: string) => str
