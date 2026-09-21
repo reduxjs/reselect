@@ -1,15 +1,20 @@
 ---
 id: best-practices
-title: Best Practices
-sidebar_label: Best Practices
+title: Best Practices and Common Mistakes
+sidebar_label: Best Practices and Common Mistakes
 hide_title: true
-description: Best Practices
+description: Best Practices and Common Mistakes
 ---
 
 import { InternalLinks } from '@site/src/components/InternalLinks'
 import { ExternalLinks } from '@site/src/components/ExternalLinks'
+import Link from '@docusaurus/Link'
 
-# Best Practices
+# Best Practices and Common Mistakes
+
+This page covers how to get the most out of Reselect's memoization, and the mistakes that defeat it. For the broader question of how selectors fit into a Redux application, see the Redux docs page on <Link to="https://redux.js.org/usage/deriving-data-selectors">Deriving Data with Selectors</Link>.
+
+## Best Practices
 
 There are a few details that will help you skip running as many functions as possible and get the best possible performance out of Reselect:
 
@@ -37,3 +42,31 @@ const selectorBad = createSelector(
   someOtherCalculation
 )
 ```
+
+## Common Mistakes
+
+A somewhat common mistake is to write an <InternalLinks.InputSelectors text="input selector" /> that extracts a value or does some derivation, and a <InternalLinks.ResultFunction /> that just returns its result:
+
+```ts
+// ❌ BROKEN: this will not memoize correctly, and does nothing useful!
+const brokenSelector = createSelector(
+  [(state: RootState) => state.todos],
+  todos => todos
+)
+```
+
+Any <InternalLinks.ResultFunction /> that just returns its inputs is incorrect! The <InternalLinks.ResultFunction /> should always have the transformation logic.
+
+Similarly:
+
+```ts
+// ❌ BROKEN: this will not memoize correctly!
+const brokenSelector = createSelector(
+  [(state: RootState) => state],
+  state => state.todos
+)
+```
+
+Using the whole `state` as an input selector means the input changes on every dispatch, so the <InternalLinks.ResultFunction /> re-runs every time.
+
+Reselect's <Link to="/api/development-only-checks">development-only checks</Link> catch both of these mistakes in development: the `inputStabilityCheck` warns when an input selector returns a new reference for the same arguments, and the `identityFunctionCheck` warns when a result function returns its input unchanged.

@@ -1,2 +1,5 @@
 # Renamed 2026-08: the page gained checks that are not about selector stability.
 /api/development-only-stability-checks /api/development-only-checks 301
+
+# Merged 2026-09 into the Best Practices page.
+/usage/common-mistakes /usage/best-practices#common-mistakes 301

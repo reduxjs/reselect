@@ -47,7 +47,6 @@ const sidebars: SidebarsConfig = {
       label: 'Using Reselect',
       items: [
         'usage/best-practices',
-        'usage/common-mistakes',
         'usage/handling-empty-array-results'
       ]
     },
