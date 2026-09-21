@@ -9,13 +9,12 @@ description: 'createSelector'
 import Tabs from '@theme/Tabs'
 import TabItem from '@theme/TabItem'
 
-import { InternalLinks } from '@site/src/components/InternalLinks'
 import Link from '@docusaurus/Link'
 
 # `createSelector`
 
-Accepts one or more "<InternalLinks.InputSelectors />" (either as separate arguments or a single array),
-a single "<InternalLinks.ResultFunction />", and an optional options object, and
+Accepts one or more "[input selectors](../introduction/getting-started.mdx#input-selectors)" (either as separate arguments or a single array),
+a single "[result function](../introduction/getting-started.mdx#result-function)", and an optional options object, and
 generates a memoized selector function.
 
 The **Redux docs usage page on [Deriving Data with Selectors](https://redux.js.org/usage/deriving-data-selectors)** covers the purpose and motivation for selectors, why memoized selectors are useful, and typical Reselect usage patterns.
@@ -40,36 +39,36 @@ const selectTodosByCategory = createSelector(
 
 | Name                     | Description                                                                                                                                             |
 | :----------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `inputSelectors`         | An array of <InternalLinks.InputSelectors />, can also be passed as separate arguments.                                                                 |
-| `resultFunc`             | A function that takes the results of the <InternalLinks.InputSelectors /> as separate arguments.                                                        |
+| `inputSelectors`         | An array of [input selectors](../introduction/getting-started.mdx#input-selectors), can also be passed as separate arguments.                           |
+| `resultFunc`             | A function that takes the results of the input selectors as separate arguments.                                                                         |
 | `createSelectorOptions?` | An optional options object that allows for further customization per selector. See [Customizing Selector Options](#customizing-selector-options) below. |
 
 ### Returns
 
-A memoized <InternalLinks.OutputSelector />.
+A memoized [output selector](../introduction/getting-started.mdx#output-selector).
 
 #### Output Selector Fields
 
 The output selectors created by `createSelector` have several additional properties attached to them:
 
-| Name                            | Description                                                                                                                                                                                                                                                                |
-| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `resultFunc`                    | The final function passed to <InternalLinks.CreateSelector />.                                                                                                                                                                                                             |
-| `memoizedResultFunc`            | The memoized version of `resultFunc`.                                                                                                                                                                                                                                      |
-| `lastResult`                    | Returns the last result calculated by `memoizedResultFunc`.                                                                                                                                                                                                                |
-| `dependencies`                  | The array of the input selectors used by <InternalLinks.CreateSelector /> to compose `resultFunc`.                                                                                                                                                                         |
-| `recomputations`                | Counts the number of times `memoizedResultFunc` has been recalculated.                                                                                                                                                                                                     |
-| `resetRecomputations`           | Resets the count of `recomputations` count to 0.                                                                                                                                                                                                                           |
-| `dependencyRecomputations`      | Counts the number of times the <InternalLinks.InputSelectors /> (<InternalLinks.Dependencies text={<code>dependencies</code>} />) have been recalculated. This is distinct from `recomputations`, which tracks the recalculations of the <InternalLinks.ResultFunction />. |
-| `resetDependencyRecomputations` | Resets the `dependencyRecomputations` count to 0.                                                                                                                                                                                                                          |
-| `memoize`                       | Function used to memoize the `resultFunc`.                                                                                                                                                                                                                                 |
-| `argsMemoize`                   | Function used to memoize the arguments passed into the <InternalLinks.OutputSelector />.                                                                                                                                                                                   |
+| Name                            | Description                                                                                                                                                                                                                                                                                        |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `resultFunc`                    | The final function passed to `createSelector`.                                                                                                                                                                                                                                                     |
+| `memoizedResultFunc`            | The memoized version of `resultFunc`.                                                                                                                                                                                                                                                              |
+| `lastResult`                    | Returns the last result calculated by `memoizedResultFunc`.                                                                                                                                                                                                                                        |
+| `dependencies`                  | The array of the input selectors used by `createSelector` to compose `resultFunc`.                                                                                                                                                                                                                 |
+| `recomputations`                | Counts the number of times `memoizedResultFunc` has been recalculated.                                                                                                                                                                                                                             |
+| `resetRecomputations`           | Resets the count of `recomputations` count to 0.                                                                                                                                                                                                                                                   |
+| `dependencyRecomputations`      | Counts the number of times the input selectors ([`dependencies`](../introduction/getting-started.mdx#dependencies)) have been recalculated. This is distinct from `recomputations`, which tracks the recalculations of the [result function](../introduction/getting-started.mdx#result-function). |
+| `resetDependencyRecomputations` | Resets the `dependencyRecomputations` count to 0.                                                                                                                                                                                                                                                  |
+| `memoize`                       | Function used to memoize the `resultFunc`.                                                                                                                                                                                                                                                         |
+| `argsMemoize`                   | Function used to memoize the arguments passed into the output selector.                                                                                                                                                                                                                            |
 
 :::note Clearing the cache
 
 Both the output selector and its `memoizedResultFunc` expose the fields attached by their memoize function — for the built-in memoizers that means `clearCache`, `resultsCount` and `resetResultsCount`.
 
-Because a selector keeps a <Link to='/introduction/how-does-reselect-work#cascading-memoization'>separate cache for its arguments (`argsMemoize`) and for its result (`memoize`)</Link>, fully clearing it requires calling `clearCache` on **both**:
+Because a selector keeps a [separate cache for its arguments (`argsMemoize`) and for its result (`memoize`)](../introduction/how-does-reselect-work.mdx#cascading-memoization), fully clearing it requires calling `clearCache` on **both**:
 
 ```ts
 mySelector.clearCache() // clears the `argsMemoize` cache
@@ -80,16 +79,16 @@ mySelector.memoizedResultFunc.clearCache() // clears the `memoize` cache
 
 ### Type Parameters
 
-| Name                          | Description                                                                                                                                                                                                          |
-| :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `InputSelectors`              | The type of the <InternalLinks.InputSelectors /> array.                                                                                                                                                              |
-| `Result`                      | The return type of the <InternalLinks.ResultFunction /> as well as the <InternalLinks.OutputSelector />.                                                                                                             |
-| `OverrideMemoizeFunction`     | The type of the optional `memoize` function that could be passed into the options object to override the original `memoize` function that was initially passed into <InternalLinks.CreateSelectorCreator />.         |
-| `OverrideArgsMemoizeFunction` | The type of the optional `argsMemoize` function that could be passed into the options object to override the original `argsMemoize` function that was initially passed into <InternalLinks.CreateSelectorCreator />. |
+| Name                          | Description                                                                                                                                                                                                                 |
+| :---------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `InputSelectors`              | The type of the input selectors array.                                                                                                                                                                                      |
+| `Result`                      | The return type of the result function as well as the output selector.                                                                                                                                                      |
+| `OverrideMemoizeFunction`     | The type of the optional `memoize` function that could be passed into the options object to override the original `memoize` function that was initially passed into [`createSelectorCreator`](./createSelectorCreator.mdx). |
+| `OverrideArgsMemoizeFunction` | The type of the optional `argsMemoize` function that could be passed into the options object to override the original `argsMemoize` function that was initially passed into `createSelectorCreator`.                        |
 
-## Defining a Pre-Typed <InternalLinks.CreateSelector>`createSelector`</InternalLinks.CreateSelector>
+## Defining a Pre-Typed `createSelector`
 
-As of Reselect 5.1.0, you can create a "pre-typed" version of <InternalLinks.CreateSelector /> where the `state` type is predefined. This allows you to set the `state` type once, eliminating the need to specify it with every <InternalLinks.CreateSelector /> call.
+As of Reselect 5.1.0, you can create a "pre-typed" version of `createSelector` where the `state` type is predefined. This allows you to set the `state` type once, eliminating the need to specify it with every `createSelector` call.
 
 To do this, you can call `createSelector.withTypes<StateType>()`:
 
@@ -231,7 +230,7 @@ const selectTodoIds = createAppSelector(
 
 :::tip
 
-You can also use this API with <InternalLinks.CreateSelectorCreator /> to create a pre-typed custom selector creator:
+You can also use this API with [`createSelectorCreator`](./createSelectorCreator.mdx) to create a pre-typed custom selector creator:
 
 {/* START: createSelector/createAppSelector.ts */}
 
@@ -333,22 +332,22 @@ const selectReadAlerts = createAppSelector(
 
 `createSelector` does not implement memoization itself — it delegates to a **memoize function**: a higher-order function that wraps another function and returns a caching version of it, so that repeated calls with known arguments return the cached result instead of recomputing.
 
-Each selector uses a memoize function at two levels, following the <InternalLinks.CascadingMemoization /> pattern:
+Each selector uses a memoize function at two levels, following the [cascading memoization](../introduction/how-does-reselect-work.mdx#cascading-memoization) pattern:
 
 - `argsMemoize` memoizes the generated selector itself, based on the arguments it was called with (such as `state`). If the arguments match a previous call, nothing else runs.
-- `memoize` memoizes the <InternalLinks.ResultFunction />, based on the values returned by the <InternalLinks.InputSelectors />. If those values match, the cached result is returned without recalculating.
+- `memoize` memoizes the [result function](../introduction/getting-started.mdx#result-function), based on the values returned by the [input selectors](../introduction/getting-started.mdx#input-selectors). If those values match, the cached result is returned without recalculating.
 
-Reselect ships two memoize functions: <InternalLinks.WeakMapMemoize /> (the default) and <InternalLinks.LruMemoize />.
+Reselect ships two memoize functions: [`weakMapMemoize`](./weakMapMemoize.mdx) (the default) and [`lruMemoize`](./lruMemoize.mdx).
 
-Both levels can be overridden independently, per selector via the `memoize`/`argsMemoize` options, or for a whole family of selectors via <InternalLinks.CreateSelectorCreator />. Third-party memoizers such as `micro-memoize` work as well.
+Both levels can be overridden independently, per selector via the `memoize`/`argsMemoize` options, or for a whole family of selectors via [`createSelectorCreator`](./createSelectorCreator.mdx). Third-party memoizers such as `micro-memoize` work as well.
 
 :::info Default Memoization
 
-Since v5.0.0, `createSelector` uses <InternalLinks.WeakMapMemoize /> as the default for both `memoize` and `argsMemoize`. In v4.x the default was <InternalLinks.LruMemoize /> (previously named `defaultMemoize`) with a cache size of **1**, meaning a selector only remembered its most recent call.
+Since v5.0.0, `createSelector` uses `weakMapMemoize` as the default for both `memoize` and `argsMemoize`. In v4.x the default was `lruMemoize` (previously named `defaultMemoize`) with a cache size of **1**, meaning a selector only remembered its most recent call.
 
-`weakMapMemoize` instead provides an effectively **unlimited** cache size keyed on argument identity, which fixes the common "cache size of 1" problem when the same selector is called with many different arguments (e.g. `useSelector(state => selectItemById(state, id))` across a list). Results keyed by object arguments are released as those arguments are garbage-collected; results keyed by primitive arguments stay cached until cleared. See <InternalLinks.WeakMapMemoize /> for the full behavior and tradeoffs.
+`weakMapMemoize` instead provides an effectively **unlimited** cache size keyed on argument identity, which fixes the common "cache size of 1" problem when the same selector is called with many different arguments (e.g. `useSelector(state => selectItemById(state, id))` across a list). Results keyed by object arguments are released as those arguments are garbage-collected; results keyed by primitive arguments stay cached until cleared. See [`weakMapMemoize`](./weakMapMemoize.mdx) for the full behavior and tradeoffs.
 
-Because these are the defaults, you **do not** need to pass `memoize`/`argsMemoize` unless you want to override them (for example, to use <InternalLinks.LruMemoize /> with a custom `equalityCheck`).
+Because these are the defaults, you **do not** need to pass `memoize`/`argsMemoize` unless you want to override them (for example, to use `lruMemoize` with a custom `equalityCheck`).
 
 :::
 
@@ -375,7 +374,7 @@ This is the right place for a one-off: a single selector that needs a custom equ
 
 #### Baked in, with `createSelectorCreator`
 
-If several selectors need the same configuration, repeating the options object at every call site gets noisy and easy to forget. <InternalLinks.CreateSelectorCreator /> accepts the same options once and returns a customized `createSelector` with those options baked in:
+If several selectors need the same configuration, repeating the options object at every call site gets noisy and easy to forget. `createSelectorCreator` accepts the same options once and returns a customized `createSelector` with those options baked in:
 
 ```ts no-emit
 const createShallowEqualSelector = createSelectorCreator({
@@ -390,6 +389,6 @@ const selectTodoIds = createShallowEqualSelector(
 )
 ```
 
-In fact, the default `createSelector` is itself the result of calling `createSelectorCreator` with <InternalLinks.WeakMapMemoize />.
+In fact, the default `createSelector` is itself the result of calling `createSelectorCreator` with `weakMapMemoize`.
 
 The two compose: a selector made with a custom creator can still pass its own options object, and those per-instance options override the baked-in ones for that selector only.

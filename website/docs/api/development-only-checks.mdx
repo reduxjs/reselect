@@ -9,17 +9,16 @@ description: Development-Only Checks
 
 import Tabs from '@theme/Tabs'
 import TabItem from '@theme/TabItem'
-import { InternalLinks } from '@site/src/components/InternalLinks'
 
 # Development-Only Checks
 
 In development mode, Reselect runs extra checks on your selectors and warns about common mistakes:
 
-| Check                                             | What it catches                                                                                        |
-| :------------------------------------------------ | :----------------------------------------------------------------------------------------------------- |
-| [`inputStabilityCheck`](#inputstabilitycheck)     | <InternalLinks.InputSelectors /> that return a new reference on every run, which breaks memoization    |
-| [`identityFunctionCheck`](#identityfunctioncheck) | Result functions that return their argument unchanged, which memoize nothing useful                    |
-| [`cacheSizeCheck`](#cachesizecheck)               | <InternalLinks.WeakMapMemoize /> caches that grow without bound from ever-changing primitive arguments |
+| Check                                             | What it catches                                                                                                                           |
+| :------------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| [`inputStabilityCheck`](#inputstabilitycheck)     | [input selectors](../introduction/getting-started.mdx#input-selectors) that return a new reference on every run, which breaks memoization |
+| [`identityFunctionCheck`](#identityfunctioncheck) | Result functions that return their argument unchanged, which memoize nothing useful                                                       |
+| [`cacheSizeCheck`](#cachesizecheck)               | [`weakMapMemoize`](./weakMapMemoize.mdx) caches that grow without bound from ever-changing primitive arguments                            |
 
 :::info
 
@@ -59,7 +58,7 @@ setGlobalDevModeChecks({ identityFunctionCheck: 'never' })
 
 ### Per selector with the `devModeChecks` option
 
-Individual selectors can override the global setting by passing a `devModeChecks` option to <InternalLinks.CreateSelector>`createSelector`</InternalLinks.CreateSelector>:
+Individual selectors can override the global setting by passing a `devModeChecks` option to [`createSelector`](./createSelector.mdx):
 
 ```ts
 const selectTodoIds = createSelector(
@@ -82,13 +81,13 @@ A `devModeChecks` option always overrides the global setting for that selector, 
 
 :::caution
 
-`cacheSizeCheck` can only be configured globally. It runs inside <InternalLinks.WeakMapMemoize /> itself, which never sees `createSelector`'s options, so passing `devModeChecks: { cacheSizeCheck: ... }` to a selector has no effect.
+`cacheSizeCheck` can only be configured globally. It runs inside [`weakMapMemoize`](./weakMapMemoize.mdx) itself, which never sees `createSelector`'s options, so passing `devModeChecks: { cacheSizeCheck: ... }` to a selector has no effect.
 
 :::
 
 ## `inputStabilityCheck`
 
-Due to how <InternalLinks.CascadingMemoization /> works in Reselect, it is crucial that your <InternalLinks.InputSelectors /> do not return a new reference on each run. If an <InternalLinks.InputSelectors text='input selector' /> always returns a new reference, like
+Due to how [cascading memoization](../introduction/how-does-reselect-work.mdx#cascading-memoization) works in Reselect, it is crucial that your [input selectors](../introduction/getting-started.mdx#input-selectors) do not return a new reference on each run. If an input selector always returns a new reference, like
 
 ```ts
 state => ({ a: state.a, b: state.b })
@@ -102,7 +101,7 @@ state => state.todos.map(todo => todo.id)
 
 the selector will never memoize properly.
 
-Since this is a common mistake, <InternalLinks.CreateSelector /> runs the <InternalLinks.InputSelectors /> twice during the first call to the selector. If the results appear to be different for the same call, it logs a warning with the arguments and the two different sets of extracted input values.
+Since this is a common mistake, [`createSelector`](./createSelector.mdx) runs the input selectors twice during the first call to the selector. If the results appear to be different for the same call, it logs a warning with the arguments and the two different sets of extracted input values.
 
 Turning the check up to `always` is useful while debugging a selector that recomputes more than expected:
 
@@ -167,8 +166,8 @@ const selectCompletedTodosLength = createSelector(
 
 Reselect relies on a separation of concerns between extraction and transformation logic:
 
-- **Extraction logic** retrieves data from a broader state, like `state => state.todos`. It belongs in <InternalLinks.InputSelectors />.
-- **Transformation logic** manipulates or formats that data, like `todos => todos.map(({ id }) => id)`. It belongs in the <InternalLinks.ResultFunction />.
+- **Extraction logic** retrieves data from a broader state, like `state => state.todos`. It belongs in [input selectors](../introduction/getting-started.mdx#input-selectors).
+- **Transformation logic** manipulates or formats that data, like `todos => todos.map(({ id }) => id)`. It belongs in the [result function](../introduction/getting-started.mdx#result-function).
 
 Memoization only works when the two are properly separated: the input selector results are what get compared between calls, and the result function is what gets skipped on a cache hit. A result function that returns its argument unchanged means the selector does nothing useful:
 
@@ -238,7 +237,7 @@ const selectTodos = createSelector(
 
 ## `cacheSizeCheck`
 
-<InternalLinks.WeakMapMemoize /> (the default memoizer since 5.0) keys its cache
+[`weakMapMemoize`](./weakMapMemoize.mdx) (the default memoizer since 5.0) keys its cache
 tree by argument identity, and the two kinds of arguments age out of the cache
 very differently:
 
@@ -264,8 +263,8 @@ This check counts the distinct primitive values cached for each argument positio
 
 If you see this warning, the usual fixes are:
 
-- Pass the [`maxSize` option](./weakMapMemoize#bounding-cache-size-with-maxsize) to bound the cache (as of 5.3.0). Note that bounding a selector created by <InternalLinks.CreateSelector /> requires `maxSize` in both `memoizeOptions` and `argsMemoizeOptions`.
-- Switch that selector to <InternalLinks.LruMemoize />, which holds a fixed number of results with exact LRU eviction.
+- Pass the [`maxSize` option](./weakMapMemoize#bounding-cache-size-with-maxsize) to bound the cache (as of 5.3.0). Note that bounding a selector created by [`createSelector`](./createSelector.mdx) requires `maxSize` in both `memoizeOptions` and `argsMemoizeOptions`.
+- Switch that selector to [`lruMemoize`](./lruMemoize.mdx), which holds a fixed number of results with exact LRU eviction.
 - Call `.clearCache()` at a suitable point, such as when the data it derives from is replaced. Clearing the cache also re-arms the warning, so you will hear about it again if the cache regrows.
 
 Unlike the other checks, `cacheSizeCheck` is configured globally only (see the caution [above](#per-selector-with-the-devmodechecks-option)):

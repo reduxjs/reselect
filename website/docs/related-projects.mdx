@@ -6,15 +6,13 @@ hide_title: true
 description: Related Projects
 ---
 
-import { InternalLinks } from '@site/src/components/InternalLinks'
-import { ExternalLinks } from '@site/src/components/ExternalLinks'
 import Link from '@docusaurus/Link'
 
 # Related Projects
 
-## <ExternalLinks.ReReselect>Re-reselect</ExternalLinks.ReReselect>
+## [Re-reselect](https://github.com/toomuchdesign/re-reselect)
 
-Enhances Reselect selectors by wrapping <InternalLinks.CreateSelector /> and returning a memoized collection of selectors indexed with the cache key returned by a custom resolver function.
+Enhances Reselect selectors by wrapping [`createSelector`](./api/createSelector.mdx) and returning a memoized collection of selectors indexed with the cache key returned by a custom resolver function.
 
 Useful to reduce selectors recalculation when the same selector is repeatedly called with one/few different arguments.
 

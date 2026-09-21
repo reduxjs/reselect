@@ -6,22 +6,20 @@ hide_title: true
 description: Best Practices and Common Mistakes
 ---
 
-import { InternalLinks } from '@site/src/components/InternalLinks'
-import { ExternalLinks } from '@site/src/components/ExternalLinks'
 import Link from '@docusaurus/Link'
 
 # Best Practices and Common Mistakes
 
-This page covers how to get the most out of Reselect's memoization, and the mistakes that defeat it. For the broader question of how selectors fit into a Redux application, see the Redux docs page on <Link to="https://redux.js.org/usage/deriving-data-selectors">Deriving Data with Selectors</Link>.
+This page covers how to get the most out of Reselect's memoization, and the mistakes that defeat it. For the broader question of how selectors fit into a Redux application, see the Redux docs page on [Deriving Data with Selectors](/usage/deriving-data-selectors).
 
 ## Best Practices
 
 There are a few details that will help you skip running as many functions as possible and get the best possible performance out of Reselect:
 
-- Due to the <InternalLinks.CascadingMemoization /> in Reselect, The first layer of checks is upon the arguments that are passed to the <InternalLinks.OutputSelector />, therefore it's best to maintain the same reference for the arguments as much as possible.
-- In <ExternalLinks.Redux />, your state will change reference when updated. But it's best to keep the additional arguments as simple as possible, you can pass in objects or array as long as their reference does not change. Or you can pass in primitives like numbers for ids.
-- Keep your <InternalLinks.InputSelectors /> as simple as possible. It's best if they mostly consist of field accessors like `state => state.todos` or argument providers like `(state, id) => id`. You should not be doing any sort of calculation inside <InternalLinks.InputSelectors />, and you should definitely not be returning an object or array with a new reference each time.
-- The <InternalLinks.ResultFunction /> is only re-run as a last resort. So make sure to put any and all calculations inside your <InternalLinks.ResultFunction />. That way, Reselect will only run those calculations if all other checks fail.
+- Due to the [cascading memoization](../introduction/how-does-reselect-work.mdx#cascading-memoization) in Reselect, The first layer of checks is upon the arguments that are passed to the [output selector](../introduction/getting-started.mdx#output-selector), therefore it's best to maintain the same reference for the arguments as much as possible.
+- In [Redux](/), your state will change reference when updated. But it's best to keep the additional arguments as simple as possible, you can pass in objects or array as long as their reference does not change. Or you can pass in primitives like numbers for ids.
+- Keep your [input selectors](../introduction/getting-started.mdx#input-selectors) as simple as possible. It's best if they mostly consist of field accessors like `state => state.todos` or argument providers like `(state, id) => id`. You should not be doing any sort of calculation inside input selectors, and you should definitely not be returning an object or array with a new reference each time.
+- The [result function](../introduction/getting-started.mdx#result-function) is only re-run as a last resort. So make sure to put any and all calculations inside your result function. That way, Reselect will only run those calculations if all other checks fail.
 
 This:
 
@@ -45,7 +43,7 @@ const selectorBad = createSelector(
 
 ## Common Mistakes
 
-A somewhat common mistake is to write an <InternalLinks.InputSelectors text="input selector" /> that extracts a value or does some derivation, and a <InternalLinks.ResultFunction /> that just returns its result:
+A somewhat common mistake is to write an [input selector](../introduction/getting-started.mdx#input-selectors) that extracts a value or does some derivation, and a [result function](../introduction/getting-started.mdx#result-function) that just returns its result:
 
 ```ts
 // ❌ BROKEN: this will not memoize correctly, and does nothing useful!
@@ -55,7 +53,7 @@ const brokenSelector = createSelector(
 )
 ```
 
-Any <InternalLinks.ResultFunction /> that just returns its inputs is incorrect! The <InternalLinks.ResultFunction /> should always have the transformation logic.
+Any result function that just returns its inputs is incorrect! The result function should always have the transformation logic.
 
 Similarly:
 
@@ -67,6 +65,6 @@ const brokenSelector = createSelector(
 )
 ```
 
-Using the whole `state` as an input selector means the input changes on every dispatch, so the <InternalLinks.ResultFunction /> re-runs every time.
+Using the whole `state` as an input selector means the input changes on every dispatch, so the result function re-runs every time.
 
-Reselect's <Link to="/api/development-only-checks">development-only checks</Link> catch both of these mistakes in development: the `inputStabilityCheck` warns when an input selector returns a new reference for the same arguments, and the `identityFunctionCheck` warns when a result function returns its input unchanged.
+Reselect's [development-only checks](../api/development-only-checks.mdx) catch both of these mistakes in development: the `inputStabilityCheck` warns when an input selector returns a new reference for the same arguments, and the `identityFunctionCheck` warns when a result function returns its input unchanged.

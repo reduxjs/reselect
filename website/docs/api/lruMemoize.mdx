@@ -8,16 +8,14 @@ description: 'lruMemoize'
 
 import Tabs from '@theme/Tabs'
 import TabItem from '@theme/TabItem'
-import { InternalLinks } from '@site/src/components/InternalLinks'
-import { ExternalLinks } from '@site/src/components/ExternalLinks'
 
 # `lruMemoize`
 
-A memoization function that uses a provided equality check function to compare its inputs. This was originally known as `defaultMemoize`, and was the default inside of <InternalLinks.CreateSelector /> up through version 4.x.
+A memoization function that uses a provided equality check function to compare its inputs. This was originally known as `defaultMemoize`, and was the default inside of [`createSelector`](./createSelector.mdx) up through version 4.x.
 
 It has a default cache size of 1. This means it always recalculates when the value of an argument changes. However, this can be customized as needed with a specific max cache size (since 4.1.0).
 
-It determines if an argument has changed by calling the `equalityCheck` function. As `lruMemoize` is designed to be used with immutable data, the default `equalityCheck` function checks for changes using <ExternalLinks.ReferenceEqualityCheck text="reference equality" />:
+It determines if an argument has changed by calling the `equalityCheck` function. As `lruMemoize` is designed to be used with immutable data, the default `equalityCheck` function checks for changes using [reference equality](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Strict_equality):
 
 {/* START: lruMemoize/referenceEqualityCheck.ts */}
 
@@ -71,11 +69,11 @@ interface LruMemoizeOptions<Result = any> {
 }
 ```
 
-| Name                  | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| :-------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `equalityCheck`       | Used to compare the individual arguments of the provided calculation function. <br /> **`Default`** = `defaultEqualityCheck`                                                                                                                                                                                                                                                                                                                                 |
-| `resultEqualityCheck` | If provided, used to compare a newly generated output value against previous values in the cache. If a match is found, the old value is returned. This addresses the common <code>todos.map(todo => todo.id)</code> use case, where an update to another field in the original data causes a recalculation due to changed references, but the output is still effectively the same.                                                                          |
-| `maxSize`             | The cache size for the selector. If greater than 1, the selector will use an LRU cache internally. <br /> **`Default`** = 1 <br /> As of 5.3.0, <InternalLinks.WeakMapMemoize /> also accepts a [`maxSize` option](./weakMapMemoize#bounding-cache-size-with-maxsize). The difference: `lruMemoize` keeps an exact bound with per-entry LRU eviction, while `weakMapMemoize` uses a cheaper generational bound of roughly `2 * maxSize` with batch eviction. |
+| Name                  | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| :-------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `equalityCheck`       | Used to compare the individual arguments of the provided calculation function. <br /> **`Default`** = `defaultEqualityCheck`                                                                                                                                                                                                                                                                                                                                         |
+| `resultEqualityCheck` | If provided, used to compare a newly generated output value against previous values in the cache. If a match is found, the old value is returned. This addresses the common <code>todos.map(todo => todo.id)</code> use case, where an update to another field in the original data causes a recalculation due to changed references, but the output is still effectively the same.                                                                                  |
+| `maxSize`             | The cache size for the selector. If greater than 1, the selector will use an LRU cache internally. <br /> **`Default`** = 1 <br /> As of 5.3.0, [`weakMapMemoize`](./weakMapMemoize.mdx) also accepts a [`maxSize` option](./weakMapMemoize#bounding-cache-size-with-maxsize). The difference: `lruMemoize` keeps an exact bound with per-entry LRU eviction, while `weakMapMemoize` uses a cheaper generational bound of roughly `2 * maxSize` with batch eviction. |
 
 :::warning
 

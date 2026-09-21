@@ -8,19 +8,17 @@ description: 'weakMapMemoize'
 
 import Tabs from '@theme/Tabs'
 import TabItem from '@theme/TabItem'
-import { InternalLinks } from '@site/src/components/InternalLinks'
-import { ExternalLinks } from '@site/src/components/ExternalLinks'
 
 # `weakMapMemoize`
 
-<InternalLinks.LruMemoize /> has to be explicitly configured to have a cache
+[`lruMemoize`](./lruMemoize.mdx) has to be explicitly configured to have a cache
 size larger than 1, and uses an LRU cache internally.
 
-`weakMapMemoize` creates a tree of <ExternalLinks.WeakMap />-based cache nodes based on the identity of the arguments it's been called with (in this case, the extracted values from your input selectors). **This allows `weakMapMemoize` to have an effectively infinite cache size**. Cache results will be kept in memory as long as references to the arguments still exist, and then cleared out as the arguments are garbage-collected.
+`weakMapMemoize` creates a tree of [`WeakMap`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap)-based cache nodes based on the identity of the arguments it's been called with (in this case, the extracted values from your input selectors). **This allows `weakMapMemoize` to have an effectively infinite cache size**. Cache results will be kept in memory as long as references to the arguments still exist, and then cleared out as the arguments are garbage-collected.
 
 :::info Default since v5.0.0
 
-Since v5.0.0, `weakMapMemoize` is the **default** memoization function used by <InternalLinks.CreateSelector /> for both `memoize` and `argsMemoize`. In v4.x the default was <InternalLinks.LruMemoize /> (previously named `defaultMemoize`) with a cache size of **1**.
+Since v5.0.0, `weakMapMemoize` is the **default** memoization function used by [`createSelector`](./createSelector.mdx) for both `memoize` and `argsMemoize`. In v4.x the default was `lruMemoize` (previously named `defaultMemoize`) with a cache size of **1**.
 
 This means you generally **do not** need to pass `memoize: weakMapMemoize` or `argsMemoize: weakMapMemoize` yourself. The examples on this page pass them explicitly only to illustrate the behavior — a plain `createSelector(...)` call already uses `weakMapMemoize`.
 
@@ -53,10 +51,10 @@ A memoized function with a `.clearCache()` method attached.
 - Pros:
 
   - It has an effectively infinite cache size, but you have no control over
-    how long values are kept in cache as it's based on garbage collection and <ExternalLinks.WeakMap />s.
+    how long values are kept in cache as it's based on garbage collection and [`WeakMap`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap)s.
 
 - Cons:
-  - There's currently no way to alter the argument comparisons. They're based on <ExternalLinks.ReferenceEqualityCheck text='strict reference equality' />.
+  - There's currently no way to alter the argument comparisons. They're based on [strict reference equality](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Strict_equality).
   - Garbage collection only frees results keyed by **object or function** arguments. Results keyed by **primitive** arguments (strings, numbers, booleans) are held strongly, and are only released by calling `.clearCache()`. A selector that keeps seeing new primitive values in the same argument position — ids, offsets, timestamps — grows its cache without bound. In development mode, the [`cacheSizeCheck`](./development-only-checks#cachesizecheck) warns when a single argument position passes 1,000 distinct primitive values. As of 5.3.0, the [`maxSize` option](#bounding-cache-size-with-maxsize) bounds this growth.
 
 ### Use Cases
@@ -146,7 +144,7 @@ selectItemsByCategory(state, 'Electronics') // Selector runs again!
 
 Before you could solve this in a number of different ways:
 
-1. Set the `maxSize` with <InternalLinks.LruMemoize />:
+1. Set the `maxSize` with [`lruMemoize`](./lruMemoize.mdx):
 
 {/* START: weakMapMemoize/setMaxSize.ts */}
 
@@ -203,7 +201,7 @@ const selectItemsByCategory = createSelector(
 
 But this required having to know the cache size ahead of time.
 
-2. Create unique selector instances using <ExternalLinks.UseMemo />.
+2. Create unique selector instances using [`useMemo`](https://react.dev/reference/react/useMemo).
 
 {/* START: weakMapMemoize/withUseMemo.tsx */}
 
@@ -286,7 +284,7 @@ const MyComponent = ({ category }) => {
 
 {/* END: weakMapMemoize/withUseMemo.tsx */}
 
-3. Use <ExternalLinks.ReReselect />:
+3. Use [Re-reselect](https://github.com/toomuchdesign/re-reselect):
 
 ```ts
 import { createCachedSelector } from 're-reselect'
@@ -405,11 +403,11 @@ This is implemented using a "generational" approach, rather than the LRU approac
 - A call that finds its result in the previous generation promotes that result into the current one, so entries that keep getting used keep surviving the flips.
 - Total retention is therefore bounded at roughly `2 * maxSize` results, and eviction happens in batches rather than one entry at a time. This is by design: it keeps the per-call bookkeeping near zero, and there is **no cost at all when `maxSize` is not passed**.
 
-If you need an exact bound with per-entry LRU eviction order, use <InternalLinks.LruMemoize /> instead — the tradeoff is that its `maxSize` is exact but its bookkeeping runs on every call.
+If you need an exact bound with per-entry LRU eviction order, use `lruMemoize` instead — the tradeoff is that its `maxSize` is exact but its bookkeeping runs on every call.
 
 :::warning Bounding a `createSelector` selector requires both options
 
-<InternalLinks.CreateSelector /> memoizes at two levels: `argsMemoize` caches by
+[`createSelector`](./createSelector.mdx) memoizes at two levels: `argsMemoize` caches by
 the selector's call arguments, and `memoize` caches by the input selector
 results. If you only set `memoizeOptions: {maxSize}`, the args cache still grows
 without bound — and because it sits in front, it returns cached results before
@@ -438,7 +436,7 @@ In development mode, the [`cacheSizeCheck`](./development-only-checks#cachesizec
 
 ### Keeping extra arguments away from unary input selectors
 
-When a <InternalLinks.CreateSelector /> selector is called, every input selector receives _all_ of the call's arguments — including input selectors that only use the first one. If such an input selector is itself a memoized selector, its cache is still keyed by the full argument list, so every distinct value of the extra argument creates a separate cache entry for it.
+When a `createSelector` selector is called, every input selector receives _all_ of the call's arguments — including input selectors that only use the first one. If such an input selector is itself a memoized selector, its cache is still keyed by the full argument list, so every distinct value of the extra argument creates a separate cache entry for it.
 
 The results stay correct, and result functions do not rerun. But each of those cache entries is checked independently: when the state updates, a selector called with `N` distinct ids re-runs its input selectors `N` times instead of once. In a list where every item calls `useSelector(state => selectSomeData(state, id))` and the state updates frequently, that per-update cost grows with the size of the list. The extra cache entries also hold `N` copies of the same result. A telltale sign is `dependencyRecomputations()` on the inner selector increasing by the number of list items on every state update, rather than by 1.
 

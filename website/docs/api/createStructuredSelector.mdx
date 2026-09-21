@@ -8,7 +8,6 @@ description: 'createStructuredSelector'
 
 import Tabs from '@theme/Tabs'
 import TabItem from '@theme/TabItem'
-import { InternalLinks } from '@site/src/components/InternalLinks'
 
 # `createStructuredSelector`
 
@@ -18,10 +17,10 @@ A convenience function that simplifies returning an object made up of selector r
 
 ### Parameters
 
-| Name                   | Description                                                                          |
-| :--------------------- | :----------------------------------------------------------------------------------- |
-| `inputSelectorsObject` | A key value pair consisting of input selectors.                                      |
-| `selectorCreator?`     | A custom selector creator function. It defaults to <InternalLinks.CreateSelector />. |
+| Name                   | Description                                                                                  |
+| :--------------------- | :------------------------------------------------------------------------------------------- |
+| `inputSelectorsObject` | A key value pair consisting of input selectors.                                              |
+| `selectorCreator?`     | A custom selector creator function. It defaults to [`createSelector`](./createSelector.mdx). |
 
 ### Returns
 
@@ -31,7 +30,7 @@ A memoized structured selector.
 
 | Name                   | Description                                                                                                                                            |
 | :--------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `InputSelectorsObject` | The shape of the <InternalLinks.InputSelectors /> object.                                                                                              |
+| `InputSelectorsObject` | The shape of the [input selectors](../introduction/getting-started.mdx#input-selectors) object.                                                        |
 | `MemoizeFunction`      | The type of the memoize function that is used to create the structured selector. It defaults to `weakMapMemoize`.                                      |
 | `ArgsMemoizeFunction`  | The type of the memoize function that is used to memoize the arguments passed into the generated structured selector. It defaults to `weakMapMemoize`. |
 
@@ -248,9 +247,9 @@ const nestedSelector = createStructuredSelector({
 })
 ```
 
-## Defining a Pre-Typed <InternalLinks.CreateStructuredSelector>`createStructuredSelector`</InternalLinks.CreateStructuredSelector>
+## Defining a Pre-Typed `createStructuredSelector`
 
-As of Reselect 5.1.0, you can create a "pre-typed" version of <InternalLinks.CreateStructuredSelector /> where the `state` type is predefined. This allows you to set the `state` type once, eliminating the need to specify it with every <InternalLinks.CreateStructuredSelector /> call.
+As of Reselect 5.1.0, you can create a "pre-typed" version of `createStructuredSelector` where the `state` type is predefined. This allows you to set the `state` type once, eliminating the need to specify it with every `createStructuredSelector` call.
 
 To do this, you can call `createStructuredSelector.withTypes<StateType>()`:
 
