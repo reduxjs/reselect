@@ -30,3 +30,5 @@ docs/examples/**/*.js
 docs/examples/**/*.jsx
 
 bench/.build/
+
+.combined/
