@@ -369,7 +369,7 @@ const saveWhitespace = (file: string) => {
   return metadataObj.serialize() + file
 }
 
-export const EXAMPLES_DIRECTORY = '../docs/examples'
+export const EXAMPLES_DIRECTORY = 'docs/examples'
 
 export const tsExtensionRegex = /\.tsx?$/
 
@@ -422,7 +422,11 @@ const compileTSFile = (filePath: string, tsconfigPath?: string) => {
       .slice(tsconfigDirectory.split(path.sep).length)
   )
 
-  const restoredWhitespaceContents = restoreWhitespace(result.outputText)
+  // TypeScript 6 prefixes non-module output with "use strict", which the
+  // docs examples should not show.
+  const restoredWhitespaceContents = restoreWhitespace(
+    result.outputText.replace(/^"use strict";\r?\n/, '')
+  )
   const outputFilePath = path.join(outputFolder, jsFileName)
   if (!existsSync(outputFolder)) {
     mkdirSync(outputFolder)
@@ -451,7 +455,11 @@ const compileTSWithWhitespace = (directory: string, tsconfigPath: string) => {
   })
 }
 
-compileTSWithWhitespace(
-  EXAMPLES_DIRECTORY,
-  path.join(EXAMPLES_DIRECTORY, 'tsconfig.json')
-)
+// insertCodeExamples.ts imports the helpers above, so only compile when this
+// file is run directly.
+if (require.main === module) {
+  compileTSWithWhitespace(
+    EXAMPLES_DIRECTORY,
+    path.join(EXAMPLES_DIRECTORY, 'tsconfig.json')
+  )
+}

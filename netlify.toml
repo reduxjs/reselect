@@ -18,8 +18,8 @@
     DOCS_SOURCE_RESELECT="$(cd ../../.. && pwd)" pnpm fetch-docs --force &&
     pnpm build && cp _redirects ./build
   """
-  # Skip the build when nothing under website/docs/ or this file changed.
-  ignore  = "[ \"$CACHED_COMMIT_REF\" = \"$COMMIT_REF\" ] && exit 1; git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- website/docs/ netlify.toml"
+  # Skip the build when nothing under docs/ or this file changed.
+  ignore  = "[ \"$CACHED_COMMIT_REF\" = \"$COMMIT_REF\" ] && exit 1; git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- docs/ netlify.toml"
 
 [build.environment]
 # pnpm 11 requires Node 22.13 or newer.
