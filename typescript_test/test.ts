@@ -177,10 +177,8 @@ function testConnect() {
 
 function testInvalidTypeInCombinator() {
   // @ts-expect-error
-  createSelector(
-    (state: { foo: string }) => state.foo,
-    (foo: number) => foo
-  )
+  // prettier-ignore
+  createSelector((state: { foo: string }) => state.foo, (foo: number) => foo)
 
   createSelector(
     (state: { foo: string; bar: number; baz: boolean }) => state.foo,
@@ -192,61 +190,36 @@ function testInvalidTypeInCombinator() {
 
   // does not allow heterogeneous parameter type
   // selectors when the combinator function is typed differently
+  const heterogeneousCombiner = (
+    foo1: string,
+    foo2: number,
+    foo3: boolean,
+    foo4: string,
+    foo5: string,
+    foo6: string,
+    foo7: string,
+    foo8: number,
+    foo9: string[]
+  ) => {
+    return { foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9 }
+  }
+  const selectTestString = (state: { testString: string }) => state.testString
+  const selectTestNumber = (state: { testNumber: number }) => state.testNumber
+  const selectTestBoolean = (state: { testBoolean: boolean }) =>
+    state.testBoolean
+  const selectTestNumberAsString = (state: { testNumber: string }) =>
+    state.testNumber
+  const selectTestStringArray = (state: { testStringArray: string[] }) =>
+    state.testStringArray
   // @ts-expect-error
-  createSelector(
-    (state: { testString: string }) => state.testString,
-    (state: { testNumber: number }) => state.testNumber,
-    (state: { testBoolean: boolean }) => state.testBoolean,
-    (state: { testString: string }) => state.testString,
-    (state: { testString: string }) => state.testString,
-    (state: { testString: string }) => state.testString,
-    (state: { testString: string }) => state.testString,
-    (state: { testNumber: string }) => state.testNumber,
-    (state: { testStringArray: string[] }) => state.testStringArray,
-    (
-      foo1: string,
-      foo2: number,
-      foo3: boolean,
-      foo4: string,
-      foo5: string,
-      foo6: string,
-      foo7: string,
-      foo8: number,
-      foo9: string[]
-    ) => {
-      return { foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9 }
-    }
-  )
+  // prettier-ignore
+  createSelector(selectTestString, selectTestNumber, selectTestBoolean, selectTestString, selectTestString, selectTestString, selectTestString, selectTestNumberAsString, selectTestStringArray, heterogeneousCombiner)
 
   // does not allow a large array of heterogeneous parameter type
   // selectors when the combinator function is typed differently
   // @ts-expect-error
-  createSelector(
-    [
-      (state: { testString: string }) => state.testString,
-      (state: { testNumber: number }) => state.testNumber,
-      (state: { testBoolean: boolean }) => state.testBoolean,
-      (state: { testString: string }) => state.testString,
-      (state: { testString: string }) => state.testString,
-      (state: { testString: string }) => state.testString,
-      (state: { testString: string }) => state.testString,
-      (state: { testNumber: string }) => state.testNumber,
-      (state: { testStringArray: string[] }) => state.testStringArray
-    ],
-    (
-      foo1: string,
-      foo2: number,
-      foo3: boolean,
-      foo4: string,
-      foo5: string,
-      foo6: string,
-      foo7: string,
-      foo8: number,
-      foo9: string[]
-    ) => {
-      return { foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9 }
-    }
-  )
+  // prettier-ignore
+  createSelector([(state: { testString: string }) => state.testString, (state: { testNumber: number }) => state.testNumber, (state: { testBoolean: boolean }) => state.testBoolean, (state: { testString: string }) => state.testString, (state: { testString: string }) => state.testString, (state: { testString: string }) => state.testString, (state: { testString: string }) => state.testString, (state: { testNumber: string }) => state.testNumber, (state: { testStringArray: string[] }) => state.testStringArray], (foo1: string, foo2: number, foo3: boolean, foo4: string, foo5: string, foo6: string, foo7: string, foo8: number, foo9: string[]) => { return { foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9 } })
 }
 
 function testParametricSelector() {
@@ -362,13 +335,8 @@ function testArrayArgument() {
   createSelector([(state: { foo: string }) => state.foo])
 
   // @ts-expect-error
-  createSelector(
-    [
-      (state: { foo: string }) => state.foo,
-      (state: { foo: string }) => state.foo
-    ],
-    (foo: string, bar: number) => {}
-  )
+  // prettier-ignore
+  createSelector([(state: { foo: string }) => state.foo, (state: { foo: string }) => state.foo], (foo: string, bar: number) => {})
 
   createSelector(
     [
@@ -398,46 +366,12 @@ function testArrayArgument() {
   )
 
   // @ts-expect-error
-  createSelector(
-    [
-      (state: { foo: string }) => state.foo,
-      (state: { foo: string }) => state.foo,
-      (state: { foo: string }) => state.foo,
-      (state: { foo: string }) => state.foo,
-      (state: { foo: string }) => state.foo,
-      (state: { foo: string }) => state.foo,
-      (state: { foo: string }) => state.foo,
-      (state: { foo: string }) => state.foo,
-      (state: { foo: string }) => state.foo,
-      (state: { foo: string }) => state.foo
-    ],
-    (foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8: number, foo9, foo10) => {}
-  )
+  // prettier-ignore
+  createSelector([(state: { foo: string }) => state.foo, (state: { foo: string }) => state.foo, (state: { foo: string }) => state.foo, (state: { foo: string }) => state.foo, (state: { foo: string }) => state.foo, (state: { foo: string }) => state.foo, (state: { foo: string }) => state.foo, (state: { foo: string }) => state.foo, (state: { foo: string }) => state.foo, (state: { foo: string }) => state.foo], (foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8: number, foo9, foo10) => {})
 
   // @ts-expect-error
-  createSelector(
-    [
-      (state: { foo: string }) => state.foo,
-      // @ts-expect-error
-      state => state.foo,
-      // @ts-expect-error
-      state => state.foo,
-      // @ts-expect-error
-      state => state.foo,
-      // @ts-expect-error
-      state => state.foo,
-      // @ts-expect-error
-      state => state.foo,
-      // @ts-expect-error
-      state => state.foo,
-      // @ts-expect-error
-      state => state.foo,
-      1
-    ],
-    // We expect an error here, but the error differs between TS versions
-    // @ts-ignore
-    (foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9) => {}
-  )
+  // prettier-ignore
+  createSelector([(state: { foo: string }) => state.foo, state => state.foo, state => state.foo, state => state.foo, state => state.foo, state => state.foo, state => state.foo, state => state.foo, 1], (foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9) => {})
 
   const selector2 = createSelector(
     [
@@ -882,10 +816,8 @@ function testDynamicArrayArgument() {
     (...vals: string[]) => 0
   )
   // @ts-expect-error
-  createSelector(
-    data.map(obj => () => obj.val1),
-    (...vals: number[]) => 0
-  )
+  // prettier-ignore
+  createSelector(data.map(obj => () => obj.val1), (...vals: number[]) => 0)
 
   const s = createSelector(
     data.map(obj => (state: StateA, fld: keyof Elem) => obj[fld]),
@@ -1020,31 +952,23 @@ function issue445() {
 
   // Should error because mismatch of params
   // @ts-expect-error
-  const getComplexObjectTest1 = createSelector(
-    [getObject1],
-    generateComplexObject
-  )
+  // prettier-ignore
+  const getComplexObjectTest1 = createSelector([getObject1], generateComplexObject)
 
   // Does error, but error is really weird and talks about "Object1 is not assignable to type number"
   // @ts-expect-error
-  const getComplexObjectTest2 = createSelector(
-    [getNumber, getObject1],
-    generateComplexObject
-  )
+  // prettier-ignore
+  const getComplexObjectTest2 = createSelector([getNumber, getObject1], generateComplexObject)
 
   // Should error because number can't be null
   // @ts-expect-error
-  const getComplexObjectTest3 = createSelector(
-    [getNumber, getObject1, getObject2],
-    generateComplexObject
-  )
+  // prettier-ignore
+  const getComplexObjectTest3 = createSelector([getNumber, getObject1, getObject2], generateComplexObject)
 
   // Does error, but error is really weird and talks about "Object1 is not assignable to type number"
   // @ts-expect-error
-  const getComplexObjectTest4 = createSelector(
-    [getObject1, getNumber, getObject2],
-    generateComplexObject
-  )
+  // prettier-ignore
+  const getComplexObjectTest4 = createSelector([getObject1, getNumber, getObject2], generateComplexObject)
 
   // Verbose selector examples
 
@@ -1686,15 +1610,18 @@ function testCreateStructuredSelectorNew() {
     (state: State) => state.todos,
     (id, todos) => todos.filter(todo => todo.id === id)
   )
+  // Keep these keys in alphabetical order. The `dependencies` order follows
+  // key order: TS 7 sorts the keys alphabetically, while TS 5/6 use the order
+  // in which each key name first appears in the program.
   const multiArgsStructuredSelector = createStructuredSelector(
     {
-      selectedTodos: (state: State) => state.todos,
-      selectedTodoById: (state: State, id: number) => state.todos[id],
       selectedCompletedTodos: (
         state: State,
         id: number,
         isCompleted: boolean
-      ) => state.todos.filter(({ completed }) => completed === isCompleted)
+      ) => state.todos.filter(({ completed }) => completed === isCompleted),
+      selectedTodoById: (state: State, id: number) => state.todos[id],
+      selectedTodos: (state: State) => state.todos
     },
     createSelectorCreator({ memoize: microMemoize, argsMemoize: microMemoize })
   )
@@ -1721,9 +1648,9 @@ function testCreateStructuredSelectorNew() {
   expectExactType<typeof microMemoize>(multiArgsStructuredSelector.memoize)
   expectExactType<
     [
-      (state: State) => State['todos'],
+      (state: State, id: number, isCompleted: boolean) => State['todos'],
       (state: State, id: number) => State['todos'][number],
-      (state: State, id: number, isCompleted: boolean) => State['todos']
+      (state: State) => State['todos']
     ]
   >(multiArgsStructuredSelector.dependencies)
   // @ts-expect-error Wrong number of arguments.

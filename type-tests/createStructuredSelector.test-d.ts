@@ -18,9 +18,13 @@ interface Alert {
   read: boolean
 }
 
+// Keep the keys in alphabetical order, and use them in the same order below.
+// The `dependencies` and `memoizedResultFunc` parameter order follows key
+// order: TS 7 sorts the keys alphabetically, while TS 5/6 use the order in
+// which each key name first appears in the program.
 interface RootState {
-  todos: Todo[]
   alerts: Alert[]
+  todos: Todo[]
 }
 
 const rootState: RootState = {
@@ -41,15 +45,15 @@ describe('createStructuredSelector', () => {
       createStructuredSelector
 
     const structuredSelector = createStructuredAppSelector({
-      todos: state => {
-        expectTypeOf(state).toEqualTypeOf<RootState>(rootState)
-
-        return state.todos
-      },
       alerts: state => {
         expectTypeOf(state).toEqualTypeOf<RootState>(rootState)
 
         return state.alerts
+      },
+      todos: state => {
+        expectTypeOf(state).toEqualTypeOf<RootState>(rootState)
+
+        return state.todos
       }
     })
 
@@ -95,9 +99,9 @@ describe('createStructuredSelector', () => {
 
     expectTypeOf(
       structuredSelector.memoizedResultFunc
-    ).parameters.toEqualTypeOf<[Todo[], Alert[]]>([
-      rootState.todos,
-      rootState.alerts
+    ).parameters.toEqualTypeOf<[Alert[], Todo[]]>([
+      rootState.alerts,
+      rootState.todos
     ])
 
     expectTypeOf(structuredSelector.memoizedResultFunc).returns.toEqualTypeOf<
@@ -125,8 +129,8 @@ describe('createStructuredSelector', () => {
 
     const structuredSelector = createStructuredAppSelector(
       {
-        todos: state => state.todos,
-        alerts: state => state.alerts
+        alerts: state => state.alerts,
+        todos: state => state.todos
       },
       createSelectorLru
     )
@@ -169,9 +173,9 @@ describe('createStructuredSelector', () => {
 
     expectTypeOf(
       structuredSelector.memoizedResultFunc
-    ).parameters.toEqualTypeOf<[Todo[], Alert[]]>([
-      rootState.todos,
-      rootState.alerts
+    ).parameters.toEqualTypeOf<[Alert[], Todo[]]>([
+      rootState.alerts,
+      rootState.todos
     ])
 
     expectTypeOf(structuredSelector.memoizedResultFunc).returns.toEqualTypeOf<
@@ -189,18 +193,18 @@ describe('createStructuredSelector', () => {
 
   test('supports additional parameters', () => {
     const structuredSelector = createStructuredSelector({
-      todos: (state: RootState) => state.todos,
       alerts: (state: RootState) => state.alerts,
-      todoById: (state: RootState, id: number) => state.todos[id]
+      todos: (state: RootState) => state.todos,
+      todosItem: (state: RootState, id: number) => state.todos[id]
     })
 
-    const { alerts, todos, todoById } = structuredSelector(rootState, 0)
+    const { alerts, todos, todosItem } = structuredSelector(rootState, 0)
 
     expectTypeOf(todos).toEqualTypeOf<Todo[]>()
 
     expectTypeOf(alerts).toEqualTypeOf<Alert[]>()
 
-    expectTypeOf(todoById).toEqualTypeOf<Todo>()
+    expectTypeOf(todosItem).toEqualTypeOf<Todo>()
 
     expectTypeOf(structuredSelector.argsMemoize).toEqualTypeOf<
       typeof weakMapMemoize
@@ -242,20 +246,20 @@ describe('createStructuredSelector', () => {
 
     // Use `.branded` for intersection types https://github.com/mmkal/expect-type#why-is-my-assertion-failing
     expectTypeOf(structuredSelector.lastResult).returns.branded.toEqualTypeOf<
-      RootState & { todoById: Todo }
+      RootState & { todosItem: Todo }
     >()
 
     expectTypeOf(
       structuredSelector.memoizedResultFunc
-    ).parameters.toEqualTypeOf<[Todo[], Alert[], Todo]>([
-      rootState.todos,
+    ).parameters.toEqualTypeOf<[Alert[], Todo[], Todo]>([
       rootState.alerts,
+      rootState.todos,
       rootState.todos[0]
     ])
 
     expectTypeOf(structuredSelector.resultFunc).parameters.toEqualTypeOf<
-      [Todo[], Alert[], Todo]
-    >([rootState.todos, rootState.alerts, rootState.todos[0]])
+      [Alert[], Todo[], Todo]
+    >([rootState.alerts, rootState.todos, rootState.todos[0]])
 
     expectTypeOf(structuredSelector.memoizedResultFunc).returns.toEqualTypeOf<
       ReturnType<typeof structuredSelector.lastResult>

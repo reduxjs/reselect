@@ -55,25 +55,11 @@ describe('memoize and argsMemoize', () => {
       { memoize: weakMapMemoize }
     )
     // @ts-expect-error When memoize is weakMapMemoize, type of memoizeOptions needs to be the same as options args in weakMapMemoize.
-    const selectorWeakMapArgsAsArrayWithMemoizeOptions = createSelector(
-      [(state: RootState) => state.todos],
-      // @ts-expect-error
-      todos => todos.map(t => t.id),
-      {
-        memoize: weakMapMemoize,
-        memoizeOptions: { equalityCheck: (a: unknown, b: unknown) => a === b }
-      }
-    )
+    // prettier-ignore
+    const selectorWeakMapArgsAsArrayWithMemoizeOptions = createSelector([(state: RootState) => state.todos], todos => todos.map(t => t.id), { memoize: weakMapMemoize, memoizeOptions: { equalityCheck: (a: unknown, b: unknown) => a === b } })
     // @ts-expect-error When memoize is weakMapMemoize, type of memoizeOptions needs to be the same as options args in weakMapMemoize.
-    const selectorWeakMapSeparateInlineArgsWithMemoizeOptions = createSelector(
-      (state: RootState) => state.todos,
-      // @ts-expect-error
-      todos => todos.map(t => t.id),
-      {
-        memoize: weakMapMemoize,
-        memoizeOptions: { equalityCheck: (a: unknown, b: unknown) => a === b }
-      }
-    )
+    // prettier-ignore
+    const selectorWeakMapSeparateInlineArgsWithMemoizeOptions = createSelector((state: RootState) => state.todos, todos => todos.map(t => t.id), { memoize: weakMapMemoize, memoizeOptions: { equalityCheck: (a: unknown, b: unknown) => a === b } })
     // `maxSize` is a valid weakMapMemoize option as of 5.3.0.
     const selectorWeakMapWithMaxSize = createSelector(
       (state: RootState) => state.todos,
@@ -92,17 +78,9 @@ describe('memoize and argsMemoize', () => {
       todos => todos.map(t => t.id),
       { memoize: lruMemoize }
     )
-    const changeMemoizeMethodSelectorDefaultWithMemoizeOptions =
-      // @ts-expect-error When memoize is changed to weakMapMemoize, memoizeOptions cannot be the same type as options args in lruMemoize.
-      createSelectorDefault(
-        (state: RootState) => state.todos,
-        // @ts-expect-error
-        todos => todos.map(t => t.id),
-        {
-          memoize: weakMapMemoize,
-          memoizeOptions: { equalityCheck: (a: unknown, b: unknown) => a === b }
-        }
-      )
+    // @ts-expect-error When memoize is changed to weakMapMemoize, memoizeOptions cannot be the same type as options args in lruMemoize.
+    // prettier-ignore
+    const changeMemoizeMethodSelectorDefaultWithMemoizeOptions = createSelectorDefault((state: RootState) => state.todos, todos => todos.map(t => t.id), { memoize: weakMapMemoize, memoizeOptions: { equalityCheck: (a: unknown, b: unknown) => a === b } })
     const changeMemoizeMethodSelectorWeakMapWithMemoizeOptions =
       createSelectorWeakMap(
         (state: RootState) => state.todos,
@@ -143,29 +121,11 @@ describe('memoize and argsMemoize', () => {
       { argsMemoize: weakMapMemoize }
     )
     // @ts-expect-error When argsMemoize is weakMapMemoize, type of argsMemoizeOptions needs to be the same as options args in weakMapMemoize.
-    const selectorWeakMapArgsAsArrayWithMemoizeOptions = createSelector(
-      [(state: RootState) => state.todos],
-      // @ts-expect-error
-      todos => todos.map(t => t.id),
-      {
-        argsMemoize: weakMapMemoize,
-        argsMemoizeOptions: {
-          equalityCheck: (a: unknown, b: unknown) => a === b
-        }
-      }
-    )
+    // prettier-ignore
+    const selectorWeakMapArgsAsArrayWithMemoizeOptions = createSelector([(state: RootState) => state.todos], todos => todos.map(t => t.id), { argsMemoize: weakMapMemoize, argsMemoizeOptions: { equalityCheck: (a: unknown, b: unknown) => a === b } })
     // @ts-expect-error When argsMemoize is weakMapMemoize, type of argsMemoizeOptions needs to be the same as options args in weakMapMemoize.
-    const selectorWeakMapSeparateInlineArgsWithMemoizeOptions = createSelector(
-      (state: RootState) => state.todos,
-      // @ts-expect-error
-      todos => todos.map(t => t.id),
-      {
-        argsMemoize: weakMapMemoize,
-        argsMemoizeOptions: {
-          equalityCheck: (a: unknown, b: unknown) => a === b
-        }
-      }
-    )
+    // prettier-ignore
+    const selectorWeakMapSeparateInlineArgsWithMemoizeOptions = createSelector((state: RootState) => state.todos, todos => todos.map(t => t.id), { argsMemoize: weakMapMemoize, argsMemoizeOptions: { equalityCheck: (a: unknown, b: unknown) => a === b } })
     // `maxSize` is a valid weakMapMemoize option as of 5.3.0.
     const selectorWeakMapWithArgsMaxSize = createSelector(
       (state: RootState) => state.todos,
@@ -173,65 +133,18 @@ describe('memoize and argsMemoize', () => {
       { argsMemoize: weakMapMemoize, argsMemoizeOptions: { maxSize: 2 } }
     )
     // @ts-expect-error When argsMemoize is weakMapMemoize, type of argsMemoizeOptions needs to be the same as options args in weakMapMemoize.
-    const selectorWeakMapSeparateInlineArgsWithMemoizeOptions1 = createSelector(
-      [
-        (state: RootState) => state.todos,
-        // @ts-expect-error
-        todos => todos.map(t => t.id)
-      ],
-      {
-        argsMemoize: weakMapMemoize,
-        argsMemoizeOptions: {
-          equalityCheck: (a: unknown, b: unknown) => a === b
-        }
-      }
-    )
+    // prettier-ignore
+    const selectorWeakMapSeparateInlineArgsWithMemoizeOptions1 = createSelector([(state: RootState) => state.todos, todos => todos.map(t => t.id)], { argsMemoize: weakMapMemoize, argsMemoizeOptions: { equalityCheck: (a: unknown, b: unknown) => a === b } })
     // @ts-expect-error When argsMemoize is weakMapMemoize, type of argsMemoizeOptions needs to be the same as options args in weakMapMemoize.
-    const selectorWeakMapSeparateInlineArgsWithMemoizeOptions2 = createSelector(
-      (state: RootState) => state.todos,
-      // @ts-expect-error
-      todos => todos.map(t => t.id),
-      {
-        memoize: lruMemoize,
-        argsMemoize: weakMapMemoize,
-        memoizeOptions: {
-          equalityCheck:
-            // @ts-expect-error
-            (a, b) => a === b,
-          maxSize: 2
-        },
-        argsMemoizeOptions: {
-          equalityCheck: (a: unknown, b: unknown) => a === b
-        }
-      }
-    )
+    // prettier-ignore
+    const selectorWeakMapSeparateInlineArgsWithMemoizeOptions2 = createSelector((state: RootState) => state.todos, todos => todos.map(t => t.id), { memoize: lruMemoize, argsMemoize: weakMapMemoize, memoizeOptions: { equalityCheck: (a, b) => a === b, maxSize: 2 }, argsMemoizeOptions: { equalityCheck: (a: unknown, b: unknown) => a === b } })
 
     const createSelectorLruMemoize = createSelectorCreator({
       memoize: lruMemoize
     })
-    const selectorWeakMapSeparateInlineArgsWithMemoizeOptions3 =
-      // @ts-expect-error When argsMemoize is weakMapMemoize, type of argsMemoizeOptions needs to be the same as options args in weakMapMemoize.
-      createSelectorLruMemoize(
-        (state: RootState) => state.todos,
-        // @ts-expect-error
-        todos => todos.map(t => t.id),
-        {
-          memoize: lruMemoize,
-          argsMemoize: weakMapMemoize,
-          // memoizeOptions: [],
-          memoizeOptions: [
-            {
-              equalityCheck:
-                // @ts-expect-error
-                (a, b) => a === b,
-              maxSize: 2
-            }
-          ],
-          argsMemoizeOptions: [
-            { equalityCheck: (a: unknown, b: unknown) => a === b }
-          ]
-        }
-      )
+    // @ts-expect-error When argsMemoize is weakMapMemoize, type of argsMemoizeOptions needs to be the same as options args in weakMapMemoize.
+    // prettier-ignore
+    const selectorWeakMapSeparateInlineArgsWithMemoizeOptions3 = createSelectorLruMemoize((state: RootState) => state.todos, todos => todos.map(t => t.id), { memoize: lruMemoize, argsMemoize: weakMapMemoize, memoizeOptions: [{ equalityCheck: (a, b) => a === b, maxSize: 2 }], argsMemoizeOptions: [{ equalityCheck: (a: unknown, b: unknown) => a === b }] })
     const selectorWeakMapSeparateInlineArgsWithMemoizeOptions4 =
       createSelectorLruMemoize(
         // @ts-expect-error
@@ -245,19 +158,9 @@ describe('memoize and argsMemoize', () => {
             (a, b) => a === b
         }
       )
-    const selectorWeakMapSeparateInlineArgsWithMemoizeOptions5 =
-      // @ts-expect-error
-      createSelectorLruMemoize(
-        [(state: RootState) => state.todos],
-        // @ts-expect-error
-        todos => todos.map(t => t.id),
-        {
-          argsMemoize: weakMapMemoize,
-          memoizeOptions: [{ isPromise: false }],
-          argsMemoizeOptions: []
-          // argsMemoizeOptions: (a, b) => a === b
-        }
-      )
+    // @ts-expect-error
+    // prettier-ignore
+    const selectorWeakMapSeparateInlineArgsWithMemoizeOptions5 = createSelectorLruMemoize([(state: RootState) => state.todos], todos => todos.map(t => t.id), { argsMemoize: weakMapMemoize, memoizeOptions: [{ isPromise: false }], argsMemoizeOptions: [] })
     const selectorWeakMapSeparateInlineArgsWithMemoizeOptions6 =
       createSelectorLruMemoize(
         (state: RootState) => state.todos,
@@ -282,19 +185,9 @@ describe('memoize and argsMemoize', () => {
       todos => todos.map(t => t.id),
       { argsMemoize: lruMemoize }
     )
-    const changeMemoizeMethodSelectorDefaultWithMemoizeOptions =
-      // @ts-expect-error When argsMemoize is changed to weakMapMemoize, argsMemoizeOptions cannot be the same type as options args in lruMemoize.
-      createSelectorDefault(
-        (state: RootState) => state.todos,
-        // @ts-expect-error
-        todos => todos.map(t => t.id),
-        {
-          argsMemoize: weakMapMemoize,
-          argsMemoizeOptions: {
-            equalityCheck: (a: unknown, b: unknown) => a === b
-          }
-        }
-      )
+    // @ts-expect-error When argsMemoize is changed to weakMapMemoize, argsMemoizeOptions cannot be the same type as options args in lruMemoize.
+    // prettier-ignore
+    const changeMemoizeMethodSelectorDefaultWithMemoizeOptions = createSelectorDefault((state: RootState) => state.todos, todos => todos.map(t => t.id), { argsMemoize: weakMapMemoize, argsMemoizeOptions: { equalityCheck: (a: unknown, b: unknown) => a === b } })
     const changeMemoizeMethodSelectorWeakMapWithMemoizeOptions =
       createSelectorWeakMap(
         (state: RootState) => state.todos,
@@ -477,22 +370,9 @@ describe('memoize and argsMemoize', () => {
         { id: 0, completed: true }
       ])
     )
-    const selectorMicroMemoizeOverrideArgsMemoizeOnlyWrong =
-      // @ts-expect-error Because `memoizeOptions` should not contain `resultEqualityCheck`.
-      createSelectorMicroMemoize(
-        (state: RootState) => state.todos,
-        todos => todos.map(({ id }) => id),
-        {
-          argsMemoize: lruMemoize,
-          memoizeOptions: {
-            isPromise: false,
-            resultEqualityCheck:
-              // @ts-expect-error
-              (a, b) => a === b
-          },
-          argsMemoizeOptions: { resultEqualityCheck: (a, b) => a === b }
-        }
-      )
+    // @ts-expect-error Because `memoizeOptions` should not contain `resultEqualityCheck`.
+    // prettier-ignore
+    const selectorMicroMemoizeOverrideArgsMemoizeOnlyWrong = createSelectorMicroMemoize((state: RootState) => state.todos, todos => todos.map(({ id }) => id), { argsMemoize: lruMemoize, memoizeOptions: { isPromise: false, resultEqualityCheck: (a, b) => a === b }, argsMemoizeOptions: { resultEqualityCheck: (a, b) => a === b } })
     const selectorMicroMemoizeOverrideArgsMemoizeOnly =
       createSelectorMicroMemoize(
         (state: RootState) => state.todos,
@@ -613,44 +493,12 @@ describe('memoize and argsMemoize', () => {
       ])
     )
 
-    const selectorMicroMemoizePartiallyOverridden =
-      // @ts-expect-error Since `argsMemoize` is set to `lruMemoize`, `argsMemoizeOptions` must match the options object parameter of `lruMemoize`
-      createSelectorMicroMemoize(
-        (state: RootState) => state.todos,
-        // @ts-expect-error
-        todos => todos.map(t => t.id),
-        {
-          memoize: lruMemoize,
-          argsMemoize: lruMemoize,
-          memoizeOptions: {
-            equalityCheck:
-              // @ts-expect-error
-              (a, b) => a === b,
-            maxSize: 2
-          },
-          argsMemoizeOptions: { isPromise: false } // This field causes a type error since it does not match the options param of `lruMemoize`.
-        }
-      )
-    const selectorMicroMemoizePartiallyOverridden1 =
-      // @ts-expect-error Since `argsMemoize` is set to `lruMemoize`, `argsMemoizeOptions` must match the options object parameter of `lruMemoize`
-      createSelectorMicroMemoize(
-        (state: RootState) => state.todos,
-        // @ts-expect-error
-        todos => todos.map(t => t.id),
-        {
-          memoize: lruMemoize,
-          argsMemoize: lruMemoize,
-          memoizeOptions: [
-            {
-              equalityCheck:
-                // @ts-expect-error
-                (a, b) => a === b,
-              maxSize: 2
-            }
-          ],
-          argsMemoizeOptions: [{ isPromise: false }] // This field causes a type error since it does not match the options param of `lruMemoize`.
-        }
-      )
+    // @ts-expect-error Since `argsMemoize` is set to `lruMemoize`, `argsMemoizeOptions` must match the options object parameter of `lruMemoize`
+    // prettier-ignore
+    const selectorMicroMemoizePartiallyOverridden = createSelectorMicroMemoize((state: RootState) => state.todos, todos => todos.map(t => t.id), { memoize: lruMemoize, argsMemoize: lruMemoize, memoizeOptions: { equalityCheck: (a, b) => a === b, maxSize: 2 }, argsMemoizeOptions: { isPromise: false } })
+    // @ts-expect-error Since `argsMemoize` is set to `lruMemoize`, `argsMemoizeOptions` must match the options object parameter of `lruMemoize`
+    // prettier-ignore
+    const selectorMicroMemoizePartiallyOverridden1 = createSelectorMicroMemoize((state: RootState) => state.todos, todos => todos.map(t => t.id), { memoize: lruMemoize, argsMemoize: lruMemoize, memoizeOptions: [{ equalityCheck: (a, b) => a === b, maxSize: 2 }], argsMemoizeOptions: [{ isPromise: false }] })
     const selectorMicroMemoizePartiallyOverridden2 = createSelectorMicroMemoize(
       (state: RootState) => state.todos,
       todos => todos.map(t => t.id),
@@ -819,15 +667,8 @@ describe('memoize and argsMemoize', () => {
 
     const createSelectorWithWrongArgsMemoizeOptions =
       // @ts-expect-error If we don't pass in `argsMemoize`, the type for `argsMemoizeOptions` falls back to the options parameter of `lruMemoize`.
-      createSelectorCreator({
-        memoize: microMemoize,
-        memoizeOptions: { isEqual: (a, b) => a === b },
-        argsMemoizeOptions: {
-          isEqual:
-            // @ts-expect-error implicit any
-            (a, b) => a === b
-        }
-      })
+      // prettier-ignore
+      createSelectorCreator({ memoize: microMemoize, memoizeOptions: { isEqual: (a, b) => a === b }, argsMemoizeOptions: { isEqual: (a, b) => a === b } })
 
     // When passing in an options object as the first argument, there should be no other arguments.
     const createSelectorWrong = createSelectorCreator(

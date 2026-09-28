@@ -23,9 +23,13 @@ interface Alert {
   read: boolean
 }
 
+// Keep the keys in alphabetical order, and use them in the same order below.
+// The `dependencies` and `memoizedResultFunc` parameter order follows key
+// order: TS 7 sorts the keys alphabetically, while TS 5/6 use the order in
+// which each key name first appears in the program.
 interface RootState {
-  todos: Todo[]
   alerts: Alert[]
+  todos: Todo[]
 }
 
 const rootState: RootState = {
@@ -49,15 +53,15 @@ describe('createStructuredSelector.withTypes<RootState>()', () => {
     )
 
     const structuredAppSelector = createStructuredAppSelector({
-      todos: state => {
-        expectTypeOf(state).toEqualTypeOf<RootState>(rootState)
-
-        return state.todos
-      },
       alerts: state => {
         expectTypeOf(state).toEqualTypeOf<RootState>(rootState)
 
         return state.alerts
+      },
+      todos: state => {
+        expectTypeOf(state).toEqualTypeOf<RootState>(rootState)
+
+        return state.todos
       }
     })
 
@@ -105,9 +109,9 @@ describe('createStructuredSelector.withTypes<RootState>()', () => {
 
     expectTypeOf(
       structuredAppSelector.memoizedResultFunc
-    ).parameters.toEqualTypeOf<[Todo[], Alert[]]>([
-      rootState.todos,
-      rootState.alerts
+    ).parameters.toEqualTypeOf<[Alert[], Todo[]]>([
+      rootState.alerts,
+      rootState.todos
     ])
 
     expectTypeOf(
@@ -133,8 +137,8 @@ describe('createStructuredSelector.withTypes<RootState>()', () => {
 
     const structuredSelector = createStructuredAppSelector(
       {
-        todos: state => state.todos,
-        alerts: state => state.alerts
+        alerts: state => state.alerts,
+        todos: state => state.todos
       },
       createSelectorLru
     )
@@ -177,9 +181,9 @@ describe('createStructuredSelector.withTypes<RootState>()', () => {
 
     expectTypeOf(
       structuredSelector.memoizedResultFunc
-    ).parameters.toEqualTypeOf<[Todo[], Alert[]]>([
-      rootState.todos,
-      rootState.alerts
+    ).parameters.toEqualTypeOf<[Alert[], Todo[]]>([
+      rootState.alerts,
+      rootState.todos
     ])
 
     expectTypeOf(structuredSelector.memoizedResultFunc).returns.toEqualTypeOf<
@@ -197,30 +201,30 @@ describe('createStructuredSelector.withTypes<RootState>()', () => {
 
   test('supports additional parameters', () => {
     const structuredAppSelector = createStructuredAppSelector({
-      todos: state => {
-        expectTypeOf(state).toEqualTypeOf<RootState>(rootState)
-
-        return state.todos
-      },
       alerts: state => {
         expectTypeOf(state).toEqualTypeOf<RootState>(rootState)
 
         return state.alerts
       },
-      todoById: (state, id: number) => {
+      todos: state => {
+        expectTypeOf(state).toEqualTypeOf<RootState>(rootState)
+
+        return state.todos
+      },
+      todosItem: (state, id: number) => {
         expectTypeOf(state).toEqualTypeOf<RootState>(rootState)
 
         return state.todos[id]
       }
     })
 
-    const { alerts, todos, todoById } = structuredAppSelector(rootState, 0)
+    const { alerts, todos, todosItem } = structuredAppSelector(rootState, 0)
 
     expectTypeOf(todos).toEqualTypeOf<Todo[]>()
 
     expectTypeOf(alerts).toEqualTypeOf<Alert[]>()
 
-    expectTypeOf(todoById).toEqualTypeOf<Todo>()
+    expectTypeOf(todosItem).toEqualTypeOf<Todo>()
 
     expectTypeOf(structuredAppSelector.argsMemoize).toEqualTypeOf<
       typeof weakMapMemoize
@@ -265,19 +269,19 @@ describe('createStructuredSelector.withTypes<RootState>()', () => {
     // Use `.branded` for intersection types https://github.com/mmkal/expect-type#why-is-my-assertion-failing
     expectTypeOf(
       structuredAppSelector.lastResult
-    ).returns.branded.toEqualTypeOf<RootState & { todoById: Todo }>()
+    ).returns.branded.toEqualTypeOf<RootState & { todosItem: Todo }>()
 
     expectTypeOf(
       structuredAppSelector.memoizedResultFunc
-    ).parameters.toEqualTypeOf<[Todo[], Alert[], Todo]>([
-      rootState.todos,
+    ).parameters.toEqualTypeOf<[Alert[], Todo[], Todo]>([
       rootState.alerts,
+      rootState.todos,
       rootState.todos[0]
     ])
 
     expectTypeOf(structuredAppSelector.resultFunc).parameters.toEqualTypeOf<
-      [Todo[], Alert[], Todo]
-    >([rootState.todos, rootState.alerts, rootState.todos[0]])
+      [Alert[], Todo[], Todo]
+    >([rootState.alerts, rootState.todos, rootState.todos[0]])
 
     expectTypeOf(
       structuredAppSelector.memoizedResultFunc
@@ -300,15 +304,15 @@ describe('createStructuredSelector.withTypes<RootState>()', () => {
       createStructuredSelector.withTypes<RootState>()
 
     const structuredAppSelector = createStructuredAppSelector({
-      todos: state => {
-        expectTypeOf(state).toEqualTypeOf<RootState>(rootState)
-
-        return state.todos
-      },
       alerts: state => {
         expectTypeOf(state).toEqualTypeOf<RootState>(rootState)
 
         return state.alerts
+      },
+      todos: state => {
+        expectTypeOf(state).toEqualTypeOf<RootState>(rootState)
+
+        return state.todos
       }
     })
 
@@ -356,9 +360,9 @@ describe('createStructuredSelector.withTypes<RootState>()', () => {
 
     expectTypeOf(
       structuredAppSelector.memoizedResultFunc
-    ).parameters.toEqualTypeOf<[Todo[], Alert[]]>([
-      rootState.todos,
-      rootState.alerts
+    ).parameters.toEqualTypeOf<[Alert[], Todo[]]>([
+      rootState.alerts,
+      rootState.todos
     ])
 
     expectTypeOf(
@@ -379,15 +383,15 @@ describe('createStructuredSelector.withTypes<RootState>()', () => {
   test('should work with createSelector.withTypes<RootState>()', () => {
     const structuredAppSelector = createStructuredAppSelector(
       {
-        todos: state => {
-          expectTypeOf(state).toEqualTypeOf<RootState>(rootState)
-
-          return state.todos
-        },
         alerts: state => {
           expectTypeOf(state).toEqualTypeOf<RootState>(rootState)
 
           return state.alerts
+        },
+        todos: state => {
+          expectTypeOf(state).toEqualTypeOf<RootState>(rootState)
+
+          return state.todos
         }
       },
       createSelector.withTypes<RootState>()
@@ -437,9 +441,9 @@ describe('createStructuredSelector.withTypes<RootState>()', () => {
 
     expectTypeOf(
       structuredAppSelector.memoizedResultFunc
-    ).parameters.toEqualTypeOf<[Todo[], Alert[]]>([
-      rootState.todos,
-      rootState.alerts
+    ).parameters.toEqualTypeOf<[Alert[], Todo[]]>([
+      rootState.alerts,
+      rootState.todos
     ])
 
     expectTypeOf(
@@ -463,15 +467,15 @@ describe('createStructuredSelector.withTypes<RootState>()', () => {
 
     const structuredAppSelector = createStructuredAppSelector(
       {
-        todos: state => {
-          expectTypeOf(state).toEqualTypeOf<RootState>(rootState)
-
-          return state.todos
-        },
         alerts: state => {
           expectTypeOf(state).toEqualTypeOf<RootState>(rootState)
 
           return state.alerts
+        },
+        todos: state => {
+          expectTypeOf(state).toEqualTypeOf<RootState>(rootState)
+
+          return state.todos
         }
       },
       createSelector.withTypes<RootState>()
@@ -521,9 +525,9 @@ describe('createStructuredSelector.withTypes<RootState>()', () => {
 
     expectTypeOf(
       structuredAppSelector.memoizedResultFunc
-    ).parameters.toEqualTypeOf<[Todo[], Alert[]]>([
-      rootState.todos,
-      rootState.alerts
+    ).parameters.toEqualTypeOf<[Alert[], Todo[]]>([
+      rootState.alerts,
+      rootState.todos
     ])
 
     expectTypeOf(
