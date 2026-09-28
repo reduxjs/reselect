@@ -12,7 +12,6 @@
     "**/dist/**",
     "**/coverage/**",
     "**/node_modules/**",
-    "website/**",
     "docs/**",
     "bench/.build/**"
   ],

@@ -7,5 +7,5 @@
   "arrowParens": "avoid",
   "printWidth": 80,
   "sortPackageJson": false,
-  "ignorePatterns": ["dist/", "bench/.build/", "website/", "docs/"]
+  "ignorePatterns": ["dist/", "bench/.build/"]
 }
