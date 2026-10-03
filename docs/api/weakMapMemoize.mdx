@@ -28,15 +28,15 @@ This means you generally **do not** need to pass `memoize: weakMapMemoize` or `a
 
 ### Parameters
 
-| Name                          | Description                                                                                                                                                                                              |
-| :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `func`                        | The function to be memoized.                                                                                                                                                                             |
-| `options.resultEqualityCheck` | Optional. Compares a newly computed result against the previous one. If they compare equal, the previous result is returned instead, preserving reference equality for downstream consumers.             |
-| `options.maxSize`             | Optional. Bounds how many results keyed by primitive arguments are retained. Available since 5.3.0. See [Bounding cache size with `maxSize`](#bounding-cache-size-with-maxsize) below for the semantics. |
+| Name                          | Description                                                                                                                                                                                                                                                                                                                                                                                              |
+| :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `func`                        | The function to be memoized.                                                                                                                                                                                                                                                                                                                                                                             |
+| `options.resultEqualityCheck` | Optional. Compares a newly computed result against the result cached for the same arguments under the previous version of an object argument, or, when there is none, against the last such result. If they compare equal, the cached result is returned instead, preserving reference equality for downstream consumers. See [Result equality per argument tuple](#result-equality-per-argument-tuple). |
+| `options.maxSize`             | Optional. Bounds how many results keyed by primitive arguments are retained. Available since 5.3.0. See [Bounding cache size with `maxSize`](#bounding-cache-size-with-maxsize) below for the semantics.                                                                                                                                                                                                 |
 
 ### Returns
 
-A memoized function with a `.clearCache()` method attached.
+A memoized function with a `.clearCache()` method attached. Clearing the cache also drops the last result that result equality compares against.
 
 ### Type Parameters
 
@@ -45,6 +45,29 @@ A memoized function with a `.clearCache()` method attached.
 | `Func` | The type of the function that is memoized. |
 
 ## Usage Guide
+
+### Result equality per argument tuple
+
+A selector shared across list items is called with `(state, id)` for many IDs. After an immutable update, the new `(db, 'a')` result is compared with the result cached for `(previousDb, 'a')`, not with whatever ID was computed last, so reading other IDs in between does not cost `'a'` its reference:
+
+```ts
+const selectItem = createSelector(
+  [selectDb, (state: RootState, id: string) => id],
+  (db, id) => ({ ...db[id] }),
+  { memoizeOptions: { resultEqualityCheck: isEqual } }
+)
+```
+
+Each object argument's cache node references the object created before it under the same parent: its previous version. On a computed miss, the object arguments are visited from the first up to the first one this call added to the cache. At each, the result cached for the same remaining arguments under the previous version is compared, and the first equal one is returned. Only a call that finds no such cached result compares against the last result, as before, and only such a call records it; the others clear it. That includes a previous version that never read the key, threw, or returned `null` or `undefined`. Exact cache hits never compare.
+
+The links are weak references, and linking an object clears the link of the object before it, so only the immediately previous version is reachable. Without native `WeakRef` they are strong references, and each argument retains at most its newest object and the one before it. The returned references are the same either way while the previous arguments are alive; once they are collected, only the strong fallback still finds their results. Creating a `WeakRef` keeps its target alive until the current job ends, so many updates within one synchronous job retain their results until it ends, as the last-result comparison already did. When result equality replaces a result, the raw value `func` returned is kept with it, so a caller whose own cache returns that same value again receives the earlier result without another comparison.
+
+Limits:
+
+- Only the immediately previous version is consulted at each argument. If version 1 never read an ID that version 0 did, version 2 computes a new result for it.
+- When two object arguments change in the same call, no cached tuple differs in only one of them.
+- When each key derives its own input, such as one units array per type, the previous version of a key's input is not the object created before it. Pass `resultEqualityCheck` in `argsMemoizeOptions` instead, so the previous version is taken over the selector's own arguments, where the state comes first.
+- A miss compares at most once per object argument it visits, or once with the last result. The comparator must be pure and equal results must be interchangeable: another key's equal result can be returned.
 
 ### Design Tradeoffs
 
