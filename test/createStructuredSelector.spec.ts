@@ -26,6 +26,30 @@ describe(createStructuredSelector, () => {
     expect(selector({ a: 2, b: 2 })).toBe(secondResult)
   })
 
+  test.each([17, { nested: true }, null, undefined])(
+    'preserves an own __proto__ key for %j',
+    value => {
+      const selector = createStructuredSelector({
+        before: (state: StateAB) => state.a,
+        ['__proto__']: (state: { value: typeof value }) => state.value,
+        after: (state: StateAB) => state.b
+      })
+      const result = selector({ a: 1, b: 2, value })
+
+      expect(Object.keys(result)).toEqual(['before', '__proto__', 'after'])
+      expect(result.before).toBe(1)
+      expect(result.__proto__).toBe(value)
+      expect(result.after).toBe(2)
+      expect(Object.getPrototypeOf(result)).toBe(Object.prototype)
+      expect(Object.getOwnPropertyDescriptor(result, '__proto__')).toEqual({
+        value,
+        enumerable: true,
+        writable: true,
+        configurable: true
+      })
+    }
+  )
+
   test('structured selector with invalid arguments', () => {
     expect(() =>
       createStructuredSelector(

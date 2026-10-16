@@ -444,7 +444,17 @@ export const createStructuredSelector: StructuredSelectorCreator =
         dependencies,
         (...inputSelectorResults: any[]) => {
           return inputSelectorResults.reduce((composition, value, index) => {
-            composition[inputSelectorKeys[index]] = value
+            const key = inputSelectorKeys[index]
+            if (key === '__proto__') {
+              Object.defineProperty(composition, key, {
+                value,
+                enumerable: true,
+                writable: true,
+                configurable: true
+              })
+            } else {
+              composition[key] = value
+            }
             return composition
           }, {})
         }
