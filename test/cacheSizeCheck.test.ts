@@ -59,6 +59,24 @@ describe('cacheSizeCheck', () => {
     expect(consoleSpy).not.toHaveBeenCalled()
   })
 
+  test.each(['once', 'always'] as const)(
+    'does not warn for a bounded cache when cacheSizeCheck is %s',
+    cacheSizeCheck => {
+      setGlobalDevModeChecks({ cacheSizeCheck })
+      const maxSize = CACHE_SIZE_CHECK_THRESHOLD + 2
+      const memoized = weakMapMemoize((id: number) => id * 2, { maxSize })
+
+      // Cross the warning threshold in multiple generations, including after a clear.
+      for (let i = 0; i < maxSize * 3; i++) {
+        expect(memoized(i)).toBe(i * 2)
+      }
+      memoized.clearCache()
+      fillPastThreshold(memoized)
+
+      expect(consoleSpy).not.toHaveBeenCalled()
+    }
+  )
+
   test('object arguments do not count toward the threshold', () => {
     const memoized = weakMapMemoize((source: { id: number }) => source.id)
 
