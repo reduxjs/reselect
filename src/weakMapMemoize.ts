@@ -306,7 +306,10 @@ export function weakMapMemoize<Func extends AnyFunction>(
             // are released when that object is collected, so a total would
             // keep phantom counts for entries that are already gone and warn
             // about usage that is actually healthy.
-            if (primitiveCache.size > CACHE_SIZE_CHECK_THRESHOLD) {
+            if (
+              !useGenerations &&
+              primitiveCache.size > CACHE_SIZE_CHECK_THRESHOLD
+            ) {
               const { cacheSizeCheck } = globalDevModeChecks
               if (
                 cacheSizeCheck === 'always' ||
