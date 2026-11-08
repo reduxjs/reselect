@@ -1,4 +1,8 @@
-import { setGlobalDevModeChecks, weakMapMemoize } from 'reselect'
+import {
+  createSelector,
+  setGlobalDevModeChecks,
+  weakMapMemoize
+} from 'reselect'
 
 // `maxSize` bounds cache growth for primitive arguments with a generational
 // scheme: after `maxSize` results are cached, the whole cache is demoted to a
@@ -21,6 +25,63 @@ describe('weakMapMemoize maxSize option', () => {
       )
     }
     expect(() => weakMapMemoize((x: number) => x, { maxSize: 1 })).not.toThrow()
+  })
+
+  test.each([2, 4])(
+    'maxSize: %i caches that many results with multiple primitive arguments',
+    maxSize => {
+      const spy = vi.fn((price: number, qty: number) => ({
+        total: price * qty
+      }))
+      const fn = weakMapMemoize(spy, { maxSize })
+      const args = Array.from(
+        { length: maxSize },
+        (_, i) => [10 + i, i + 1] as const
+      )
+      const results = [...args, ...args, ...args].map(args => fn(...args))
+      expect(spy).toHaveBeenCalledTimes(maxSize)
+      results.forEach((result, i) => expect(result).toBe(results[i % maxSize]))
+    }
+  )
+
+  test('createSelector reuses results for multiple primitive inputs with maxSize', () => {
+    const selector = createSelector(
+      [
+        (state: { price: number; qty: number }) => state.price,
+        state => state.qty
+      ],
+      (price, qty) => ({ total: price * qty }),
+      { memoizeOptions: { maxSize: 2 } }
+    )
+    const states = [
+      { price: 10, qty: 1 },
+      { price: 11, qty: 2 }
+    ]
+    const results = states.map(state => selector(state))
+
+    for (let pass = 0; pass < 2; pass++) {
+      states.forEach((state, i) =>
+        expect(selector({ ...state })).toBe(results[i])
+      )
+    }
+    expect(selector.recomputations()).toBe(2)
+    expect(selector.dependencyRecomputations()).toBe(6)
+  })
+
+  test('createSelector caches multiple primitive arguments with argsMemoize maxSize', () => {
+    const selector = createSelector(
+      [(price: number, qty: number) => price, (price, qty) => qty],
+      (price, qty) => ({ total: price * qty }),
+      { argsMemoizeOptions: { maxSize: 2 } }
+    )
+    const first = selector(10, 1)
+    const second = selector(11, 2)
+
+    for (let pass = 0; pass < 2; pass++) {
+      expect(selector(10, 1)).toBe(first)
+      expect(selector(11, 2)).toBe(second)
+    }
+    expect(selector.dependencyRecomputations()).toBe(2)
   })
 
   test('bounds primitive cache growth to roughly 2x maxSize', () => {
@@ -57,9 +118,7 @@ describe('weakMapMemoize maxSize option', () => {
     expect(fn(1)).toBe(first)
     expect(spy).toHaveBeenCalledTimes(5)
 
-    // Note: promotion does NOT increment insertionCount (the node was created
-    // by the walk before the previous-generation probe ran... it was created
-    // and inserted, so insertionCount DID increment). current = {5, 1}.
+    // Promoting a result also counts toward maxSize. current = {5, 1}.
     fn(6)
     fn(7) // current = {5,1,6,7} -> next call flips
     fn(8) // flip: prev = {5,1,6,7}, current = {8}
