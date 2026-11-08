@@ -131,7 +131,7 @@ describe('weakMapMemoize maxSize option', () => {
         return { value: x }
       })
       const fn = weakMapMemoize(spy, {
-        maxSize: 2,
+        maxSize: 3,
         resultEqualityCheck: (_a, b) => {
           if (b.value === 2 && throwingFunction === 'resultEqualityCheck') {
             fail()
@@ -142,15 +142,145 @@ describe('weakMapMemoize maxSize option', () => {
       const first = fn(1)
       expect(() => fn(2)).toThrow('test error')
       expect(() => fn(2)).toThrow('test error')
-      fn(3) // Only the second cached result: {1, 3} becomes previous.
+      fn(3)
       fn(4)
+      fn(5)
+      fn(6) // {1, 3, 4} must still be the previous generation.
       expect(fn(1)).toBe(first)
-      expect(spy).toHaveBeenCalledTimes(5)
+      expect(spy).toHaveBeenCalledTimes(7)
 
       shouldThrow = false
       const recovered = fn(2)
       expect(fn(2)).toBe(recovered)
+      expect(spy).toHaveBeenCalledTimes(8)
+    }
+  )
+
+  test.each(['func', 'resultEqualityCheck'] as const)(
+    'counts a tuple only once when %s reenters with the same arguments',
+    reenteringFunction => {
+      let reenter = true
+      const callAgain = (x: number) => {
+        if (x === 1 && reenter) {
+          reenter = false
+          fn(1)
+        }
+      }
+      const spy = vi.fn((x: number) => {
+        if (reenteringFunction === 'func') callAgain(x)
+        return { value: x }
+      })
+      const fn = weakMapMemoize(spy, {
+        maxSize: 3,
+        resultEqualityCheck: (_a, b) => {
+          if (reenteringFunction === 'resultEqualityCheck') callAgain(b.value)
+          return false
+        }
+      })
+      fn(0)
+      const first = fn(1)
+      fn(2)
+      fn(3)
+      fn(4)
+      expect(fn(1)).toBe(first)
       expect(spy).toHaveBeenCalledTimes(6)
+    }
+  )
+
+  test
+    .skipIf(typeof globalThis.gc !== 'function')
+    .each(['func', 'resultEqualityCheck'] as const)(
+    'does not retain primitive branches when %s throws',
+    async throwingFunction => {
+      const fail = (key: unknown) => {
+        if (typeof key === 'string') throw new Error('test error')
+      }
+      const fn = weakMapMemoize(
+        (key: string | object) => {
+          if (throwingFunction === 'func') fail(key)
+          return { key }
+        },
+        {
+          maxSize: 2,
+          resultEqualityCheck: (_a, b) => {
+            if (throwingFunction === 'resultEqualityCheck') fail(b.key)
+            return false
+          }
+        }
+      )
+      fn({}) // Seed resultEqualityCheck without retaining a primitive branch.
+      const nodes: WeakRef<object>[] = []
+      const originalSet = Map.prototype.set
+      const setSpy = vi
+        .spyOn(Map.prototype, 'set')
+        .mockImplementation(function (key, value) {
+          if (typeof key === 'string' && key.startsWith('failed-')) {
+            nodes.push(new WeakRef(value))
+          }
+          return originalSet.call(this, key, value)
+        })
+      try {
+        for (let i = 0; i < 3; i++) {
+          expect(() => fn(`failed-${i}`)).toThrow('test error')
+          fn({})
+        }
+      } finally {
+        setSpy.mockRestore()
+      }
+      // Observe any published nodes weakly, so the test cannot keep them alive.
+      for (const node of nodes) await expect(node).toBeGarbageCollected()
+      expect(fn({}).key).toEqual({}) // Keep the memoizer alive through GC.
+    }
+  )
+
+  test.each(['func', 'resultEqualityCheck'] as const)(
+    'preserves cached siblings when %s throws under a shared prefix',
+    throwingFunction => {
+      const fail = (key: string) => {
+        if (key === 'bad') throw new Error('test error')
+      }
+      const spy = vi.fn((prefix: string, key: string) => {
+        if (throwingFunction === 'func') fail(key)
+        return { prefix, key }
+      })
+      const fn = weakMapMemoize(spy, {
+        maxSize: 2,
+        resultEqualityCheck: (_a, b) => {
+          if (throwingFunction === 'resultEqualityCheck') fail(b.key)
+          return false
+        }
+      })
+      const first = fn('shared', 'ok')
+      expect(() => fn('shared', 'bad')).toThrow('test error')
+      expect(fn('shared', 'ok')).toBe(first)
+      expect(spy).toHaveBeenCalledTimes(2)
+    }
+  )
+
+  test.each([
+    { maxSize: 2, clear: false, descendant: false },
+    { maxSize: 2, clear: false, descendant: true },
+    { maxSize: 1, clear: false, descendant: true },
+    { maxSize: 2, clear: true, descendant: true }
+  ])(
+    'preserves a nested result when the outer call throws ($maxSize, $clear, $descendant)',
+    ({ maxSize, clear, descendant }) => {
+      let reenter = true
+      let nestedResult: object | undefined
+      const nestedArgs = descendant ? ['shared', 'child'] : ['shared']
+      const spy = vi.fn((...args: string[]): object => {
+        if (reenter) {
+          reenter = false
+          if (clear) fn.clearCache()
+          nestedResult = fn(...nestedArgs)
+          throw new Error('outer error')
+        }
+        return { args }
+      })
+      const fn = weakMapMemoize(spy, { maxSize })
+      expect(() => fn('shared')).toThrow('outer error')
+      expect(fn(...nestedArgs)).toBe(nestedResult)
+      expect(spy).toHaveBeenCalledTimes(2)
     }
   )
 
@@ -308,6 +438,8 @@ describe('weakMapMemoize maxSize option', () => {
     expect(spy).toHaveBeenCalledTimes(1)
     fn(2, 20)
     expect(spy).toHaveBeenCalledTimes(2)
+    expect(fn(1, 10)).not.toBe(r1)
+    expect(spy).toHaveBeenCalledTimes(3)
   })
 
   test('clearCache drops both generations and resets the counter', () => {
