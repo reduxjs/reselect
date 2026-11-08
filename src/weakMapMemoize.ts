@@ -126,6 +126,10 @@ export interface WeakMapMemoizeOptions<Result = any> {
    * - a result that goes unused for a full generation is dropped with it,
    *   in one batch, rather than entry by entry
    *
+   * Each cached argument tuple containing a primitive counts once, including
+   * results copied from the previous generation. Object-only calls do not
+   * count toward the bound and continue to rely on garbage collection.
+   *
    * Must be a positive integer. There is no cost to the memoized function
    * when this option is not passed.
    *
@@ -236,8 +240,8 @@ export function weakMapMemoize<Func extends AnyFunction>(
   const { resultEqualityCheck, maxSize } = options
 
   // Generational bounding for `maxSize`: `prevNode` holds the demoted cache
-  // tree, `insertionCount` counts primitive-Map insertions into the current
-  // tree. Reaching `maxSize` flips generations at the end of that call.
+  // tree, `insertionCount` counts results cached for tuples containing a
+  // primitive in the current tree. Reaching `maxSize` flips generations.
   const useGenerations = maxSize !== undefined
   if (useGenerations && (!Number.isInteger(maxSize) || maxSize < 1)) {
     throw new TypeError(
@@ -256,8 +260,17 @@ export function weakMapMemoize<Func extends AnyFunction>(
   // Flip generations at the end of a call that cached something, never during
   // a walk, so a flip can never happen while pointers into the tree being
   // demoted are still live. The hit path never reaches this.
-  function maybeFlipGenerations() {
-    if (insertionCount >= (maxSize as number)) {
+  function maybeFlipGenerations(
+    rootNode: CacheNode<any>,
+    hasPrimitiveArgs: boolean
+  ) {
+    // `func` or `resultEqualityCheck` may have cleared or demoted this tree.
+    // Only a result stored in the current generation counts toward its size.
+    if (
+      hasPrimitiveArgs &&
+      rootNode === fnNode &&
+      ++insertionCount >= (maxSize as number)
+    ) {
       prevNode = fnNode
       fnNode = createCacheNode()
       insertionCount = 0
@@ -265,8 +278,10 @@ export function weakMapMemoize<Func extends AnyFunction>(
   }
 
   function memoized() {
-    let cacheNode = fnNode
+    const rootNode = fnNode
+    let cacheNode = rootNode
     const { length } = arguments
+    let hasPrimitiveArgs = false
     for (let i = 0, l = length; i < l; i++) {
       const arg = arguments[i]
       if (
@@ -287,6 +302,7 @@ export function weakMapMemoize<Func extends AnyFunction>(
         }
       } else {
         // Primitives go into a regular Map
+        hasPrimitiveArgs = true
         let primitiveCache = cacheNode.p
         if (primitiveCache === null) {
           cacheNode.p = primitiveCache = new Map()
@@ -295,7 +311,6 @@ export function weakMapMemoize<Func extends AnyFunction>(
         if (primitiveNode === undefined) {
           cacheNode = createCacheNode()
           primitiveCache.set(arg, cacheNode)
-          insertionCount++
 
           if (process.env.NODE_ENV !== 'production') {
             // A single primitive `Map` growing past the threshold means this
@@ -363,7 +378,7 @@ export function weakMapMemoize<Func extends AnyFunction>(
         const promotedNode = cacheNode as unknown as TerminatedCacheNode<any>
         promotedNode.s = TERMINATED
         promotedNode.v = prevCacheNode.v
-        maybeFlipGenerations()
+        maybeFlipGenerations(rootNode, hasPrimitiveArgs)
         return prevCacheNode.v
       }
     }
@@ -397,7 +412,7 @@ export function weakMapMemoize<Func extends AnyFunction>(
     terminatedNode.s = TERMINATED
     terminatedNode.v = result
     if (useGenerations) {
-      maybeFlipGenerations()
+      maybeFlipGenerations(rootNode, hasPrimitiveArgs)
     }
     return result
   }
