@@ -126,6 +126,10 @@ export interface WeakMapMemoizeOptions<Result = any> {
    * - a result that goes unused for a full generation is dropped with it,
    *   in one batch, rather than entry by entry
    *
+   * Each cached argument tuple containing a primitive counts once, including
+   * results copied from the previous generation. Object-only calls do not
+   * count toward the bound and continue to rely on garbage collection.
+   *
    * Must be a positive integer. There is no cost to the memoized function
    * when this option is not passed.
    *
@@ -236,8 +240,8 @@ export function weakMapMemoize<Func extends AnyFunction>(
   const { resultEqualityCheck, maxSize } = options
 
   // Generational bounding for `maxSize`: `prevNode` holds the demoted cache
-  // tree, `insertionCount` counts primitive-Map insertions into the current
-  // tree. Reaching `maxSize` flips generations at the end of that call.
+  // tree, `insertionCount` counts results cached for tuples containing a
+  // primitive in the current tree. Reaching `maxSize` flips generations.
   const useGenerations = maxSize !== undefined
   if (useGenerations && (!Number.isInteger(maxSize) || maxSize < 1)) {
     throw new TypeError(
@@ -253,17 +257,115 @@ export function weakMapMemoize<Func extends AnyFunction>(
 
   let hasWarnedAboutCacheSize = false
 
-  // Flip generations at the end of a call that cached something, never during
-  // a walk, so a flip can never happen while pointers into the tree being
-  // demoted are still live. The hit path never reaches this.
-  function maybeFlipGenerations() {
-    if (insertionCount >= (maxSize as number)) {
-      prevNode = fnNode
-      fnNode = createCacheNode()
-      insertionCount = 0
+  function checkCacheSize(primitiveCache: Map<any, CacheNode<any>>) {
+    // A single primitive `Map` growing past the threshold means this
+    // function keeps seeing new primitive values in the same argument
+    // position, which is the unbounded-growth pattern from #635. The
+    // size of one `Map` is checked rather than a total across the
+    // tree: `Map`s nested under an object argument's `WeakMap` node
+    // are released when that object is collected, so a total would
+    // keep phantom counts for entries that are already gone and warn
+    // about usage that is actually healthy.
+    if (primitiveCache.size > CACHE_SIZE_CHECK_THRESHOLD) {
+      const { cacheSizeCheck } = globalDevModeChecks
+      if (
+        cacheSizeCheck === 'always' ||
+        (cacheSizeCheck === 'once' && !hasWarnedAboutCacheSize)
+      ) {
+        hasWarnedAboutCacheSize = true
+        runCacheSizeCheck(primitiveCache.size, func.name)
+      }
     }
   }
 
+  function getCacheNode(
+    rootNode: CacheNode<any>,
+    args: IArguments,
+    create: boolean
+  ) {
+    let cacheNode = rootNode
+    for (let i = 0, l = args.length; i < l; i++) {
+      const arg = args[i]
+      if (
+        typeof arg === 'function' ||
+        (typeof arg === 'object' && arg !== null)
+      ) {
+        // Objects go into a WeakMap
+        let objectCache = cacheNode.o
+        if (objectCache === null) {
+          if (!create) return undefined
+          cacheNode.o = objectCache = new WeakMap()
+        }
+        const objectNode = objectCache.get(arg)
+        if (objectNode === undefined) {
+          if (!create) return undefined
+          cacheNode = createCacheNode()
+          objectCache.set(arg, cacheNode)
+        } else {
+          cacheNode = objectNode
+        }
+      } else {
+        // Primitives go into a regular Map
+        let primitiveCache = cacheNode.p
+        if (primitiveCache === null) {
+          if (!create) return undefined
+          cacheNode.p = primitiveCache = new Map()
+        }
+        const primitiveNode = primitiveCache.get(arg)
+        if (primitiveNode === undefined) {
+          if (!create) return undefined
+          cacheNode = createCacheNode()
+          primitiveCache.set(arg, cacheNode)
+
+          if (process.env.NODE_ENV !== 'production') {
+            checkCacheSize(primitiveCache)
+          }
+        } else {
+          cacheNode = primitiveNode
+        }
+      }
+    }
+    return cacheNode
+  }
+
+  // Bounded caches publish new paths only after a successful computation or
+  // promotion, so exceptions cannot leave strongly held primitive keys behind.
+  function cacheResult(
+    rootNode: CacheNode<any>,
+    args: IArguments,
+    result: any
+  ) {
+    // Revisit the original tree: a callback may have filled the same tuple,
+    // added descendants, cleared the cache, or changed generations.
+    const cacheNode = getCacheNode(rootNode, args, true)!
+    const isNewResult = cacheNode.s === UNTERMINATED
+    const terminatedNode = cacheNode as TerminatedCacheNode<any>
+    terminatedNode.s = TERMINATED
+    terminatedNode.v = result
+
+    if (isNewResult && rootNode === fnNode) {
+      for (let i = 0, l = args.length; i < l; i++) {
+        const arg = args[i]
+        if (
+          typeof arg !== 'function' &&
+          (typeof arg !== 'object' || arg === null)
+        ) {
+          // Count the tuple once, regardless of how many primitive arguments
+          // it has. Object-only tuples continue to rely on garbage collection.
+          if (++insertionCount >= (maxSize as number)) {
+            prevNode = fnNode
+            fnNode = createCacheNode()
+            insertionCount = 0
+          }
+          break
+        }
+      }
+    }
+    return result
+  }
+
+  // Keep the default memoizer's traversal unchanged. Only bounded caches
+  // need a separate read-only lookup before publishing a successful result.
   function memoized() {
     let cacheNode = fnNode
     const { length } = arguments
@@ -295,27 +397,9 @@ export function weakMapMemoize<Func extends AnyFunction>(
         if (primitiveNode === undefined) {
           cacheNode = createCacheNode()
           primitiveCache.set(arg, cacheNode)
-          insertionCount++
 
           if (process.env.NODE_ENV !== 'production') {
-            // A single primitive `Map` growing past the threshold means this
-            // function keeps seeing new primitive values in the same argument
-            // position, which is the unbounded-growth pattern from #635. The
-            // size of one `Map` is checked rather than a total across the
-            // tree: `Map`s nested under an object argument's `WeakMap` node
-            // are released when that object is collected, so a total would
-            // keep phantom counts for entries that are already gone and warn
-            // about usage that is actually healthy.
-            if (primitiveCache.size > CACHE_SIZE_CHECK_THRESHOLD) {
-              const { cacheSizeCheck } = globalDevModeChecks
-              if (
-                cacheSizeCheck === 'always' ||
-                (cacheSizeCheck === 'once' && !hasWarnedAboutCacheSize)
-              ) {
-                hasWarnedAboutCacheSize = true
-                runCacheSizeCheck(primitiveCache.size, func.name)
-              }
-            }
+            checkCacheSize(primitiveCache)
           }
         } else {
           cacheNode = primitiveNode
@@ -329,43 +413,6 @@ export function weakMapMemoize<Func extends AnyFunction>(
     // call that had nothing to record.
     if (cacheNode.s === TERMINATED) {
       return cacheNode.v
-    }
-
-    // The current tree has no result, but the previous generation might.
-    // This probe only runs on a miss, so the hit path above is untouched.
-    // A hit here is copied forward into the current node so it survives the
-    // next flip, and returned without recomputing.
-    if (prevNode !== null) {
-      let prevCacheNode: CacheNode<any> | null = prevNode
-      for (let i = 0, l = length; i < l; i++) {
-        const arg = arguments[i]
-        let next: CacheNode<any> | undefined
-        if (
-          typeof arg === 'function' ||
-          (typeof arg === 'object' && arg !== null)
-        ) {
-          const prevObjectCache: CacheNode<any>['o'] = prevCacheNode.o
-          next = prevObjectCache !== null ? prevObjectCache.get(arg) : undefined
-        } else {
-          const prevPrimitiveCache: CacheNode<any>['p'] = prevCacheNode.p
-          next =
-            prevPrimitiveCache !== null
-              ? prevPrimitiveCache.get(arg)
-              : undefined
-        }
-        if (next === undefined) {
-          prevCacheNode = null
-          break
-        }
-        prevCacheNode = next
-      }
-      if (prevCacheNode !== null && prevCacheNode.s === TERMINATED) {
-        const promotedNode = cacheNode as unknown as TerminatedCacheNode<any>
-        promotedNode.s = TERMINATED
-        promotedNode.v = prevCacheNode.v
-        maybeFlipGenerations()
-        return prevCacheNode.v
-      }
     }
 
     const terminatedNode = cacheNode as unknown as TerminatedCacheNode<any>
@@ -396,27 +443,78 @@ export function weakMapMemoize<Func extends AnyFunction>(
 
     terminatedNode.s = TERMINATED
     terminatedNode.v = result
-    if (useGenerations) {
-      maybeFlipGenerations()
-    }
     return result
   }
 
-  memoized.clearCache = () => {
+  function memoizedWithGenerations() {
+    const rootNode = fnNode
+    const cacheNode = getCacheNode(rootNode, arguments, false)
+
+    // Return here rather than falling through to the writes below. Both would be
+    // no-ops — `s` is already `TERMINATED` and `v` already holds this result —
+    // but `v` stores a pointer, so re-storing it costs a GC write barrier on a
+    // call that had nothing to record.
+    if (cacheNode !== undefined && cacheNode.s === TERMINATED) {
+      return cacheNode.v
+    }
+
+    // The current tree has no result, but the previous generation might.
+    // This probe only runs on a miss, so the hit path above is untouched.
+    // A hit here is copied forward into the current node so it survives the
+    // next flip, and returned without recomputing.
+    if (prevNode !== null) {
+      const prevCacheNode = getCacheNode(prevNode, arguments, false)
+      if (prevCacheNode !== undefined && prevCacheNode.s === TERMINATED) {
+        return cacheResult(rootNode, arguments, prevCacheNode.v)
+      }
+    }
+
+    // Allow errors to propagate
+    let result = func.apply(null, arguments as unknown as any[])
+    resultsCount++
+
+    if (resultEqualityCheck) {
+      // Deref lastResult if it is a Ref
+      const lastResultValue = maybeDeref(lastResult)
+
+      if (
+        lastResultValue != null &&
+        resultEqualityCheck(lastResultValue as ReturnType<Func>, result)
+      ) {
+        result = lastResultValue
+
+        resultsCount !== 0 && resultsCount--
+      }
+
+      const needsWeakRef =
+        (typeof result === 'object' && result !== null) ||
+        typeof result === 'function'
+
+      lastResult = needsWeakRef ? /* @__PURE__ */ new Ref(result) : result
+    }
+
+    return cacheResult(rootNode, arguments, result)
+  }
+
+  const memoizedFunction = (
+    useGenerations ? memoizedWithGenerations : memoized
+  ) as typeof memoized & DefaultMemoizeFields
+
+  memoizedFunction.clearCache = () => {
     fnNode = createCacheNode()
     prevNode = null
     insertionCount = 0
-    memoized.resetResultsCount()
+    memoizedFunction.resetResultsCount()
     if (process.env.NODE_ENV !== 'production') {
       hasWarnedAboutCacheSize = false
     }
   }
 
-  memoized.resultsCount = () => resultsCount
+  memoizedFunction.resultsCount = () => resultsCount
 
-  memoized.resetResultsCount = () => {
+  memoizedFunction.resetResultsCount = () => {
     resultsCount = 0
   }
 
-  return memoized as Func & Simplify<DefaultMemoizeFields>
+  return memoizedFunction as Func & Simplify<DefaultMemoizeFields>
 }
