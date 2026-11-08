@@ -236,7 +236,7 @@ export function weakMapMemoize<Func extends AnyFunction>(
   const { resultEqualityCheck, maxSize } = options
 
   // Generational bounding for `maxSize`: `prevNode` holds the demoted cache
-  // tree, `insertionCount` counts primitive-Map insertions into the current
+  // tree, `insertionCount` counts results cached or promoted into the current
   // tree. Reaching `maxSize` flips generations at the end of that call.
   const useGenerations = maxSize !== undefined
   if (useGenerations && (!Number.isInteger(maxSize) || maxSize < 1)) {
@@ -257,6 +257,7 @@ export function weakMapMemoize<Func extends AnyFunction>(
   // a walk, so a flip can never happen while pointers into the tree being
   // demoted are still live. The hit path never reaches this.
   function maybeFlipGenerations() {
+    insertionCount++
     if (insertionCount >= (maxSize as number)) {
       prevNode = fnNode
       fnNode = createCacheNode()
@@ -295,7 +296,6 @@ export function weakMapMemoize<Func extends AnyFunction>(
         if (primitiveNode === undefined) {
           cacheNode = createCacheNode()
           primitiveCache.set(arg, cacheNode)
-          insertionCount++
 
           if (process.env.NODE_ENV !== 'production') {
             // A single primitive `Map` growing past the threshold means this
