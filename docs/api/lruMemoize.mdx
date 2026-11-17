@@ -57,7 +57,7 @@ const referenceEqualityCheck = (previousValue, currentValue) => {
 | `func`                   | The function to be memoized.                              |
 | `equalityCheckOrOptions` | Either an equality check function or an `options` object. |
 
-Since 4.1.0, `lruMemoize` also accepts an options object as its first argument instead of an `equalityCheck` function. The `options` object may contain:
+Since 4.1.0, `lruMemoize` also accepts an options object as its second argument instead of an `equalityCheck` function. The `options` object may contain:
 
 ```ts
 type EqualityFn<T = any> = (a: T, b: T) => boolean
@@ -75,9 +75,9 @@ interface LruMemoizeOptions<Result = any> {
 | `resultEqualityCheck` | If provided, used to compare a newly generated output value against previous values in the cache. If a match is found, the old value is returned. This addresses the common <code>todos.map(todo => todo.id)</code> use case, where an update to another field in the original data causes a recalculation due to changed references, but the output is still effectively the same.                                                                                  |
 | `maxSize`             | The cache size for the selector. If greater than 1, the selector will use an LRU cache internally. <br /> **`Default`** = 1 <br /> As of 5.3.0, [`weakMapMemoize`](./weakMapMemoize.mdx) also accepts a [`maxSize` option](./weakMapMemoize#bounding-cache-size-with-maxsize). The difference: `lruMemoize` keeps an exact bound with per-entry LRU eviction, while `weakMapMemoize` uses a cheaper generational bound of roughly `2 * maxSize` with batch eviction. |
 
-:::warning
+:::note
 
-If `resultEqualityCheck` is used inside `argsMemoizeOptions` it has no effect.
+When `lruMemoize` is used as `argsMemoize`, a `resultEqualityCheck` in `argsMemoizeOptions` compares the selector's returned results. It can preserve the previous result reference even when changed arguments cause the dependencies and result function to recompute. It does not prevent those recomputations.
 
 :::
 
