@@ -401,6 +401,7 @@ export function createSelectorCreator<
       ExtractMemoizerFields<OverrideMemoizeFunction>
 
     let firstRun = true
+    const { devModeChecks } = combinedOptions
 
     // If a selector is called with the exact same arguments we don't need to traverse our dependencies again.
     const selector = argsMemoize(
@@ -428,7 +429,18 @@ export function createSelectorCreator<
         // @ts-ignore
         lastResult = memoizedResultFunc.apply(null, inputSelectorResults)
 
-        if (process.env.NODE_ENV !== 'production') {
+        // Reading `process.env.NODE_ENV` is slow in Node, so skip it when no
+        // check can fire: a `'once'` check only runs on the first call, and an
+        // `'always'` check needs that value in the global or in the overrides.
+        if (
+          (firstRun ||
+            globalDevModeChecks.identityFunctionCheck === 'always' ||
+            globalDevModeChecks.inputStabilityCheck === 'always' ||
+            (devModeChecks !== undefined &&
+              (devModeChecks.identityFunctionCheck === 'always' ||
+                devModeChecks.inputStabilityCheck === 'always'))) &&
+          process.env.NODE_ENV !== 'production'
+        ) {
           // Resolved without building the four objects `getDevModeChecksExecutionInfo`
           // returns. This runs on every dependency recomputation, and by default both
           // checks are `'once'` — so from the second one onwards those objects were
@@ -438,7 +450,6 @@ export function createSelectorCreator<
           // this replaces: an override that explicitly sets a check to `undefined`
           // silences it, where `??` would fall back to the global setting. The
           // common case has no overrides at all and reads the global directly.
-          const { devModeChecks } = combinedOptions
           const identityFunctionCheck =
             devModeChecks !== undefined &&
             Object.prototype.hasOwnProperty.call(
