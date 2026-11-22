@@ -1017,3 +1017,31 @@ describe('argsMemoize and memoize', () => {
     }
   )
 })
+
+describe('Dev-mode checks', () => {
+  test('reads NODE_ENV only on the first recomputation when no check runs always', () => {
+    const env = process.env
+    let nodeEnvReads = 0
+    process.env = new Proxy(env, {
+      get(target, key) {
+        if (key === 'NODE_ENV') nodeEnvReads++
+        return Reflect.get(target, key)
+      }
+    })
+
+    try {
+      const selector = createSelector([(n: number) => n], n => n * 2, {
+        memoize: lruMemoize,
+        argsMemoize: lruMemoize
+      })
+
+      expect(selector(1)).toBe(2)
+      expect(selector(2)).toBe(4)
+      expect(selector(3)).toBe(6)
+
+      expect(nodeEnvReads).toBe(1)
+    } finally {
+      process.env = env
+    }
+  })
+})

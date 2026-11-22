@@ -119,6 +119,27 @@ describe('identityFunctionCheck', () => {
     expect(consoleSpy).toHaveBeenCalledOnce()
   })
 
+  localTest(
+    'allows always running the check through the global setting',
+    () => {
+      setGlobalDevModeChecks({ identityFunctionCheck: 'always' })
+
+      const badSelector = createSelector([state => state], identityFunction)
+
+      const state = {}
+
+      expect(badSelector(state)).toBe(state)
+
+      expect(consoleSpy).toHaveBeenCalledOnce()
+
+      expect(badSelector({ ...state })).toStrictEqual(state)
+
+      expect(consoleSpy).toHaveBeenCalledTimes(2)
+
+      setGlobalDevModeChecks({ identityFunctionCheck: 'once' })
+    }
+  )
+
   localTest('allows always running the check', () => {
     const badSelector = createSelector([state => state], identityFunction, {
       devModeChecks: { identityFunctionCheck: 'always' }
