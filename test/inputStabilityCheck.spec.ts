@@ -136,6 +136,22 @@ describe('inputStabilityCheck', () => {
     expect(consoleSpy).toHaveBeenCalledTimes(2)
   })
 
+  it('allows always running the check through the global setting', () => {
+    setGlobalDevModeChecks({ inputStabilityCheck: 'always' })
+
+    const addNums = createSelector([unstableInput], ({ a, b }) => a + b)
+
+    expect(addNums(1, 2)).toBe(3)
+
+    expect(consoleSpy).toHaveBeenCalledOnce()
+
+    expect(addNums(2, 2)).toBe(4)
+
+    expect(consoleSpy).toHaveBeenCalledTimes(2)
+
+    setGlobalDevModeChecks({ inputStabilityCheck: 'once' })
+  })
+
   it('runs once when devModeChecks is an empty object', () => {
     const addNums = createSelector([unstableInput], ({ a, b }) => a + b, {
       devModeChecks: {}
