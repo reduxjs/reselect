@@ -140,6 +140,29 @@ describe('identityFunctionCheck', () => {
     }
   )
 
+  localTest('reads an override getter once per recomputation', () => {
+    let reads = 0
+    let isAlways = false
+    const badSelector = createSelector([state => state], identityFunction, {
+      devModeChecks: {
+        get identityFunctionCheck() {
+          reads++
+          isAlways = !isAlways
+          return isAlways ? 'always' : 'never'
+        }
+      }
+    })
+
+    badSelector({})
+    badSelector({})
+    badSelector({})
+    badSelector({})
+
+    expect(reads).toBe(4)
+
+    expect(consoleSpy).toHaveBeenCalledTimes(2)
+  })
+
   localTest('allows always running the check', () => {
     const badSelector = createSelector([state => state], identityFunction, {
       devModeChecks: { identityFunctionCheck: 'always' }

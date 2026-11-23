@@ -430,15 +430,14 @@ export function createSelectorCreator<
         lastResult = memoizedResultFunc.apply(null, inputSelectorResults)
 
         // Reading `process.env.NODE_ENV` is slow in Node, so skip it when no
-        // check can fire: a `'once'` check only runs on the first call, and an
-        // `'always'` check needs that value in the global or in the overrides.
+        // check can fire: a `'once'` check only runs on the first call. A
+        // selector with overrides keeps the full path, so each override is
+        // read once per recomputation, as before.
         if (
           (firstRun ||
+            devModeChecks !== undefined ||
             globalDevModeChecks.identityFunctionCheck === 'always' ||
-            globalDevModeChecks.inputStabilityCheck === 'always' ||
-            (devModeChecks !== undefined &&
-              (devModeChecks.identityFunctionCheck === 'always' ||
-                devModeChecks.inputStabilityCheck === 'always'))) &&
+            globalDevModeChecks.inputStabilityCheck === 'always') &&
           process.env.NODE_ENV !== 'production'
         ) {
           // Resolved without building the four objects `getDevModeChecksExecutionInfo`
