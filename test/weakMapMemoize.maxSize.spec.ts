@@ -187,6 +187,100 @@ describe('weakMapMemoize maxSize option', () => {
     }
   )
 
+  describe.each(['func', 'resultEqualityCheck'] as const)(
+    'reentry from %s',
+    callback => {
+      function memoize(
+        maxSize: number | undefined,
+        reenter: (n: number) => void
+      ) {
+        return weakMapMemoize(
+          (n: number) => {
+            if (callback === 'func') reenter(n)
+            return { n }
+          },
+          callback === 'func'
+            ? { maxSize }
+            : {
+                maxSize,
+                resultEqualityCheck: (_previous, result) => {
+                  reenter(result.n)
+                  return false
+                }
+              }
+        )
+      }
+
+      test('bounds the number of primitive tuples retained after recursion', () => {
+        let hits = 0
+        // A probe can promote or evict entries. Probe each key in a fresh cache.
+        for (let key = 0; key <= 30; key++) {
+          const fn = memoize(1, n => {
+            if (n > 0) fn(n - 1)
+          })
+          fn(-1) // Seed the previous result for the equality check.
+          fn(30)
+          expect(fn.resultsCount()).toBe(32)
+          fn(key)
+          if (fn.resultsCount() === 32) hits++
+        }
+        expect(hits).toBeLessThanOrEqual(2)
+      })
+
+      test('caches the outer result after two nested rotations', () => {
+        let reenter = true
+        const fn = memoize(1, n => {
+          if (n === 100 && reenter) {
+            reenter = false
+            fn(1)
+            fn(2)
+          }
+        })
+        fn(-1)
+        const outer = fn(100)
+        expect(fn.resultsCount()).toBe(4)
+        expect(fn(100)).toBe(outer)
+        expect(fn.resultsCount()).toBe(4)
+      })
+
+      test('counts the same tuple once when reentry fills it after a rotation', () => {
+        let reenter = true
+        const fn = memoize(3, n => {
+          if (n === 100 && reenter) {
+            reenter = false
+            fn(1)
+            fn(2) // Rotate the generation containing -1, 1 and 2.
+            fn(100)
+          }
+        })
+        fn(-1)
+        const outer = fn(100)
+        fn(3)
+        fn(4) // The previous generation now contains 100, 3 and 4.
+        fn(5)
+        fn(6)
+        expect(fn(100)).toBe(outer)
+      })
+
+      test.each([1, undefined])(
+        'preserves nested results after clearCache (maxSize: %s)',
+        maxSize => {
+          let nested: { n: number } | undefined
+          const fn = memoize(maxSize, n => {
+            if (n === 100 && nested === undefined) {
+              fn.clearCache()
+              nested = fn(1)
+            }
+          })
+          fn(-1)
+          const outer = fn(100)
+          expect(fn(1)).toBe(nested)
+          expect(fn(100)).not.toBe(outer)
+        }
+      )
+    }
+  )
+
   test
     .skipIf(typeof globalThis.gc !== 'function')
     .each(['func', 'resultEqualityCheck'] as const)(
@@ -319,7 +413,7 @@ describe('weakMapMemoize maxSize option', () => {
         }
       })
       fn(0) // Give resultEqualityCheck a previous result to compare.
-      fn(1) // This result is written to the tree that was cleared.
+      fn(1) // The pending result must not enter the fresh generation.
       const second = fn(2)
       fn(3) // The fresh generation contains {2, 3}.
       fn(4)

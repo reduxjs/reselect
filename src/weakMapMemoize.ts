@@ -250,6 +250,7 @@ export function weakMapMemoize<Func extends AnyFunction>(
   }
   let prevNode: CacheNode<any> | null = null
   let insertionCount = 0
+  let clearEpoch = 0
 
   let lastResult: WeakRef<object> | undefined
 
@@ -335,8 +336,7 @@ export function weakMapMemoize<Func extends AnyFunction>(
     args: IArguments,
     result: any
   ) {
-    // Revisit the original tree: a callback may have filled the same tuple,
-    // added descendants, cleared the cache, or changed generations.
+    // A nested call may already have filled this tuple in the current tree.
     const cacheNode = getCacheNode(rootNode, args, true)!
     const isNewResult = cacheNode.s === UNTERMINATED
     const terminatedNode = cacheNode as TerminatedCacheNode<any>
@@ -447,8 +447,7 @@ export function weakMapMemoize<Func extends AnyFunction>(
   }
 
   function memoizedWithGenerations() {
-    const rootNode = fnNode
-    const cacheNode = getCacheNode(rootNode, arguments, false)
+    const cacheNode = getCacheNode(fnNode, arguments, false)
 
     // Return here rather than falling through to the writes below. Both would be
     // no-ops — `s` is already `TERMINATED` and `v` already holds this result —
@@ -465,10 +464,11 @@ export function weakMapMemoize<Func extends AnyFunction>(
     if (prevNode !== null) {
       const prevCacheNode = getCacheNode(prevNode, arguments, false)
       if (prevCacheNode !== undefined && prevCacheNode.s === TERMINATED) {
-        return cacheResult(rootNode, arguments, prevCacheNode.v)
+        return cacheResult(fnNode, arguments, prevCacheNode.v)
       }
     }
 
+    const epochBeforeCallbacks = clearEpoch
     // Allow errors to propagate
     let result = func.apply(null, arguments as unknown as any[])
     resultsCount++
@@ -493,7 +493,9 @@ export function weakMapMemoize<Func extends AnyFunction>(
       lastResult = needsWeakRef ? /* @__PURE__ */ new Ref(result) : result
     }
 
-    return cacheResult(rootNode, arguments, result)
+    // Rotations keep pending results valid, but an explicit clear discards them.
+    if (epochBeforeCallbacks !== clearEpoch) return result
+    return cacheResult(fnNode, arguments, result)
   }
 
   const memoizedFunction = (
@@ -501,6 +503,7 @@ export function weakMapMemoize<Func extends AnyFunction>(
   ) as typeof memoized & DefaultMemoizeFields
 
   memoizedFunction.clearCache = () => {
+    clearEpoch++
     fnNode = createCacheNode()
     prevNode = null
     insertionCount = 0
